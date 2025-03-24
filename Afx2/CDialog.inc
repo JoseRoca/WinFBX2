@@ -10,11 +10,8 @@
 ' ########################################################################################
 
 #pragma once
-#include once "windows.bi"
-#include once "win/windowsx.bi"
-#include once "win/richedit.bi"
-#include once "Afx/AfxWin.inc"
-USING Afx
+#include once "Afx2/AfxWin2.inc"
+USING Afx2
 
 ' // For compatibility with the Power Basic syntax
 #define CBHNDL(wp, lp) cast(HWND, lp)
@@ -25,7 +22,26 @@ USING Afx
 #define CBNMID(wp, lp) HIWORD(wp)
 #define CBNMHDR(wp, lp) cast(NMHDR PTR, lp)
 
-NAMESPACE Afx
+' ========================================================================================
+' Macro for debug
+' To allow debugging, define _CDIALOG_DEBUG_ 1 in your application before including this file.
+' To capture and display the messages sent by the Windows function OutputDebugStringW, you
+' can use the DebugView tool. See: https://learn.microsoft.com/en-us/sysinternals/downloads/debugview
+' ========================================================================================
+#ifndef _CDIALOG_DEBUG_
+   #define _CDIALOG_DEBUG_ 0
+#ENDIF
+#ifndef _CDIALOG_DP_
+   #define _CDIALOG_DP_ 1
+   #MACRO CDIALOG_DP(st)
+      #IF (_CDIALOG_DEBUG_ = 1)
+         OutputDebugStringW(st)
+      #ENDIF
+   #ENDMACRO
+#ENDIF
+' ========================================================================================
+
+NAMESPACE Afx2
 
 ' ========================================================================================
 ' CDialog class
@@ -94,15 +110,15 @@ TYPE CDialog
       DECLARE FUNCTION DialogGetClient (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
       DECLARE FUNCTION DialogGetClientWidth () AS LONG
       DECLARE FUNCTION DialogGetClientHeight () AS LONG
-      DECLARE FUNCTION DialogSetClient (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEaN
+      DECLARE FUNCTION DialogSetClient (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
       DECLARE FUNCTION DialogGetLoc (BYREF nLeft AS LONG, BYREF nTop AS LONG) AS BOOLEAN
       DECLARE FUNCTION DialogSetLoc (BYVAL nLeft AS LONG, BYVAL nTop AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogGetText () AS CWSTR
+      DECLARE FUNCTION DialogGetText () AS DWSTRING
       DECLARE FUNCTION DialogSetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
       DECLARE FUNCTION DialogGetUser (BYVAL idx AS LONG) AS LONG_PTR
       DECLARE SUB DialogSetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
       DECLARE FUNCTION DialogGetFont () AS HFONT
-      DECLARE FUNCTION DialogGetFontFaceName () AS CWSTR
+      DECLARE FUNCTION DialogGetFontFaceName () AS DWSTRING
       DECLARE FUNCTION DialogGetFontPointSize () AS LONG
 
       ' // Dialog procedure callback
@@ -125,7 +141,7 @@ TYPE CDialog
       DECLARE SUB ControlSetFocus (BYVAL cId AS LONG)
       DECLARE FUNCTION ControlGetLoc (BYVAL cId AS LONG, BYREF nLeft AS LONG, BYREF nTop AS LONG) AS BOOLEAN
       DECLARE FUNCTION ControlSetLoc (BYVAL cId AS LONG, BYVAL nLeft AS LONG, BYVAL nTop AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlGetText (BYVAL cId AS LONG) AS CWSTR
+      DECLARE FUNCTION ControlGetText (BYVAL cId AS LONG) AS DWSTRING
       DECLARE FUNCTION ControlSetText (BYVAL cId AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
       DECLARE FUNCTION ControlHandle (BYVAL cId AS LONG) AS HWND
       DECLARE FUNCTION ControlHide (BYVAL cId AS LONG) AS BOOLEAN
@@ -144,7 +160,7 @@ TYPE CDialog
       DECLARE FUNCTION ControlGetClientHeight (BYVAL cId AS LONG) AS LONG
       DECLARE FUNCTION ControlSetClient (BYVAL cId AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
       DECLARE FUNCTION ControlGetFont (BYVAL cId AS LONG) AS HFONT
-      DECLARE FUNCTION ControlGetFontFaceName (BYVAL cId AS LONG) AS CWSTR
+      DECLARE FUNCTION ControlGetFontFaceName (BYVAL cId AS LONG) AS DWSTRING
       DECLARE FUNCTION ControlGetFontPointSize (BYVAL cId AS LONG) AS LONG
       DECLARE SUB ControlSetFont (BYVAL cId AS LONG, BYVAL hFont AS HFONT, BYVAL fRedraw AS BOOLEAN = TRUE)
 
@@ -191,7 +207,7 @@ END DESTRUCTOR
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogTemplate (BYREF wszTitle AS WSTRING = "", BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, _
    BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS STRING
-   OutputDebugStringW("Dialog Template ")
+   CDIALOG_DP("Dialog template")
 
    ' // Default styles. PB also includes DS_3DLOOK, but this style is obsolete since the system automatically
    ' // applies the three-dimensional look to dialog boxes created by applications.
@@ -655,14 +671,14 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
    SELECT CASE uMsg
 
       CASE WM_INITDIALOG
-         OutputDebugStringW("CDialog.CDialogProc - WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
+         CDIALOG_DP("CDialog.CDialogProc - WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
 
       CASE WM_CLOSE
-         OutputDebugStringW("CDialog.CDialogProc - WM_CLOSE")
+         CDIALOG_DP("CDialog.CDialogProc - WM_CLOSE")
          DestroyWindow hDlg
 
       CASE WM_DESTROY
-         OutputDebugStringW("CDialog.CDialogProc - WM_DESTROY")
+         CDIALOG_DP("CDialog.CDialogProc - WM_DESTROY")
 
    END SELECT
 
@@ -723,7 +739,7 @@ END FUNCTION
 ' * Ends the dialog
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogEnd (BYVAL nResult AS LONG = 0) AS INT_PTR
-   OutputDebugStringW("CDialog.DialogEnd - WM_DESTROY")
+   CDIALOG_DP("CDialog.DialogEnd - WM_DESTROY")
    m_DlgRetVal = nResult
    DestroyWindow(m_hDlg)
    RETURN m_DlgRetVal
@@ -734,7 +750,7 @@ END FUNCTION
 ' Returns the value passed to DialogEnd
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogEndResult () AS INT_PTR
-   OutputDebugStringW("CDialog.DialogEndResult")
+   CDIALOG_DP("CDialog.DialogEndResult")
    RETURN m_DlgRetVal
 END FUNCTION
 ' ========================================================================================
@@ -1051,7 +1067,7 @@ END FUNCTION
 ' ========================================================================================
 ' Gets the face name of the font used by the dialog.
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.DialogGetFontFaceName () AS CWSTR
+PRIVATE FUNCTION CDialog.DialogGetFontFaceName () AS DWSTRING
    ' // Get the handle of the font used by the dialog
    DIM hCurFont AS HFONT = CAST(HFONT, SendMessageW(m_hDlg, WM_GETFONT, 0, 0))
    IF hCurFont = NULL THEN RETURN ""   
@@ -1115,11 +1131,11 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the text in a dialog or window caption.
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.DialogGetText () AS CWSTR
+PRIVATE FUNCTION CDialog.DialogGetText () AS DWSTRING
    DIM nLen AS LONG = SendMessageW(m_hDlg, WM_GETTEXTLENGTH, 0, 0)
-   DIM cwsText AS CWSTR = SPACE(nLen + 1)
-   SendMessageW(m_hDlg, WM_GETTEXT, nLen + 1, cast(LPARAM, *cwsText))
-   RETURN LEFT(**cwsText, LEN(cwsText) - 1)
+   DIM dwsText AS DWSTRING = SPACE(nLen + 1)
+   SendMessageW(m_hDlg, WM_GETTEXT, nLen + 1, cast(LPARAM, dwsText))
+   RETURN LEFT(dwsText, LEN(dwsText) - 1)
 END FUNCTION
 ' ========================================================================================
 
@@ -1272,12 +1288,12 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the text in a control or control caption.
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.ControlGetText (BYVAL cId AS LONG) AS CWSTR
+PRIVATE FUNCTION CDialog.ControlGetText (BYVAL cId AS LONG) AS DWSTRING
    DIM hCtl AS HWND = GetDlgItem(m_hDlg, cID)
    DIM nLen AS LONG = SendMessageW(hCtl, WM_GETTEXTLENGTH, 0, 0)
-   DIM cwsText AS CWSTR = SPACE(nLen + 1)
-   SendMessageW(hCtl, WM_GETTEXT, nLen + 1, cast(LPARAM, *cwsText))
-   RETURN LEFT(**cwsText, LEN(cwsText) - 1)
+   DIM dwsText AS DWSTRING = SPACE(nLen + 1)
+   SendMessageW(hCtl, WM_GETTEXT, nLen + 1, cast(LPARAM, dwsText))
+   RETURN LEFT(dwsText, LEN(dwsText) - 1)
 END FUNCTION
 ' ========================================================================================
 
@@ -1440,7 +1456,7 @@ END SUB
 ' ========================================================================================
 ' Gets the face name of the font used by the control.
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.ControlGetFontFaceName (BYVAL cId AS LONG) AS CWSTR
+PRIVATE FUNCTION CDialog.ControlGetFontFaceName (BYVAL cId AS LONG) AS DWSTRING
    ' // Get the handle of the font used by the dialog
    DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
    DIM hCurFont AS HFONT = CAST(HFONT, SendMessageW(hCtl, WM_GETFONT, 0, 0))

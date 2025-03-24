@@ -51,20 +51,7 @@
 #ENDIF
 ' ========================================================================================
 
-' ========================================================================================
-' // Checks if the passed pointer is a BSTR.
-' // Will return FALSE if it is a null pointer.
-' // If it is an OLE string it must have a descriptor; otherwise, don't.
-' // Get the length in bytes looking at the descriptor and divide by 2 to get the number of
-' // unicode characters, that is the value returned by the FreeBASIC LEN operator.
-' // If the retrieved length is the same that the returned by LEN, then it must be an OLE string.
-' ========================================================================================
-'FUNCTION DWStrIsBstr (BYVAL pv aS ANY PTR) AS BOOLEAN
-'   IF pv = NULL THEN RETURN FALSE
-'   DIM res AS DWORD = PEEK(DWORD, pv - 4) \ 2
-'   IF res = .LEN(*cast(WSTRING PTR, pv)) THEN RETURN TRUE
-'END FUNCTION
-' ========================================================================================
+NAMESPACE Afx2
 
 ' ########################################################################################
 '                                *** DWSTRING CLASS ***
@@ -456,15 +443,20 @@ PRIVATE FUNCTION DWSTRING.wchar () AS WSTRING PTR
 END FUNCTION
 ' =====================================================================================
 
+END NAMESPACE
+
 ' ########################################################################################
 '                         *** GLOBAL OPERATORS AND FUNCTIONS ***
 ' ########################################################################################
+
+' // Outside a namespace because they are global
+using Afx2
 
 ' ========================================================================================
 ' Global operator.
 ' Returns the length, in characters, of the DWSTRING.
 ' ========================================================================================
-PRIVATE OPERATOR LEN (BYREF dws AS DWSTRING) AS UINT
+PRIVATE OPERATOR LEN OVERLOAD (BYREF dws AS DWSTRING) AS UINT
    DWSTRING_DP("DWSTRING OPERATOR LEN - len: " & .WSTR(dws.m_BufferLen))
    OPERATOR = dws.m_BufferLen
 END OPERATOR
@@ -495,8 +487,8 @@ END OPERATOR
 ' Returns the leftmost substring of a string
 ' Overloaded because the intrinsic LEFT operator fails with an ambiguous call error.
 ' ========================================================================================
-PRIVATE FUNCTION Left (BYREF dws AS DWSTRING, BYVAL nChars AS INTEGER) AS DWSTRING
-   RETURN LEFT(**dws, nChars)
+PRIVATE FUNCTION Left OVERLOAD (BYREF dws AS DWSTRING, BYVAL nChars AS INTEGER) AS DWSTRING
+   RETURN .LEFT(**dws, nChars)
 END FUNCTION
 ' ========================================================================================
 
@@ -504,7 +496,7 @@ END FUNCTION
 ' Returns the rightmost substring of a string
 ' Overloaded because the intrinsic LEFT operator fails with an ambiguous call error.
 ' ========================================================================================
-PRIVATE FUNCTION Right (BYREF dws AS DWSTRING, BYVAL nChars AS INTEGER) AS DWSTRING
-   RETURN RIGHT(**dws, nChars)
+PRIVATE FUNCTION Right OVERLOAD (BYREF dws AS DWSTRING, BYVAL nChars AS INTEGER) AS DWSTRING
+   RETURN .RIGHT(**dws, nChars)
 END FUNCTION
 ' ========================================================================================

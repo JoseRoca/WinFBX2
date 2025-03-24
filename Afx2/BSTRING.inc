@@ -25,7 +25,10 @@
 ' ########################################################################################
 
 #pragma once
-#include once "DWString.inc"
+#include once "DWSTRING.inc"
+USING Afx2
+
+NAMESPACE Afx2
 
 ' ========================================================================================
 ' Macro for debug
@@ -465,11 +468,14 @@ PRIVATE OPERATOR BSTRING.&= (BYVAL n AS DOUBLE)
 END OPERATOR
 ' ========================================================================================
 
-' ########################################################################################
+END NAMESPACE
 
 ' ########################################################################################
 '                         *** GLOBAL OPERATORS AND FUNCTIONS ***
 ' ########################################################################################
+
+' // Outside a namespace because they are global
+using Afx2
 
 ' ========================================================================================
 ' Global operator.
@@ -508,7 +514,7 @@ END OPERATOR
 ' Returns the leftmost substring of a string
 ' Overloaded because the intrinsic LEFT operator fails with an ambiguous call error.
 ' ========================================================================================
-PRIVATE FUNCTION Left (BYREF bs AS BSTRING, BYVAL nChars AS INTEGER) AS BSTRING
+PRIVATE FUNCTION Left OVERLOAD (BYREF bs AS BSTRING, BYVAL nChars AS INTEGER) AS BSTRING
    BSTRING_DP("LEFT - BSTRING")
    RETURN LEFT(**bs, nChars)
 END FUNCTION
@@ -518,9 +524,8 @@ END FUNCTION
 ' Returns the rightmost substring of a string
 ' Overloaded because the intrinsic LEFT operator fails with an ambiguous call error.
 ' ========================================================================================
-PRIVATE FUNCTION Right (BYREF bs AS BSTRING, BYVAL nChars AS INTEGER) AS BSTRING
+PRIVATE FUNCTION Right OVERLOAD (BYREF bs AS BSTRING, BYVAL nChars AS INTEGER) AS BSTRING
    BSTRING_DP("RIGHT - BSTRING")
    RETURN RIGHT(**bs, nChars)
 END FUNCTION
 ' ========================================================================================
-

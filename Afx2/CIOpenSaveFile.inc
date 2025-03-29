@@ -1,6 +1,6 @@
 ' ########################################################################################
 ' Microsoft Windows
-' File: COpenSaveFile.inc
+' File: CiOpenSaveFile.inc
 ' Contents: Open/Save dialogs
 ' Compiler: FreeBasic 32 & 64-bit
 ' Copyright (c) 2025 José Roca. Freeware. Use at your own risk.
@@ -13,26 +13,207 @@
 #include once "Afx2/AfxWin2.inc"
 USING Afx2
 
+NAMESPACE Afx2
+
+
+' ########################################################################################
+' CFileDialogEvents class
+' Implementation of the FileDialogEvents callback interface
+' ########################################################################################
+TYPE CFileDialogEvents EXTENDS OBJECT
+
+   DECLARE VIRTUAL FUNCTION QueryInterface (BYVAL riid AS REFIID, BYVAL ppvObject AS LPVOID PTR) AS HRESULT
+   DECLARE VIRTUAL FUNCTION AddRef () AS ULONG
+   DECLARE VIRTUAL FUNCTION Release () AS ULONG
+   DECLARE VIRTUAL FUNCTION OnFileOk (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+   DECLARE VIRTUAL FUNCTION OnFolderChanging (BYVAL pfd AS IFileDialog PTR, BYVAL psiFolder AS IShellItem PTR) AS HRESULT
+   DECLARE VIRTUAL FUNCTION OnFolderChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+   DECLARE VIRTUAL FUNCTION OnSelectionChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+   DECLARE VIRTUAL FUNCTION OnShareViolation (BYVAL pfd AS IFileDialog PTR, BYVAL psi AS IShellItem PTR, BYVAL pResponse AS FDE_SHAREVIOLATION_RESPONSE PTR) AS HRESULT
+   DECLARE VIRTUAL FUNCTION OnTypeChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+   DECLARE VIRTUAL FUNCTION OnOverwrite (BYVAL pfd AS IFileDialog PTR, BYVAL psi AS IShellItem PTR, BYVAL pResponse AS FDE_OVERWRITE_RESPONSE PTR) AS HRESULT
+
+   DECLARE CONSTRUCTOR (BYVAL xPos AS LONG, BYVAL yPos AS LONG)
+   DECLARE DESTRUCTOR
+
+   ' Reference count for COM
+   refCount As ULONG
+   ' // Open file dialog handle
+   m_hOleWindow AS HWND
+   ' // Open file dialog coordinates
+   m_xPos AS LONG
+   m_yPos AS LONG
+
+END TYPE
+' ########################################################################################
+
+' ########################################################################################
+' Template example to set a IFileDialogEvents innterface.
+' ########################################################################################
+
+' =====================================================================================
+' Constructor
+' =====================================================================================
+CONSTRUCTOR CFileDialogEvents (BYVAL xPos AS LONG, BYVAL yPos AS LONG)
+   ' // Open file dialog coordinates
+   m_xPos = xPos
+   m_yPos = yPos
+END CONSTRUCTOR
+' =====================================================================================
+' =====================================================================================
+' Destructor
+' =====================================================================================
+DESTRUCTOR CFileDialogEvents
+END DESTRUCTOR
+' =====================================================================================
+
+' IUnknown interface methods
 ' ========================================================================================
-' Macro for debug
-' To allow debugging, define _COPENFILE_DEBUG_ 1 in your application before including this file.
-' To capture and display the messages sent by the Windows function OutputDebugStringW, you
-' can use the DebugView tool. See: https://learn.microsoft.com/en-us/sysinternals/downloads/debugview
+' Returns pointers to the implemented classes and supported interfaces.
 ' ========================================================================================
-#ifndef _COPENFILE_DEBUG_
-   #define _COPENFILE_DEBUG_ 0
-#ENDIF
-#ifndef _COPENFILE_DP_
-   #define _COPENFILE_DP_ 1
-   #MACRO COPENFILE_DP(st)
-      #IF (_COPENFILE_DEBUG_ = 1)
-         OutputDebugStringW(st)
-      #ENDIF
-   #ENDMACRO
-#ENDIF
+FUNCTION CFileDialogEvents.QueryInterface (BYVAL riid AS REFIID, BYVAL ppvObj AS LPVOID PTR) AS HRESULT
+   OutputDebugStringW("CFileDialogEvents.QueryInterface")
+   IF ppvObj = NULL THEN RETURN E_INVALIDARG
+   IF IsEqualIID(riid, @IID_IFileOpenDialog) OR _
+      IsEqualIID(riid, @IID_IUnknown) THEN
+      *ppvObj = @this
+      ' // Increment the reference count
+      this.AddRef
+      RETURN S_OK
+   END IF
+   RETURN E_NOINTERFACE
+END FUNCTION
+' =====================================================================================
+
+' ========================================================================================
+' Increments the reference count for an interface on an object. This method should be called
+' for every new copy of a pointer to an interface on an object.
+' ========================================================================================
+FUNCTION CFileDialogEvents.AddRef () AS ULONG
+   refCount += 1
+   OutputDebugStringW("CFileDialogEvents.AddRef " & ..WSTR(refCount))
+   RETURN refCount
+END FUNCTION
 ' ========================================================================================
 
-NAMESPACE Afx2
+' ========================================================================================
+' Decrements the reference count for an interface on an object.
+' If the count reaches 0, it deletes itself.
+' ========================================================================================
+Function CFileDialogEvents.Release () as ULONG
+   refCount -= 1
+   OutputDebugStringW("CFileDialogEvents.Release " & ..WSTR(refCount))
+   IF refCount = 0 THEN
+      OutputDebugStringW("CFileDialogEvents - Delete class")
+      Delete @this
+   END IF
+   RETURN refCount
+END FUNCTION
+' =====================================================================================
+
+' Event Handlers
+' =====================================================================================
+' Called just before the dialog is about to return with a result.
+' When this method is called, the IFileDialog::GetResult and GetResults methods can be called.
+' =====================================================================================
+FUNCTION CFileDialogEvents.OnFileOk (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+   OutputDebugStringW("CFileDialogEvents.OnFileOk")
+   RETURN S_OK
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Called before OnFolderChange. This allows the implementer to stop navigation to a particular location.
+' A pointer to an interface that represents the folder to which the dialog is about to navigate.
+' =====================================================================================
+FUNCTION CFileDialogEvents.OnFolderChanging (BYVAL pfd AS IFileDialog PTR, BYVAL psiFolder AS IShellItem PTR) AS HRESULT
+   OutputDebugStringW("CFileDialogEvents.OnFolderChanging")
+   RETURN S_OK
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Called when the user navigates to a new folder.
+' OnFolderChange is called when the dialog is opened.
+' =====================================================================================
+FUNCTION CFileDialogEvents.OnFolderChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+   OutputDebugStringW("CFileDialogEvents.OnFolderChange")
+   IF m_hOleWindow = NULL THEN
+      ' // Before displaying the dialog get its coordinates
+      DIM pOleWindow AS IOleWindow PTR
+      ' // Get a pointer to the IOleWindow interface
+      pfd->lpvtbl->QueryInterface(pfd, @IID_IOleWindow, @pOleWindow)
+      ' // Get the window handle of the dialog
+      IF pOleWindow THEN pOleWindow->lpvtbl->GetWindow(pOleWindow, @m_hOleWindow)
+      OutputDebugStringW("CFileDialogEvents.OnFolderChange - hOleWindow: " & ..WSTR(m_hOleWindow))
+      ' // Get he bounding rectangle of the parent window
+      DIM AS RECT rcDlg, rcOwner
+      GetWindowRect(GetParent(m_hOleWindow), @rcOwner)
+      ' // Get he bounding rectangle of the open file dialog
+      GetWindowRect(m_hOleWindow, @rcDlg)
+      ' // Maps the open file dialog coordinates relative to its parent window
+      MapWindowPoints(GetParent(m_hOleWindow), m_hOleWindow, CAST(POINT PTR, @rcDlg), 2)
+      ' // Moves the position of the open file dialog
+'      IF (m_xPos = -1 ANDALSO m_yPos = -1) THEN
+'         ' // Calculate the width and height of the parent window
+'         DIM nParentWidth AS LONG = rcOwner.Right - rcOwner.Left
+'         DIM nParentHeight AS LONG = rcOwner.Bottom - rcOwner.Top
+'         ' // Get the width and height of the open file dialog
+'         DIM nWidth AS LONG = rcDlg.Right - rcDlg.Left
+'         DIM nHeight AS LONG = rcDlg.Bottom - rcDlg.Top
+'         ' // Get the height of the non-client area of the dialog
+'         DIM rc AS RECT
+'         ' // Calculate the new x coordinate
+'         DIM pt AS POINT
+'         pt.x = rcOwner.Left + ((nParentWidth - nWidth) \ 2)
+'         ' // Can't calculate the y coordinate because GetWindowRect returns a higher
+'         ' // value for the open file dialog that the visible one
+''         pt.y = rcOwner.Top + ((nParentHeight - nHeight) \ 2)
+'         pt.y = rcOwner.Top
+'         SetWindowPos(m_hOleWindow, HWND_TOP, pt.x, pt.y, 0, 0, SWP_NOSIZE)
+'      ELSE
+         SetWindowPos m_hOleWindow, 0, rcDlg.Left + m_xPos, rcDlg.Top + m_yPos, 0, 0, SWP_NOSIZE OR SWP_NOACTIVATE OR SWP_NOZORDER
+'      END IF
+   END IF
+   RETURN S_OK
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Called when the user changes the selection in the dialog's view.
+' =====================================================================================
+FUNCTION CFileDialogEvents.OnSelectionChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+   OutputDebugStringW("CFileDialogEvents.OnSelectionChange")
+   RETURN S_OK
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Enables an application to respond to sharing violations that arise from Open or Save operations.
+' =====================================================================================
+FUNCTION CFileDialogEvents.OnShareViolation (BYVAL pfd AS IFileDialog PTR, BYVAL psi AS IShellItem PTR, BYVAL pResponse AS FDE_SHAREVIOLATION_RESPONSE PTR) AS HRESULT
+   OutputDebugStringW("CFileDialogEvents.OnShareViolation")
+   RETURN S_OK
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Called when the dialog is opened to notify the application of the initial chosen filetype.
+' =====================================================================================
+FUNCTION CFileDialogEvents.OnTypeChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+   OutputDebugStringW("CFileDialogEvents.OnTypeChange")
+   RETURN S_OK
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Called from the save dialog when the user chooses to overwrite a file.
+' =====================================================================================
+FUNCTION CFileDialogEvents.OnOverwrite (BYVAL pfd AS IFileDialog PTR, BYVAL psi AS IShellItem PTR, BYVAL pResponse AS FDE_OVERWRITE_RESPONSE PTR) AS HRESULT
+   OutputDebugStringW("CFileDialogEvents.OnOverwrite")
+   RETURN S_OK
+END FUNCTION
+' =====================================================================================
+
+' ########################################################################################
+
+' ########################################################################################
+' Exposes methods that initialize, show, and get results from the common open file dialog.
+' ########################################################################################
 
 ' ========================================================================================
 ' IDisplayOpenFile class
@@ -40,46 +221,83 @@ NAMESPACE Afx2
 TYPE IDisplayOpenFile
 
 Private:
-   m_IFileOpenDialog AS IFileOpenDialog PTR    ' // Pointer to the IFileOpenDialog interface
-   m_hwndOwner AS HWND                         ' // Handle of the owner of the dialog
-   m_xPos AS LONG                              ' // Horizontal position, in pixels, relative to the parent window.
-   m_yPos AS LONG                              ' // Vertical position, in pixels, relative to the parent window.
-   m_dwsTitle AS DWSTRING                      ' // The title to be displayed in the title bar of the dialog box
-   m_dwsFolder AS DWSTRING                     ' // The name of the initial file directory to be displayed
-   m_rgFilterSpec (ANY) AS COMDLG_FILTERSPEC   ' // Array of COMDLG_FILTERSPEC structures
-   m_startFile AS DWSTRING                     ' // File name to be used as the initial file selection
-   m_defExt AS DWSTRING                        ' // Default extension to be appended to the selected file name if the user does not enter it
-   m_Flags AS DWORD                            ' // Flags
-   m_bCenter AS BOOLEAN                        ' // Centered dialog
+   m_IFileOpenDialog AS IFileOpenDialog PTR             ' // Pointer to the IFileOpenDialog interface
+   m_hwndOwner AS HWND                                  ' // Handle of the owner of the dialog
+   m_xPos AS LONG
+   m_yPos AS LONG
+   m_dwsTitle AS DWSTRING                               ' // The title to be displayed in the title bar of the dialog box
+   m_dwsFolder AS DWSTRING                              ' // The name of the initial file directory to be displayed
+   m_rgFilterSpec (ANY) AS COMDLG_FILTERSPEC            ' // Array of COMDLG_FILTERSPEC structures
+   m_startFile AS DWSTRING                              ' // File name to be used as the initial file selection
+   m_defExt AS DWSTRING                                 ' // Default extension to be appended to the selected file name if the user does not enter it
+   m_Flags AS DWORD                                     ' // Flags
+   m_pFileDialogEvents AS IFileDialogEvents PTR         ' // Pointer to the IFileDialogEvents interface
+   m_dwDlgEvtCookie AS DWORD                            ' // Dialog events cookie
+   m_IFileDialogCustomize AS IFileDialogCustomize PTR   ' // Pointer to the IFileDialogCustomize interface
 
 Public:
-   DECLARE CONSTRUCTOR (BYVAL xPos AS LONG, BYVAL yPos AS LONG, BYVAL bCenter AS BOOLEAN = FALSE)
+   DECLARE CONSTRUCTOR (BYVAL xPos AS LONG, BYVAL yPos AS LONG)
    DECLARE DESTRUCTOR 
    DECLARE FUNCTION ShowOpen (BYVAL hwndOwner AS HWND) AS HRESULT
-   DECLARE SUB AddFileType (BYREF dwsName AS DWSTRING, BYREF dwsSpec AS DWSTRING)
+   DECLARE SUB AddFileType (BYVAL pwszName AS WSTRING PTR, BYVAL pwszSpec AS WSTRING PTR)
    DECLARE FUNCTION SetFileTypes () AS HRESULT
-   DECLARE FUNCTION SetFileTypes (BYVAL cFileTypes AS UINT, BYVAL rgFilterSpec AS CONST COMDLG_FILTERSPEC PTR) AS HRESULT
+   DECLARE FUNCTION SetFileTypes (BYVAL cFileTypes AS UINT, BYVAL rgFilterSpec AS COMDLG_FILTERSPEC PTR) AS HRESULT
    DECLARE FUNCTION SetFileTypeIndex (BYVAL iFileType AS UINT) AS HRESULT
    DECLARE FUNCTION GetFileTypeIndex () AS UINT
+   DECLARE FUNCTION Advise (BYVAL pfde as IFileDialogEvents PTR) AS DWORD
+   DECLARE FUNCTION Unadvise (BYVAL pfde as IFileDialogEvents PTR, BYVAL dwCookie AS DWORD) AS HRESULT
    DECLARE FUNCTION SetOptions (BYVAL fos AS FILEOPENDIALOGOPTIONS) AS HRESULT
    DECLARE FUNCTION GetOptions () AS FILEOPENDIALOGOPTIONS
    DECLARE FUNCTION SetDefaultFolder (BYVAL psi AS IShellItem PTR) AS HRESULT
-   DECLARE FUNCTION SetFolder (BYVAL psi AS IShellItem PTR) AS HRESULT
-   DECLARE FUNCTION GetFolder () AS IShellItem PTR
-   DECLARE FUNCTION GetCurrentSelection () AS IShellItem PTR
+   DECLARE FUNCTION SetFolder (BYVAL pwzFolderName AS WSTRING PTR) AS HRESULT
+   DECLARE FUNCTION GetFolder (BYVAL sigdnName AS SIGDN = SIGDN_NORMALDISPLAY) AS DWSTRING
+   DECLARE FUNCTION GetCurrentSelection (BYVAL sigdnName AS SIGDN = SIGDN_NORMALDISPLAY) AS DWSTRING
    DECLARE FUNCTION SetFileName (BYVAL pwszName AS WSTRING PTR) AS HRESULT
    DECLARE FUNCTION GetFileName () AS DWSTRING
    DECLARE FUNCTION SetTitle (BYVAL pwszTitle AS WSTRING PTR) AS HRESULT
    DECLARE FUNCTION SetOkButtonLabel (BYVAL pwszText AS WSTRING PTR) AS HRESULT
    DECLARE FUNCTION SetFileNameLabel (BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
-   DECLARE FUNCTION GetResult () AS IShellItem PTR
+   DECLARE FUNCTION GetResult (BYVAL sigdnName AS SIGDN = SIGDN_NORMALDISPLAY) AS DWSTRING
    DECLARE FUNCTION AddPlace (BYVAL psi AS IShellItem PTR, BYVAL fdap AS FDAP) AS HRESULT
    DECLARE FUNCTION SetDefaultExtension (BYVAL pwszDefaultExtension AS WSTRING PTR) AS HRESULT
    DECLARE FUNCTION Close (BYVAL hr AS HRESULT) AS HRESULT
-   DECLARE FUNCTION SetClientGuid (BYVAL guid AS const GUID const PTR) AS HRESULT
+   DECLARE FUNCTION SetClientGuid (BYVAL guid AS GUID PTR) AS HRESULT
    DECLARE FUNCTION ClearClientData () AS HRESULT
    DECLARE FUNCTION GetResults () AS IShellItemArray PTR
+   DECLARE FUNCTION GetResultsString (BYVAL sigdnName AS SIGDN = SIGDN_NORMALDISPLAY) AS DWSTRING
    DECLARE FUNCTION GetSelectedItems () AS IShellItemArray PTR
+   DECLARE FUNCTION GetResultsCount () AS LONG
+   DECLARE FUNCTION ParseResults (BYREF wszMainStr AS CONST WSTRING, BYVAL index AS LONG) AS DWSTRING
+
+   ' // IFileDialogCustomize methods
+   DECLARE FUNCTION AddCheckButton (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR, BYVAL bChecked AS BOOLEAN = FALSE) AS HRESULT
+   DECLARE FUNCTION AddComboBox (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   DECLARE FUNCTION AddControlItem (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   DECLARE FUNCTION AddEditBox (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   DECLARE FUNCTION AddMenu (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   DECLARE FUNCTION AddPushButton (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   DECLARE FUNCTION AddRadioButtonList (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   DECLARE FUNCTION AddSeparator (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   DECLARE FUNCTION AddText (BYVAL dwIDCtl AS DWORD, BYVAL pwszText AS WSTRING PTR) AS HRESULT
+   DECLARE FUNCTION EnableOpenDropDown (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   DECLARE FUNCTION EndVisualGroup () AS HRESULT
+   DECLARE FUNCTION GetCheckButtonState (BYVAL dwIDCtl AS DWORD) AS BOOLEAN
+   DECLARE FUNCTION GetControlItemState (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD, BYREF dwState AS CDCONTROLSTATEF) AS HRESULT
+   DECLARE FUNCTION GetControlItemState (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD) AS CDCONTROLSTATEF
+   DECLARE FUNCTION GetControlState (BYVAL dwIDCtl AS DWORD) AS CDCONTROLSTATEF
+   DECLARE FUNCTION GetEditBoxText (BYVAL dwIDCtl AS DWORD) AS DWSTRING
+   DECLARE FUNCTION GetSelectedControlItem (BYVAL dwIDCtl AS DWORD) AS DWSTRING
+   DECLARE FUNCTION MakeProminent (BYVAL dwIDCtl AS DWORD) AS HRESULT
+'   DECLARE FUNCTION RemoveAllControlItems (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   DECLARE FUNCTION RemoveControlItem (BYVAL dwIDCtl AS DWORD, BYVAL dwItem AS DWORD) AS HRESULT
+   DECLARE FUNCTION SetCheckButtonState (BYVAL dwIDCtl AS DWORD, BYVAL bCkecked AS BOOLEAN) AS HRESULT
+   DECLARE FUNCTION SetControlItemState (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD, BYVAL dwState AS CDCONTROLSTATEF) AS HRESULT
+   DECLARE FUNCTION SetControlItemText (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   DECLARE FUNCTION SetControlLabel (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   DECLARE FUNCTION SetControlState (BYVAL dwIDCtl AS DWORD, BYVAL dwState AS CDCONTROLSTATEF) AS HRESULT
+   DECLARE FUNCTION SetEditBoxText (BYVAL dwIDCtl AS DWORD, BYVAL pwszText AS WSTRING PTR) AS HRESULT
+   DECLARE FUNCTION SetSelectedControlItem (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD) AS HRESULT
+   DECLARE FUNCTION StartVisualGroup (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
 
 END TYPE
 ' ========================================================================================
@@ -87,11 +305,18 @@ END TYPE
 ' ========================================================================================
 ' Constructor
 ' ========================================================================================
-PRIVATE CONSTRUCTOR IDisplayOpenFile (BYVAL xPos AS LONG, BYVAL yPos AS LONG, BYVAL bCenter AS BOOLEAN = FALSE)
+PRIVATE CONSTRUCTOR IDisplayOpenFile (BYVAL xPos AS LONG, BYVAL yPos AS LONG)
+   ' // Initialize the COM library
+   CoInitialize NULL
+   ' // Create an instance of the FileOpenDialog interface
+   DIM hr AS HRESULT = CoCreateInstance(@CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, @IID_IFileOpenDialog, @m_IFileOpenDialog)
+   OutputDebugStringW("IDisplayOpenFile.Constructor - hr: " & ..WSTR(hr))
+   SetLastError(hr)
+   ' // Open file dialog coordinates
    m_xPos = xPos
    m_yPos = yPos
-   m_bCenter = bCenter
-   CoInitialize NULL
+   ' // Get a pointer to the IFileDialogCustomize interface
+   m_IFileOpenDialog->lpvtbl->QueryInterface(m_IFileOpenDialog, @IID_IFileDialogCustomize, @m_IFileDialogCustomize)
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -99,97 +324,96 @@ END CONSTRUCTOR
 ' Destructor
 ' ========================================================================================
 PRIVATE DESTRUCTOR IDisplayOpenFile
+   OutputDebugStringW("IDisplayOpenFile.Destructor")
+   ' // Removes an event handler that was attached through the Advise method.
+   IF m_dwDlgEvtCookie THEN this.Unadvise(m_pFileDialogEvents, m_dwDlgEvtCookie)
+   ' // Release the IFileDialogCustomize interface
+   IF m_IFileDialogCustomize THEN m_IFileDialogCustomize->lpvtbl->Release(m_IFileDialogCustomize)
+   ' // Release the IFileOpenDialog interface
    m_IFileOpenDialog->lpvtbl->Release(m_IFileOpenDialog)
+   ' // Uninitialize the COM library
    CoUninitialize
 END DESTRUCTOR
 ' ========================================================================================
 
 ' ========================================================================================
-' Display he dialog
+' Display he open file dialog
+' Usage example:
+'   DIM pofd AS IDisplayOpenFile
+'   ' // Set the file types
+'   pofd.AddFileType("FB code files", "*.bas;*.inc;*.bi")
+'   pofd.AddFileType("Executable files", "*.exe;*.dll")
+'   pofd.AddFileType("All files", "*.*")
+'   pofd.SetFileTypes()
+'   ' // Multiple selection (default is single selection)
+'   DIM options AS FILEOPENDIALOGOPTIONS = pofd.GetOptions
+'   pofd.SetOptions(options OR FOS_ALLOWMULTISELECT)
+'   ' // Optional: Set the title of the dialog
+''   pofd.SetTitle("A Single-Selection Dialog")
+'   ' // Set the folder
+'   pofd.SetFolder(CURDIR)
+'   pofd.SetDefaultExtension("bas")
+'   pofd.SetFileTypeIndex(1)
+'   ' // Display the dialog
+'   DIM hr AS HRESULT = pofd.ShowOpen(hDlg)
+'   ' *** Single selection ***
+'   ' // Get the result
+'   IF hr = S_OK THEN
+'      print pofd.GetResult()
+'   END IF
+'   ' *** Multiple selection ***
+'   ' // Get the results
+'   print "Folder: "; pofd.GetFolder
+'   DIM pItems AS IShellItemArray PTR
+'   pItems = pofd.GetResults
+'   IF pItems THEN
+'      DIM dwItemCount AS LONG
+'      pItems->lpVtbl->GetResultsCount(pItems, @dwItemCount)
+'      FOR idx AS LONG = 0 TO dwItemCount - 1
+'         DIM pItem AS IShellItem PTR
+'         pItems->lpVtbl->GetItemAt(pItems, idx, @pItem)
+'         IF pItem THEN
+'            DIM pwszName AS WSTRING PTR
+'            pItem->lpVtbl->GetDisplayName(pItem, SIGDN_NORMALDISPLAY, @pwszName)
+'            IF pwszName THEN
+'               print *pwszName
+'               CoTaskMemFree(pwszName)
+'               pwszName = NULL
+'            END IF
+'            pItem->lpVtbl->Release(pItem)
+'            pItem = NULL
+'         END IF
+'      NEXT
+'      pItems->lpVtbl->Release(pItems)
+'   END IF
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.ShowOpen (BYVAL hwndOwner AS HWND) AS HRESULT
-   ' // Before displaying the dialog get its coordinates
-   DIM pOleWindow AS IOleWindow PTR
-   DIM hOleWindow AS HWND
-   ' // Get a pointer to the IOleWindow interface
-   m_IFileOpenDialog->lpvtbl->QueryInterface(m_IFileOpenDialog, @IID_IOleWindow, @pOleWindow)
-   ' // Get the window handle of the dialog
-   IF @pOleWindow THEN pOleWindow->lpvtbl->GetWindow(pOleWindow, @hOleWindow)
-   IF hOleWindow THEN
-      DIM rc AS RECT
-      ' // Get the dimensions of the window
-      GetWindowRect(hOleWindow, @rc)
-      ' // Convert the coordinates to be relative to the parent
-      MapWindowPoints(HWND_DESKTOP, GetParent(hwndOwner), CAST(POINT PTR, @rc), 2)
-      DIM xPos AS LONG = rc.Left
-      DIM yPos AS LONG = rc.Top
-      IF (xPos = 0 ANDALSO yPos = 0) THEN
-         ' // Center the open dialog on the desktop window
-'         AfxCenterWindow (hOleWindow, hwndOwner)
-
-         ' // Center the open dialog on the parent window
-         DIM AS RECT rc, rcDlg, rcOwner
-         GetWindowRect(hwndOwner, @rcOwner)
-         GetWindowRect(hOleWindow, @rcDlg)
-         CopyRect(@rc, @rcOwner)
-         ' // Offset the owner and dialog box rectangles so that right and bottom 
-         ' // values represent the width and height, and then offset the owner again 
-         ' // to discard space taken up by the dialog box. 
-         OffsetRect(@rcDlg, -rcDlg.left, -rcDlg.top)
-         OffsetRect(@rc, -rc.left, -rc.top)
-         OffsetRect(@rc, -rcDlg.right, -rcDlg.bottom)
-         ' // The new position is the sum of half the remaining space and the owner's 
-         ' // original position. 
-         SetWindowPos(hOleWindow, HWND_TOP, rcOwner.left + (rc.right / 2), _
-                      rcOwner.top + (rc.bottom / 2), 0, 0, SWP_NOSIZE)
-
-      ELSE
-'         DIM rc AS RECT
-'         ' // Get the dimensions of the bounding rectangle of the parent window
-'         GetWindowRect hwndOwner, @rc
-'         ' // Move the open dialog to the specified location, relative to the parent window
-'         SetWindowPos hOleWindow, 0, rc.Left + xPos, rc.Top + yPos, 0, 0, SWP_NOSIZE OR SWP_NOACTIVATE OR SWP_NOZORDER
-
-         DIM rc AS RECT
-         DIM AS ANY PTR pLib = DyLibLoad("Dwmapi.DLL")
-         IF pLib  THEN
-            DIM pProc AS FUNCTION (BYVAL hwnd AS .HWND, BYVAL dwAttribute AS DWORD, BYVAL pvAttribute AS ANY PTR, BYVAL cbAttribute AS DWORD) AS HRESULT
-            pProc = DyLibSymbol(pLib, "DwmGetWindowAttribute")
-            ' DWMWA_EXTENDED_FRAME_BOUNDS = 9
-            IF pProc THEN pProc(hwndOwner, 9, @rc, SIZEOF(rc))
-            DyLibFree(pLib)
-         END IF
-         ' // Move the open dialog to the specified location, relative to the parent window
-         SetWindowPos hOleWindow, 0, rc.Left + xPos, rc.Top + yPos, 0, 0, SWP_NOSIZE OR SWP_NOACTIVATE OR SWP_NOZORDER
-
-      END IF   
-   END IF
+   OutputDebugStringW("IDisplayOpenFile.ShowOpen")
+   ' // Optional: Create an event handling object, and hook it up to the dialog.
+   DIM p AS ANY PTR = NEW CFileDialogEvents(m_xPos, m_yPos)
+   m_pFileDialogEvents = p
+   m_dwDlgEvtCookie = this.Advise(m_pFileDialogEvents)
    ' // Display the dialog
    RETURN m_IFileOpenDialog->lpvtbl->Show(m_IFileOpenDialog, hwndOwner)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the file types that the dialog can open or save.
-' ========================================================================================
-'PRIVATE FUNCTION IDisplayOpenFile.SetFileTypes (BYVAL cFileTypes AS UINT, BYVAL rgFilterSpec AS CONST COMDLG_FILTERSPEC PTR) AS HRESULT
-'   RETURN m_IFileOpenDialog->lpvtbl->Show(m_IFileOpenDialog, cFileTypes, @rgFilterSpec(1))
-'END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Sets the file type that appears as selected in the dialog.
+' * Sets the file type that appears as selected in the dialog.
 ' This method must be called before the dialog is showing.
+' The index is one-based.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.SetFileTypeIndex (BYVAL iFileType AS UINT) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetFileTypeIndex")
    RETURN m_IFileOpenDialog->lpvtbl->SetFileTypeIndex(m_IFileOpenDialog, iFileType)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the file type that appears as selected in the dialog.
+' * Gets the file type that appears as selected in the dialog.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.GetFileTypeIndex () AS UINT
+   OutputDebugStringW("IDisplayOpenFile.GetFileTypeIndex")
    DIM iFileType AS UINT
    m_IFileOpenDialog->lpvtbl->GetFileTypeIndex(m_IFileOpenDialog, @iFileType)
    RETURN iFileType
@@ -199,33 +423,37 @@ END FUNCTION
 ' ========================================================================================
 ' Assigns an event handler that listens for events coming from the dialog.
 ' ========================================================================================
-'PRIVATE FUNCTION IDisplayOpenFile.Advise (BYVAL pfde as IFileDialogEvents PTR) AS DWORD
-'   DIM dwCookie AS DWORD
-'   SetLastError(m_IFileOpenDialog->lpvtbl->Advise(m_IFileOpenDialog, @dwCookie))
-'   RETURN dwCookie
-'END FUNCTION
+PRIVATE FUNCTION IDisplayOpenFile.Advise (BYVAL pfde as IFileDialogEvents PTR) AS DWORD
+   OutputDebugStringW("IDisplayOpenFile.Advise")
+   DIM dwCookie AS DWORD
+   SetLastError(m_IFileOpenDialog->lpvtbl->Advise(m_IFileOpenDialog, pfde, @dwCookie))
+   RETURN dwCookie
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
 ' Removes an event handler that was attached through the Advise method.
 ' ========================================================================================
-'PRIVATE FUNCTION IDisplayOpenFile.Unadvise (BYVAL pfde as IFileDialogEvents PTR, BYVAL dwCookie AS DWORD) AS HRESULT
-'   m_IFileOpenDialog->lpvtbl->Unadvise(m_IFileOpenDialog, dwCookie)
-'END FUNCTION
+PRIVATE FUNCTION IDisplayOpenFile.Unadvise (BYVAL pfde as IFileDialogEvents PTR, BYVAL dwCookie AS DWORD) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.Unadvise")
+   RETURN m_IFileOpenDialog->lpvtbl->Unadvise(m_IFileOpenDialog, dwCookie)
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets flags to control the behavior of the dialog.
+' * Sets flags to control the behavior of the dialog.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.SetOptions (BYVAL fos AS FILEOPENDIALOGOPTIONS) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetOptions")
    RETURN m_IFileOpenDialog->lpvtbl->SetOptions(m_IFileOpenDialog, fos)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the current flags that are set to control dialog behavior.
+' * Gets the current flags that are set to control dialog behavior.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.GetOptions () AS FILEOPENDIALOGOPTIONS
+   OutputDebugStringW("IDisplayOpenFile.GetOptions")
    DIM fos AS FILEOPENDIALOGOPTIONS
    SetLastError(m_IFileOpenDialog->lpvtbl->GetOptions(m_IFileOpenDialog, @fos))
    RETURN fos
@@ -233,54 +461,75 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the folder used as a default if there is not a recently used folder value available.
+' * Sets the folder used as a default if there is not a recently used folder value available.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.SetDefaultFolder (BYVAL psi AS IShellItem PTR) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetDefaultFolder")
    RETURN m_IFileOpenDialog->lpvtbl->SetDefaultFolder(m_IFileOpenDialog, psi)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets a folder that is always selected when the dialog is opened, regardless of previous user action.
+' * Sets a folder that is always selected when the dialog is opened, regardless of previous user action.
 ' ========================================================================================
-PRIVATE FUNCTION IDisplayOpenFile.SetFolder (BYVAL psi AS IShellItem PTR) AS HRESULT
-   RETURN m_IFileOpenDialog->lpvtbl->SetFolder(m_IFileOpenDialog, psi)
+PRIVATE FUNCTION IDisplayOpenFile.SetFolder (BYVAL pwszFolderName AS WSTRING PTR) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetFolder")
+   DIM pFolder AS IShellItem PTR
+   DIM hr AS HRESULT = SHCreateItemFromParsingName(pwszFolderName, NULL, @IID_IShellItem, @pFolder)
+   IF hr <> S_OK THEN RETURN hr
+   hr = m_IFileOpenDialog->lpVtbl->SetFolder(m_IFileOpenDialog, pFolder)
+   IF pFolder THEN pFolder->lpVtbl->Release(pFolder)
+   RETURN hr
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets either the folder currently selected in the dialog, or, if the dialog is not currently
+' * Gets either the folder currently selected in the dialog, or, if the dialog is not currently
 ' displayed, the folder that is to be selected when the dialog is opened.
 ' ========================================================================================
-PRIVATE FUNCTION IDisplayOpenFile.GetFolder () AS IShellItem PTR
-   DIM psi AS IShellItem PTR
-   SetLastError(m_IFileOpenDialog->lpvtbl->GetFolder(m_IFileOpenDialog, @psi))
-   RETURN psi
+PRIVATE FUNCTION IDisplayOpenFile.GetFolder (BYVAL sigdnName AS SIGDN = SIGDN_NORMALDISPLAY) AS DWSTRING
+   OutputDebugStringW("IDisplayOpenFile.GetFolder")
+   DIM psi AS IShellItem PTR, pwszName AS WSTRING PTR
+   DIM hr AS HRESULT = m_IFileOpenDialog->lpvtbl->GetFolder(m_IFileOpenDialog, @psi)
+   IF SUCCEEDED(hr) THEN
+      hr = psi->lpVtbl->GetDisplayName(psi, sigdnName, @pwszName)
+      psi->lpvtbl->Release(psi)
+   END IF
+   SetLastError hr
+   RETURN pwszName
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the folder used as a default if there is not a recently used folder value available.
+' * Gets the folder used as a default if there is not a recently used folder value available.
 ' ========================================================================================
-PRIVATE FUNCTION IDisplayOpenFile.GetCurrentSelection () AS IShellItem PTR
-   DIM psi AS IShellItem PTR
-   SetLastError(m_IFileOpenDialog->lpvtbl->GetCurrentSelection(m_IFileOpenDialog, @psi))
-   RETURN psi
+PRIVATE FUNCTION IDisplayOpenFile.GetCurrentSelection (BYVAL sigdnName AS SIGDN = SIGDN_NORMALDISPLAY) AS DWSTRING
+   OutputDebugStringW("IDisplayOpenFile.GetCurrentSelection")
+   DIM psi AS IShellItem PTR, pwszName AS WSTRING PTR
+   DIM hr AS HRESULT = m_IFileOpenDialog->lpvtbl->GetCurrentSelection(m_IFileOpenDialog, @psi)
+   IF SUCCEEDED(hr) THEN
+      hr = psi->lpVtbl->GetDisplayName(psi, sigdnName, @pwszName)
+      psi->lpvtbl->Release(psi)
+   END IF
+   SetLastError hr
+   RETURN pwszName
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the file name that appears in the File name edit box when that dialog box is opened.
+' * Sets the file name that appears in the File name edit box when that dialog box is opened.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.SetFileName (BYVAL pwszName AS WSTRING PTR) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetFileName")
    RETURN m_IFileOpenDialog->lpvtbl->SetFileName(m_IFileOpenDialog, pwszName)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Retrieves the text currently entered in the dialog's File name edit box.
+' * Retrieves the text currently entered in the dialog's File name edit box.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.GetFileName () AS DWSTRING
+   OutputDebugStringW("IDisplayOpenFile.GetFileName")
    DIM pwszName AS WSTRING PTR
    SetLastError(m_IFileOpenDialog->lpvtbl->GetFileName(m_IFileOpenDialog, @pwszName))
    RETURN pwszName
@@ -288,36 +537,46 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the title of the dialog.
+' * Sets the title of the dialog.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.SetTitle (BYVAL pwszTitle AS WSTRING PTR) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetTitle")
    RETURN m_IFileOpenDialog->lpvtbl->SetTitle(m_IFileOpenDialog, pwszTitle)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the text of the Open or Save button.
+' * Sets the text of the Open or Save button.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.SetOkButtonLabel (BYVAL pwszText AS WSTRING PTR) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetOkButtonLabel")
    RETURN m_IFileOpenDialog->lpvtbl->SetOkButtonLabel(m_IFileOpenDialog, pwszText)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the text of the label next to the file name edit box.
+' * Sets the text of the label next to the file name edit box.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.SetFileNameLabel (BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetFileNameLabel")
    RETURN m_IFileOpenDialog->lpvtbl->SetFileNameLabel(m_IFileOpenDialog, pwszLabel)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the choice that the user made in the dialog.
+' * Gets the choice that the user made in the dialog.
 ' ========================================================================================
-PRIVATE FUNCTION IDisplayOpenFile.GetResult () AS IShellItem PTR
+PRIVATE FUNCTION IDisplayOpenFile.GetResult (BYVAL sigdnName AS SIGDN = SIGDN_NORMALDISPLAY) AS DWSTRING
+   OutputDebugStringW("IDisplayOpenFile.GetResult")
    DIM psi AS IShellItem PTR
-   SetLastError(m_IFileOpenDialog->lpvtbl->GetResult(m_IFileOpenDialog, @psi))
-   RETURN psi
+   DIM pwszName AS WSTRING PTR
+   DIM hr As HRESULT = m_IFileOpenDialog->lpvtbl->GetResult(m_IFileOpenDialog, @psi)
+   IF SUCCEEDED(hr) THEN
+      hr = psi->lpVtbl->GetDisplayName(psi, sigdnName, @pwszName)
+      psi->lpvtbl->Release(psi)
+   END IF
+   SetLastError hr
+   RETURN pwszName
 END FUNCTION
 ' ========================================================================================
 
@@ -325,6 +584,7 @@ END FUNCTION
 ' Adds a folder to the list of places available for the user to open or save items.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.AddPlace (BYVAL psi AS IShellItem PTR, BYVAL fdap AS FDAP) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.AddPlace")
    RETURN m_IFileOpenDialog->lpvtbl->AddPlace(m_IFileOpenDialog, psi, fdap)
 END FUNCTION
 ' ========================================================================================
@@ -333,6 +593,7 @@ END FUNCTION
 ' Sets the default extension to be added to file names.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.SetDefaultExtension (BYVAL pwszDefaultExtension AS WSTRING PTR) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetDefaultExtension")
    RETURN m_IFileOpenDialog->lpvtbl->SetDefaultExtension(m_IFileOpenDialog, pwszDefaultExtension)
 END FUNCTION
 ' ========================================================================================
@@ -341,14 +602,16 @@ END FUNCTION
 ' Closes the dialog.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.Close (BYVAL hr AS HRESULT) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.Close")
    RETURN m_IFileOpenDialog->lpvtbl->Close(m_IFileOpenDialog, hr)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Closes the dialog.
+' Enables a calling application to associate a GUID with a dialog's persisted state.
 ' ========================================================================================
-PRIVATE FUNCTION IDisplayOpenFile.SetClientGuid (BYVAL guid AS const GUID const PTR) AS HRESULT
+PRIVATE FUNCTION IDisplayOpenFile.SetClientGuid (BYVAL guid AS GUID PTR) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetClientGuid")
    RETURN m_IFileOpenDialog->lpvtbl->SetClientGuid(m_IFileOpenDialog, guid)
 END FUNCTION
 ' ========================================================================================
@@ -357,32 +620,109 @@ END FUNCTION
 ' Instructs the dialog to clear all persisted state information.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.ClearClientData () AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.ClearClientData")
    RETURN m_IFileOpenDialog->lpvtbl->ClearClientData(m_IFileOpenDialog)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Deprecated. SetFilter is no longer available for use as of Windows 7.
-' ========================================================================================
-'PRIVATE FUNCTION IDisplayOpenFile.SetFilter (BYVAL pFilter AS IShellItemFilter PTR) AS HRESULT
-'   RETURN m_IFileOpenDialog->lpvtbl->SetFilter(m_IFileOpenDialog, pFilter)
-'END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Gets the folder used as a default if there is not a recently used folder value available.
+' * Gets the files selected.
+'   DIM pofd AS IDisplayOpenFile
+'   ' // Set the file types
+'   pofd.AddFileType("FB code files", "*.bas;*.inc;*.bi")
+'   pofd.AddFileType("Executable files", "*.exe;*.dll")
+'   pofd.AddFileType("All files", "*.*")
+'   pofd.SetFileTypes()
+'   ' // Multiple selection (default is single selection)
+'   DIM options AS FILEOPENDIALOGOPTIONS = pofd.GetOptions
+'   pofd.SetOptions(options OR FOS_ALLOWMULTISELECT)
+'   ' // Optional: Set the title of the dialog
+''   pofd.SetTitle("A Single-Selection Dialog")
+'   ' // Set the folder
+'   pofd.SetFolder(CURDIR)
+'   pofd.SetDefaultExtension("bas")
+'   pofd.SetFileTypeIndex(1)
+'   ' // Display the dialog
+'   DIM hr AS HRESULT = pofd.ShowOpen(hDlg)
+'   ' // Folder name
+'   PRINT "Folder: "; pofd.GetFolder
+'   ' *** Single selection ***
+'   ' // Get the result
+''   IF hr = S_OK THEN
+''      print pofd.GetResult()
+''   END IF
+'   ' *** Multiple selection ***
+'   ' // Get the results
+'   print "Folder: "; pofd.GetFolder
+'   DIM pItems AS IShellItemArray PTR
+'   pItems = pofd.GetResults
+'   IF pItems THEN
+'      DIM dwItemCount AS LONG
+'      pItems->lpVtbl->GetResultsCount(pItems, @dwItemCount)
+'      FOR idx AS LONG = 0 TO dwItemCount - 1
+'         DIM pItem AS IShellItem PTR
+'         pItems->lpVtbl->GetItemAt(pItems, idx, @pItem)
+'         IF pItem THEN
+'            DIM pwszName AS WSTRING PTR
+'            pItem->lpVtbl->GetDisplayName(pItem, SIGDN_NORMALDISPLAY, @pwszName)
+'            IF pwszName THEN
+'               print *pwszName
+'               CoTaskMemFree(pwszName)
+'               pwszName = NULL
+'            END IF
+'            pItem->lpVtbl->Release(pItem)
+'            pItem = NULL
+'         END IF
+'      NEXT
+'      pItems->lpVtbl->Release(pItems)
+'   END IF
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.GetResults () AS IShellItemArray PTR
-   DIM penum AS IShellItemArray PTR
-   SetLastError(m_IFileOpenDialog->lpvtbl->GetResults(m_IFileOpenDialog, @penum))
-   RETURN penum
+   OutputDebugStringW("IDisplayOpenFile.GetResults")
+   DIM psai AS IShellItemArray PTR
+   SetLastError(m_IFileOpenDialog->lpvtbl->GetResults(m_IFileOpenDialog, @psai))
+   RETURN psai
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Gets the files selected and returns then in a comma separated string.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.GetResultsString (BYVAL sigdnName AS SIGDN = SIGDN_NORMALDISPLAY) AS DWSTRING
+   OutputDebugStringW("IDisplayOpenFile.GetResultsString")
+   DIM pItems AS IShellItemArray PTR
+   DIM hr AS HRESULT = m_IFileOpenDialog->lpvtbl->GetResults(m_IFileOpenDialog, @pItems)
+   IF hr <> S_OK THEN RETURN ""
+   DIM dwItemCount AS LONG, dwsResults AS DWSTRING
+   IF pItems THEN
+      pItems->lpVtbl->GetCount(pItems, @dwItemCount)
+      FOR idx AS LONG = 0 TO dwItemCount - 1
+         DIM pItem AS IShellItem PTR
+         pItems->lpVtbl->GetItemAt(pItems, idx, @pItem)
+         IF pItem THEN
+            DIM pwszName AS WSTRING PTR
+            pItem->lpVtbl->GetDisplayName(pItem, sigdnName, @pwszName)
+            IF pwszName THEN
+               dwsResults += *pwszName
+               IF idx < dwItemCount - 1 THEN dwsResults += ","
+               CoTaskMemFree(pwszName)
+               pwszName = NULL
+            END IF
+            pItem->lpVtbl->Release(pItem)
+            pItem = NULL
+         END IF
+      NEXT
+      pItems->lpVtbl->Release(pItems)
+   END IF
+   RETURN dwsResults
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the folder used as a default if there is not a recently used folder value available.
+' Gets the currently selected items in the dialog. These items may be items selected in
+' the view, or text selected in the file name edit box.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.GetSelectedItems () AS IShellItemArray PTR
+   OutputDebugStringW("IDisplayOpenFile.GetSelectedItems")
    DIM psai AS IShellItemArray PTR
    SetLastError(m_IFileOpenDialog->lpvtbl->GetSelectedItems(m_IFileOpenDialog, @psai))
    RETURN psai
@@ -390,20 +730,27 @@ END FUNCTION
 ' ========================================================================================
 
 ' =====================================================================================
-' Adds a file type and pattern to the table.
+' * Adds a file type and pattern to the table.
+' Usage example:
+'   pofd.AddFileType("FB code files", "*.bas;*.inc;*.bi")
+'   pofd.AddFileType("Executable files", "*.exe;*.dll")
+'   pofd.AddFileType("All files", "*.*")
+'   pofd.SetFileTypes()
 ' =====================================================================================
-PRIVATE SUB IDisplayOpenFile.AddFileType (BYREF dwsName AS DWSTRING, BYREF dwsSpec AS DWSTRING)
+PRIVATE SUB IDisplayOpenFile.AddFileType (BYVAL pwszName AS WSTRING PTR, BYVAL pwszSpec AS WSTRING PTR)
+   OutputDebugStringW("IDisplayOpenFile.AddFileType")
    REDIM PRESERVE m_rgFilterSpec(UBOUND(m_rgFilterSpec) + 1) AS COMDLG_FILTERSPEC
-   m_rgFilterSpec(UBOUND(m_rgFilterSpec)).pszName = *dwsName
-   m_rgFilterSpec(UBOUND(m_rgFilterSpec)).pszSpec = *dwsSpec
+   m_rgFilterSpec(UBOUND(m_rgFilterSpec)).pszName = pwszName
+   m_rgFilterSpec(UBOUND(m_rgFilterSpec)).pszSpec = pwszSpec
 END SUB
 ' =====================================================================================
 
 ' ========================================================================================
-' Sets the file types that the dialog can open or save.
-' This overloaded functions uses the m_rgFilterSpec array to set the file types.
+' * Sets the file types that the dialog can open or save.
+' This overloaded function uses the m_rgFilterSpec array to set the file types.
 ' ========================================================================================
 PRIVATE FUNCTION IDisplayOpenFile.SetFileTypes () AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetFileTypes - individual")
    DIM cFileTypes AS LONG = UBOUND(m_rgFilterSpec) - LBOUND(m_rgFilterSpec) + 1
    IF cFileTYpes = 0 THEN RETURN E_UNEXPECTED
    RETURN m_IFileOpenDialog->lpvtbl->SetFileTypes(m_IFileOpenDialog, cFileTypes, @m_rgFilterSpec(0))
@@ -411,668 +758,299 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the file types that the dialog can open or save.
+' * Sets the file types that the dialog can open or save.
+' Usage example:
+'   DIM rgFileTypes(1 TO 3) AS COMDLG_FILTERSPEC
+'   rgFileTypes(1).pszName = @WSTR("FB code files")
+'   rgFileTypes(2).pszName = @WSTR("Executable files")
+'   rgFileTypes(3).pszName = @WSTR("All files")
+'   rgFileTypes(1).pszSpec = @WSTR("*.bas;*.inc;*.bi")
+'   rgFileTypes(2).pszSpec = @WSTR("*.exe;*.dll")
+'   rgFileTypes(3).pszSpec = @WSTR("*.*")
+'   pofd.SetFileTypes(3, @rgFileTypes(1))
 ' ========================================================================================
-PRIVATE FUNCTION IDisplayOpenFile.SetFileTypes (BYVAL cFileTypes AS UINT, BYVAL rgFilterSpec AS CONST COMDLG_FILTERSPEC PTR) AS HRESULT
-   RETURN m_IFileOpenDialog->lpvtbl->SetFileTypes(m_IFileOpenDialog, cFileTypes, @m_rgFilterSpec(0))
+PRIVATE FUNCTION IDisplayOpenFile.SetFileTypes (BYVAL cFileTypes AS UINT, BYVAL rgFilterSpec AS COMDLG_FILTERSPEC PTR) AS HRESULT
+   OutputDebugStringW("IDisplayOpenFile.SetFileTypes - array")
+   RETURN m_IFileOpenDialog->lpvtbl->SetFileTypes(m_IFileOpenDialog, cFileTypes, rgFilterSpec)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Returns the number of files selected
+' Usage example:
+' DIM pofd AS IDisplayOpenFile
+' ...
+' DIM dwsRes AS DWSTRING = pofd.GetResultsString
+' DIM nCount AS LONG = podf.GetResultsCount
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.GetResultsCount () AS LONG
+   OutputDebugStringW("IDisplayOpenFile.GetResultsCount")
+   DIM pItems AS IShellItemArray PTR
+   DIM dwItemCount AS LONG
+   SetLastError(m_IFileOpenDialog->lpvtbl->GetResults(m_IFileOpenDialog, @pItems))
+   IF pItems THEN
+      pItems->lpVtbl->GetCount(pItems, @dwItemCount)
+      pItems->lpVtbl->Release(pItems)
+   END IF
+   RETURN dwItemCount
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Parses the results.
+' Usage example:
+' DIM pofd AS IDisplayOpenFile
+' ...
+' DIM dwsRes AS DWSTRING = pofd.GetResultsString
+' FOR i AS LONG = 1 TO pofd.GetResultsCount
+'    PRINT pofd.ParseResults(dwsRes, i)
+' NEXT
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.ParseResults (BYREF wszMainStr AS CONST WSTRING, BYVAL index AS LONG) AS DWSTRING
+   DIM dws AS DWSTRING = ""
+   IF index < 0 THEN RETURN dws
+   DIM nCount AS LONG, nStart AS LONG
+   DIM nPosition AS LONG = Index
+   DIM nPos AS LONG = 1
+   DO
+      nStart = nPos
+      nPos = INSTR(nPos, wszMainStr, ",")
+      IF nPos THEN
+         nCount += 1
+         nPos += 1
+      END IF
+   LOOP UNTIL nPos = 0 OR nCount = nPosition
+   IF nPos > 0 OR nCount = nPosition - 1 THEN
+      IF nPos = 0 THEN
+         dws = MID(wszMainStr, nStart)
+      ELSE
+         dws = MID(wszMainStr, nStart, nPos - 1 - nStart)
+      END IF
+   END IF
+   RETURN dws
 END FUNCTION
 ' ========================================================================================
 
 ' ########################################################################################
-
+' IFileDialogCustomize methods
+' ########################################################################################
 ' ========================================================================================
-' DisplayOpenFile class
+' Adds a check button (check box) to the dialog.
 ' ========================================================================================
-TYPE DisplayOpenFile
-
-Private:
-   m_hParent AS HWND                       ' // Handle of the parent window or dialog
-   m_xPos AS LONG                          ' // Horizontal position, in pixels, relative to the parent window
-   m_yPos AS LONG                          ' // Vertical position, in pixels, relative to the parent window
-   m_Flags AS DWORD                        ' // The style attributes of the dialog
-   m_FlagsEx AS DWORD                      ' // Extra style attributes of the dialog
-   m_Index AS UINT                         ' // File type that appears as selected in the dialog
-   m_wszTitle AS WSTRING * MAX_PATH        ' // The title to be displayed in the title bar of the dialog box
-   m_wszInitiaDir AS WSTRING * MAX_PATH    ' // The name of the initial file directory to be displayed
-   m_wszFileName AS WSTRING * MAX_PATH     ' // The file name to be used as the initial file selection
-   m_wszDefaultExt AS WSTRING * MAX_PATH   ' // Default extension to be appended to the selected file name if the user does not enter it
-   m_dwsFilter AS DWSTRING                 ' // Filter (pairs of strings separated with "|")
-   m_FilterIndex AS DWORD                  ' // The file type that appears as selected in the dialog
-
-Public:
-   DECLARE CONSTRUCTOR
-   DECLARE DESTRUCTOR 
-   DECLARE FUNCTION ShowOpen (BYVAL hParent AS HWND = NULL, BYVAL xPos AS LONG = 0, BYVAL yPos AS LONG = 0, BYVAL bHook AS BOOLEAN = FALSE) AS DWSTRING
-   DECLARE PROPERTY Title () AS DWSTRING
-   DECLARE PROPERTY Title (BYREF wszTitle AS WSTRING)
-   DECLARE PROPERTY Flags () AS DWORD
-   DECLARE PROPERTY Flags (BYVAL dwFlags AS DWORD)
-   DECLARE PROPERTY FlagsEx () AS DWORD
-   DECLARE PROPERTY FlagsEx (BYVAL dwFlagsEx AS DWORD)
-   DECLARE PROPERTY DefaultExt () AS DWSTRING
-   DECLARE PROPERTY DefaultExt (BYREF wszDefaultExt AS WSTRING)
-   DECLARE PROPERTY InitialDir () AS DWSTRING
-   DECLARE PROPERTY InitialDir (BYREF wszInitialDir AS WSTRING)
-   DECLARE PROPERTY FilterIndex () AS DWORD
-   DECLARE PROPERTY FilterIndex (BYVAL dwFilterIndex AS DWORD)
-   DECLARE PROPERTY FileName () AS DWSTRING
-   DECLARE PROPERTY FileName (BYREF wszFileName AS WSTRING)
-   DECLARE PROPERTY Filter () AS DWSTRING
-   DECLARE PROPERTY Filter (BYREF dwsFilter AS DWSTRING)
-
-Private:
-   DECLARE STATIC FUNCTION OFNHookProc (BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS UINT_PTR
-
-END TYPE
-' ========================================================================================
-
-' ========================================================================================
-' Constructor
-' ========================================================================================
-PRIVATE CONSTRUCTOR DisplayOpenFile
-END CONSTRUCTOR
-' ========================================================================================
-
-' ========================================================================================
-' Destructor
-' ========================================================================================
-PRIVATE DESTRUCTOR DisplayOpenFile
-END DESTRUCTOR
-' ========================================================================================
-
-' ========================================================================================
-' Open file dialog hook callback procedure
-' ========================================================================================
-FUNCTION DisplayOpenFile.OFNHookProc (BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS UINT_PTR
-   DIM pOFN AS OPENFILENAMEW PTR
-   DIM AS LONG xPos, yPos
-   ' // Process the WM_INITDIALOG message
-   IF uMsg = WM_INITDIALOG THEN
-      ' // Get the custom data
-      pOFN = CAST(OPENFILENAMEW PTR, lParam)
-      IF pOFN THEN
-         xPos = CSHORT(LOWORD(pOFN->lCustData))
-         yPos = CSHORT(HIWORD(pOFN->lCustData))
-      END IF
-      ' // Note: hwnd is the handle of the child dialog box.
-      ' // Use GetParent to get the handle of the Open dialog box.
-      DIM hOpenFileDlg AS .HWND = GetParent(hwnd)
-      ' // Get the parent of the open file dialog.
-      ' // It can be another window or dialog, or the desktop.
-      DIM hParent AS .HWND = GetParent(hOpenFileDlg)
-      IF hParent = NULL THEN hParent = GetDesktopWindow
-      ' // If the user has passed -1, -1 as the position
-      IF (xPos = -1 ANDALSO yPos = -1) THEN
-         ' // Center the open dialog on the parent window
-         DIM AS RECT rc, rcDlg, rcOwner
-         GetWindowRect(hParent, @rcOwner)
-         GetWindowRect(hOpenFileDlg, @rcDlg)
-         CopyRect(@rc, @rcOwner)
-         ' // Offset the owner and dialog box rectangles so that right and bottom 
-         ' // values represent the width and height, and then offset the owner again 
-         ' // to discard space taken up by the dialog box. 
-         OffsetRect(@rcDlg, -rcDlg.left, -rcDlg.top)
-         OffsetRect(@rc, -rc.left, -rc.top)
-         OffsetRect(@rc, -rcDlg.right, -rcDlg.bottom)
-         ' // The new position is the sum of half the remaining space and the owner's 
-         ' // original position. 
-         SetWindowPos(hOpenFileDlg, HWND_TOP, rcOwner.left + (rc.right / 2), _
-                      rcOwner.top + (rc.bottom / 2), 0, 0, SWP_NOSIZE)
-      ELSE
-'         ' // Get the dimensions of the bounding rectangle of the parent window
-'         DIM rc AS RECT
-'         GetWindowRect hParent, @rc
-'         ' // Move the open dialog to the specified location, relative to the parent window
-'         SetWindowPos hOpenFileDlg, 0, rc.Left + x, rc.Top + y, 0, 0, SWP_NOSIZE OR SWP_NOACTIVATE OR SWP_NOZORDER
-         ' // If the windows has been shown, GetWindowRect takes into account the drop shadows.
-         ' // We must use the DwmGetWindowAttribute function to get the dimensions of the windows without the drop shadows;
-         ' // otherwise, the open file dialog will be displaced to the left.
-         DIM rc AS RECT
-         DIM AS ANY PTR pLib = DyLibLoad("Dwmapi.DLL")
-         IF pLib  THEN
-            DIM pProc AS FUNCTION (BYVAL hwnd AS .HWND, BYVAL dwAttribute AS DWORD, BYVAL pvAttribute AS ANY PTR, BYVAL cbAttribute AS DWORD) AS HRESULT
-            pProc = DyLibSymbol(pLib, "DwmGetWindowAttribute")
-            ' DWMWA_EXTENDED_FRAME_BOUNDS = 9
-            IF pProc THEN pProc(hParent, 9, @rc, SIZEOF(rc))
-            DyLibFree(pLib)
-         END IF
-         ' // Move the open dialog to the specified location, relative to the parent window
-         SetWindowPos hOpenFileDlg, 0, rc.Left + xPos, rc.Top + yPos, 0, 0, SWP_NOSIZE OR SWP_NOACTIVATE OR SWP_NOZORDER
-      END IF   
-   END IF
-   RETURN 0
+PRIVATE FUNCTION IDisplayOpenFile.AddCheckButton (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR, BYVAL bChecked AS BOOLEAN = FAlSE) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddCheckButton(m_IFileDialogCustomize, dwIDCtl, pwszLabel, bChecked)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Display the dialog.
-' Usage example:
-'   DIM pOFN AS DisplayOpenFile
-'   pOFN.FileName = "*.*"
-'   pOFN.InitialDir = CURDIR
-'   pOFN.Filter = "BAS files (*.BAS)|*.BAS|" & "All Files (*.*)|*.*|"
-'   pOFN.DefaultExt = "BAS"
-'   pOFN.FilterIndex = 1
-'   'pOFN.Flags = OFN_FILEMUSTEXIST OR OFN_HIDEREADONLY
-'   pOFN.Flags = OFN_FILEMUSTEXIST OR OFN_HIDEREADONLY OR OFN_ALLOWMULTISELECT
-'   DIM dwsFile AS DWSTRING = pOFN.ShowOpen(hDlg, 20, 20, TRUE)
-'   --or-- DIM dwsFile AS DWSTRING = pOFN.ShowOpen(hDlg, -1, -1, TRUE) to center the dialog
-'   PRINT dwsFile
+' Adds a combo box to the dialog.
 ' ========================================================================================
-PRIVATE FUNCTION DisplayOpenFile.ShowOpen (BYVAL hParent AS HWND = NULL, BYVAL xPos AS LONG = 0, BYVAL yPos AS LONG = 0, BYVAL bHook AS BOOLEAN = FALSE) AS DWSTRING
-
-   ' // Filter is a sequence of WSTRINGs with a final (extra) double null terminator
-   ' // The "|" characters are replaced with nulls
-   DIM wszMarkers AS WSTRING * 4 = "||"
-   IF RIGHT(m_dwsFilter, 1) <> "|" THEN wszMarkers += "|"
-   m_dwsFilter = m_dwsFilter & wszMarkers
-   DIM dwFilterStrSize AS DWORD = LEN(m_dwsFilter)
-   ' // Replace markers("|") with nulls
-   DIM pchar AS WCHAR PTR = *m_dwsFilter
-   FOR i AS LONG = 0 TO LEN(m_dwsFilter) - 1
-      IF pchar[i] = ASC("|") THEN pchar[i] = 0
-   NEXT
-
-   ' // If the initial directory has not been specified, assume the current directory
-   IF LEN(m_wszInitiaDir) = 0 THEN m_wszInitiaDir = CURDIR
-   ' // The size of the buffer must be at least MAX_PATH characters
-   DIM dwBufLen AS DWORD = MAX_PATH   ' // Make room for at least one path
-   IF (m_Flags AND OFN_ALLOWMULTISELECT) = OFN_ALLOWMULTISELECT THEN dwBufLen = 32768  ' // 64 Kb buffer
-   ' // Allocate the file name and a marker ("|") to be replaced with a null
-   DIM dwsFileName AS DWSTRING = m_wszFileName & "|"
-   ' // Store the position of the marker
-   DIM cbPos AS LONG = LEN(dwsFileName) - 1
-   ' // Allocate room for the buffer
-   IF LEN(dwsFileName) < dwBufLen THEN dwsFileName += SPACE(dwBufLen - LEN(dwsFileName))
-   DIM dwFileStrSize AS DWORD = LEN(dwsFileName)
-   ' // The filename must be null terminated (replace the marker with a null)
-   pchar = *dwsFileName
-   pchar[cbPos] = 0
-
-   ' // Fill the members of the OPENFILENAMEW structure
-   DIM ofn AS OPENFILENAMEW
-   ofn.lStructSize = SIZEOF(ofn)
-   ofn.hwndOwner = hParent
-   ofn.lpstrFilter = *m_dwsFilter
-   IF m_FilterIndex < 1 THEN m_FilterIndex = 1
-   ofn.nFilterIndex = m_FilterIndex
-   ofn.lpstrFile = *dwsFileName
-   ofn.nMaxFile = dwFileStrSize
-   IF m_wszInitiaDir = "" THEN m_wszInitiaDir = CURDIR
-   ofn.lpstrInitialDir = @m_wszInitiaDir
-   IF LEN(m_wszTitle) THEN ofn.lpstrTitle = @m_wszTitle
-   IF LEN(m_wszDefaultExt) THEN ofn.lpstrDefExt = @m_wszDefaultExt
-   ofn.lCustData = MAKELONG(xPos, yPos)
-   IF bHook THEN
-      ' // Set a hook
-      m_Flags = m_Flags OR OFN_EXPLORER OR OFN_ENABLEHOOK
-      ofn.Flags = m_Flags
-      ofn.lpfnHook = @DisplayOpenFile.OFNHookProc
-   END IF
-   ' // Call the open file dialog
-   IF GetOpenFilenameW(@ofn) THEN
-      IF (m_Flags AND OFN_ALLOWMULTISELECT) = OFN_ALLOWMULTISELECT THEN
-         pchar = *dwsFileName
-         FOR i AS LONG = 0 TO dwFileStrSize - 1
-            ' // If double null, exit
-            IF pchar[i] = 0 AND pchar[i + 1] = 0 THEN EXIT FOR
-            ' // Replace null with ","
-            IF pchar[i] = 0 THEN pchar[i] = ASC(",")
-         NEXT
-      END IF
-      ' // Trim trailing spaces
-      dwsFileName = RTRIM(dwsFileName, CHR(32))
-      IF RIGHT(dwsFileName, 1) = "," THEN dwsFileName = LEFT(dwsFileName, LEN(dwsFileName) - 1)
-   ELSE
-      ' // Buffer too small
-      IF CommDlgExtendedError = FNERR_BUFFERTOOSMALL THEN
-         dwBufLen = ASC(dwsFileName)   ' // needed buffer lenght
-      END IF
-      dwsFileName = ""
-   END IF
-
-   ' // Return the selected file or files
-   RETURN dwsFileName
-
+PRIVATE FUNCTION IDisplayOpenFile.AddComboBox (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddComboBox(m_IFileDialogCustomize, dwIDCtl)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the title of the dialog.
+' Adds an item to a container control in the dialog.
 ' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.Title () AS DWSTRING
-   RETURN m_wszTitle
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Sets the title of the dialog.
-' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.Title (BYREF wszTitle AS WSTRING)
-   m_wszTitle = wszTitle
-END PROPERTY
+PRIVATE FUNCTION IDisplayOpenFile.AddControlItem (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddControlItem(m_IFileDialogCustomize, dwIDCtl, dwIDItem, pwszLabel)
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the flags that control the behavior of the dialog.
+' Adds an edit box control to the dialog.
 ' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.Flags () AS DWORD
-   RETURN m_Flags
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.FlagsEx () AS DWORD
-   RETURN m_FlagsEx
-END PROPERTY
+PRIVATE FUNCTION IDisplayOpenFile.AddEditBox (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddEditBox(m_IFileDialogCustomize, dwIDCtl, pwszLabel)
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the flags that control the behavior of the dialog.
+' Adds a menu to the dialog.
 ' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.Flags (BYVAL dwFlags AS DWORD)
-   m_Flags = dwFlags
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Currently, the only option is OFN_EX_NOPLACESBAR
-' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.FlagsEx (BYVAL dwFlagsEx AS DWORD)
-   m_FlagsEx = dwFlagsEx
-END PROPERTY
+PRIVATE FUNCTION IDisplayOpenFile.AddMenu (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddMenu(m_IFileDialogCustomize, dwIDCtl, pwszLabel)
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the default extension to be added to file names.
+' Adds a push button to the dialog.
 ' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.DefaultExt () AS DWSTRING
-   RETURN m_wszDefaultExt
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Gets the default extension to be added to file names.
-' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.DefaultExt (BYREF wszDefaultExt AS WSTRING)
-   m_wszDefaultExt = wszDefaultExt
-END PROPERTY
+PRIVATE FUNCTION IDisplayOpenFile.AddPushButton (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddPushButton(m_IFileDialogCustomize, dwIDCtl, pwszLabel)
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the folder used as a the initial directory
+' Adds a push button to the dialog.
 ' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.InitialDir () AS DWSTRING
-   RETURN m_wszInitiaDir
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Gets the default extension to be added to file names.
-' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.InitialDir (BYREF wszInitialDir AS WSTRING)
-   m_wszInitiaDir = wszInitialDir
-END PROPERTY
+PRIVATE FUNCTION IDisplayOpenFile.AddRadioButtonList (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddRadioButtonList(m_IFileDialogCustomize, dwIDCtl)
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the file type that appears as selected in the dialog.
+' Adds a separator to the dialog, allowing a visual separation of controls.
 ' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.FilterIndex () AS DWORD
-   RETURN m_FilterIndex
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Sets the file type that appears as selected in the dialog.
-' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.FilterIndex (BYVAL dwFilterIndex AS DWORD)
-   m_FilterIndex = dwFilterIndex
-END PROPERTY
+PRIVATE FUNCTION IDisplayOpenFile.AddSeparator (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddSeparator(m_IFileDialogCustomize, dwIDCtl)
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the file name that appears in the File name edit box when that dialog box is opened.
+' Adds text content to the dialog.
 ' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.FileName () AS DWSTRING
-   RETURN m_wszFileName
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Sets the file name that appears in the File name edit box when that dialog box is opened.
-' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.FileName (BYREF wszFileName AS WSTRING)
-   m_wszFileName = wszFileName
-END PROPERTY
+PRIVATE FUNCTION IDisplayOpenFile.AddText (BYVAL dwIDCtl AS DWORD, BYVAL pwszText AS WSTRING PTR) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddText(m_IFileDialogCustomize, dwIDCtl, pwszText)
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the file types that the dialog can open or save.
-' Filter (pairs of strings separated with "|")
+' Enables a drop-down list on the Open or Save button in the dialog.
 ' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.Filter () AS DWSTRING
-   RETURN m_dwsFilter
-END PROPERTY
+PRIVATE FUNCTION IDisplayOpenFile.EnableOpenDropDown (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->EnableOpenDropDown(m_IFileDialogCustomize, dwIDCtl)
+END FUNCTION
 ' ========================================================================================
+
 ' ========================================================================================
-' Sets the file types that the dialog can open or save.
-' Filter (pairs of strings separated with "|")
+' Stops the addition of elements to a visual group in the dialog.
 ' ========================================================================================
-PRIVATE PROPERTY DisplayOpenFile.Filter (BYREF dwsFilter AS DWSTRING)
-   m_dwsFilter = dwsFilter
-END PROPERTY
+PRIVATE FUNCTION IDisplayOpenFile.EndVisualGroup () AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->EndVisualGroup(m_IFileDialogCustomize)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets the current state of a check button (check box) in the dialog.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.GetCheckButtonState (BYVAL dwIDCtl AS DWORD) AS BOOLEAN
+   DiM bChecked AS WINBOOL
+   SetLastError(m_IFileDialogCustomize->lpvtbl->GetCheckButtonState(m_IFileDialogCustomize, dwIDCtl, @bChecked))
+   RETURN bChecked
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets the current state of an item in a container control found in the dialog.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.GetControlItemState (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD) AS CDCONTROLSTATEF
+   DIM dwState AS CDCONTROLSTATEF
+   SetLastError(m_IFileDialogCustomize->lpvtbl->GetControlItemState(m_IFileDialogCustomize, dwIDCtl, dwIDItem, @dwState))
+   RETURN dwState
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets the current visibility and enabled states of a given control.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.GetControlState (BYVAL dwIDCtl AS DWORD) AS CDCONTROLSTATEF
+   DIM dwState AS CDCONTROLSTATEF
+   SetLastError(m_IFileDialogCustomize->lpvtbl->GetControlState(m_IFileDialogCustomize, dwIDCtl, @dwState))
+   RETURN dwState
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets the current text in an edit box control.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.GetEditBoxText (BYVAL dwIDCtl AS DWORD) AS DWSTRING
+   DIM pwszText AS WSTRING PTR
+   SetLastError(m_IFileDialogCustomize->lpvtbl->GetEditBoxText(m_IFileDialogCustomize, dwIDCtl, @pwszText))
+   RETURN pwszText
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Places a control in the dialog so that it stands out compared to other added controls.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.MakeProminent (BYVAL dwIDCtl AS DWORD) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->MakeProminent(m_IFileDialogCustomize, dwIDCtl)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Not implemented.
+' ========================================================================================
+'PRIVATE FUNCTION IDisplayOpenFile.RemoveAllControlItems (BYVAL dwIDCtl AS DWORD) AS HRESULT
+'   RETURN m_IFileDialogCustomize->lpvtbl->RemoveAllControlItems(m_IFileDialogCustomize, dwIDCtl)
+'END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Removes an item from a container control in the dialog.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.RemoveControlItem (BYVAL dwIDCtl AS DWORD, BYVAL dwItem AS DWORD) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->RemoveControlItem(m_IFileDialogCustomize, dwIDCtl, dwItem)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the state of a check button (check box) in the dialog.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.SetCheckButtonState (BYVAL dwIDCtl AS DWORD, BYVAL bCkecked AS BOOLEAN) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->SetCheckButtonState(m_IFileDialogCustomize, dwIDCtl, bCkecked)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the state of a check button (check box) in the dialog.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.SetControlItemState (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD, BYVAL dwState AS CDCONTROLSTATEF) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->SetControlItemState(m_IFileDialogCustomize, dwIDCtl, dwIDItem, dwState)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the text of a control item. For example, the text that accompanies a radio button or an item in a menu.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.SetControlItemText (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->SetControlItemText(m_IFileDialogCustomize, dwIDCtl, dwIDItem, pwszLabel)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the text associated with a control, such as button text or an edit box label.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.SetControlLabel (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->SetControlLabel(m_IFileDialogCustomize, dwIDCtl, pwszLabel)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the current visibility and enabled states of a given control.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.SetControlState (BYVAL dwIDCtl AS DWORD, BYVAL dwState AS CDCONTROLSTATEF) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->SetControlState(m_IFileDialogCustomize, dwIDCtl, dwState)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the text in an edit box control found in the dialog.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.SetEditBoxText (BYVAL dwIDCtl AS DWORD, BYVAL pwszText AS WSTRING PTR) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->SetEditBoxText(m_IFileDialogCustomize, dwIDCtl, pwszText)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the selected state of a particular item in an option button group or a combo box found in the dialog.
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.SetSelectedControlItem (BYVAL dwIDCtl AS DWORD, BYVAL dwIDItem AS DWORD) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->SetSelectedControlItem(m_IFileDialogCustomize, dwIDCtl, dwIDItem)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Declares a visual group in the dialog. Subsequent calls to any "add" method add those elements to this group
+' ========================================================================================
+PRIVATE FUNCTION IDisplayOpenFile.StartVisualGroup (BYVAL dwIDCtl AS DWORD, BYVAL pwszLabel AS WSTRING PTR) AS HRESULT
+   RETURN m_IFileDialogCustomize->lpvtbl->AddText(m_IFileDialogCustomize, dwIDCtl, pwszLabel)
+END FUNCTION
 ' ========================================================================================
 
 
 ' ########################################################################################
-
-' ========================================================================================
-' DisplaySaveFile class
-' ========================================================================================
-TYPE DisplaySaveFile
-
-Private:
-   m_hParent AS HWND                       ' // Handle of the parent window or dialog
-   m_xPos AS LONG                          ' // Horizontal position, in pixels, relative to the parent window
-   m_yPos AS LONG                          ' // Vertical position, in pixels, relative to the parent window
-   m_Flags AS DWORD                        ' // The style attributes of the dialog
-   m_FlagsEx AS DWORD                      ' // Extra style attributes of the dialog
-   m_Index AS UINT                         ' // File type that appears as selected in the dialog
-   m_wszTitle AS WSTRING * MAX_PATH        ' // The title to be displayed in the title bar of the dialog box
-   m_wszInitiaDir AS WSTRING * MAX_PATH    ' // The name of the initial file directory to be displayed
-   m_wszFileName AS WSTRING * MAX_PATH     ' // The file name to be used as the initial file selection
-   m_wszDefaultExt AS WSTRING * MAX_PATH   ' // Default extension to be appended to the selected file name if the user does not enter it
-   m_dwsFilter AS DWSTRING                 ' // Filter (pairs of strings separated with "|")
-   m_FilterIndex AS DWORD                  ' // The file type that appears as selected in the dialog
-
-Public:
-   DECLARE CONSTRUCTOR
-   DECLARE DESTRUCTOR 
-   DECLARE FUNCTION ShowSave (BYVAL hParent AS HWND = NULL, BYVAL xPos AS LONG = 0, BYVAL yPos AS LONG = 0, BYVAL bHook AS BOOLEAN = FALSE) AS DWSTRING
-   DECLARE PROPERTY Title () AS DWSTRING
-   DECLARE PROPERTY Title (BYREF wszTitle AS WSTRING)
-   DECLARE PROPERTY Flags () AS DWORD
-   DECLARE PROPERTY Flags (BYVAL dwFlags AS DWORD)
-   DECLARE PROPERTY FlagsEx () AS DWORD
-   DECLARE PROPERTY FlagsEx (BYVAL dwFlagsEx AS DWORD)
-   DECLARE PROPERTY DefaultExt () AS DWSTRING
-   DECLARE PROPERTY DefaultExt (BYREF wszDefaultExt AS WSTRING)
-   DECLARE PROPERTY InitialDir () AS DWSTRING
-   DECLARE PROPERTY InitialDir (BYREF wszInitialDir AS WSTRING)
-   DECLARE PROPERTY FilterIndex () AS DWORD
-   DECLARE PROPERTY FilterIndex (BYVAL dwFilterIndex AS DWORD)
-   DECLARE PROPERTY FileName () AS DWSTRING
-   DECLARE PROPERTY FileName (BYREF wszFileName AS WSTRING)
-   DECLARE PROPERTY Filter () AS DWSTRING
-   DECLARE PROPERTY Filter (BYREF dwsFilter AS DWSTRING)
-
-Private:
-   DECLARE STATIC FUNCTION OFNHookProc (BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS UINT_PTR
-
-END TYPE
-' ========================================================================================
-
-' ========================================================================================
-' Constructor
-' ========================================================================================
-PRIVATE CONSTRUCTOR DisplaySaveFile
-END CONSTRUCTOR
-' ========================================================================================
-
-' ========================================================================================
-' Destructor
-' ========================================================================================
-PRIVATE DESTRUCTOR DisplaySaveFile
-END DESTRUCTOR
-' ========================================================================================
-
-' ========================================================================================
-' Open file dialog hook callback procedure
-' ========================================================================================
-FUNCTION DisplaySaveFile.OFNHookProc (BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS UINT_PTR
-   DIM pOFN AS OPENFILENAMEW PTR
-   DIM AS LONG xPos, yPos
-   ' // Process the WM_INITDIALOG message
-   IF uMsg = WM_INITDIALOG THEN
-      ' // Get the custom data
-      pOFN = CAST(OPENFILENAMEW PTR, lParam)
-      IF pOFN THEN
-         xPos = CSHORT(LOWORD(pOFN->lCustData))
-         yPos = CSHORT(HIWORD(pOFN->lCustData))
-      END IF
-      ' // Note: hwnd is the handle of the child dialog box.
-      ' // Use GetParent to get the handle of the Open dialog box.
-      DIM hOpenFileDlg AS .HWND = GetParent(hwnd)
-      ' // Get the parent of the open file dialog.
-      ' // It can be another window or dialog, or the desktop.
-      DIM hParent AS .HWND = GetParent(hOpenFileDlg)
-      IF hParent = NULL THEN hParent = GetDesktopWindow
-      ' // If the user has passed -1, -1 as the position
-      IF (xPos = -1 ANDALSO yPos = -1) THEN
-         ' // Center the open dialog on the parent window
-         DIM AS RECT rc, rcDlg, rcOwner
-         GetWindowRect(hParent, @rcOwner)
-         GetWindowRect(hOpenFileDlg, @rcDlg)
-         CopyRect(@rc, @rcOwner)
-         ' // Offset the owner and dialog box rectangles so that right and bottom 
-         ' // values represent the width and height, and then offset the owner again 
-         ' // to discard space taken up by the dialog box. 
-         OffsetRect(@rcDlg, -rcDlg.left, -rcDlg.top)
-         OffsetRect(@rc, -rc.left, -rc.top)
-         OffsetRect(@rc, -rcDlg.right, -rcDlg.bottom)
-         ' // The new position is the sum of half the remaining space and the owner's 
-         ' // original position. 
-         SetWindowPos(hOpenFileDlg, HWND_TOP, rcOwner.left + (rc.right / 2), _
-                      rcOwner.top + (rc.bottom / 2), 0, 0, SWP_NOSIZE)
-      ELSE
-'         ' // Get the dimensions of the bounding rectangle of the parent window
-'         DIM rc AS RECT
-'         GetWindowRect hParent, @rc
-'         ' // Move the open dialog to the specified location, relative to the parent window
-'         SetWindowPos hOpenFileDlg, 0, rc.Left + x, rc.Top + y, 0, 0, SWP_NOSIZE OR SWP_NOACTIVATE OR SWP_NOZORDER
-         ' // If the windows has been shown, GetWindowRect takes into account the drop shadows.
-         ' // We must use the DwmGetWindowAttribute function to get the dimensions of the windows without the drop shadows;
-         ' // otherwise, the open file dialog will be displaced to the left.
-         DIM rc AS RECT
-         DIM AS ANY PTR pLib = DyLibLoad("Dwmapi.DLL")
-         IF pLib  THEN
-            DIM pProc AS FUNCTION (BYVAL hwnd AS .HWND, BYVAL dwAttribute AS DWORD, BYVAL pvAttribute AS ANY PTR, BYVAL cbAttribute AS DWORD) AS HRESULT
-            pProc = DyLibSymbol(pLib, "DwmGetWindowAttribute")
-            ' DWMWA_EXTENDED_FRAME_BOUNDS = 9
-            IF pProc THEN pProc(hParent, 9, @rc, SIZEOF(rc))
-            DyLibFree(pLib)
-         END IF
-         ' // Move the open dialog to the specified location, relative to the parent window
-         SetWindowPos hOpenFileDlg, 0, rc.Left + xPos, rc.Top + yPos, 0, 0, SWP_NOSIZE OR SWP_NOACTIVATE OR SWP_NOZORDER
-      END IF   
-   END IF
-   RETURN 0
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Display the dialog.
-' Usage example:
-'   DIM pSFN AS DisplaySaveFile
-'   pSFN.FileName = "*.*"
-'   pSFN.InitialDir = CURDIR
-'   pSFN.Filter = "BAS files (*.BAS)|*.BAS|" & "All Files (*.*)|*.*|"
-'   pSFN.DefaultExt = "BAS"
-'   pSFN.FilterIndex = 1
-'   pSFN.Flags = OFN_FILEMUSTEXIST OR OFN_HIDEREADONLY
-'   DIM dwsFile AS DWSTRING = pSFN.ShowSave(hDlg, 20, 20, TRUE)
-'   --or-- DIM dwsFile AS DWSTRING = pSFN.ShowSave(hDlg, -1, -1, TRUE) to center the dialog
-'   PRINT dwsFile
-' ========================================================================================
-PRIVATE FUNCTION DisplaySaveFile.ShowSave (BYVAL hParent AS HWND = NULL, BYVAL xPos AS LONG = 0, BYVAL yPos AS LONG = 0, BYVAL bHook AS BOOLEAN = FALSE) AS DWSTRING
-
-   ' // Filter is a sequence of WSTRINGs with a final (extra) double null terminator
-   ' // The "|" characters are replaced with nulls
-   DIM wszMarkers AS WSTRING * 4 = "||"
-   IF RIGHT(m_dwsFilter, 1) <> "|" THEN wszMarkers += "|"
-   m_dwsFilter = m_dwsFilter & wszMarkers
-   DIM dwFilterStrSize AS DWORD = LEN(m_dwsFilter)
-   ' // Replace markers("|") with nulls
-   DIM pchar AS WCHAR PTR = *m_dwsFilter
-   FOR i AS LONG = 0 TO LEN(m_dwsFilter) - 1
-      IF pchar[i] = ASC("|") THEN pchar[i] = 0
-   NEXT
-
-   ' // If the initial directory has not been specified, assume the current directory
-   IF LEN(m_wszInitiaDir) = 0 THEN m_wszInitiaDir = CURDIR
-   ' // Allocate the file name and a marker ("|") to be replaced with a null
-   DIM dwsFileName AS DWSTRING = m_wszFileName & "|"
-   ' // Store the position of the marker
-   DIM cbPos AS LONG = LEN(dwsFileName) - 1
-   ' // Allocate room for the buffer
-   IF LEN(dwsFileName) < MAX_PATH THEN dwsFileName += SPACE(MAX_PATH - LEN(dwsFileName))
-   DIM dwFileStrSize AS DWORD = LEN(dwsFileName)
-   ' // The filename must be null terminated (replace the marker with a null)
-   pchar = *dwsFileName
-   pchar[cbPos] = 0
-
-   ' // Fill the members of the OPENFILENAMEW structure
-   DIM ofn AS OPENFILENAMEW
-   ofn.lStructSize = SIZEOF(ofn)
-   ofn.hwndOwner = hParent
-   ofn.lpstrFilter = *m_dwsFilter
-   IF m_FilterIndex < 1 THEN m_FilterIndex = 1
-   ofn.nFilterIndex = m_FilterIndex
-   ofn.lpstrFile = *dwsFileName
-   ofn.nMaxFile = dwFileStrSize
-   IF m_wszInitiaDir = "" THEN m_wszInitiaDir = CURDIR
-   ofn.lpstrInitialDir = @m_wszInitiaDir
-   IF LEN(m_wszTitle) THEN ofn.lpstrTitle = @m_wszTitle
-   IF LEN(m_wszDefaultExt) THEN ofn.lpstrDefExt = @m_wszDefaultExt
-   ofn.lCustData = MAKELONG(xPos, yPos)
-   IF bHook THEN
-      ' // Set a hook
-      m_Flags = m_Flags OR OFN_EXPLORER OR OFN_ENABLEHOOK
-      ofn.Flags = m_Flags
-      ofn.lpfnHook = @DisplaySaveFile.OFNHookProc
-   END IF
-
-   ' // Call the save filename dialog
-   IF GetSaveFilenameW(@ofn) = 0 THEN dwsFileName = ""
-
-   ' // Return the selected file or files
-   RETURN dwsFileName
-
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Gets the title of the dialog.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.Title () AS DWSTRING
-   RETURN m_wszTitle
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Sets the title of the dialog.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.Title (BYREF wszTitle AS WSTRING)
-   m_wszTitle = wszTitle
-END PROPERTY
-' ========================================================================================
-
-' ========================================================================================
-' Gets the flags that control the behavior of the dialog.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.Flags () AS DWORD
-   RETURN m_Flags
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.FlagsEx () AS DWORD
-   RETURN m_FlagsEx
-END PROPERTY
-' ========================================================================================
-
-' ========================================================================================
-' Sets the flags that control the behavior of the dialog.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.Flags (BYVAL dwFlags AS DWORD)
-   m_Flags = dwFlags
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Currently, the only option is OFN_EX_NOPLACESBAR
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.FlagsEx (BYVAL dwFlagsEx AS DWORD)
-   m_FlagsEx = dwFlagsEx
-END PROPERTY
-' ========================================================================================
-
-' ========================================================================================
-' Gets the default extension to be added to file names.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.DefaultExt () AS DWSTRING
-   RETURN m_wszDefaultExt
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Gets the default extension to be added to file names.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.DefaultExt (BYREF wszDefaultExt AS WSTRING)
-   m_wszDefaultExt = wszDefaultExt
-END PROPERTY
-' ========================================================================================
-
-' ========================================================================================
-' Gets the folder used as a the initial directory
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.InitialDir () AS DWSTRING
-   RETURN m_wszInitiaDir
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Gets the default extension to be added to file names.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.InitialDir (BYREF wszInitialDir AS WSTRING)
-   m_wszInitiaDir = wszInitialDir
-END PROPERTY
-' ========================================================================================
-
-' ========================================================================================
-' Gets the file type that appears as selected in the dialog.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.FilterIndex () AS DWORD
-   RETURN m_FilterIndex
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Sets the file type that appears as selected in the dialog.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.FilterIndex (BYVAL dwFilterIndex AS DWORD)
-   m_FilterIndex = dwFilterIndex
-END PROPERTY
-' ========================================================================================
-
-' ========================================================================================
-' Gets the file name that appears in the File name edit box when that dialog box is opened.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.FileName () AS DWSTRING
-   RETURN m_wszFileName
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Sets the file name that appears in the File name edit box when that dialog box is opened.
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.FileName (BYREF wszFileName AS WSTRING)
-   m_wszFileName = wszFileName
-END PROPERTY
-' ========================================================================================
-
-' ========================================================================================
-' Sets the file types that the dialog can open or save.
-' Filter (pairs of strings separated with "|")
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.Filter () AS DWSTRING
-   RETURN m_dwsFilter
-END PROPERTY
-' ========================================================================================
-' ========================================================================================
-' Sets the file types that the dialog can open or save.
-' Filter (pairs of strings separated with "|")
-' ========================================================================================
-PRIVATE PROPERTY DisplaySaveFile.Filter (BYREF dwsFilter AS DWSTRING)
-   m_dwsFilter = dwsFilter
-END PROPERTY
-' ========================================================================================
 
 END NAMESPACE

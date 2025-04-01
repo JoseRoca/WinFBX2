@@ -1,7 +1,7 @@
 ' ########################################################################################
 ' Platform: Microsoft Windows
 ' Filename: DWSTRING.inc
-' Purpose:  Implementation of the BSTR (COM unicode strings) data type.
+' Purpose:  Implements a data type for dynamic null terminated unicode strings.
 ' Compiler: Free Basic 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
@@ -64,10 +64,10 @@ TYPE DWSTRING EXTENDS WSTRING
    m_Capacity AS ssize_t      ' // The total size of the buffer in UTF16 characters
 
    DECLARE CONSTRUCTOR
-   DECLARE CONSTRUCTOR (BYVAL nChars AS LONG, BYVAL bClear AS BOOLEAN)
    DECLARE CONSTRUCTOR (BYVAL pwszStr AS WSTRING PTR)
    DECLARE CONSTRUCTOR (BYREF ansiStr AS STRING, BYVAL nCodePage AS UINT = 0)
    DECLARE CONSTRUCTOR (BYREF dws AS DWSTRING)
+   DECLARE CONSTRUCTOR (BYVAL nChars AS LONG, BYREF wszFill AS CONST WSTRING)
    DECLARE CONSTRUCTOR (BYVAL n AS LONGINT)
    DECLARE CONSTRUCTOR (BYVAL n AS DOUBLE)
    DECLARE DESTRUCTOR
@@ -102,26 +102,29 @@ PRIVATE CONSTRUCTOR DWSTRING
    DWSTRING_DP("DWSTRING CONSTRUCTOR - Default")
    ' // Create a minimal initial buffer to make room for the teminating null
    this.ResizeBuffer(1, TRUE)
-   DWSTRING_DP("DWSTRING CONSTRUCTOR - Default - buffer: " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING CONSTRUCTOR - Default - buffer: " & ..WSTR(m_pBuffer))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 ' Attempts to allocate, or reserve, nChars number of characters from the free store (heap).
-' bClear = FALSE: The newly allocated memory is not initialized.
-' bClear = TRUE: The newly allocated memory is initialized.
+' wszFill = A WString whose first character is to be used to fill the string.
 ' ========================================================================================
-PRIVATE CONSTRUCTOR DWSTRING (BYVAL nChars AS LONG, BYVAL bClear AS BOOLEAN)
-   DWSTRING_DP("DWSTRING CONSTRUCTOR - nChars = " & .WSTR(nChars) & " - bClear = " & .WSTR(bCLear))
+PRIVATE CONSTRUCTOR DWSTRING (BYVAL nChars AS LONG, BYREF wszFill AS CONST WSTRING)
+   DWSTRING_DP("DWSTRING CONSTRUCTOR - nChars = " & ..WSTR(nChars))
    IF nChars < 1 THEN nChars = 1
-   this.ResizeBuffer(nChars, bClear)
-   DWSTRING_DP("DWSTRING CONSTRUCTOR - nChars, bClear - buffer: " & .WSTR(m_pBuffer))
+   IF LEN(wszFill) THEN
+      this.Add(WSTRING(nChars, wszFill))
+   ElsE
+      this.ResizeBuffer(nChars, TRUE)
+   END IF
+   DWSTRING_DP("DWSTRING CONSTRUCTOR - nChars - buffer: " & ..WSTR(m_pBuffer))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 ' Initializes the DWSTRING with the contents of the passed WSTRING.
 ' ========================================================================================
 PRIVATE CONSTRUCTOR DWSTRING (BYVAL pwszStr AS WSTRING PTR)
-   DWSTRING_DP("DWSTRING CONSTRUCTOR - WSTRING PTR - pwszStr: " & .WSTR(pwszStr))
+   DWSTRING_DP("DWSTRING CONSTRUCTOR - WSTRING PTR - pwszStr: " & ..WSTR(pwszStr))
    IF pwszStr = NULL THEN
       this.ResizeBuffer(1)
    ELSEIF .LEN(*pwszStr) = 0 THEN
@@ -129,7 +132,7 @@ PRIVATE CONSTRUCTOR DWSTRING (BYVAL pwszStr AS WSTRING PTR)
    ELSE
       this.Add(pwszStr)
    END IF
-   DWSTRING_DP("DWSTRING CONSTRUCTOR - WSTRING PTR - buffer: " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING CONSTRUCTOR - WSTRING PTR - buffer: " & ..WSTR(m_pBuffer))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -143,7 +146,7 @@ PRIVATE CONSTRUCTOR DWSTRING (BYREF ansiStr AS STRING, BYVAL nCodePage AS UINT =
    ELSE
       this.Add(ansiStr, nCodePage)
    END IF
-   DWSTRING_DP("DWSTRING CONSTRUCTOR - STRING - buffer: " & .WSTR(m_pBuffer) & " - code page: " & WSTR(nCodePage))
+   DWSTRING_DP("DWSTRING CONSTRUCTOR - STRING - buffer: " & ..WSTR(m_pBuffer) & " - code page: " & WSTR(nCodePage))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -156,7 +159,7 @@ PRIVATE CONSTRUCTOR DWSTRING (BYREF dws AS DWSTRING)
    ELSE
       this.Add(dws)
    END IF
-   DWSTRING_DP("DWSTRING CONSTRUCTOR - DWSTRING - buffer: " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING CONSTRUCTOR - DWSTRING - buffer: " & ..WSTR(m_pBuffer))
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -165,18 +168,18 @@ END CONSTRUCTOR
 ' These two constructors are needed to allow to use a number with the & operator.
 ' ========================================================================================
 PRIVATE CONSTRUCTOR DWSTRING (BYVAL n AS LONGINT)
-   DWSTRING_DP("DWSTRING CONSTRUCTOR LONGINT - n = " & .WSTR(n))
-   DIM wsz AS WSTRING * 40 = .WSTR(n)
+   DWSTRING_DP("DWSTRING CONSTRUCTOR LONGINT - n = " & ..WSTR(n))
+   DIM wsz AS WSTRING * 40 = ..WSTR(n)
    this.Add(wsz)
-   DWSTRING_DP("DWSTRING CONSTRUCTOR LONGINT - buffer: " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING CONSTRUCTOR LONGINT - buffer: " & ..WSTR(m_pBuffer))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR DWSTRING (BYVAL n AS DOUBLE)
-   DWSTRING_DP("DWSTRING CONSTRUCTOR DOUBLE - n = " & .WSTR(n))
-   DIM wsz AS WSTRING * 40 = .WSTR(n)
+   DWSTRING_DP("DWSTRING CONSTRUCTOR DOUBLE - n = " & ..WSTR(n))
+   DIM wsz AS WSTRING * 40 = ..WSTR(n)
    this.Add(wsz)
-   DWSTRING_DP("DWSTRING CONSTRUCTOR DOUBLE - buffer: " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING CONSTRUCTOR DOUBLE - buffer: " & ..WSTR(m_pBuffer))
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -184,7 +187,7 @@ END CONSTRUCTOR
 ' Destructor
 ' ========================================================================================
 PRIVATE DESTRUCTOR DWSTRING
-   DWSTRING_DP("DWSTRING DESTRUCTOR - buffer: " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING DESTRUCTOR - buffer: " & ..WSTR(m_pBuffer))
    IF m_pBuffer THEN Deallocate(m_pBuffer)
 END DESTRUCTOR
 ' ========================================================================================
@@ -194,7 +197,7 @@ END DESTRUCTOR
 ' To avoid excesive use of casting when used with my other data types and procedures.
 ' ========================================================================================
 PRIVATE OPERATOR DWSTRING.CAST () AS ANY PTR
-   DWSTRING_DP("DWSTRING CAST ANY PTR - buffer: " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING CAST ANY PTR - buffer: " & ..WSTR(m_pBuffer))
    OPERATOR = m_pBuffer
 END OPERATOR
 ' ========================================================================================
@@ -202,7 +205,7 @@ END OPERATOR
 ' Returns the string data (same as **).
 ' ========================================================================================
 PRIVATE OPERATOR DWSTRING.CAST () BYREF AS WSTRING
-   DWSTRING_DP("DWSTRING CAST BYREF AS WSTRING - buffer: " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING CAST BYREF AS WSTRING - buffer: " & ..WSTR(m_pBuffer))
    OPERATOR = *m_pBuffer
 END OPERATOR
 ' ========================================================================================
@@ -238,7 +241,7 @@ END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DWSTRING.Let (BYREF dws AS DWSTRING)
-   DWSTRING_DP("DWSTRING LET DWSTRING - buffer: " & .WSTR(m_pBuffer) & " - buffer in: " & .WSTR(dws.m_pBuffer))
+   DWSTRING_DP("DWSTRING LET DWSTRING - buffer: " & ..WSTR(m_pBuffer) & " - buffer in: " & ..WSTR(dws.m_pBuffer))
    IF m_pBuffer = dws.m_pBuffer THEN EXIT OPERATOR   ' // Ignore dws = dws
    this.Clear : this.Add(dws)
 END OPERATOR
@@ -248,13 +251,13 @@ END OPERATOR
 ' ========================================================================================
 PRIVATE OPERATOR DWSTRING.Let (BYVAL n AS LONGINT)
    DWSTRING_DP("DWSTRING OPERATOR Let LONGINT")
-   this.Clear : DIM wsz AS WSTRING * 40 = .WSTR(n) : this.Add(wsz)
+   this.Clear : DIM wsz AS WSTRING * 40 = ..WSTR(n) : this.Add(wsz)
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DWSTRING.Let (BYVAL n AS DOUBLE)
    DWSTRING_DP("DWSTRING OPERATOR Let DOUBLE")
-   this.Clear : DIM wsz AS WSTRING * 40 = .WSTR(n) : this.Add(wsz)
+   this.Clear : DIM wsz AS WSTRING * 40 = ..WSTR(n) : this.Add(wsz)
 END OPERATOR
 ' ========================================================================================
 
@@ -306,7 +309,7 @@ END PROPERTY
 ' Resizes the internal buffer capacity
 ' ========================================================================================
 PRIVATE FUNCTION DWSTRING.ResizeBuffer (BYVAL nChars AS UINT, BYVAL bClear AS BOOLEAN = FALSE) AS WSTRING PTR
-   DWSTRING_DP("DWSTRING ResizeBuffer - nChars = " & .WSTR(nChars))
+   DWSTRING_DP("DWSTRING ResizeBuffer - nChars = " & ..WSTR(nChars))
    ' // Allocate a buffer of nChars utf16 characters + 1 for the terminating null
    DIM pNewBuffer AS WSTRING PTR = IIF(bClear, CAllocate((nChars + 1) * 2), Allocate((nChars + 1) * 2))
    ' // The user has requested to reduce the capacity.
@@ -332,7 +335,7 @@ END FUNCTION
 ' Appends the specified number of characters from the specified memory address to the end of the buffer.
 ' ========================================================================================
 PRIVATE FUNCTION DWSTRING.AppendBuffer (BYVAL memAddr AS ANY PTR, BYVAL nChars AS UINT) AS BOOLEAN
-   DWSTRING_DP("DWSTRING AppendBuffer - nChars = " & .WSTR(nChars))
+   DWSTRING_DP("DWSTRING AppendBuffer - nChars = " & ..WSTR(nChars))
    IF memAddr = NULL OR nChars = 0 THEN RETURN FALSE
    ' // Number of characters to append
    DIM nSize AS UINT = m_BufferLen + nChars
@@ -353,7 +356,7 @@ END FUNCTION
 ' Returns a pointer to the DWSTRING buffer.
 ' ========================================================================================
 PRIVATE FUNCTION DWSTRING.GetBuffer () AS WSTRING PTR
-   DWSTRING_DP("DWSTRING GetBuffer - buffer: " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING GetBuffer - buffer: " & ..WSTR(m_pBuffer))
    RETURN m_pBuffer
 END FUNCTION
 ' ========================================================================================
@@ -423,7 +426,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' =====================================================================================
-' Returns the contents of the BSTRING as a WSTRING allocated with CoTaskMemAlloc.
+' Returns the contents of the DWSTRING as a WSTRING allocated with CoTaskMemAlloc.
 ' Free the returned string later with CoTaskMemFree.
 ' Note: This is useful when we need to pass a pointer to a null terminated wide string to a
 ' function or method that will release it. If we pass a WSTRING it will GPF.
@@ -438,7 +441,7 @@ PRIVATE FUNCTION DWSTRING.wchar () AS WSTRING PTR
    IF pwchar = NULL THEN RETURN NULL
    IF nLen THEN memcpy pwchar, m_pBuffer, nLen
    IF nLen = 0 THEN *pwchar = CHR(0)
-   DWSTRING_DP("DWSTRING wchar - " & .WSTR(m_pBuffer))
+   DWSTRING_DP("DWSTRING wchar - " & ..WSTR(m_pBuffer))
    RETURN pwchar
 END FUNCTION
 ' =====================================================================================
@@ -457,7 +460,7 @@ using Afx2
 ' Returns the length, in characters, of the DWSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR LEN OVERLOAD (BYREF dws AS DWSTRING) AS UINT
-   DWSTRING_DP("DWSTRING OPERATOR LEN - len: " & .WSTR(dws.m_BufferLen))
+   DWSTRING_DP("DWSTRING OPERATOR LEN - len: " & ..WSTR(dws.m_BufferLen))
    OPERATOR = dws.m_BufferLen
 END OPERATOR
 ' ========================================================================================

@@ -288,6 +288,24 @@ END FUNCTION
 
 ' ========================================================================================
 ' Returns the number of submatches.
+'DIM pRegExp AS CRegExp
+'pRegExp.Pattern = "(\w+)@(\w+)\.(\w+)"
+'pRegExp.IgnoreCase = TRUE
+'DIM cbsText AS BSTRING = "Please send mail to dragon@xyzzy.com. Thanks!"
+'IF pRegExp.Execute(cbsText) = FALSE THEN
+'   print "No match found"
+'ELSE
+'   ' // Get the number of submatches
+'   DIM nCount AS LONG = pRegExp.SubMatchesCount(0)
+'   PRINT "Submatches: ", nCount
+'   FOR i AS LONG = 0 TO nCount - 1
+'      print pRegExp.SubMatchValue(0, i)
+'   NEXT
+'END IF
+' Output:
+' dragon
+' xyzzy
+' com
 ' ========================================================================================
 PRIVATE FUNCTION CRegExp.SubMatchesCount (BYVAL index AS LONG) AS LONG
    IF m_pMatches = NULL THEN SetLastError(E_POINTER): RETURN 0
@@ -498,18 +516,19 @@ END FUNCTION
 '    DIM pRegExp AS CRegExp
 '    pRegExp.Global = TRUE
 '    pRegExp.Pattern = "[bac]"
+'    --or-- pRegExp.Pattern = "b|a|c"
 '    PRINT pRegExp.Replace("abacadabra", "*")
 ' Output: "*****d**r*"
 ' ----------------------------------------------------------------------------------------
 '    DIM pRegExp AS CRegExp
 '    pRegExp.Global = TRUE
-'    pRegExp.Pattern = "(\d{3})-(\d{3})-(\d{4})"
+'    pRegExp.Pattern = $"(\d{3})-(\d{3})-(\d{4})"
 '    PRINT pRegExp.Replace("555-123-4567", "($1) $2-$3")
 ' Output: "(555) 123-4567"
 ' ----------------------------------------------------------------------------------------
 '    DIM pRegExp AS CRegExp
 '    pRegExp.Global = TRUE
-'    pRegExp.Pattern = "(\S+), (\S+)"
+'    pRegExp.Pattern = $"(\S+), (\S+)"
 '    PRINT pRegExp.Replace("Roca, José", "$2 $1")
 ' Output: "José Roca"
 ' ----------------------------------------------------------------------------------------

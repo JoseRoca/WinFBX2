@@ -10,6 +10,7 @@
 ' ########################################################################################
 
 #pragma once
+#INCLUDE ONCE "win/richedit.bi"
 #include once "Afx2/AfxWin2.inc"
 USING Afx2
 
@@ -107,6 +108,7 @@ TYPE CDialog
       DECLARE FUNCTION DialogGetWidth () AS LONG
       DECLARE FUNCTION DialogGetHeight () AS LONG
       DECLARE FUNCTION DialogSetSize (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
+      DECLARE FUNCTION DialogGetBounds () AS RECT
       DECLARE FUNCTION DialogGetClient (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
       DECLARE FUNCTION DialogGetClientWidth () AS LONG
       DECLARE FUNCTION DialogGetClientHeight () AS LONG
@@ -163,6 +165,9 @@ TYPE CDialog
       DECLARE FUNCTION ControlGetFontFaceName (BYVAL cId AS LONG) AS DWSTRING
       DECLARE FUNCTION ControlGetFontPointSize (BYVAL cId AS LONG) AS LONG
       DECLARE SUB ControlSetFont (BYVAL cId AS LONG, BYVAL hFont AS HFONT, BYVAL fRedraw AS BOOLEAN = TRUE)
+
+      DECLARE SUB ControlCenterHoriz (BYVAL cId AS LONG)
+      DECLARE SUB ControlCenterVert (BYVAL cId AS LONG)
 
 Private:
       DECLARE STATIC FUNCTION CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
@@ -971,6 +976,34 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' Retrieves the bounds of a window without the drop shadows.
+' In Windows Vista and later, the Window Rect includes the area occupied by the drop shadow.
+' Calling GetWindowRect will have different behavior depending on whether the window has
+' ever been shown or not. If the window has not been shown before, GetWindowRect will not
+' include the area of the drop shadow.
+' To get the window bounds excluding the drop shadow, use DwmGetWindowAttribute, specifying
+' DWMWA_EXTENDED_FRAME_BOUNDS. Note that unlike the Window Rect, the DWM Extended Frame Bounds
+' are not adjusted for DPI. Getting the extended frame bounds can only be done after the
+' window has been shown at least once.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogGetBounds () AS RECT
+   DIM rc AS RECT
+   DIM AS ANY PTR pLib = DyLibLoad("Dwmapi.DLL")
+   IF pLib  THEN
+      DIM pProc AS FUNCTION (BYVAL hDlg AS .HWND, BYVAL dwAttribute AS DWORD, BYVAL pvAttribute AS ANY PTR, BYVAL cbAttribute AS DWORD) AS HRESULT
+      pProc = DyLibSymbol(pLib, "DwmGetWindowAttribute")
+      ' DWMWA_EXTENDED_FRAME_BOUNDS = 9
+      IF pProc THEN pProc(m_hDlg, 9, @rc, SIZEOF(rc))
+      DyLibFree(pLib)
+      ' // Convert to dialog units
+      this.PixelsToDialogUnits(rc.Left, rc.Top, rc.Left, rc.Top)
+      this.PixelsToDialogUnits(rc.Right, rc.Bottom, rc.Right, rc.Bottom)
+   END IF
+   RETURN rc
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' * Retrieves the coordinates of the dialog's client area. The client coordinates specify the
 ' upper-left and lower-right corners of the client area. Because client coordinates are
 ' relative to the upper-left corner of a window's client area, the coordinates of the
@@ -1635,6 +1668,57 @@ PRIVATE FUNCTION CDialog.ControlSetClient (BYVAL cId AS LONG, BYVAL nWidth AS LO
    this.DialogUnitsToPixels(nWidth, nHeight, nWidth, nHeight)
    RETURN SetWindowPos(GetDlgItem(m_hDlg, cId), NULL, 0, 0, nWidth, nHeight, SWP_NOZORDER OR SWP_NOMOVE)
 END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' * Moves the control to the center of the dialog horizontally
+' - cId = Identifier of the control
+' ========================================================================================
+PRIVATE SUB CDialog.ControlCenterHoriz (BYVAL cId AS LONG)
+   DIM hCtrl AS HWND = GetDlgItem(m_hDlg, cId)
+   IF hCtrl = NULL THEN EXIT SUB
+   DIM rc AS RECT, rcParent AS RECT
+   ' // Get the coordinates of the control
+   GetWindowRect hCtrl, @rc
+   DIM nWidthControl AS LONG = rc.Right - rc.Left
+   DIM nHeightControl AS LONG = rc.Bottom - rc.Top
+   ' // Get the coordinates of the parent window
+   DIM hParent AS HWND = GetParent(hCtrl)
+   GetClientRect hParent, @rcParent
+   DIM nWidthParent AS LONG = rcParent.Right - rcParent.Left
+   ' // Calculate the x coordinate to center the control horizontally
+   DIM x AS LONG = (nWidthParent - nWidthControl) \ 2
+   ' // Convert the y coordinate of the control to client area coordinate
+   DIM pt AS POINT
+   pt.y = rc.Top
+   ScreenToClient hParent, @pt
+   MoveWindow hCtrl, x, pt.y, nWidthControl, nHeightControl, CTRUE
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' * Moves the control to the center of the dialog vertically
+' - cId = Identifier of the control
+' ========================================================================================
+PRIVATE SUB CDialog.ControlCenterVert (BYVAL cId AS LONG)
+   DIM hCtrl AS HWND = GetDlgItem(m_hDlg, cId)
+   DIM rc AS RECT, rcParent AS RECT
+   ' // Get the coordinates of the control
+   GetWindowRect hCtrl, @rc
+   DIM nWidthControl AS LONG = rc.Right - rc.Left
+   DIM nHeightControl AS LONG = rc.Bottom - rc.Top
+   ' // Get the coordinates of the parent window
+   DIM hParent AS HWND = GetParent(hCtrl)
+   GetClientRect hParent, @rcParent
+   DIM nHeightParent AS LONG = rcParent.Bottom - rcParent.Top
+   ' // Calculate the x coordinate to center the control vertically
+   DIM y AS LONG = (nHeightParent - nHeightControl) \ 2
+   ' // Convert the x coordinate of the control to client area coordinate
+   DIM pt AS POINT
+   pt.x = rc.Left
+   ScreenToClient hParent, @pt
+   MoveWindow hCtrl, pt.x + (nWidthControl \ 2), y, nWidthControl, nHeightControl, CTRUE
+END SUB
 ' ========================================================================================
 
 END NAMESPACE

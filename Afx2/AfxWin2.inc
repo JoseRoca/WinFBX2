@@ -11,20 +11,22 @@
 
 #pragma once
 #INCLUDE ONCE "windows.bi"
-#INCLUDE ONCE "win/commctrl.bi"
-#INCLUDE ONCE "win/ole2.bi"
+'#INCLUDE ONCE "win/commctrl.bi"
+'#INCLUDE ONCE "win/ole2.bi"
 #INCLUDE ONCE "win/psapi.bi"
 #INCLUDE ONCE "win/shlwapi.bi"
-#INCLUDE ONCE "win/shlobj.bi"
-#INCLUDE ONCE "win/KnownFolders.bi"
+'#INCLUDE ONCE "win/shlobj.bi"
+'#INCLUDE ONCE "win/KnownFolders.bi"
 #INCLUDE ONCE "win/commdlg.bi"
-#INCLUDE ONCE "win/cderr.bi"
-'#INCLUDE ONCE "Afx/AfxPath.inc"
-'#INCLUDE ONCE "Afx/AfxStr.inc"
-#INCLUDE ONCE "crt/string.bi"
-#INCLUDE ONCE "win/richedit.bi"
+'#INCLUDE ONCE "win/cderr.bi"
+'#INCLUDE ONCE "crt/string.bi"
+'#INCLUDE ONCE "win/richedit.bi"
 #INCLUDE ONCE "Afx2/DWSTRING.inc"
-#INCLUDE ONCE "Afx2/BSTRING.inc"
+'#INCLUDE ONCE "Afx2/BSTRING.inc"
+'#INCLUDE ONCE "Afx2/AfxDPIProcs2.inc"
+'#INCLUDE ONCE "Afx2/AfxFileProcs2.inc"
+'#INCLUDE ONCE "Afx2/AfxPath2.inc"
+'#INCLUDE ONCE "Afx2/AfxStrProcs2.inc"
 
 USING Afx2
 
@@ -573,7 +575,7 @@ PRIVATE FUNCTION AfxGetPathFromWindowHandle (BYVAL hwnd AS HWND) AS DWSTRING
 END FUNCTION
 ' ========================================================================================
 
-'#if _WIN32_WINNT = &h0602
+#if _WIN32_WINNT = &h0602
 ' ========================================================================================
 ' * Retrieves the path of an special folder. Requires Windows Vista/Windows 7 or superior.
 ' - rfid: A reference to the KNOWNFOLDERID that identifies the folder. The folders associated
@@ -610,7 +612,7 @@ PRIVATE FUNCTION AfxGetKnowFolderPath (BYVAL rfid AS CONST KNOWNFOLDERID CONST P
    RETURN dwsPath
 END FUNCTION
 ' ========================================================================================
-'#endif
+#endif
 
 ' ========================================================================================
 ' * Retrieves the path of an special folder.
@@ -1204,6 +1206,15 @@ END FUNCTION
 ' are given in screen coordinates that are relative to the upper-left corner of the screen.
 ' Note: To retrieve the height of the desktop window pass the handle returned by the
 ' API function GetDesktopWindow.
+' GetWindowRect is virtualized for DPI.
+' In Windows Vista and later, the Window Rect now includes the area occupied by the drop shadow.
+' Calling GetWindowRect will have different behavior depending on whether the window has
+' ever been shown or not. If the window has not been shown before, GetWindowRect will not
+' include the area of the drop shadow.
+' To get the window bounds excluding the drop shadow, use DwmGetWindowAttribute, specifying
+' DWMWA_EXTENDED_FRAME_BOUNDS. Note that unlike the Window Rect, the DWM Extended Frame Bounds
+' are not adjusted for DPI. Getting the extended frame bounds can only be done after the
+' window has been shown at least once.
 ' ========================================================================================
 PRIVATE FUNCTION AfxGetWindowRect (BYVAL hwnd AS HWND) AS RECT
    DIM rc AS RECT
@@ -1233,6 +1244,31 @@ PRIVATE FUNCTION AfxGetWindowHeight (BYVAL hwnd AS HWND) AS LONG
    DIM rc AS RECT
    GetWindowRect(hwnd, @rc)
    FUNCTION = rc.Bottom - rc.Top
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the bounds of a window without the drop shadows.
+' In Windows Vista and later, the Window Rect includes the area occupied by the drop shadow.
+' Calling GetWindowRect will have different behavior depending on whether the window has
+' ever been shown or not. If the window has not been shown before, GetWindowRect will not
+' include the area of the drop shadow.
+' To get the window bounds excluding the drop shadow, use DwmGetWindowAttribute, specifying
+' DWMWA_EXTENDED_FRAME_BOUNDS. Note that unlike the Window Rect, the DWM Extended Frame Bounds
+' are not adjusted for DPI. Getting the extended frame bounds can only be done after the
+' window has been shown at least once.
+' ========================================================================================
+PRIVATE FUNCTION AfxGetWindowBounds (BYVAL hwnd AS HWND) AS RECT
+   DIM rc AS RECT
+   DIM AS ANY PTR pLib = DyLibLoad("Dwmapi.DLL")
+   IF pLib  THEN
+      DIM pProc AS FUNCTION (BYVAL hwnd AS .HWND, BYVAL dwAttribute AS DWORD, BYVAL pvAttribute AS ANY PTR, BYVAL cbAttribute AS DWORD) AS HRESULT
+      pProc = DyLibSymbol(pLib, "DwmGetWindowAttribute")
+      ' DWMWA_EXTENDED_FRAME_BOUNDS = 9
+      IF pProc THEN pProc(hwnd, 9, @rc, SIZEOF(rc))
+      DyLibFree(pLib)
+   END IF
+   RETURN rc
 END FUNCTION
 ' ========================================================================================
 
@@ -1793,35 +1829,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the return value of a message processed in the dialog box procedure.
-' Return value: TRUE or FALSE.
-' Must be set just before exiting the callback message (not after calling other functions)
-' See https://forum.powerbasic.com/forum/user-to-user-discussions/programming/19130-info-dwl_msgresult
-' ========================================================================================
-PRIVATE FUNCTION AfxSetDlgMsgResult(BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL result AS LONG_PTR) AS BOOLEAN
-   IF uMsg = WM_CTLCOLORMSGBOX      OR _
-      uMsg = WM_CTLCOLOREDIT        OR _
-      uMsg = WM_CTLCOLORLISTBOX     OR _
-      uMsg = WM_CTLCOLORBTN         OR _
-      uMsg = WM_CTLCOLORDLG         OR _
-      uMsg = WM_CTLCOLORSCROLLBAR   OR _
-      uMsg = WM_CTLCOLORSTATIC      OR _
-      uMsg = WM_COMPAREITEM         OR _
-      uMsg = WM_VKEYTOITEM          OR _
-      uMsg = WM_CHARTOITEM          OR _
-      uMsg = WM_QUERYDRAGICON       OR _
-      uMsg = WM_INITDIALOG          THEN
-      FUNCTION = IIF(SetWindowLongPtrW(hwnd, DWLP_MSGRESULT, result), TRUE, FALSE)
-   END IF
-END FUNCTION
-' ========================================================================================
-'#define SetDlgMsgResult(hwnd,msg,result) (iif((msg)=WM_CTLCOLORMSGBOX orelse (msg)=WM_CTLCOLOREDIT orelse 
-'(msg)=WM_CTLCOLORLISTBOX orelse (msg)=WM_CTLCOLORBTN orelse (msg)=WM_CTLCOLORDLG orelse (msg)=WM_CTLCOLORSCROLLBAR 
-'orelse (msg)=WM_CTLCOLORSTATIC orelse (msg)=WM_COMPAREITEM orelse (msg)=WM_VKEYTOITEM orelse (msg)=WM_CHARTOITEM 
-'orelse (msg)=WM_QUERYDRAGICON orelse (msg)=WM_INITDIALOG, cast(WINBOOL, (result)), 
-'(SetWindowLongPtr((hwnd),DWLP_MSGRESULT,cast(LPARAM, cast(LRESULT, result)),TRUE))))
-
-' ========================================================================================
 ' Returns the width, in pixels, of the current display device on the computer on which the
 ' calling thread is running. Contrarily to GetSystemMetrics or GetDeviceCaps, it returns
 ' the real width even when it is called from an application that is not DPI aware, e.g. an
@@ -1866,295 +1873,6 @@ PRIVATE FUNCTION AfxGetDisplayFrequency () AS DWORD
    dm.dmSize = SIZEOF(dm)
    EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, @dm)
    FUNCTION = dm.dmDisplayFrequency
-END FUNCTION
-' ========================================================================================
-
-
-' ########################################################################################
-'                              *** DPI RELATED PROCEDURES ***
-' ########################################################################################
-
-' ========================================================================================
-' Sets the current process as dots per inch (dpi) aware.
-' Note: SetProcessDPIAware is subject to a possible race condition if a DLL caches dpi
-' settings during initialization. For this reason, it is recommended that dpi-aware be set
-' through the application (.exe) manifest rather than by calling SetProcessDPIAware.
-' Return value: TRUE on success; FALSE on failure.
-' ========================================================================================
-PRIVATE FUNCTION AfxSetProcessDPIAware () AS BOOLEAN
-   DIM AS ANY PTR pLib = DyLibLoad("user32.dll")
-   IF pLib = 0 THEN EXIT FUNCTION
-   DIM pProc AS FUNCTION () AS LONG
-   pProc = DyLibSymbol(pLib, "SetProcessDPIAware")
-   IF pProc = 0 THEN EXIT FUNCTION
-   FUNCTION = pProc()
-   DyLibFree(pLib)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Determines whether the current process is dots per inch (dpi) aware such that it adjusts
-' the sizes of UI elements to compensate for the dpi setting.
-' Return value: TRUE or FALSE
-' ========================================================================================
-PRIVATE FUNCTION AfxIsProcessDPIAware () AS BOOLEAN
-   DIM AS ANY PTR pLib = DyLibLoad("user32.dll")
-   IF pLib = 0 THEN EXIT FUNCTION
-   DIM pProc AS FUNCTION () AS LONG
-   pProc = DyLibSymbol(pLib, "IsProcessDPIAware")
-   IF pProc = 0 THEN EXIT FUNCTION
-   FUNCTION = pProc()
-   DyLibFree(pLib)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Retrieves the value of the UseDpiScaling setting (Vista/Windows 7+).
-' Returns TRUE if the OS uses DPI scaling; FALSE otherwise.
-' ========================================================================================
-PRIVATE FUNCTION AfxUseDpiScaling () AS BOOLEAN
-   DIM hkRes AS HKEY, dwType AS DWORD, dwData AS DWORD, cbData AS DWORD
-   IF RegOpenKeyExW(HKEY_CURRENT_USER, "Software\Microsoft\Windows\DWM", 0, KEY_QUERY_VALUE, @hkRes) = ERROR_SUCCESS THEN
-      IF hkRes THEN
-         cbData = SIZEOF(cbData)
-         DIM hr AS LONG = RegQueryValueExW(hkRes, "UseDpiScaling", 0, @dwType, CPTR(BYTE PTR, @dwData), @cbData)
-         RegCloseKey hkRes
-         IF hr = ERROR_SUCCESS THEN FUNCTION = (dwData <> 0)
-      END IF
-   END IF
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Retrieves the number of pixels per logical inch along the screen width of the desktop
-' window. In a system with multiple display monitors, this value is the same for all monitors.
-' ========================================================================================
-PRIVATE FUNCTION AfxLogPixelsX () AS LONG
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   DIM dpiX AS LONG = GetDeviceCaps(hDC, LOGPIXELSX)
-   ReleaseDC HWND_DESKTOP, hDC
-   FUNCTION = dpiX
-END FUNCTION
-' ========================================================================================
-#define AfxGetDpi AfxLogPixelsX
-#define AfxGetDpiX AfxLogPixelsX
-
-' ========================================================================================
-' Retrieves the number of pixels per logical inch along the screen height of the desktop
-' window. In a system with multiple display monitors, this value is the same for all monitors.
-' ========================================================================================
-PRIVATE FUNCTION AfxLogPixelsY () AS LONG
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   DIM dpiY AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
-   ReleaseDC HWND_DESKTOP, hDC
-   FUNCTION = dpiY
-END FUNCTION
-' ========================================================================================
-#define AfxGetDpiY AfxLogPixelsY
-
-' ========================================================================================
-' Retrieves the desktop horizontal scaling ratio.
-' ========================================================================================
-PRIVATE FUNCTION AfxScaleRatioX () AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   DIM rxRatio AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
-   FUNCTION = rxRatio
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Retrieves the desktop vertical scaling ratio.
-' ========================================================================================
-PRIVATE FUNCTION AfxScaleRatioY () AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   DIM ryRatio AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
-   FUNCTION = ryRatio
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Scales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
-' ========================================================================================
-PRIVATE FUNCTION AfxScaleX (BYVAL cx AS SINGLE) AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   FUNCTION = cx * (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Scales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
-' ========================================================================================
-PRIVATE FUNCTION AfxScaleY (BYVAL cy AS SINGLE) AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   FUNCTION = cy * (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Unscales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
-' ========================================================================================
-PRIVATE FUNCTION AfxUnscaleX (BYVAL cx AS SINGLE) AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   FUNCTION = cx / (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Unscales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
-' ========================================================================================
-PRIVATE FUNCTION AfxUnscaleY (BYVAL cy AS SINGLE) AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   FUNCTION = cy / (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Determines if screen resolution meets minimum requirements.
-' Parameters:
-' - cxMin = Minimum screen resolution width in pixels.
-' - cxMin = Minimum screen resolution height in pixels.
-' Return value: TRUE or FALSE.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsResolutionAtLeast (BYVAL cxMin AS LONG, BYVAL cyMin AS LONG) AS BOOLEAN
-   DIM ScreenWidth AS LONG = GetSystemMetrics(SM_CXSCREEN)
-   DIM ScreenHeight AS LONG = GetSystemMetrics(SM_CYSCREEN)
-   IF (cxMin <= ScreenWidth) AND (cyMin <= ScreenHeight) THEN FUNCTION = TRUE
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Determines if screen resolution meets minimum requirements in relative pixels,
-' e.g. for a screen resolution of 1920x1080 pixels and a DPI of 192 (scaling ratio = 2),
-' the maximum relative pixels for a DPI aware application is 960x540.
-' - cxMin = Minimum screen resolution width in relative pixels.
-' - cxMin = Minimum screen resolution height in relative pixels.
-' Return value: TRUE or FALSE.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsDPIResolutionAtLeast (BYVAL cxMin AS LONG, BYVAL cyMin AS LONG) AS BOOLEAN
-   ' // Get de DPI values used by the desktop window
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   DIM dpiX AS LONG = GetDeviceCaps(hDC, LOGPIXELSX)
-   DIM dpiY AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
-   ReleaseDC HWND_DESKTOP, hDC
-   ' // Scale the values
-   cxMin = cxMin * dpiX / 96
-   cyMin = cyMin * dpiX / 96
-   ' // Calculate the width and height of the primary display monitor, in pixels
-   DIM ScreenWidth AS LONG = GetSystemMetrics(SM_CXSCREEN)
-   DIM ScreenHeight AS LONG = GetSystemMetrics(SM_CYSCREEN)
-   IF (cxMin <= ScreenWidth) AND (cyMin <= ScreenHeight) THEN FUNCTION = TRUE
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns the logical width of the monitor that the window is currently displayed on.
-' If the application to which the window belongs is not DPI aware, a monitor with a
-' width resolution of 1920 pixels in a computer using 192 DPI, will return 960 pixels.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetMonitorLogicalWidth (BYVAL hwnd AS HWND = NULL) AS DWORD
-   ' // Get the monitor that the window is currently displayed on
-   IF hwnd = NULL THEN hwnd = GetDesktopWindow
-   DIM hMonitor AS HMONITOR = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
-   ' // Get the logical width of the monitor.
-   DIM miex AS MONITORINFOEXW
-   miex.cbSize = SIZEOF(miex)
-   GetMonitorInfoW(hMonitor, CAST(LPMONITORINFO, @miex))
-   FUNCTION = (miex.rcMonitor.right  - miex.rcMonitor.left)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns the logical height of the monitor that the window is currently displayed on.
-' If the application to which the window belongs is not DPI aware, a monitor with an
-' height resolution of 1080 pixels in a computer using 192 DPI, will return 540 pixels.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetMonitorLogicalHeight (BYVAL hwnd AS HWND = NULL) AS DWORD
-   ' // Get the monitor that the window is currently displayed on
-   IF hwnd = NULL THEN hwnd = GetDesktopWindow
-   DIM hMonitor AS HMONITOR = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
-   ' // Get the logical width of the monitor.
-   DIM miex AS MONITORINFOEXW
-   miex.cbSize = SIZEOF(miex)
-   GetMonitorInfoW(hMonitor, CAST(LPMONITORINFO, @miex))
-   FUNCTION = (miex.rcMonitor.bottom - miex.rcMonitor.top)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns the horizontal scaling of the monitor that the window is currently displayed on.
-' If the application to which the window belongs is not DPI aware, a computer using
-' 192 DPI, will return an scaling ratio of 2.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetMonitorHorizontalScaling (BYVAL hwnd AS HWND = NULL) AS DWORD
-   ' // Get the monitor that the window is currently displayed on
-   IF hwnd = NULL THEN hwnd = GetDesktopWindow
-   DIM hMonitor AS HMONITOR = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
-   ' // Get the logical width and height of the monitor.
-   DIM miex AS MONITORINFOEXW
-   miex.cbSize = sizeof(miex)
-   GetMonitorInfoW(hMonitor, CAST(LPMONITORINFO, @miex))
-   DIM cxLogical AS LONG = (miex.rcMonitor.right  - miex.rcMonitor.left)
-   DIM cyLogical AS LONG = (miex.rcMonitor.bottom - miex.rcMonitor.top)
-   ' // Get the physical width and height of the monitor.
-   DIM dm AS DEVMODEW
-   dm.dmSize = sizeof(dm)
-   dm.dmDriverExtra = 0
-   EnumDisplaySettingsW(miex.szDevice, ENUM_CURRENT_SETTINGS, @dm)
-   DIM cxPhysical AS LONG = dm.dmPelsWidth
-   DIM cyPhysical as LONG = dm.dmPelsHeight
-   ' // Calculate the scaling factor.
-   DIM horzScale AS DOUBLE = cxPhysical / cxLogical
-   DIM vertScale AS DOUBLE = cyPhysical / cyLogical
-   FUNCTION = horzScale
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns the vertical scaling of the monitor that the window is currently displayed on.
-' If the application to which the window belongs is not DPI aware, a computer using
-' 192 DPI, will return an scaling ratio of 2.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetMonitorVerticalScaling (BYVAL hwnd AS HWND = NULL) AS DWORD
-   ' // Get the monitor that the window is currently displayed on
-   IF hwnd = NULL THEN hwnd = GetDesktopWindow
-   DIM hMonitor AS HMONITOR = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
-   ' // Get the logical width and height of the monitor.
-   DIM miex AS MONITORINFOEXW
-   miex.cbSize = sizeof(miex)
-   GetMonitorInfoW(hMonitor, CAST(LPMONITORINFO, @miex))
-   DIM cxLogical AS LONG = (miex.rcMonitor.right  - miex.rcMonitor.left)
-   DIM cyLogical AS LONG = (miex.rcMonitor.bottom - miex.rcMonitor.top)
-   ' // Get the physical width and height of the monitor.
-   DIM dm AS DEVMODEW
-   dm.dmSize = sizeof(dm)
-   dm.dmDriverExtra = 0
-   EnumDisplaySettingsW(miex.szDevice, ENUM_CURRENT_SETTINGS, @dm)
-   DIM cxPhysical AS LONG = dm.dmPelsWidth
-   DIM cyPhysical as LONG = dm.dmPelsHeight
-   ' // Calculate the scaling factor.
-   DIM horzScale AS DOUBLE = cxPhysical / cxLogical
-   DIM vertScale AS DOUBLE = cyPhysical / cyLogical
-   FUNCTION = vertScale
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Loads a specified icon resource with a client-specified system metric.
-' See: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775701(v=vs.85).aspx
-' ========================================================================================
-PRIVATE FUNCTION AfxLoadIconMetric (BYVAL hinst AS HINSTANCE, BYVAL pszName AS PCWSTR, BYVAL lims AS LONG, BYVAL phico AS HICON PTR) AS HRESULT
-   DIM AS ANY PTR pLib = DyLibLoad("Comctl32.dll")
-   IF pLib = NULL THEN EXIT FUNCTION
-   DIM pLoadIconMetric AS FUNCTION (BYVAL hinst AS HINSTANCE, BYVAL pszName AS PCWSTR, BYVAL lims AS LONG, BYVAL phico AS HICON PTR) AS HRESULT
-   pLoadIconMetric = DyLibSymbol(pLib, "LoadIconMetric")
-   IF pLoadIconMetric THEN FUNCTION = pLoadIconMetric(hinst, pszName, lims, phico)
-   DyLibFree(pLib)
 END FUNCTION
 ' ========================================================================================
 
@@ -2321,6 +2039,43 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION AfxPointSizeToDip (BYVAL ptsize AS SINGLE) AS SINGLE
    FUNCTION = (ptsize / 72) * 96
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' * Converts the specified dialog box units to screen units (pixels).
+' ========================================================================================
+PRIVATE FUNCTION AfxDialogUnitsToPixels (BYVAL hDlg AS HWND, BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
+   IF hDlg = NULL THEN RETURN FALSE
+   IF VARPTR(pixelX) = 0 OR VARPTR(pixelY) = 0 THEN RETURN FALSE
+   DIM rc AS RECT
+   rc.Left = dluX : rc.Top = dluY
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN FALSE
+   IF VARPTR(pixelX) THEN pixelX = rc.Left
+   IF VARPTR(pixelY) THEN pixelY = rc.Top
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Converts the specied screen units (pixels) to dialog box units.
+' ========================================================================================
+PRIVATE FUNCTION AfxPixelsToDialogUnits (BYVAL hDlg AS HWND, BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
+   IF hDlg = NULL THEN RETURN FALSE
+   IF VARPTR(pixelX) = 0 OR VARPTR(pixelY) = 0 THEN RETURN FALSE
+   DIM rc AS RECT
+   rc.Left = pixelX
+   rc.Top = pixelY
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN FALSE
+   DIM rx AS SINGLE
+   rx = rc.Left / pixelX
+   DIM ry AS SINGLE
+   ry = rc.Top / pixelY
+   IF VARPTR(dluX) THEN dluX = pixelX / rx
+   IF VARPTR(dluY) THEN dluY = pixelY / ry
+   RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 
@@ -2498,357 +2253,6 @@ END FUNCTION
 
 
 ' ########################################################################################
-'                                      *** FONTS ***
-' ########################################################################################
-
-' ========================================================================================
-' Font enum
-' ========================================================================================
-enum
-   AFX_FONT_CAPTION = 1    ' // Caption font
-   AFX_FONT_SMALLCAPTION   ' // Small caption font
-   AFX_FONT_MENU           ' // Font used in menu bars
-   AFX_FONT_STATUS         ' // Font used in status bars and tooltips
-   AFX_FONT_MESSAGE        ' // Font used in message boxes
-   ' // Font settings
-   AFX_FONT_HEIGHT         ' // Font height
-   AFX_FONT_WEIGHT         ' // Font weight
-   AFX_FONT_ITALIC         ' // Font italic
-   AFX_FONT_UNDERLINE      ' // Font underline
-   AFX_FONT_STRIKEOUT      ' // Font strikeout
-   AFX_FONT_CHARSET        ' // Font charset
-end enum
-' ========================================================================================
-
-' ========================================================================================
-' Gets the font with which the window is currently drawing its text.
-' Note: You can also use the GetWindowFont macro (windowsx.bi).
-' ========================================================================================
-PRIVATE FUNCTION AfxGetWindowFont (BYVAL hwnd AS HWND) AS HFONT
-   FUNCTION = CAST(HFONT, SendMessageW(hwnd, WM_GETFONT, 0, 0))
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Sets the font with which the window is currently drawing its text.
-' hwnd
-'   Handle to the window.
-' hFont
-'   Handle to the font. If this parameter is NULL, the control uses the default system
-'   font to draw text.
-' fRedraw
-'   Specifies whether the control should be redrawn immediately upon setting the font. If
-'   this parameter is TRUE, the control redraws itself.
-' ========================================================================================
-PRIVATE SUB AfxSetWindowFont (BYVAL hwnd AS HWND, BYVAL hFont AS HFONT, BYVAL fRedraw AS LONG = CTRUE)
-   SendMessageW(hwnd, WM_SETFONT, CAST(WPARAM, hFont), fRedraw)
-END SUB
-' ========================================================================================
-
-' ========================================================================================
-' Retrieves information about the font being used by a window or control
-' Parameter:
-' - hwnd = Handle of the window or control.
-' Return value:
-' - A LOGFONTW structure.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetWindowFontInfo (BYVAL hwnd AS HWND) AS LOGFONTW
-   ' // Get the handle of the font used by the window or control
-   DIM hCurFont AS HFONT = CAST(HFONT, SendMessageW(hwnd, WM_GETFONT, 0, 0))
-   ' // Get the LOGFONTW structure
-   DIM lfw AS LOGFONTW
-   IF hCurFont THEN GetObjectW(hCurFont, SIZEOF(lfw), @lfw)
-   RETURN lfw
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Retrieves information about the fonts used by Windows.
-' Parameters:
-' - nType = The type of font:
-'   AFX_FONT_CAPTION, AFX_FONT_SMALLCAPTION, AFX_FONT_MENU, AFX_FONT_STATUS, AFX_FONT_MESSAGE
-' - plfw = Pointer to a LOGFONTW structure that receives the font information.
-' Return value: TRUE on succes or FALSE on failure.
-' To get extended error information, call GetLastError.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetWindowsFontInfo (BYVAL nType AS LONG, BYVAL plfw AS LOGFONTW PTR) AS BOOLEAN
-   DIM ncm AS NONCLIENTMETRICSW
-   IF plfw = NULL THEN EXIT FUNCTION
-   IF AfxWindowsVersion >= 6 THEN ncm.cbSize = 504 ELSE ncm.cbSize = 500
-   IF SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, SIZEOF(ncm), @ncm, 0) = 0 THEN EXIT FUNCTION
-   SELECT CASE nType
-      CASE AFX_FONT_CAPTION      : *plfw = ncm.lfCaptionFont
-      CASE AFX_FONT_SMALLCAPTION : *plfw = ncm.lfSmCaptionFont
-      CASE AFX_FONT_MENU         : *plfw = ncm.lfMenuFont
-      CASE AFX_FONT_STATUS       : *plfw = ncm.lfStatusFont
-      CASE AFX_FONT_MESSAGE      : *plfw = ncm.lfMessageFont
-      CASE ELSE
-         RETURN FALSE
-   END SELECT
-   FUNCTION = TRUE
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Retrieves the point size of the fonts used by Windows.
-' Parameters:
-' - nType = The type of font:
-'   AFX_FONT_CAPTION, AFX_FONT_SMALLCAPTION, AFX_FONT_MENU, AFX_FONT_STATUS, AFX_FONT_MESSAGE
-' Return value: The point size.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetWindowsFontPointSize (BYVAL nType AS LONG) AS LONG
-   DIM ncm AS NONCLIENTMETRICSW
-   IF AfxWindowsVersion >= 6 THEN ncm.cbSize = 504 ELSE ncm.cbSize = 500
-   IF SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, SIZEOF(ncm), @ncm, 0) = 0 THEN EXIT FUNCTION
-   DIM hDC AS HDC = CreateDCW("DISPLAY", NULL, NULL, NULL)
-   IF hDC = NULL THEN EXIT FUNCTION
-   DIM cyPixelsPerInch AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
-   DeleteDC hDC
-   DIM nPointSize AS LONG
-   SELECT CASE nType
-      CASE AFX_FONT_CAPTION      : nPointSize = MulDiv(ncm.lfCaptionFont.lfHeight, 72, cyPixelsPerInch)
-      CASE AFX_FONT_SMALLCAPTION : nPointSize = MulDiv(ncm.lfSmCaptionFont.lfHeight, 72, cyPixelsPerInch)
-      CASE AFX_FONT_MENU         : nPointSize = MulDiv(ncm.lfMenuFont.lfHeight, 72, cyPixelsPerInch)
-      CASE AFX_FONT_STATUS       : nPointSize = MulDiv(ncm.lfStatusFont.lfHeight, 72, cyPixelsPerInch)
-      CASE AFX_FONT_MESSAGE      : nPointSize = MulDiv(ncm.lfMessageFont.lfHeight, 72, cyPixelsPerInch)
-   END SELECT
-   IF nPointSize < 0 THEN nPointSize = -nPointSize
-   FUNCTION = nPointSize
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns the point size of a font given its logical height
-' ========================================================================================
-PRIVATE FUNCTION AfxGetFontPointSize (BYVAL nHeight AS LONG) AS LONG
-   DIM hDC AS HDC = CreateDCW("DISPLAY", NULL, NULL, NULL)
-   IF hDC = NULL THEN EXIT FUNCTION
-   DIM cyPixelsPerInch AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
-   DeleteDC HDC
-   DIM nPointSize AS LONG = MulDiv(nHeight, 72, cyPixelsPerInch)
-   IF nPointSize < 0 THEN nPointSize = -nPointSize
-   FUNCTION = nPointSize
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns the logical height of a font given its point size
-' ========================================================================================
-PRIVATE FUNCTION AfxGetFontHeight (BYVAL nPointSize AS LONG) AS LONG
-   DIM hDC AS HDC = CreateDCW("DISPLAY", NULL, NULL, NULL)
-   IF hDC = NULL THEN EXIT FUNCTION
-   DIM cyPixelsPerInch AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
-   DeleteDC HDC
-   DIM nHeight AS LONG = -MulDiv(nPointSize, cyPixelsPerInch, 72)
-   FUNCTION = nHeight
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Modifies the face name of the font of a window or control.
-' Parameters:
-' - hwnd = Handle of the window or control.
-' - wszNewFaceName = The new face name of the font.
-' Return value: The handle of the new font on success, or NULL on failure.
-' To get extended error information, call GetLastError.
-' Remarks: The returned font must be destroyed with DeleteObject or the macro DeleteFont
-' when no longer needed to prevent memory leaks.
-' ========================================================================================
-PRIVATE FUNCTION AfxModifyFontFaceName (BYVAL hwnd AS HWND, BYREF wszNewFaceName AS WSTRING) AS HFONT
-   DIM lfw AS LOGFONTW
-   IF hwnd = NULL OR VARPTR(wszNewFaceName) = NULL THEN EXIT FUNCTION
-   ' // Get the handle of the font used by the window
-   DIM hCurFont AS HFONT = CAST(HFONT, SendMessageW(hwnd, WM_GETFONT, 0, 0))
-   IF hCurFont = 0 THEN EXIT FUNCTION
-   ' // Get the LOGFONTW structure
-   IF GetObject(hCurFont, SIZEOF(lfw), @lfw) = 0 THEN EXIT FUNCTION
-   ' // Change the face name
-   lfw.lfFaceName = wszNewFaceName
-   ' // Create a new font
-   DIM hNewFont AS HFONT = CreateFontIndirectW(@lfw)
-   IF hNewFont = 0 THEN EXIT FUNCTION
-   ' // Select the new font and delete the old one
-   DIM hDC AS HDC = GetDC(hwnd)
-   DeleteObject(SelectObject(hDC, CAST(HGDIOBJ, hNewFont)))
-   ReleaseDC(hwnd, hDC)
-   SendMessageW(hwnd, WM_SETFONT, CAST(WPARAM, hNewFont), CTRUE)
-   FUNCTION = hNewFont
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Modifies settings of the font used by a window of control.
-' Parameters:
-' - hwnd = Handle of the window or control.
-' - nSetting : One of the AFX_FONT_xxx constants.
-' - nValue: Depends of the nSetting value
-'   AFX_FONT_HEIGHT
-'      The base is 100. To increase the font a 20% pass 120; to reduce it a 20% pass 80%.
-'   AFX_FONT_WEIGHT
-'      The weight of the font in the range 0 through 1000. For example, 400 is normal and
-'      700 is bold. If this value is zero, a default weight is used.
-'      The following values are defined for convenience.
-'      FW_DONTCARE (0), FW_THIN (100), FW_EXTRALIGHT (200), FW_ULTRALIGHT (200), FW_LIGHT (300),
-'      FW_NORMAL (400), FW_REGULAR (400), FW_MEDIUM (500), FW_SEMIBOLD (600), FW_DEMIBOLD (600),
-'      FW_BOLD (700), FW_EXTRABOLD (800), FW_ULTRABOLD (800), FW_HEAVY (900), FW_BLACK (900)
-'   AFX_FONT_ITALIC : TRUE or FALSE.
-'   AFX_FONT_UNDERLINE : TRUE or FALSE.
-'   AFX_FONT_STRIKEOUT : TRUE or FALSE.
-'   AFX_FONT_CHARSET
-'      The following values are predefined: ANSI_CHARSET, BALTIC_CHARSET, CHINESEBIG5_CHARSET,
-'      DEFAULT_CHARSET, EASTEUROPE_CHARSET, GB2312_CHARSET, GREEK_CHARSET, HANGUL_CHARSET,
-'      MAC_CHARSET, OEM_CHARSET, RUSSIAN_CHARSET, SHIFTJIS_CHARSET, SYMBOL_CHARSET, TURKISH_CHARSET,
-'      VIETNAMESE_CHARSET, JOHAB_CHARSET (Korean language edition of Windows), ARABIC_CHARSET and
-'      HEBREW_CHARSET (Middle East language edition of Windows), THAI_CHARSET (Thai language
-'      edition of Windows).
-'      The OEM_CHARSET value specifies a character set that is operating-system dependent.
-'      DEFAULT_CHARSET is set to a value based on the current system locale. For example, when
-'      the system locale is English (United States), it is set as ANSI_CHARSET.
-'      Fonts with other character sets may exist in the operating system. If an application uses
-'      a font with an unknown character set, it should not attempt to translate or interpret
-'      strings that are rendered with that font.
-'      This parameter is important in the font mapping process. To ensure consistent results,
-'      specify a specific character set. If you specify a typeface name in the lfFaceName member,
-'      make sure that the lfCharSet value matches the character set of the typeface specified in lfFaceName.
-' Return value: The handle of the new font on success, or NULL on failure.
-' To get extended error information, call GetLastError.
-' Remarks: The returned font must be destroyed with DeleteObject or the macro DeleteFont
-' when no longer needed to prevent memory leaks.
-' ========================================================================================
-PRIVATE FUNCTION AfxModifyFontSettings (BYVAL hwnd AS HWND, BYVAL nSetting AS LONG, BYVAL nValue AS LONG) AS HFONT
-   DIM lfw AS LOGFONTW
-   IF IsWindow(hwnd) = 0 THEN EXIT FUNCTION
-   ' // Get the handle of the font used by the window
-   DIM hCurFont AS HFONT = CAST(HFONT, SendMessageW(hwnd, WM_GETFONT, 0, 0))
-   IF hCurFont = NULL THEN EXIT FUNCTION
-   ' // Get the LOGFONTW structure
-   IF GetObject(hCurFont, SIZEOF(lfw), @lfw) = 0 THEN EXIT FUNCTION
-   ' // Change the specified setting
-   SELECT CASE nSetting
-      CASE AFX_FONT_HEIGHT
-         ' // Change the point size
-         DIM lPointSize AS LONG = AfxGetFontPointSize(lfw.lfHeight)
-         lPointSize = lPointSize * (nValue / 100)
-         lfw.lfHeight = -MulDiv(lPointSize, AfxLogPixelsY, 72)
-      CASE AFX_FONT_WEIGHT
-         ' // Change the font weight
-         lfw.lfWeight = nValue
-      CASE AFX_FONT_ITALIC
-         ' // Change the italic flag
-         lfw.lfItalic = CUBYTE(nValue)
-      CASE AFX_FONT_UNDERLINE
-         ' // Change the underline flag
-         lfw.lfUnderline = CUBYTE(nValue)
-      CASE AFX_FONT_STRIKEOUT
-         ' // Change the strikeout flag
-         lfw.lfStrikeOut = CUBYTE(nValue)
-      CASE AFX_FONT_CHARSET
-         ' // Change the charset
-         lfw.lfCharset = CUBYTE(nValue)
-      CASE ELSE
-         EXIT FUNCTION
-   END SELECT
-   ' // Create a new font
-   DIM hNewFont AS HFONT = CreateFontIndirectW(@lfw)
-   IF hNewFont = NULL THEN EXIT FUNCTION
-   ' // Select the new font and delete the old one
-   DIM hDC AS HDC = GetDC(hwnd)
-   DeleteObject(SelectObject(hDC, CAST(HGDIOBJ, hNewFont)))
-   ReleaseDC(hwnd, hDC)
-   SendMessageW(hwnd, WM_SETFONT, CAST(WPARAM, hNewFont), CTRUE)
-   FUNCTION = hNewFont
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Modifies the height of the font used by a window of control.
-' Parameters:
-' - hwnd = Handle of the window or control.
-' - nValue: The base is 100. To increase the font a 20% pass 120; to reduce it a 20% pass 80%.
-' Return value: The handle of the new font on success, or NULL on failure.
-' To get extended error information, call GetLastError.
-' Remarks: The returned font must be destroyed with DeleteObject or the macro DeleteFont
-' when no longer needed to prevent memory leaks.
-' ========================================================================================
-PRIVATE FUNCTION AfxModifyFontHeight (BYVAL hwnd AS HWND, BYVAL nValue AS LONG) AS HFONT
-   FUNCTION = AfxModifyFontSettings(hwnd, AFX_FONT_HEIGHT, nValue)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Creates a logical font.
-' Parameters:
-' - wszFaceName = The typeface name.
-' - lPointSize = The point size.
-' - DPI = Dots per inch to calculate scaling. Default value = 96 (no scaling). If you pass -1
-'   and the application is DPI aware, the DPI value used by the operating system will be used.
-' - lWeight = The weight of the font in the range 0 through 1000. For example, 400 is normal
-'      and 700 is bold. If this value is zero, a default weight is used.
-'      The following values are defined for convenience.
-'      FW_DONTCARE (0), FW_THIN (100), FW_EXTRALIGHT (200), FW_ULTRALIGHT (200), FW_LIGHT (300),
-'      FW_NORMAL (400), FW_REGULAR (400), FW_MEDIUM (500), FW_SEMIBOLD (600), FW_DEMIBOLD (600),
-'      FW_BOLD (700), FW_EXTRABOLD (800), FW_ULTRABOLD (800), FW_HEAVY (900), FW_BLACK (900)
-' - bItalic = Italic flag. CTRUE or FALSE
-' - bUnderline = Underline flag. CTRUE or FALSE
-' - bStrikeOut = StrikeOut flag. CTRUE or FALSE
-' - bCharset = Charset.
-'      The following values are predefined: ANSI_CHARSET, BALTIC_CHARSET, CHINESEBIG5_CHARSET,
-'      DEFAULT_CHARSET, EASTEUROPE_CHARSET, GB2312_CHARSET, GREEK_CHARSET, HANGUL_CHARSET,
-'      MAC_CHARSET, OEM_CHARSET, RUSSIAN_CHARSET, SHIFTJIS_CHARSET, SYMBOL_CHARSET, TURKISH_CHARSET,
-'      VIETNAMESE_CHARSET, JOHAB_CHARSET (Korean language edition of Windows), ARABIC_CHARSET and
-'      HEBREW_CHARSET (Middle East language edition of Windows), THAI_CHARSET (Thai language
-'      edition of Windows).
-'      The OEM_CHARSET value specifies a character set that is operating-system dependent.
-'      DEFAULT_CHARSET is set to a value based on the current system locale. For example, when
-'      the system locale is English (United States), it is set as ANSI_CHARSET.
-'      Fonts with other character sets may exist in the operating system. If an application uses
-'      a font with an unknown character set, it should not attempt to translate or interpret
-'      strings that are rendered with that font.
-'      This parameter is important in the font mapping process. To ensure consistent results,
-'      specify a specific character set. If you specify a typeface name in the lfFaceName member,
-'      make sure that the lfCharSet value matches the character set of the typeface specified in lfFaceName.
-' Return value: The handle of the font or NULL on failure.
-' Remarks: The returned font must be destroyed with DeleteObject or the macro DeleteFont
-' when no longer needed to prevent memory leaks.
-' Usage examples:
-'   hFont = AfxCreateFont("MS Sans Serif", 8, , FW_NORMAL, , , , DEFAULT_CHARSET)
-'   hFont = AfxCreateFont("Courier New", 10, -1 , FW_BOLD, , , , DEFAULT_CHARSET)
-'   hFont = AfxCreateFont("Marlett", 8, -1, FW_NORMAL, , , , SYMBOL_CHARSET)
-' ========================================================================================
-PRIVATE FUNCTION AfxCreateFont (BYREF wszFaceName AS WSTRING, BYVAL lPointSize AS LONG, BYVAL DPI AS LONG = 96, _
-   BYVAL lWeight AS LONG = 0, BYVAL bItalic AS UBYTE = FALSE, BYVAL bUnderline AS UBYTE = FALSE, _
-   BYVAL bStrikeOut AS UBYTE = FALSE, BYVAL bCharSet AS UBYTE = DEFAULT_CHARSET) AS HFONT
-
-   DIM tlfw AS LOGFONTW
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-
-   ' // Font scaling
-   IF DPI = -1 THEN DPI = GetDeviceCaps(hDC, LOGPIXELSX)
-   IF DPI > 0 THEN lPointSize = (lPointSize * DPI) \ GetDeviceCaps(hDC, LOGPIXELSY)
-
-   tlfw.lfHeight         = -MulDiv(lPointSize, .GetDeviceCaps(hDC, LOGPIXELSY), 72)  ' logical font height
-   tlfw.lfWidth          =  0                                                        ' average character width
-   tlfw.lfEscapement     =  0                                                        ' escapement
-   tlfw.lfOrientation    =  0                                                        ' orientation angles
-   tlfw.lfWeight         =  lWeight                                                  ' font weight
-   tlfw.lfItalic         =  bItalic                                                  ' italic(CTRUE/FALSE)
-   tlfw.lfUnderline      =  bUnderline                                               ' underline(CTRUE/FALSE)
-   tlfw.lfStrikeOut      =  bStrikeOut                                               ' strikeout(CTRUE/FALSE)
-   tlfw.lfCharSet        =  bCharset                                                 ' character set
-   tlfw.lfOutPrecision   =  OUT_TT_PRECIS                                            ' output precision
-   tlfw.lfClipPrecision  =  CLIP_DEFAULT_PRECIS                                      ' clipping precision
-   tlfw.lfQuality        =  DEFAULT_QUALITY                                          ' output quality
-   tlfw.lfPitchAndFamily =  FF_DONTCARE                                              ' pitch and family
-   tlfw.lfFaceName       =  wszFaceName                                              ' typeface name
-
-   ReleaseDC(HWND_DESKTOP, hDC)
-   FUNCTION = CreateFontIndirectW(@tlfw)
-
-END FUNCTION
-' ========================================================================================
-
-
-' ########################################################################################
 '                        *** DIBs (Device Independent Bitmaps) ***
 ' ########################################################################################
 
@@ -3016,588 +2420,6 @@ PRIVATE FUNCTION AfxDrawBitmap (BYVAL hDC AS HDC, BYVAL xStart AS LONG, BYVAL yS
 END FUNCTION
 ' ========================================================================================
 
-' ########################################################################################
-'                                     *** FILES ***
-' ########################################################################################
-
-' ========================================================================================
-' Searches a directory for a file or subdirectory with a name that matches a specific name
-' (or partial name if wildcards are used).
-' Parameter:
-' - pwszFileSpec: The directory or path, and the file name, which can include wildcard
-'   characters, for example, an asterisk (*) or a question mark (?).
-'   This parameter should not be NULL, an invalid string (for example, an empty string or a
-'   string that is missing the terminating null character), or end in a trailing backslash (\).
-'   If the string ends with a wildcard, period (.), or directory name, the user must have
-'   access permissions to the root and all subdirectories on the path. To extend the limit
-'   of MAX_PATH wide characters to 32,767 wide characters, prepend "\\?\" to the path.
-' Return value:
-'   Returns TRUE if the specified file exists or FALSE otherwise.
-' Remarks:
-'   Prepending the string "\\?\" does not allow access to the root directory.
-'   On network shares, you can use a pwszFileSpec in the form of the following:
-'   "\\server\service\*". However, you cannot use a pwszFileSpec that points to the share
-'   itself; for example, "\\server\service" is not valid.
-'   To examine a directory that is not a root directory, use the path to that directory,
-'   without a trailing backslash. For example, an argument of "C:\Windows" returns information
-'   about the directory "C:\Windows", not about a directory or file in "C:\Windows".
-'   To examine the files and directories in "C:\Windows", use an pwszFileSpec of "C:\Windows\*".
-'   Be aware that some other thread or process could create or delete a file with this name
-'   between the time you query for the result and the time you act on the information.
-'   If this is a potential concern for your application, one possible solution is to use
-'   the CreateFile function with CREATE_NEW (which fails if the file exists) or OPEN_EXISTING
-'   (which fails if the file does not exist).
-' ========================================================================================
-PRIVATE FUNCTION AfxFileExists (BYVAL pwszFileSpec AS WSTRING PTR) AS BOOLEAN
-   DIM fd AS WIN32_FIND_DATAW
-   IF pwszFileSpec = NULL THEN EXIT FUNCTION
-   DIM hFind AS HANDLE = FindFirstFileW(pwszFileSpec, @fd)
-   IF hFind = INVALID_HANDLE_VALUE THEN EXIT FUNCTION
-   FindClose hFind
-   ' // Make sure that it is not a directory or a temporary file
-   IF (fd.dwFileAttributes AND FILE_ATTRIBUTE_DIRECTORY) <> FILE_ATTRIBUTE_DIRECTORY AND _
-      (fd.dwFileAttributes AND FILE_ATTRIBUTE_TEMPORARY) <> FILE_ATTRIBUTE_TEMPORARY THEN
-      FUNCTION = TRUE
-   END IF
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Deletes the specified file.
-' Parameter:
-' - pwszFileSpec: The full path and name of the file to delete.
-' Return value:
-'   If the function succeeds, the return value is nonzero.
-'   If the function fails, the return value is zero (0). To get extended error information, call GetLastError.
-' Remarks:
-'   If an application attempts to delete a file that does not exist, this function fails
-'   with ERROR_FILE_NOT_FOUND. If the file is a read-only file, the function fails with
-'   ERROR_ACCESS_DENIED.
-' ========================================================================================
-PRIVATE FUNCTION AfxDeleteFile (BYVAL pwszFileSpec AS WSTRING PTR) AS BOOLEAN
-   IF pwszFileSpec = NULL THEN EXIT FUNCTION
-   FUNCTION = DeleteFileW(pwszFileSpec)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Replacemet for Free Basic's Kill. Returns zero (0) on success, or non-zero on error.
-' ========================================================================================
-PRIVATE FUNCTION AfxKill (BYVAL pwszFileSpec AS WSTRING PTR) AS BOOLEAN
-   IF pwszFileSpec = NULL THEN EXIT FUNCTION
-   FUNCTION = NOT DeleteFileW(pwszFileSpec)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Creates a new directory.
-' - lpPathName : The path of the directory to be created.
-'   To extend the limit to 32,767 wide characters, prepend "\?" to the path.
-' Return value:
-'   If the function succeeds, the return value is TRUE.
-'   If the function fails, the return value is FALSE.
-'   To get extended error information, call GetLastError.
-'   Possible errors include the following.
-'   - ERROR_ALREADY_EXISTS
-'     The specified directory already exists.
-'   - ERROR_PATH_NOT_FOUND
-'     One or more intermediate directories do not exist; this function will only create
-'     the final directory in the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxCreateDirectory (BYVAL lpPathName AS LPCWSTR) AS BOOLEAN
-   RETURN CreateDirectoryW(lpPathName, NULL)
-END FUNCTION
-' ========================================================================================
-PRIVATE FUNCTION AfxMakeDir (BYVAL lpPathName AS LPCWSTR) AS BOOLEAN
-   RETURN CreateDirectoryW(lpPathName, NULL)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Unicode replacement for FreeBasic MkDir.
-' Returns 0 on success, or -1 on failure.
-' ========================================================================================
-PRIVATE FUNCTION AfxMkDir (BYVAL lpPathName AS LPCWSTR) AS LONG
-   DIM res AS LONG = CreateDirectoryW(lpPathName, NULL)
-   IF res = 0 THEN RETURN -1 ELSE RETURN 0
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Deletes an existing empty directory.
-' - lpPathName : The path of the directory to be removed. This path must specify an empty
-'   directory, and the calling process must have delete access to the directory.
-' To extend the MAX_PATH limit to 32,767 wide characters prepend "\?" to the path.
-' If the function succeeds, the return value is TRUE.
-' If the function fails, the return value is FALSE.
-' To get extended error information, call GetLastError.
-' The AfxRemoveDirectory function marks a directory for deletion on close. Therefore, the
-' directory is not removed until the last handle to the directory is closed.
-' To recursively delete the files in a directory, use the SHFileOperation function.
-' AfxRemoveDirectory removes a directory junction, even if the contents of the target are not
-' empty; the function removes directory junctions regardless of the state of the target object.
-' ========================================================================================
-PRIVATE FUNCTION AfxRemoveDirectory (BYVAL lpPathName AS LPCWSTR) AS BOOLEAN
-   RETURN RemoveDirectoryW(lpPathName)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION AfxRemoveDir (BYVAL lpPathName AS LPCWSTR) AS BOOLEAN
-   RETURN RemoveDirectoryW(lpPathName)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Unicode replacement for Free Basic's RmDir.
-' Returns 0 on success and -1 on failure.
-' ========================================================================================
-PRIVATE FUNCTION AfxRmDir (BYVAL lpPathName AS LPCWSTR) AS LONG
-   DIM res AS LONG = RemoveDirectoryW(lpPathName)
-   IF res = 0 THEN RETURN -1 ELSE RETURN 0
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Copies an existing file to a new file.
-' - lpExistingFileName : The name of an existing file.
-'   To extend the limit of MAX_PATH characters to 32,767 wide characters prepend "\?" to the path.
-'   If lpExistingFileName does not exist, CopyFile fails, and GetLastError returns ERROR_FILE_NOT_FOUND.
-' - lpNewFileName : The name of the new file.
-'   To extend the limit of MAX_PATH characters to 32,767 wide characters prepend "\?" to the path.
-' - bFailIfExists
-'   If this parameter is TRUE and the new file specified by lpNewFileName already exists, the
-'   function fails. If this parameter is FALSE and the new file already exists, the function
-'   overwrites the existing file and succeeds.
-' Return value:
-'   If the function succeeds, the return value is TRUE.
-'   If the function fails, the return value is FALSE. To get extended error information, call GetLastError.
-' ========================================================================================
-PRIVATE FUNCTION AfxCopyFile (BYVAL lpExistingFileName AS LPCWSTR, BYVAL lpNewFileName AS LPCWSTR, BYVAL bFailIfExists AS BOOLEAN = FALSE) AS BOOLEAN
-   RETURN CopyFileW(lpExistingFileName, lpNewFileName, bFailIfExists)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Unicode replacement for Free Basic's FileCopy.
-' Returns 0 on success, or 1 if an error occurred.
-' ========================================================================================
-PRIVATE FUNCTION AfxFileCopy (BYVAL lpExistingFileName AS LPCWSTR, BYVAL lpNewFileName AS LPCWSTR) AS LONG
-   DIM nRet AS LONG = IIF(CopyFileW(lpExistingFileName, lpNewFileName, FALSE) = 0, 1, 0)
-   RETURN nRet
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Moves an existing file or a directory, including its children.
-' - lpExistingFileName : The name of an existing file.
-'   To extend the limit of MAX_PATH characters to 32,767 wide characters prepend "\?" to the path.
-'   If lpExistingFileName does not exist, AfxMoveFile fails, and GetLastError returns ERROR_FILE_NOT_FOUND.
-' - lpNewFileName : The name of the new file.
-'   To extend the limit of MAX_PATH characters to 32,767 wide characters prepend "\?" to the path.
-' Return value:
-'   If the function succeeds, the return value is TRUE.
-'   If the function fails, the return value is FALSE. To get extended error information, call GetLastError.
-' ========================================================================================
-PRIVATE FUNCTION AfxMoveFile (BYVAL lpExistingFileName AS LPCWSTR, BYVAL lpNewFileName AS LPCWSTR) AS BOOLEAN
-   RETURN MoveFileW(lpExistingFileName, lpNewFileName)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION AfxRenameFile (BYVAL lpExistingFileName AS LPCWSTR, BYVAL lpNewFileName AS LPCWSTR) AS BOOLEAN
-   RETURN MoveFileW(lpExistingFileName, lpNewFileName)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Unicode replacement for Free Basic's Name function.
-' Returns 0 on success, or non-zero on failure.
-' ========================================================================================
-PRIVATE FUNCTION AfxName (BYVAL lpExistingFileName AS LPCWSTR, BYVAL lpNewFileName AS LPCWSTR) AS LONG
-   DIM res AS LONG = MoveFileW(lpExistingFileName, lpNewFileName)
-   IF res = 0 THEN RETURN -1 ELSE RETURN 0
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Searches a directory for a file or subdirectory with a name that matches a specific name
-' (or partial name if wildcards are used).
-' Parameter:
-' - pwszFileSpec: The directory or path, and the file name, which can include wildcard
-'   characters, for example, an asterisk (*) or a question mark (?).
-'   This parameter should not be NULL, an invalid string (for example, an empty string or a
-'   string that is missing the terminating null character), or end in a trailing backslash (\).
-'   If the string ends with a wildcard, period (.), or directory name, the user must have
-'   access permissions to the root and all subdirectories on the path. To extend the limit
-'   of MAX_PATH wide characters to 32,767 wide characters, prepend "\\?\" to the path.
-' Return value:
-'   Returns TRUE if the specified folder exists or FALSE otherwise.
-' Remarks
-'   Prepending the string "\\?\" does not allow access to the root directory.
-'   On network shares, you can use a file spec in the form of the following: "\\server\service\*".
-'   However, you cannot use a file spec that points to the share itself; for example,
-'   "\\server\service" is not valid.
-'   To examine a directory that is not a root directory, use the path to that directory,
-'   without a trailing backslash. For example, an argument of "C:\Windows" returns information
-'   about the directory "C:\Windows", not about a directory or file in "C:\Windows".
-'   To examine the files and directories in "C:\Windows", use a file spec of "C:\Windows\*".
-'   Be aware that some other thread or process could create or delete a file with this name
-'   between the time you query for the result and the time you act on the information.
-'   If this is a potential concern for your application, one possible solution is to use
-'   the CreateFile function with CREATE_NEW (which fails if the file exists) or OPEN_EXISTING
-'   (which fails if the file does not exist).
-' ========================================================================================
-PRIVATE FUNCTION AfxFolderExists (BYVAL pwszFileSpec AS WSTRING PTR) AS BOOLEAN
-   DIM fd AS WIN32_FIND_DATAW
-   IF pwszFileSpec = NULL THEN EXIT FUNCTION
-   DIM hFind AS HANDLE = FindFirstFileW(pwszFileSpec, @fd)
-   IF hFind = INVALID_HANDLE_VALUE THEN EXIT FUNCTION
-   FindClose hFind
-   ' // Make sure that it is a directory
-   IF (fd.dwFileAttributes AND FILE_ATTRIBUTE_DIRECTORY) = FILE_ATTRIBUTE_DIRECTORY THEN FUNCTION = TRUE
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a file; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_DIRECTORY) <> FILE_ATTRIBUTE_DIRECTORY)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a directory; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsFolder (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_DIRECTORY) = FILE_ATTRIBUTE_DIRECTORY)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a system file; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsSystemFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_SYSTEM) = FILE_ATTRIBUTE_SYSTEM)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a hidden file; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsHiddenFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_HIDDEN) = FILE_ATTRIBUTE_HIDDEN)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a read only file; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsReadOnlyFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_READONLY) = FILE_ATTRIBUTE_READONLY)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a temporary file; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsTemporaryFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_TEMPORARY) = FILE_ATTRIBUTE_TEMPORARY)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a normal file; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsNormalFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_NORMAL) = FILE_ATTRIBUTE_NORMAL)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a compressed file or diectory; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsCompressedFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_COMPRESSED) = FILE_ATTRIBUTE_COMPRESSED)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is an encrypted file or diectory; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsEncryptedFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_ENCRYPTED) = FILE_ATTRIBUTE_ENCRYPTED)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified file or directory is not to be indexed by the content
-' indexing service; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsNotContentIndexedFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) = FILE_ATTRIBUTE_NOT_CONTENT_INDEXED)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified file is not available immediately; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsOffLineFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_OFFLINE) = FILE_ATTRIBUTE_OFFLINE)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a file or directory that has an associated reparse
-' point, or a file that is a symbolic link; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsReparsePointFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_REPARSE_POINT) = FILE_ATTRIBUTE_REPARSE_POINT)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns TRUE if the specified path is a sparse file; FALSE, otherwise.
-' To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsSparseFile (BYREF wszFileSpec AS WSTRING) AS BOOLEAN
-   DIM dwAttributes AS DWORD = GetFileAttributesW(wszFileSpec)
-   IF dwAttributes = INVALID_FILE_ATTRIBUTES THEN RETURN FALSE
-   RETURN ((dwAttributes AND FILE_ATTRIBUTE_SPARSE_FILE) = FILE_ATTRIBUTE_SPARSE_FILE)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' * Unicode replacement for Free Basic's FileDateTime.
-' Returns the file's last modified date and time as Date Serial.
-' wszFileName : Filename to retrieve date and time for.
-' Return Value : Returns a Date Serial.
-' Example:
-' #include "windows.bi"
-' #include "vbcompat.bi"
-' #include "Afx/AfxWin.bi"
-' DIM wszFileName AS WSTRING * MAX_PATH = ExePath & "\c2.bas"
-' DIM dt AS DOUBLE = AfxFileDateTime(wszFileName)
-' PRINT Format(dt, "yyyy-mm-dd hh:mm AM/PM")
-' ========================================================================================
-PRIVATE FUNCTION AfxFileDateTime (BYREF wszFileName AS WSTRING) AS DOUBLE
-   DIM fd AS WIN32_FIND_DATAW
-   DIM hFind AS HANDLE = FindFirstFileW(wszFileName, @fd)
-   IF hFind = INVALID_HANDLE_VALUE THEN RETURN 0
-   FindClose hFind
-   DIM ft AS FILETIME
-   FileTimeToLocalFileTime(@fd.ftLastWriteTime, @ft)
-   DIM st AS SYSTEMTIME
-   FileTimeToSystemTime(@ft, @st)
-   DIM dt AS DOUBLE
-   SystemTimeToVariantTime @st, @dt
-   RETURN dt
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Unicode replacement for Free Basic's FileLen.
-' Returns the size in bytes of the specified file. Don't use it with folders.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetFileSize (BYREF wszFileSpec AS WSTRING) AS ULONGLONG
-   DIM fd AS WIN32_FIND_DATAW
-   DIM hFind AS HANDLE = FindFirstFileW(wszFileSpec, @fd)
-   IF hFind = INVALID_HANDLE_VALUE THEN RETURN 0
-   FindClose hFind
-   IF (fd.dwFileAttributes AND FILE_ATTRIBUTE_DIRECTORY) <> FILE_ATTRIBUTE_DIRECTORY AND _
-      (fd.dwFileAttributes AND FILE_ATTRIBUTE_TEMPORARY) <> FILE_ATTRIBUTE_TEMPORARY THEN
-      DIM ullSize AS ULONGLONG = (fd.nFileSizeHigh * (&hFFFFFFFFull + 1)) + fd.nFileSizeLow
-      RETURN ullSize
-   END IF
-END FUNCTION
-' ========================================================================================
-#define AfxFileLen AfxGetFileSize
-
-' ========================================================================================
-' Returns the time the file was created.
-' - wszFileSpec: The directory or path, and the file name, which can include wildcard characters,
-'   for example, an asterisk (*) or a question mark (?).
-'   This parameter should not be NULL, an invalid string (for example, an empty string or a
-'   string that is missing the terminating null character), or end in a trailing backslash (\).
-'   If the string ends with a wildcard, period (.), or directory name, the user must have access
-'   permissions to the root and all subdirectories on the path.
-'   To extend the limit from MAX_PATH to 32,767 wide characters, prepend "\\?\" to the path.
-' - bUTC: Pass FALSE if you want to get the time in local time (the NTFS file system stores time
-'   values in UTC format, so they are not affected by changes in time zone or daylight saving time).
-'   FileTimeToLocalFileTime uses the current settings for the time zone and daylight saving time.
-'   Therefore, if it is daylight saving time, it takes daylight saving time into account, even
-'   if the file time you are converting is in standard time.
-' Usage: AfxFileTimeToDateStr(AfxGetFileCreationTime("C:\Tests\test.bas", FALSE), "dd/MM/yyyy")
-' ========================================================================================
-PRIVATE FUNCTION AfxGetFileCreationTime (BYREF wszFileSpec AS WSTRING, BYVAL bUTC AS BOOLEAN = TRUE) AS FILETIME
-   DIM fd AS WIN32_FIND_DATAW
-   DIM hFind AS HANDLE = FindFirstFileW(wszFileSpec, @fd)
-   IF hFind <> INVALID_HANDLE_VALUE THEN
-      FindClose hFind
-      IF bUTC = TRUE THEN
-         RETURN fd.ftCreationTime
-      ELSE
-         DIM FT AS FILETIME
-         FileTimeToLocalFileTime(@fd.ftCreationTime, @FT)
-         RETURN FT
-      END IF
-   END IF
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns the time the file was last accessed. The NTFS file system delays updates to the
-' last access time for a file by up to 1 hour after the last access.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetFileLastAccessTime (BYREF wszFileSpec AS WSTRING, BYVAL bUTC AS BOOLEAN = TRUE) AS FILETIME
-   DIM fd AS WIN32_FIND_DATAW
-   DIM hFind AS HANDLE = FindFirstFileW(wszFileSpec, @fd)
-   IF hFind <> INVALID_HANDLE_VALUE THEN
-      FindClose hFind
-      IF bUTC = TRUE THEN
-         RETURN fd.ftLastAccessTime
-      ELSE
-         DIM FT AS FILETIME
-         FileTimeToLocalFileTime(@fd.ftLastAccessTime, @FT)
-         RETURN FT
-      END IF
-   END IF
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Returns the time the file was last written to, truncated, or overwritten.
-' When writing to a file, the last write time is not fully updated until all handles that
-' are used for writing are closed.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetFileLastWriteTime (BYREF wszFileSpec AS WSTRING, BYVAL bUTC AS BOOLEAN = TRUE) AS FILETIME
-   DIM fd AS WIN32_FIND_DATAW
-   DIM hFind AS HANDLE = FindFirstFileW(wszFileSpec, @fd)
-   IF hFind <> INVALID_HANDLE_VALUE THEN
-      FindClose hFind
-      IF bUTC = TRUE THEN
-         RETURN fd.ftLastWriteTime
-      ELSE
-         DIM FT AS FILETIME
-         FileTimeToLocalFileTime(@fd.ftLastWriteTime, @FT)
-         RETURN FT
-      END IF
-   END IF
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Determines if a file is likely to contain a form of unicode text.
-' ========================================================================================
-PRIVATE FUNCTION AfxIsFileUnicode (BYREF wszFileName AS WSTRING) AS BOOLEAN
-   DIM hFile AS HANDLE = CreateFileW(@wszFileName, GENERIC_READ, FILE_SHARE_READ, NULL, _
-                         OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL)
-   IF hFile = INVALID_HANDLE_VALUE THEN RETURN FALSE
-   DIM dwFileSize AS DWORD, dwHighSize AS DWORD
-   dwFileSize = GetFileSize(hFile, @dwHighSize)
-   DIM dwBytesToRead AS DWORD = 1024
-   IF dwFileSize < dwBytesToRead THEN dwBytesToRead = dwFileSize
-   DIM pBuffer AS UBYTE PTR = CAllocate(1, dwBytesToRead)
-   DIM bRes AS BOOLEAN, dwBytesRead AS DWORD
-   bRes = ReadFile(hFile, pBuffer, dwBytesToRead, @dwBytesRead, NULL)
-   IF bRes THEN bRes = IsTextUnicode(pBuffer, dwBytesRead, NULL)
-   IF pBuffer THEN DeAllocate(pBuffer)
-   IF hFile THEN CloseHandle(hFile)
-   RETURN bRes
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Scans a text file ans returns the number of occurrences of the specified delimiter.
-' Default value is CHR(13, 10), which returns the number of lines.
-' ========================================================================================
-PRIVATE FUNCTION AfxFileScanA (BYREF wszFileName AS WSTRING, BYREF szDelimiter AS ZSTRING = CHR(13, 10)) AS DWORD
-   DIM dwCount AS DWORD, dwFileSize AS DWORD, dwHighSize AS DWORD, dwBytesRead AS DWORD
-   IF LEN(szDelimiter) = 0 THEN EXIT FUNCTION
-   ' // Open the file
-   DIM hFile AS HANDLE = CreateFileW(@wszFileName, GENERIC_READ, FILE_SHARE_READ, NULL, _
-                         OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL)
-   IF hFile = INVALID_HANDLE_VALUE THEN EXIT FUNCTION
-   ' // Get the size of the file
-   dwFileSize = GetFileSize(hFile, @dwHighSize)
-   DIM pBuffer AS UBYTE PTR
-   pBuffer = CAllocate(1, dwFileSize)
-   IF pBuffer = NULL THEN EXIT FUNCTION
-   DIM bSuccess AS LONG = ReadFile(hFile, pBuffer, dwFileSize, @dwBytesRead, NULL)
-   CloseHandle(hFile)
-   IF bSuccess = FALSE THEN EXIT FUNCTION
-   DIM nLen AS LONG = LEN(szDelimiter)
-   DIM pstr AS ANY PTR = pBuffer
-   DO
-      pstr = strstr(pstr, szDelimiter)
-      IF pstr = NULL THEN EXIT DO
-      pstr += nLen
-      dwCount += 1
-   LOOP
-   DeAllocate(pBuffer)
-   FUNCTION = dwCount
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Version for unicode text files.
-' ========================================================================================
-PRIVATE FUNCTION AfxFileScanW (BYREF wszFileName AS WSTRING, BYREF wszDelimiter AS WSTRING = CHR(13, 10)) AS DWORD
-   DIM dwCount AS DWORD, dwFileSize AS DWORD, dwHighSize AS DWORD, dwBytesRead AS DWORD
-   IF LEN(wszDelimiter) = 0 THEN EXIT FUNCTION
-   ' // Open the file
-   DIM hFile AS HANDLE = CreateFileW(@wszFileName, GENERIC_READ, FILE_SHARE_READ, NULL, _
-                         OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL)
-   IF hFile = INVALID_HANDLE_VALUE THEN EXIT FUNCTION
-   ' // Get the size of the file
-   dwFileSize = GetFileSize(hFile, @dwHighSize)
-   DIM pBuffer AS UBYTE PTR
-   pBuffer = CAllocate(1, dwFileSize)
-   IF pBuffer = NULL THEN EXIT FUNCTION
-   DIM bSuccess AS LONG = ReadFile(hFile, pBuffer, dwFileSize, @dwBytesRead, NULL)
-   CloseHandle(hFile)
-   IF bSuccess = FALSE THEN EXIT FUNCTION
-   DIM nLen AS LONG = LEN(wszDelimiter) * 2
-   DIM pstr AS ANY PTR = pBuffer
-   DO
-      pstr = wcsstr(pstr, @wszDelimiter)
-      IF pstr = NULL THEN EXIT DO
-      pstr += nLen
-      dwCount += 1
-   LOOP
-   DeAllocate(pBuffer)
-   FUNCTION = dwCount
-END FUNCTION
-' ========================================================================================
 
 ' ########################################################################################
 '                                     *** SIDs ***

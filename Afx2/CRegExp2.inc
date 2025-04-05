@@ -12,6 +12,7 @@
 #pragma once
 #include once "windows.bi"
 #include once "Afx2/AfxRegExp2.bi"
+#include once "Afx2/DWSTRING.inc"
 #include once "Afx2/BSTRING.inc"
 using Afx2
 
@@ -195,7 +196,7 @@ END PROPERTY
 ' ========================================================================================
 ' * Executes a regular expression search against a specified string.
 ' Example:
-' #include once "Afx/CRegExp.inc"
+' #include once "Afx2/CRegExp.inc"
 ' USING Afx
 ' DIM pRegExp AS CRegExp
 ' pRegExp.Pattern = "is."
@@ -288,20 +289,20 @@ END FUNCTION
 
 ' ========================================================================================
 ' Returns the number of submatches.
-'DIM pRegExp AS CRegExp
-'pRegExp.Pattern = "(\w+)@(\w+)\.(\w+)"
-'pRegExp.IgnoreCase = TRUE
-'DIM cbsText AS BSTRING = "Please send mail to dragon@xyzzy.com. Thanks!"
-'IF pRegExp.Execute(cbsText) = FALSE THEN
-'   print "No match found"
-'ELSE
-'   ' // Get the number of submatches
-'   DIM nCount AS LONG = pRegExp.SubMatchesCount(0)
-'   PRINT "Submatches: ", nCount
-'   FOR i AS LONG = 0 TO nCount - 1
-'      print pRegExp.SubMatchValue(0, i)
-'   NEXT
-'END IF
+' DIM pRegExp AS CRegExp
+' pRegExp.Pattern = "(\w+)@(\w+)\.(\w+)"
+' pRegExp.IgnoreCase = TRUE
+' DIM bsText AS BSTRING = "Please send mail to dragon@xyzzy.com. Thanks!"
+' IF pRegExp.Execute(bsText) = FALSE THEN
+'    print "No match found"
+' ELSE
+'    ' // Get the number of submatches
+'    DIM nCount AS LONG = pRegExp.SubMatchesCount(0)
+'    PRINT "Submatches: ", nCount
+'    FOR i AS LONG = 0 TO nCount - 1
+'       print pRegExp.SubMatchValue(0, i)
+'    NEXT
+' END IF
 ' Output:
 ' dragon
 ' xyzzy
@@ -349,7 +350,7 @@ END FUNCTION
 ' ========================================================================================
 ' * Executes a regular expression search against a specified string and returns a Boolean
 ' value that indicates if a pattern match was found.
-' - cbsSourceString : The source string.
+' - wszSourceString : The source string.
 ' Note: The Global property has no effect on the Test method.
 ' Example:
 ' DIM pRegExp AS CRegExp
@@ -401,7 +402,7 @@ END FUNCTION
 ' Parameters:
 ' - nStart: The position in the string at which the search will begin. The first character
 '   starts at position 1.
-' - cbsSourceString = The text to be parsed.
+' - wszSourceString = The text to be parsed.
 ' Return value:
 ' - Returns the position of the match or 0 if not found.
 '   The length of the match can be retrieved calling pRegExp.MatchLen.
@@ -496,7 +497,8 @@ PRIVATE FUNCTION CRegExp.Remove (BYREF wszSourceString AS CONST WSTRING) AS BSTR
    DIM bstrDest AS AFX_BSTR
    SetLastError(m_pRegExp->Replace(bstrSrc, vd, @bstrDest))
    SysFreeString bstrSrc
-   RETURN bstrDest
+   IF bstrDest THEN RETURN bstrDest
+   RETURN wszSourceString
 END FUNCTION
 ' ========================================================================================
 
@@ -541,11 +543,12 @@ END FUNCTION
 PRIVATE FUNCTION CRegExp.Replace (BYREF wszSourceString AS CONST WSTRING, BYREF wszReplaceString AS CONST WSTRING) AS BSTRING
    DIM bstrSrc AS BSTR = SysAllocString(wszSourceString)
    DIM vd AS VARIANT : vd.vt = VT_BSTR : vd.bstrVal = SysAllocString(@wszReplaceString)
-   DIM bstrDest AS BSTR
+   DIM bstrDest AS AFX_BSTR
    SetLastError(m_pRegExp->Replace(bstrSrc, vd, @bstrDest))
    SysFreeString(bstrSrc)
    VariantClear(@vd)
-   RETURN bstrDest
+   IF bstrDest THEN RETURN bstrDest
+   RETURN wszSourceString
 END FUNCTION
 ' ========================================================================================
 
@@ -557,10 +560,10 @@ END FUNCTION
 ' - Returns the retrieved string on exit or an empty string on failure.
 ' Usage example:
 '    DIM pRegExp AS CRegExp
-'    DIM cbsText AS BSTRING = "blah blah a234 blah blah x345 blah blah"
+'    DIM bsText AS BSTRING = "blah blah a234 blah blah x345 blah blah"
 '    pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
-'    DIM cbs AS BSTRING = pRegExp.Extract(cbsText)
-'    PRINT cbs
+'    DIM bs AS BSTRING = pRegExp.Extract(bsText)
+'    PRINT bs
 ' Output: "a234"
 ' ========================================================================================
 PRIVATE FUNCTION CRegExp.Extract (BYREF wszSourceString AS CONST WSTRING) AS BSTRING
@@ -579,15 +582,15 @@ END FUNCTION
 ' Parameters:
 ' - nStart: The position in the string at which the search will begin. The first character
 '   starts at position 1.
-' - cbsSourceString = The text to be parsed.
+' - wszSourceString = The text to be parsed.
 ' Return value:
 ' - Returns the retrieved string on exit or an empty string on failure.
 ' Usage example:
 '    DIM pRegExp AS CRegExp
-'    DIM cbsText AS BSTRING = "blah blah a234 blah blah x345 blah blah"
+'    DIM bsText AS BSTRING = "blah blah a234 blah blah x345 blah blah"
 '    pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
-'    DIM cbs AS BSTRING = pRegExp.Extract(15, cbsText)
-'    PRINT cbs
+'    DIM bs AS BSTRING = pRegExp.Extract(15, bsText)
+'    PRINT bs
 ' Output: "x345"
 ' ========================================================================================
 PRIVATE FUNCTION CRegExp.Extract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING) AS BSTRING

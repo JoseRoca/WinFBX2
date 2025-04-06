@@ -170,6 +170,20 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' Escapes any potential regex syntax characters in a string and returns a new string
+' that can be safely used as a literal pattern.
+' ========================================================================================
+PRIVATE FUNCTION wstrEscape (BYREF wszStr AS CONST WSTRING) AS DWSTRING
+   IF INSTR(wszStr, ANY "\.^$*+?{}[]()|") = 0 THEN RETURN wszStr
+   DIM pRegExp AS CRegExp
+   pRegExp.Global = TRUE
+   pRegExp.IgnoreCase = TRUE
+   pRegExp.Pattern = $"([\\.\^\$\*\+\?\{\}\[\]\(\)\|])"
+   RETURN pRegExp.Replace(wszStr, $"\$1")
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' * Translates unicode bytes to ansi bytes.
 ' Parameters:
 ' - pwszStr = The unicode string to convert
@@ -208,13 +222,18 @@ END FUNCTION
 ' to escape it with "\", e.g. "\?".
 ' ========================================================================================
 PRIVATE FUNCTION wstrReplace (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
-   BYREF wszReplaceString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS BSTRING
+   BYREF wszReplaceString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" THEN RETURN ""
    IF wszMatchString= "" THEN RETURN wszSourceString
+   ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(wszMatchString)
+   END IF
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-   pRegExp.Pattern = wszMatchString
+   pRegExp.Pattern = dwsMatchString
    RETURN pRegExp.Replace(wszSourceString, wszReplaceString)
 END FUNCTION
 ' ========================================================================================
@@ -222,23 +241,92 @@ END FUNCTION
 ' ========================================================================================
 ' Returns a copy of a string with substrings removed.
 ' Example: wstrRemove("Hello World. Welcome to the Freebasic World", "World")   'Output: "Hello . Welcome to the Freebasic"
-' Example: wstrRepmove("abacadabra", "bac")        ' Output: "aaabra"
-' Example: wstrRemove("abacadabra", "[bac]")       ' Output: "dr"
-' Note: If you need to use one of the symbols, "^$*+?{}[]()|", in wszMatchString, you need
-' to escape it with "\", e.g. "\?".
-' Example: wstrRemove("aba(cad)abra", "[bac\(\)]") ' Output: "dr"
+' Example: wstrRemove("abacadabra", "bac")        ' Output: "aaabra"
+' Example: wstrRemove("abacadabra", "[bac]")      ' Output: "dr"
 ' ========================================================================================
-PRIVATE FUNCTION wstrRemove (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS BSTRING
+PRIVATE FUNCTION wstrRemove OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" THEN RETURN ""
    IF wszMatchString= "" THEN RETURN wszSourceString
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-   pRegExp.Pattern = wszMatchString
+   ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(wszMatchString)
+   END IF
+   pRegExp.Pattern = dwsMatchString
    RETURN pRegExp.Remove(wszSourceString)
 END FUNCTION
 ' ========================================================================================
-
+' ========================================================================================
+' Returns a copy of a string with substrings removed.
+' nStart: The starting position.
+' ========================================================================================
+PRIVATE FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+   IF wszSourceString = "" THEN RETURN ""
+   IF wszMatchString= "" THEN RETURN wszSourceString
+   DIM nLen AS LONG = LEN(wszSourceString)
+   IF (nStart = 0) OR (nStart > nLen) THEN RETURN ""
+   IF nStart < 0 THEN nStart = nLen + nStart + 1
+   ' // Make a copy of wszSourceString from nStart to the end
+   DIM dwsSourceString AS DWSTRING = MID(wszSourceString, nStart)
+   DIM pRegExp AS CRegExp
+   pRegExp.Global = TRUE
+   pRegExp.IgnoreCase = IgnoreCase
+   ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(wszMatchString)
+   END IF
+   pRegExp.Pattern = dwsMatchString
+   RETURN pRegExp.Remove(dwsSourceString)
+END FUNCTION
+' ========================================================================================
+'+++++++++++++++++
+' ========================================================================================
+' Returns a copy of a string with a substring enclosed between the specified delimiters removed.
+' Parameters:
+' nStart: [Optional]. The one-based starting position where to start the search
+' wszMainStr: The main string
+' wszDelim1: The first delimiter
+' wszDelim2: The second delimiter
+' fRemoveAll: TRUE or FALSE. TRUE = Recursively remove all the occurrences.
+' This function is case-sensitive.
+' Example:
+' DIM dwsText AS DWSTRING = "blah blah (text beween parentheses) blah blah"
+' print wstrRemove(dwsText, "(", ")")   ' Returns "blah blah  blah blah"
+' Example:
+' DIM dwsText AS DWSTRING = "As Long var1(34), var2(  73 ), var3(any)"
+' print WstrRemove(dwsText, "(", ")", TRUE)   ' Returns "As Long var1, var2, var3"
+' ========================================================================================
+PRIVATE FUNCTION wstrRemove OVERLOAD (BYREF wszMainStr AS CONST WSTRING, BYREF wszDelim1 AS CONST WSTRING, BYREF wszDelim2 AS CONST WSTRING, BYVAL fRemoveAll AS BOOLEAN = FALSE) AS DWSTRING
+   DIM nPos1 AS LONG = INSTR(wszMainStr, wszDelim1)
+   IF nPos1 = 0 THEN RETURN wszMainStr
+   DIM nPos2 AS LONG = INSTR(nPos1 + LEN(wszDelim1), wszMainStr, wszDelim2)
+   IF nPos2 = 0 THEN RETURN wszMainStr
+   nPos2 += LEN(wszDelim2)
+   DIM nLen AS LONG = nPos2 - nPos1
+   IF fRemoveAll = FALSE THEN RETURN MID(wszMainStr, 1, nPos1 - 1) & MID(wszMainStr, nPos2)
+   RETURN wstrRemove(MID(wszMainStr, 1, nPos1 - 1) & MID(wszMainStr, nPos2), wszDelim1, wszDelim2, fRemoveAll)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG = 1, BYREF wszMainStr AS CONST WSTRING, BYREF wszDelim1 AS CONST WSTRING, BYREF wszDelim2 AS CONST WSTRING, BYVAL fRemoveAll AS BOOLEAN = FALSE) AS DWsTRING
+   DIM nLen AS LONG = LEN(wszMainStr)
+   IF (nStart = 0) OR (nStart > nLen) THEN RETURN ""
+   IF nStart < 0 THEN nStart = nLen + nStart + 1
+   DIM nPos1 AS LONG = INSTR(nStart, wszMainStr, wszDelim1)
+   IF nPos1 = 0 THEN RETURN wszMainStr
+   DIM nPos2 AS LONG = INSTR(nPos1, wszMainStr, wszDelim2)
+   IF nPos2 = 0 THEN RETURN wszMainStr
+   nPos2 += LEN(wszDelim2)
+   nLen = nPos2 - nPos1
+   IF fRemoveAll = FALSE THEN RETURN MID(wszMainStr, 1, nPos1 - 1) & MID(wszMainStr, nPos2)
+   RETURN wstrRemove(nStart, MID(wszMainStr, 1, nPos1 - 1) & MID(wszMainStr, nPos2), wszDelim1, wszDelim2, fRemoveAll)
+END FUNCTION
+' ========================================================================================
+'++++++++++++++++
 ' ========================================================================================
 ' * Extracts characters from a string up to a character or group of characters.
 ' Returns a substring of wszSourceString starting with its first character and up to
@@ -254,12 +342,6 @@ END FUNCTION
 '    DIM dws AS DWSTRING = "abacadabra"
 '    Print wstrExtract(dws, "[dr]")
 '    Output: abaca - match on "d"
-' If wszMatchString is not present in wszSourceString (or is null) then all of wszSourceString is returned.
-' Note: If you need to use one of the symbols, "^$*+?{}[]()|", in wszMatchString, you need
-' to escape it with "\", e.g.
-'    DIM dws AS DWSTRING = "abac+adabra"
-'    Print wstrExtract(dws, "c\+ad")
-'    Output: "aba" - match on "C+ad"
 ' ========================================================================================
 PRIVATE FUNCTION wstrExtract OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" OR wszMatchString ="" THEN RETURN wszSourceString
@@ -268,7 +350,12 @@ PRIVATE FUNCTION wstrExtract OVERLOAD (BYREF wszSourceString AS CONST WSTRING, B
    pRegExp.IgnoreCase = IgnoreCase
    ' // This pattern matches the delimiter passed (can consist of a group of one or more characters)
    ' // Passing wszMatchString enclosed between "[]" will match any of the individual characters
-   pRegExp.Pattern = "^(.*?)" & wszMatchString
+   ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(wszMatchString)
+   END IF
+   pRegExp.Pattern = "^(.*?)" & dwsMatchString
    SetLastError(pRegExp.Execute(wszSourceString))
    IF pRegExp.SubMatchesCount THEN
       RETURN STRPTR(pRegExp.SubMatchValue(0, 0))
@@ -296,24 +383,27 @@ END FUNCTION
 ' If wszMatchString is not present in wszSourceString (or is null) then all of wszSourceString
 ' is returned from the nStart position. If nStart is 0 or greater than the length of
 ' wszSourceString, an empty string is returned.
-' Note: If you need to use one of the symbols, "^$*+?{}[]()|", in wszMatchString, you need
-' to escape it with "\", e.g. "\?".
 ' ========================================================================================
 PRIVATE FUNCTION wstrExtract OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" THEN RETURN wszSourceString
-   ' // Make a copy of wszSourceString from nStart to the end
-   DIM dwsSourceString AS DWSTRING = MID(wszSourceString, nStart)
-   IF wszMatchString = "" THEN RETURN dwsSourceString
+   IF wszMatchString = "" THEN RETURN wszSourceString
    DIM nLen AS LONG = LEN(wszSourceString)
    IF (nStart = 0) OR (nStart > nLen) THEN RETURN ""
    IF nStart < 0 THEN nStart = nLen + nStart + 1
+   ' // Make a copy of wszSourceString from nStart to the end
+   DIM dwsSourceString AS DWSTRING = MID(wszSourceString, nStart)
    ' // Do the search
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
    ' // This pattern matches the delimiter passed (can consist of a group of one or more characters)
    ' // Passing wszMatchString enclosed between "[]" will match any of the individual characters
-   pRegExp.Pattern = "^(.*?)" & wszMatchString
+   ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(dwsMatchString)
+   END IF
+   pRegExp.Pattern = "^(.*?)" & dwsMatchString
    SetLastError(pRegExp.Execute(dwsSourceString))
    IF pRegExp.SubMatchesCount THEN
       RETURN STRPTR(pRegExp.SubMatchValue(0, 0))
@@ -326,9 +416,9 @@ END FUNCTION
 ' ========================================================================================
 ' Returns the portion of a string following the occurrence of a specified delimiter up to
 ' the second delimiter. If no match is found, an empty string is returned.
-' Note: This function does not need that you escape the symbols "^$*+?{}[]()|" because
-' the function does it. It has been done on purpose because when you want to extract text
-' between delimiters they are usually "(text)", "[text]", etc.
+' Example:
+'    DIM dwsText AS DWSTRING = "blah blah text beween parentheses) blah blah"
+'    PRINT wstrExtract(dwsText, "(", ")")
 ' ========================================================================================
 PRIVATE FUNCTION wstrExtract OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF leftDelimiter AS CONST WSTRING, BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" THEN RETURN wszSourceString
@@ -336,22 +426,14 @@ PRIVATE FUNCTION wstrExtract OVERLOAD (BYREF wszSourceString AS CONST WSTRING, B
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
-   DIM bsLeftDelimiter AS BSTRING
-   DIM bsRightDelimiter AS BSTRING
-   ' Escape special characters -----------------------------------
-   SCOPE
-      DIM pRegExp AS CRegExp
-      pRegExp.Global = TRUE
-      pRegExp.IgnoreCase = TRUE
-      pRegExp.Pattern = $"([\\.\^\$\*\+\?\{\}\[\]\(\)\|])"
-      bsLeftDelimiter = pRegExp.Replace(leftDelimiter, $"\$1")
-      bsRightDelimiter = pRegExp.Replace(rightDelimiter, $"\$1")
-   END SCOPE
-   ' -------------------------------------------------------------
-   pRegExp.Pattern = bsLeftDelimiter & "(.*?)" & bsRightDelimiter
+   DIM AS DWSTRING dwsLeftDelimiter, dwsRightDelimiter
+   ' Escape special characters
+   dwsLeftDelimiter = wstrEscape(leftDelimiter)
+   dwsRightDelimiter = wstrEscape(rightDelimiter)
+   pRegExp.Pattern = dwsLeftDelimiter & "(.*?)" & dwsRightDelimiter
    SetLastError(pRegExp.Execute(wszSourceString))
    IF pRegExp.SubMatchesCount THEN
-      RETURN STRPTR(pRegExp.SubMatchValue(0, 0))
+      RETURN pRegExp.SubMatchValue(0, 0)
    END IF
    ' // If no match is found, return an empty string
    RETURN ""
@@ -362,9 +444,9 @@ END FUNCTION
 ' Returns the portion of a string following the occurrence of a specified delimiter up to
 ' the second delimiter. If no match is found, an empty string is returned. If nStart is 0
 ' or greater than the length of wszSourceString, an empty string is returned.
-' Note: This function does not need that you escape the symbols "^$*+?{}[]()|" because
-' the function does it. It has been done on purpose because when you want to extract text
-' between delimiters they are usually "(text)", "[text]", etc.
+' Example:
+'    DIM dwsText AS DWSTRING = "blah blah text beween parentheses) blah blah"
+'    PRINT wstrExtract(dwsText, "(", ")")
 ' ========================================================================================
 PRIVATE FUNCTION wstrExtract OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, BYREF leftDelimiter AS CONST WSTRING, BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" THEN RETURN wszSourceString
@@ -376,22 +458,15 @@ PRIVATE FUNCTION wstrExtract OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceStri
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
-   DIM bsLeftDelimiter AS BSTRING
-   DIM bsRightDelimiter AS BSTRING
-   ' Escape special characters -----------------------------------
-   SCOPE
-      DIM pRegExp AS CRegExp
-      pRegExp.Global = TRUE
-      pRegExp.IgnoreCase = TRUE
-      pRegExp.Pattern = $"([\\.\^\$\*\+\?\{\}\[\]\(\)\|])"
-      bsLeftDelimiter = pRegExp.Replace(leftDelimiter, $"\$1")
-      bsRightDelimiter = pRegExp.Replace(rightDelimiter, $"\$1")
-   END SCOPE
-   ' -------------------------------------------------------------
-   pRegExp.Pattern = bsLeftDelimiter & "(.*?)" & bsRightDelimiter
+   DIM dwsLeftDelimiter AS DWSTRING
+   DIM dwsRightDelimiter AS DWSTRING
+   ' Escape special characters
+   dwsLeftDelimiter = wstrEscape(leftDelimiter)
+   dwsRightDelimiter = wstrEscape(rightDelimiter)
+   pRegExp.Pattern = dwsLeftDelimiter & "(.*?)" & dwsRightDelimiter
    SetLastError(pRegExp.Execute(dwsSourceString))
    IF pRegExp.SubMatchesCount THEN
-      RETURN STRPTR(pRegExp.SubMatchValue(0, 0))
+      RETURN pRegExp.SubMatchValue(0, 0)
    END IF
    ' // If no match is found, return an empty string
    RETURN ""
@@ -424,13 +499,19 @@ FUNCTION wstrRetain (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchStrin
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-   pRegExp.Pattern = "[^" & wszMatchString & "]"
+   ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(dwsMatchString)
+   END IF
+   pRegExp.Pattern = "[^" & dwsMatchString & "]"
    RETURN STRPTR(pRegExp.Remove(wszSourceString))
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
 ' * Returns the portion of a string following the first occurrence of a character or group of characters.
+' If wszMatchString is not present in wszMainStr (or is null) then a zero-length empty string is returned.
 ' Example:
 ' DIM dws AS DWSTRING = "I think, therefore I am"
 ' dws = wstrRemain(dws, ",", TRUE)
@@ -441,7 +522,12 @@ FUNCTION wstrRemain OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF wszM
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
-   pRegExp.Pattern = wszMatchString & "(.*)"
+   ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(dwsMatchString)
+   END IF
+   pRegExp.Pattern = dwsMatchString & "(.*)"
    IF pRegExp.Execute(wszSourceString) THEN
       iF pRegExp.SubMatchesCount THEN
          RETURN STRPTR(pRegExp.SubMatchValue(0, 0))
@@ -452,6 +538,8 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' * Returns the portion of a string following the first occurrence of a character or group of characters.
+' If wszMatchString is not present in wszMainStr (or is null) then a zero-length empty string is returned.
 ' * nStart : Starting position to begin the search. If nStart is not specified, the search
 ' will begin at position 1. If nStart is zero, a nul string is returned. If nStart is
 ' negative, the starting position is counted from right to left: -1 for the last character,
@@ -466,14 +554,19 @@ FUNCTION wstrRemain OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CON
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
-   pRegExp.Pattern = wszMatchString & "(.*)"
+   ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(dwsMatchString)
+   END IF
+   pRegExp.Pattern = dwsMatchString & "(.*)"
    DIM bsSrc AS BSTRING
    IF nStart < 0 THEN nStart = LEN(wszSourceString) + nStart + 1
    IF nStart < 0 OR nStart > LEN(wszSourceString) THEN RETURN ""
    bsSrc = MID(wszSourceString, nStart)
    IF pRegExp.Execute(bsSrc) THEN
       iF pRegExp.SubMatchesCount THEN
-         RETURN STRPTR(pRegExp.SubMatchValue(0, 0))
+         RETURN pRegExp.SubMatchValue(0, 0)
       END IF
    END IF
    RETURN ""
@@ -484,12 +577,12 @@ END FUNCTION
 ' * Count the number of occurrences of a string or a list of characters within a string.
 ' Usage:
 '    DIM dws AS DWSTRING = "abacadabra"
-'    DIM nCount AS LONG = wstrTally(dw, "bac", TRUE)
+'    DIM nCount AS LONG = wstrTally(dws, "bac")
 '    PRINT nCount
 ' Output: Returns 1, counting the string "bac"
 ' ----------------------------------------------------------------------------------------
 '    DIM dws AS DWSTRING = "abacadabra"
-'    DIM nCount AS LONG = wstrTally(dws, "b|a|c", TRUE)
+'    DIM nCount AS LONG = wstrTally(dws, "b|a|c")   ' // [bac] is the same that [b|a|c]
 '    PRINT nCount
 ' Output: Returns 8, counting all "b", "a", and "c" characters.
 ' The | is the OR operator in regular expressions. It means "match b OR a OR c".
@@ -498,7 +591,12 @@ PRIVATE FUNCTION wstrTally (BYREF wszSourceString AS CONST WSTRING, BYREF wszMat
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-   pRegExp.Pattern = wszMatchString
+   ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(dwsMatchString)
+   END IF
+   pRegExp.Pattern = dwsMatchString
    IF pRegExp.Execute(wszSourceString) THEN
       RETURN pRegExp.MatchesCount
    END IF
@@ -507,9 +605,11 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Find the position of the first character in the string that does not match in the match string.
+' * Find the position of the first character in the string that does not match in the match string.
 ' wstrVerify returns zero if each character in wszSourceString is present in wszMatchString.
 ' If not, it returns the position of the first non-matching character in wszSourceString.
+' nStart: Starting position. If nStart is less than 1 or greater than the length of wszSourceString,
+' an empty string is returned.
 ' Example:
 '    DIM dws AS DWSTRING = "123.65,22.5"
 '    DIM nPos AS LONG = wstrVerify(5, dws, "0123456789", TRUE)
@@ -522,7 +622,12 @@ PRIVATE FUNCTION wstrVerify (BYVAL nStart AS LONG, BYREF wszSourceString AS CONS
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-   pRegExp.Pattern = "[^" & wszMatchString & "]"
+      ' Don't escape "[<text>]", used to specify indidual characters to search
+   DIM dwsMatchString AS DWSTRING = wszMatchString
+   IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
+      dwsMatchString = wstrEscape(dwsMatchString)
+   END IF
+pRegExp.Pattern = "[^" & dwsMatchString & "]"
    DIM bsSrc AS BSTRING = MID(wszSourceString, nStart)
    IF pRegExp.Execute(bsSrc) THEN
       RETURN pRegExp.MatchPos + nStart - 1
@@ -532,7 +637,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Returns a string with nCount characters removed from the left, right or mid side of the string.
+' * Returns a string with nCount characters removed from the left, right or mid side of the string.
 ' - wszSide: "LEFT", "MID" or "RIGHT".
 ' - nCount: Number or characters to remove.
 ' - nStart: (only MID) Starting position.
@@ -578,8 +683,19 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Retuns TRUE if the passed string is muneric.
+' * Retuns TRUE if the passed string is muneric.
 ' Example: PRINT wstrIsNumeric("1.2345678901234567e+029")   ' Output: true
+' Explanation of the pattern used: "^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$"
+'  ^ – Anchors the match to the start of the string.
+'  [\+\-]? – Matches an optional plus (+) or minus (-) sign at the beginning (for signed numbers).
+'  \d* – Matches zero or more digits before the decimal point (allows integers or leading zero suppression).
+'  \.? – Matches an optional decimal point (if present, allows floating-point numbers).
+'  \d+ – Matches at least one digit after the decimal (ensuring valid numeric values).
+'  (?:[Ee][\+\-]?\d+)? – Handles scientific notation:
+'    E or e for exponent notation.
+'    [\+\-]? for optional sign after the exponent indicator.
+'    \d+ ensures at least one digit in the exponent.
+'  $ – Anchors the match to the end of the string, ensuring a full numeric match.
 ' ========================================================================================
 PRIVATE FUNCTION wstrIsNumeric (BYREF wszSourcestring AS CONST WSTRING) AS BOOLEAN
    DIM pRegExp AS CRegExp
@@ -601,7 +717,7 @@ END FUNCTION
 ' characters are replaced with the first character of wszMask The new string returned consists
 ' of zero or more words, each separated by the character found in the first position of wszMask.
 ' Example:
-'    DIM dws AS BSTRING = wstrShrink(",,, one , two     three, four,", " ,")
+'    DIM dws AS DWSTRING = wstrShrink(",,, one , two     three, four,", " ,")
 ' Output: "one two three four".
 ' ========================================================================================
 PRIVATE FUNCTION wstrShrink(BYREF wszSourceString AS CONST WSTRING, BYREF wszMask AS CONST WSTRING = "", BYVAL IgnoreCase AS LONG = TRUE) AS DWSTRING
@@ -612,15 +728,15 @@ PRIVATE FUNCTION wstrShrink(BYREF wszSourceString AS CONST WSTRING, BYREF wszMas
    IF wszMask = "" THEN
       ' // Change all occurrences of two or more spaces to a single space
       pRegExp.Pattern = "[ ]+"
-      dwsText = STRPTR(pRegExp.Replace(dwsText, " "))
+      dwsText = pRegExp.Replace(dwsText, " ")
    ELSE
       ' // Remove the passed characters
       pRegExp.Pattern = "[" & wszMask & "]+"
-      dwsText = STRPTR(pRegExp.Replace(dwsText, LEFT(wszMask, 1)))
+      dwsText = pRegExp.Replace(dwsText, LEFT(wszMask, 1))
    END IF
    ' // Remove all leading and trailing spaces
    pRegExp.Pattern = $"^\s+|\s+$"
-   dwsText = STRPTR(pRegExp.Replace(dwsText, ""))
+   dwsText = pRegExp.Replace(dwsText, "")
    RETURN dwsText
 END FUNCTION
 ' ========================================================================================
@@ -1036,7 +1152,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-'  Parses a path/file name to extract component parts.
+'  * Parses a path/file name to extract component parts.
 '  This function evaluates a text path/file text name, and returns a requested part of the
 '  name. The functionality is strictly one of string parsing alone.
 '  wszOption is one of the following words which is used to specify the requested part:
@@ -1185,7 +1301,6 @@ PRIVATE FUNCTION wstrBase64DecodeW (BYREF dwsData AS DWSTRING) AS DWSTRING
    FUNCTION = dwsOut
 END FUNCTION
 ' ========================================================================================
-
 
 END NAMESPACE
 

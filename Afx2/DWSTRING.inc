@@ -88,6 +88,7 @@ TYPE DWSTRING EXTENDS WSTRING
    DECLARE OPERATOR LET (BYREF dws AS DWSTRING)
    DECLARE OPERATOR LET (BYVAL n AS LONGINT)
    DECLARE OPERATOR LET (BYVAL n AS DOUBLE)
+   DECLARE FUNCTION bstr () AS ..BSTR
    DECLARE PROPERTY utf8 () AS STRING
    DECLARE PROPERTY utf8 (BYREF utf8String AS STRING)
    DECLARE FUNCTION wchar () AS WSTRING PTR
@@ -425,8 +426,17 @@ PRIVATE FUNCTION DWSTRING.Add (BYREF dws AS DWSTRING) AS BOOLEAN
 END FUNCTION
 ' ========================================================================================
 
+' ========================================================================================
+' Returns a copy of the contents of the DWSTRING AS a BSTR.
+' The returned handle must be freed with SysFreeString to avoid memory leaks.
+' ========================================================================================
+PRIVATE FUNCTION DWSTRING.bstr () AS ..BSTR
+    RETURN SysAllocString(m_pBuffer)
+END FUNCTION
+' ========================================================================================
+
 ' =====================================================================================
-' Returns the contents of the DWSTRING as a WSTRING allocated with CoTaskMemAlloc.
+' Returns a copy of the contents of the DWSTRING as a WSTRING allocated with CoTaskMemAlloc.
 ' Free the returned string later with CoTaskMemFree.
 ' Note: This is useful when we need to pass a pointer to a null terminated wide string to a
 ' function or method that will release it. If we pass a WSTRING it will GPF.

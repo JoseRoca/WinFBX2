@@ -60,7 +60,8 @@ Public:
    DECLARE CONSTRUCTOR
    DECLARE CONSTRUCTOR (BYREF bs AS BSTRING)
    DECLARE CONSTRUCTOR (BYREF dws AS DWSTRING)
-   DECLARE CONSTRUCTOR (BYVAL pwszStr AS WSTRING PTR, BYVAL fAttach AS BOOLEAN = FALSE)
+'   DECLARE CONSTRUCTOR (BYVAL pwszStr AS WSTRING PTR, BYVAL fAttach AS BOOLEAN = FALSE)
+   DECLARE CONSTRUCTOR (BYVAL pwszStr AS WSTRING PTR)
    DECLARE CONSTRUCTOR (BYREF ansiStr AS STRING = "", BYVAL nCodePage AS UINT = 0)
    DECLARE CONSTRUCTOR (BYVAL nChars AS LONG, BYREF wszFill AS CONST WSTRING)
    DECLARE CONSTRUCTOR (BYVAL n AS LONGINT)
@@ -78,7 +79,7 @@ Public:
    DECLARE OPERATOR LET (BYREF bs AS BSTRING)
    DECLARE OPERATOR LET (BYREF dws AS DWSTRING)
    DECLARE OPERATOR LET (BYREF s AS STRING)
-   DECLARE OPERATOR LET (BYVAL pwszStr AS WSTRING PTR)
+'   DECLARE OPERATOR LET (BYVAL pwszStr AS WSTRING PTR)
    DECLARE OPERATOR += (BYVAL pwszStr AS WSTRING PTR)
    DECLARE OPERATOR += (BYREF bs AS BSTRING)
    DECLARE OPERATOR += (BYREF dws AS DWSTRING)
@@ -115,27 +116,44 @@ PRIVATE CONSTRUCTOR BSTRING (BYREF dws AS DWSTRING)
    BSTRING_DP("-1- BSTRING CONSTRUCTOR - DWSTRING - " & ..WSTR(m_bstr) & " - " & dws)
 END CONSTRUCTOR
 ' ========================================================================================
+
 ' ========================================================================================
-PRIVATE CONSTRUCTOR BSTRING (BYVAL pwszStr AS WSTRING PTR, BYVAL fAttach AS BOOLEAN = FALSE)
-   BSTRING_DP("-1- BSTRING CONSTRUCTOR - SysAllocString - m_bstr = " & ..WSTR(m_bStr) & " - pwszStr = " & ..WSTR(pwszStr) & " - " & *pwszStr)
+' If the passed pointer is a BSTR, it is atached to the class; otherwise, a new BSTR is created. 
+' It is unsafe because if a BSTRING is passed, the BSTR pointer will attached and two classes
+' will attempt to release the same pointer. Use the Attach method instead.
+' ========================================================================================
+'PRIVATE CONSTRUCTOR BSTRING (BYVAL pwszStr AS WSTRING PTR, BYVAL fAttach AS BOOLEAN = FALSE)
+'   BSTRING_DP("-1- BSTRING CONSTRUCTOR - SysAllocString - m_bstr = " & ..WSTR(m_bStr) & " - pwszStr = " & ..WSTR(pwszStr) & " - " & *pwszStr)
+'   IF pwszStr = NULL THEN
+'      m_bstr = SysAllocString("")
+'   ELSE
+'      ' Detect if the passed handle is an OLE string.
+'      ' If it is an OLE string it must have a descriptor; otherwise, don't.
+'      ' Get the length in bytes looking at the descriptor and divide by 2 to get the number of
+'      ' unicode characters, that is the value returned by the FreeBASIC LEN operator.
+'      DIM res AS DWORD = PEEK(DWORD, CAST(ANY PTR, pwszStr) - 4) \ 2
+'      ' If the retrieved length is the same that the returned by LEN, then it must be an OLE string
+'      IF res = .LEN(*pwszStr) AND fAttach = TRUE THEN
+'         ' Attach the passed handle to the class
+'         m_bstr = pwszStr
+'      ELSE
+'         ' Allocate an OLE string with the contents of the string pointed by pwszStr
+'         m_bstr = SysAllocString(pwszStr)
+'      END IF
+'   END IF
+'   BSTRING_DP("-2- BSTRING CONSTRUCTOR - SysAllocString - " & ..WSTR(m_bstr))
+'END CONSTRUCTOR
+' ========================================================================================
+' ========================================================================================
+PRIVATE CONSTRUCTOR BSTRING (BYVAL pwszStr AS WSTRING PTR)
+   BSTRING_DP("-1- BSTRING CONSTRUCTOR - pwszStr = " & ..WSTR(pwszStr) & " - " & *pwszStr)
    IF pwszStr = NULL THEN
       m_bstr = SysAllocString("")
    ELSE
-      ' Detect if the passed handle is an OLE string.
-      ' If it is an OLE string it must have a descriptor; otherwise, don't.
-      ' Get the length in bytes looking at the descriptor and divide by 2 to get the number of
-      ' unicode characters, that is the value returned by the FreeBASIC LEN operator.
-      DIM res AS DWORD = PEEK(DWORD, CAST(ANY PTR, pwszStr) - 4) \ 2
-      ' If the retrieved length is the same that the returned by LEN, then it must be an OLE string
-      IF res = .LEN(*pwszStr) AND fAttach = TRUE THEN
-         ' Attach the passed handle to the class
-         m_bstr = pwszStr
-      ELSE
-         ' Allocate an OLE string with the contents of the string pointed by pwszStr
-         m_bstr = SysAllocString(pwszStr)
-      END IF
+      ' Allocate an OLE string with the contents of the string pointed by pwszStr
+      m_bstr = SysAllocString(pwszStr)
    END IF
-   BSTRING_DP("-2- BSTRING CONSTRUCTOR - SysAllocString - " & ..WSTR(m_bstr))
+   BSTRING_DP("-2- BSTRING CONSTRUCTOR - m_bstr - " & ..WSTR(m_bstr))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -347,26 +365,31 @@ PRIVATE OPERATOR BSTRING.LET (BYREF s AS STRING)
    BSTRING_DP("-2- BSTRING LET - STRING " & ..WSTR(m_bstr) & " - " & s)
 END OPERATOR
 ' ========================================================================================
+
 ' ========================================================================================
-PRIVATE OPERATOR BSTRING.LET (BYVAL pwszStr AS WSTRING PTR)
-   BSTRING_DP("-1- BSTRING LET - WSTRING PTR " & ..WSTR(pwszStr) & " - m_bstr = " & ..WSTR(m_bstr))
-   ' Free the current OLE string
-   IF m_bstr THEN SysFreeString(m_bstr)
-   ' Detect if the passed handle is an OLE string.
-   ' If it is an OLE string it must have a descriptor; otherwise, don't.
-   ' Get the length in bytes looking at the descriptor and divide by 2 to get the number of
-   ' unicode characters, that is the value returned by the FreeBASIC LEN operator.
-   DIM res AS DWORD = PEEK(DWORD, CAST(ANY PTR, pwszStr) - 4) \ 2
-   ' If the retrieved length is the same that the returned by LEN, then it must be an OLE string
-   IF res = .LEN(*pwszStr) THEN
-      ' Attach the passed handle to the class
-      m_bstr = pwszStr
-   ELSE
-      ' Allocate an OLE string with the contents of the string pointed by pwszStr
-      m_bstr = SysAllocString(pwszStr)
-   END IF
-   BSTRING_DP("-2- BSTRING LET - WSTRING PTR " & ..WSTR(pwszStr) & " - m_bstr = " & ..WSTR(m_bstr))
-END OPERATOR
+' If the passed pointer is a BSTR, it is atached to the class; otherwise, a new BSTR is created. 
+' It is unsafe because if a BSTRING is assigned, the BSTR pointer will be attached and two classes
+' will attempt to release the same pointer. Use the Attach method instead.
+' ========================================================================================
+'PRIVATE OPERATOR BSTRING.LET (BYVAL pwszStr AS WSTRING PTR)
+'   BSTRING_DP("-1- BSTRING LET - WSTRING PTR " & ..WSTR(pwszStr) & " - m_bstr = " & ..WSTR(m_bstr))
+'   ' Free the current OLE string
+'   IF m_bstr THEN SysFreeString(m_bstr)
+'   ' Detect if the passed handle is an OLE string.
+'   ' If it is an OLE string it must have a descriptor; otherwise, don't.
+'   ' Get the length in bytes looking at the descriptor and divide by 2 to get the number of
+'   ' unicode characters, that is the value returned by the FreeBASIC LEN operator.
+'   DIM res AS DWORD = PEEK(DWORD, CAST(ANY PTR, pwszStr) - 4) \ 2
+'   ' If the retrieved length is the same that the returned by LEN, then it must be an OLE string
+'   IF res = .LEN(*pwszStr) THEN
+'      ' Attach the passed handle to the class
+'      m_bstr = pwszStr
+'   ELSE
+'      ' Allocate an OLE string with the contents of the string pointed by pwszStr
+'      m_bstr = SysAllocString(pwszStr)
+'   END IF
+'   BSTRING_DP("-2- BSTRING LET - WSTRING PTR " & ..WSTR(pwszStr) & " - m_bstr = " & ..WSTR(m_bstr))
+'END OPERATOR
 ' ========================================================================================
 
 ' ========================================================================================

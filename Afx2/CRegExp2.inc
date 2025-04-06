@@ -13,7 +13,6 @@
 #include once "windows.bi"
 #include once "Afx2/AfxRegExp2.bi"
 #include once "Afx2/DWSTRING.inc"
-#include once "Afx2/BSTRING.inc"
 using Afx2
 
 NAMESPACE Afx2
@@ -24,16 +23,16 @@ NAMESPACE Afx2
 TYPE CRegExp
 
    Public:
-      m_pRegExp AS Afx_IRegExp2 PTR                  ' // IRegExp2 interface
-      m_pMatches AS Afx_IMatchCollection2 PTR        ' // IMatchCollection2 interface
+      m_pRegExp AS IRegExp2 PTR                  ' // IRegExp2 interface
+      m_pMatches AS IMatchCollection2 PTR        ' // IMatchCollection2 interface
 
    Public:
       DECLARE CONSTRUCTOR
       DECLARE DESTRUCTOR
       DECLARE FUNCTION GetErrorInfo (BYVAL dwError AS LONG = -1) AS DWSTRING
       DECLARE FUNCTION SafeRelease (BYREF pv AS ANY PTR) AS ULONG
-      DECLARE PROPERTY RegExpPtr () AS Afx_IRegExp2 PTR
-      DECLARE PROPERTY Pattern () AS BSTRING
+      DECLARE PROPERTY RegExpPtr () AS IRegExp2 PTR
+      DECLARE PROPERTY Pattern () AS DWSTRING
       DECLARE PROPERTY Pattern (BYREF wszPattern AS CONST WSTRING)
       DECLARE PROPERTY Global () AS BOOLEAN
       DECLARE PROPERTY Global (BYVAL bGlobal AS BOOLEAN)
@@ -43,7 +42,7 @@ TYPE CRegExp
       DECLARE PROPERTY Multiline (BYVAL bMultiline AS BOOLEAN)
       DECLARE FUNCTION Execute (BYREF wszSourceString AS CONST WSTRING) AS BOOLEAN
       DECLARE FUNCTION MatchesCount () AS LONG
-      DECLARE FUNCTION MatchValue (BYVAL index AS LONG = 0) AS BSTRING
+      DECLARE FUNCTION MatchValue (BYVAL index AS LONG = 0) AS DWSTRING
       DECLARE FUNCTION MatchPos (BYVAL index AS LONG = 0) AS LONG
       DECLARE FUNCTION MatchLen (BYVAL index AS LONG = 0) AS LONG
       DECLARE FUNCTION SubMatchesCount (BYVAL index AS LONG = 0) AS LONG
@@ -51,11 +50,11 @@ TYPE CRegExp
       DECLARE FUNCTION Test (BYREF wszSourceString AS CONST WSTRING) AS BOOLEAN
       DECLARE FUNCTION Find (BYREF wszSourceString AS CONST WSTRING) AS LONG
       DECLARE FUNCTION Find (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING) AS LONG
-      DECLARE FUNCTION FindEx (BYREF wszSourceString AS CONST WSTRING) AS BSTRING
-      DECLARE FUNCTION Replace (BYREF wszSourceString AS CONST WSTRING, BYREF wszReplaceString AS CONST WSTRING) AS BSTRING
-      DECLARE FUNCTION Remove (BYREF wszSourceString AS CONST WSTRING) AS BSTRING
-      DECLARE FUNCTION Extract (BYREF wszSourceString AS CONST WSTRING) AS BSTRING
-      DECLARE FUNCTION Extract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING) AS BSTRING
+      DECLARE FUNCTION FindEx (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
+      DECLARE FUNCTION Replace (BYREF wszSourceString AS CONST WSTRING, BYREF wszReplaceString AS CONST WSTRING) AS DWSTRING
+      DECLARE FUNCTION Remove (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
+      DECLARE FUNCTION Extract (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
+      DECLARE FUNCTION Extract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
       
       ' // Helper method
       DECLARE FUNCTION VariantToString (BYVAL pvarIn AS VARIANT PTR) AS DWSTRING
@@ -73,7 +72,7 @@ PRIVATE CONSTRUCTOR CRegExp
    DIM classID AS CLSID, riid AS IID
    DIM wszProgId AS WSTRING * 260 = "VBScript.RegExp"
    CLSIDFromProgID(@wszProgID, @ClassID)
-   DIM wszriid AS WSTRING * 260 = AFX_IID_IRegExp2
+   DIM wszriid AS WSTRING * 260 = IID_IRegExp2
    CLSIDFromString(@wszriid, @riid)
    DIM hr AS HRESULT = CoCreateInstance(@ClassID, NULL, CLSCTX_SERVER, @riid, @m_pRegExp)
    IF m_pRegExp = NULL THEN
@@ -126,7 +125,7 @@ END FUNCTION
 ' ========================================================================================
 ' Returns a pointer to the Afx_IRegExp2 interface
 ' ========================================================================================
-PRIVATE PROPERTY CRegExp.RegExpPtr () AS Afx_IRegExp2 PTR
+PRIVATE PROPERTY CRegExp.RegExpPtr () AS IRegExp2 PTR
    PROPERTY = m_pRegExp
 END PROPERTY
 ' ========================================================================================
@@ -134,15 +133,17 @@ END PROPERTY
 ' ========================================================================================
 ' * The regular expression pattern to use.
 ' ========================================================================================
-PRIVATE PROPERTY CRegExp.Pattern () AS BSTRING
-   DIM bstrPattern AS AFX_BSTR
+PRIVATE PROPERTY CRegExp.Pattern () AS DWSTRING
+   DIM bstrPattern AS BSTR
    SetLastError(m_pRegExp->get_Pattern(@bstrPattern))
-   PROPERTY = bstrPattern
+   DIM dwsPattern AS DWSTRING = bstrPattern
+   SysFreeString(bstrPattern)
+   PROPERTY = dwsPattern
 END PROPERTY
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE PROPERTY CRegExp.Pattern (BYREF wszPattern AS CONST WSTRING)
-   DIM bstrPattern AS AFX_BSTR = SysAllocString(@wszPattern)
+   DIM bstrPattern AS BSTR = SysAllocString(@wszPattern)
    SetLastError(m_pRegExp->put_Pattern(bstrPattern))
    SysFreeString(bstrPattern)
 END PROPERTY
@@ -216,7 +217,7 @@ END PROPERTY
 ' ========================================================================================
 PRIVATE FUNCTION CRegExp.Execute (BYREF wszSourceString AS CONST WSTRING) AS BOOLEAN
    IF m_pMatches THEN this.SafeRelease(m_pMatches)
-   DIM bstrSrc AS AFX_BSTR = SysAllocString(@wszSourceString)
+   DIM bstrSrc AS BSTR = SysAllocString(@wszSourceString)
    DIM hr AS HRESULT = m_pRegExp->Execute(bstrSrc, cast(Afx_IDispatch PTR PTR, @m_pMatches))
    SetLastError(hr)
    SysFreeString(bstrSrc)
@@ -238,16 +239,18 @@ END FUNCTION
 ' ========================================================================================
 ' * Returns the value or text of a match found in a search string.
 ' ========================================================================================
-PRIVATE FUNCTION CRegExp.MatchValue (BYVAL index AS LONG) AS BSTRING
+PRIVATE FUNCTION CRegExp.MatchValue (BYVAL index AS LONG) AS DWSTRING
    IF m_pMatches = NULL THEN SetLastError(E_POINTER): RETURN ""
-   DIM bstrValue AS AFX_BSTR
-   DIM pMatch AS Afx_IMatch2 PTR
+   DIM bstrValue AS BSTR
+   DIM pMatch AS IMatch2 PTR
    SetLastError(m_pMatches->get_Item(index, cast(Afx_IDispatch PTR PTR, @pMatch)))
    IF pMatch THEN
       pMatch->get_Value(@bstrValue)
       this.SafeRelease(pMatch)
    END IF
-   RETURN bstrValue
+   DIM dwsValue AS DWSTRING = bstrValue
+   SysFreeString(bstrValue)
+   RETURN dwsValue
 END FUNCTION
 ' ========================================================================================
 
@@ -257,7 +260,7 @@ END FUNCTION
 PRIVATE FUNCTION CRegExp.MatchPos (BYVAL index AS LONG) AS LONG
    IF m_pMatches = NULL THEN SetLastError(E_POINTER): RETURN 0
    DIM nFirstIndex AS LONG
-   DIM pMatch AS Afx_IMatch2 PTR
+   DIM pMatch AS IMatch2 PTR
    SetLastError(m_pMatches->get_Item(index, cast(Afx_IDispatch PTR PTR, @pMatch)))
    IF pMatch THEN
       ' // FirstIndex property indicates the number of characters in the string to
@@ -277,7 +280,7 @@ END FUNCTION
 PRIVATE FUNCTION CRegExp.MatchLen (BYVAL index AS LONG) AS LONG
    IF m_pMatches = NULL THEN SetLastError(E_POINTER): RETURN 0
    DIM nLen AS LONG
-   DIM pMatch AS Afx_IMatch2 PTR
+   DIM pMatch AS IMatch2 PTR
    SetLastError(m_pMatches->get_Item(index, cast(Afx_IDispatch PTR PTR, @pMatch)))
    IF pMatch THEN
       pMatch->get_Length(@nLen)
@@ -292,15 +295,15 @@ END FUNCTION
 ' DIM pRegExp AS CRegExp
 ' pRegExp.Pattern = "(\w+)@(\w+)\.(\w+)"
 ' pRegExp.IgnoreCase = TRUE
-' DIM bsText AS BSTRING = "Please send mail to dragon@xyzzy.com. Thanks!"
-' IF pRegExp.Execute(bsText) = FALSE THEN
-'    print "No match found"
+' DIM dwsText AS DWSTRING = "Please send mail to dragon@xyzzy.com. Thanks!"
+' IF pRegExp.Execute(dwsText) = FALSE THEN
+'    PRINT "No match found"
 ' ELSE
 '    ' // Get the number of submatches
 '    DIM nCount AS LONG = pRegExp.SubMatchesCount(0)
 '    PRINT "Submatches: ", nCount
 '    FOR i AS LONG = 0 TO nCount - 1
-'       print pRegExp.SubMatchValue(0, i)
+'       PRINT pRegExp.SubMatchValue(0, i)
 '    NEXT
 ' END IF
 ' Output:
@@ -311,10 +314,10 @@ END FUNCTION
 PRIVATE FUNCTION CRegExp.SubMatchesCount (BYVAL index AS LONG) AS LONG
    IF m_pMatches = NULL THEN SetLastError(E_POINTER): RETURN 0
    DIM nCount AS LONG
-   DIM pMatch AS Afx_IMatch2 PTR
+   DIM pMatch AS IMatch2 PTR
    SetLastError(m_pMatches->get_Item(index, cast(Afx_IDispatch PTR PTR, @pMatch)))
    IF pMatch THEN
-      DIM pSubMatches AS Afx_ISubMatches PTR
+      DIM pSubMatches AS ISubMatches PTR
       SetLastError(pMatch->get_SubMatches(cast(Afx_IDispatch PTR PTR, @pSubMatches)))
       this.SafeRelease(pMatch)
       IF pSubMatches THEN
@@ -332,10 +335,10 @@ END FUNCTION
 PRIVATE FUNCTION CRegExp.SubMatchValue (BYVAL MatchIndex AS LONG, BYVAL SubMatchIndex AS LONG) AS DWSTRING
    DIM vValue AS VARIANT
    IF m_pMatches = NULL THEN SetLastError(E_POINTER): RETURN ""
-   DIM pMatch AS Afx_IMatch2 PTR
+   DIM pMatch AS IMatch2 PTR
    SetLastError(m_pMatches->get_Item(MatchIndex, cast(Afx_IDispatch PTR PTR, @pMatch)))
    IF pMatch THEN
-      DIM pSubMatches AS Afx_ISubMatches PTR
+      DIM pSubMatches AS ISubMatches PTR
       SetLastError(pMatch->get_SubMatches(cast(Afx_IDispatch PTR PTR, @pSubMatches)))
       this.SafeRelease(pMatch)
       IF pSubMatches THEN
@@ -364,7 +367,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CRegExp.Test (BYREF wszSourceString AS CONST WSTRING) AS BOOLEAN
    DIM bMatch AS VARIANT_BOOL
-   DIM bstrSrc AS Afx_BSTR = SysAllocString(@wszSourceString)
+   DIM bstrSrc AS BSTR = SysAllocString(@wszSourceString)
    SetLastError(m_pRegExp->Test(bstrSrc, @bMatch))
    SysFreeString(bstrSrc)
    RETURN bMatch
@@ -382,7 +385,7 @@ END FUNCTION
 '   DIM pRegExp AS CRegExp
 '   pRegExp.Global = TRUE
 '   pRegExp.IgnoreCase = TRUE
-'   DIM bsText AS BSTRING = "blah blah a234 blah blah x345 blah blah"
+'   DIM dwsText AS DWSTRING = "blah blah a234 blah blah x345 blah blah"
 '   pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
 '   DIM nPos AS LONG = pRegExp.Find(bsText)
 '   PRINT nPos
@@ -390,7 +393,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CRegExp.Find (BYREF wszSourceString AS CONST WSTRING) AS LONG
    IF m_pMatches THEN this.SafeRelease(m_pMatches)
-   DIM bstrSrc AS AFX_BSTR = SysAllocString(@wszSourceString)
+   DIM bstrSrc AS BSTR = SysAllocString(@wszSourceString)
    SetLastError(m_pRegExp->Execute(bstrSrc, cast(Afx_IDispatch PTR PTR, @m_pMatches)))
    SysFreeString(bstrSrc)
    RETURN this.MatchPos(0)
@@ -410,15 +413,15 @@ END FUNCTION
 '   DIM pRegExp AS CRegExp
 '   pRegExp.Global = TRUE
 '   pRegExp.IgnoreCase = TRUE
-'   DIM bsText AS BSTRING = "blah blah a234 blah blah x345 blah blah"
+'   DIM dwsText AS DWSTRING = "blah blah a234 blah blah x345 blah blah"
 '   pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
-'   DIM nPos AS LONG = pRegExp.Find(15, bsText)
+'   DIM nPos AS LONG = pRegExp.Find(15, dwsText)
 '   PRINT nPos
 ' Output: 26
 ' ========================================================================================
 PRIVATE FUNCTION CRegExp.Find (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING) AS LONG
    IF m_pMatches THEN this.SafeRelease(m_pMatches)
-   DIM bstrSrc AS AFX_BSTR = SysAllocString(wszSourceString)
+   DIM bstrSrc AS BSTR = SysAllocString(wszSourceString)
    DIM bs AS BSTRING = MID(wszSourceString, nStart)
    SetLastError(m_pRegExp->Execute(bs, cast(Afx_IDispatch PTR PTR, @m_pMatches)))
    SysFreeString(bstrSrc)
@@ -435,24 +438,24 @@ END FUNCTION
 '   by a semicolon.
 ' Usage Example:
 '   DIM pRegExp AS CRegExp
-'   DIM bsText AS BSTRING = "blah blah a234 blah blah x345 blah blah"
+'   DIM dwsText AS DWSTRING = "blah blah a234 blah blah x345 blah blah"
 '   pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
-'   DIM bsOut AS BSTRING = pRegExp.FindEx(bsText)
+'   DIM dwsOut AS DWSTRING = pRegExp.FindEx(bsText)
 '   PRINT bsOut
 ' Output: 11,4;26,4
 ' ========================================================================================
-PRIVATE FUNCTION CRegExp.FindEx (BYREF wszSourceString AS CONST WSTRING) AS BSTRING
-   DIM bsOut AS BSTRING, pMatches AS Afx_IMatchCollection2 PTR
+PRIVATE FUNCTION CRegExp.FindEx (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
+   DIM dwsOut AS DWSTRING, pMatches AS IMatchCollection2 PTR
    m_pRegExp->put_Global(TRUE)
    m_pRegExp->put_Multiline(TRUE)
-   DIM bstrSrc AS AFX_BSTR = SysAllocString(@wszSourceString)
+   DIM bstrSrc AS BSTR = SysAllocString(@wszSourceString)
    SetLastError(m_pRegExp->Execute(bstrSrc, cast(Afx_IDispatch PTR PTR, @pMatches)))
    SysFreeString(bstrSRc)
    IF pMatches THEN
       DIM nCount AS LONG
       pMatches->get_Count(@nCount)
       FOR i AS LONG = 0 TO nCount - 1
-         DIM pMatch AS Afx_IMatch2 PTR
+         DIM pMatch AS IMatch2 PTR
          SetLastError(pMatches->get_Item(i, cast(Afx_IDispatch PTR PTR, @pMatch)))
          IF pMatch THEN
             DIM nFirstIndex AS LONG
@@ -460,16 +463,16 @@ PRIVATE FUNCTION CRegExp.FindEx (BYREF wszSourceString AS CONST WSTRING) AS BSTR
             DIM nLen AS LONG
             pMatch->get_Length(@nLen)
             IF i < nCount - 1 THEN
-               bsOut += STR(nFirstIndex + 1) & "," & STR(nLen) & ";"
+               dwsOut += STR(nFirstIndex + 1) & "," & STR(nLen) & ";"
             ELSE
-               bsOut += STR(nFirstIndex + 1) & "," & STR(nLen)
+               dwsOut += STR(nFirstIndex + 1) & "," & STR(nLen)
             END IF
             this.SafeRelease(pMatch)
          END IF
       NEXT
       this.SafeRelease(pMatches)
    END IF
-   RETURN bsOut
+   RETURN dwsOut
 END FUNCTION
 ' ========================================================================================
 
@@ -491,14 +494,20 @@ END FUNCTION
 '    PRINT pRegExp.Remove("abacadabra")
 ' Output: "dr"
 ' ========================================================================================
-PRIVATE FUNCTION CRegExp.Remove (BYREF wszSourceString AS CONST WSTRING) AS BSTRING
+PRIVATE FUNCTION CRegExp.Remove (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
    DIM vd AS VARIANT
-   DIM bstrSrc AS AFX_BSTR = SysAllocString(@wszSourceString)
-   DIM bstrDest AS AFX_BSTR
+   DIM bstrSrc AS BSTR = SysAllocString(@wszSourceString)
+   DIM bstrDest AS BSTR
    SetLastError(m_pRegExp->Replace(bstrSrc, vd, @bstrDest))
    SysFreeString bstrSrc
-   IF bstrDest THEN RETURN bstrDest
-   RETURN wszSourceString
+   DIM dwsOut AS DWSTRING
+   IF bstrDest THEN
+      dwsOut = bstrDest
+      SysFreeString(bstrDest)
+   ElSE
+      dwsOut = wszSourceString
+   END IF
+   RETURN dwsOut
 END FUNCTION
 ' ========================================================================================
 
@@ -540,15 +549,21 @@ END FUNCTION
 '    PRINT pRegExp.Replace("0000.34500044", ".")
 ' Output: ".34500044"
 ' ========================================================================================
-PRIVATE FUNCTION CRegExp.Replace (BYREF wszSourceString AS CONST WSTRING, BYREF wszReplaceString AS CONST WSTRING) AS BSTRING
+PRIVATE FUNCTION CRegExp.Replace (BYREF wszSourceString AS CONST WSTRING, BYREF wszReplaceString AS CONST WSTRING) AS DWSTRING
    DIM bstrSrc AS BSTR = SysAllocString(wszSourceString)
    DIM vd AS VARIANT : vd.vt = VT_BSTR : vd.bstrVal = SysAllocString(@wszReplaceString)
-   DIM bstrDest AS AFX_BSTR
+   DIM bstrDest AS BSTR
    SetLastError(m_pRegExp->Replace(bstrSrc, vd, @bstrDest))
    SysFreeString(bstrSrc)
    VariantClear(@vd)
-   IF bstrDest THEN RETURN bstrDest
-   RETURN wszSourceString
+   DIM dwsOut AS DWSTRING
+   IF bstrDest THEN
+      dwsOut = bstrDest
+      SysFreeString(bstrDest)
+   ElSE
+      dwsOut = wszSourceString
+   END IF
+   RETURN dwsOut
 END FUNCTION
 ' ========================================================================================
 
@@ -560,15 +575,15 @@ END FUNCTION
 ' - Returns the retrieved string on exit or an empty string on failure.
 ' Usage example:
 '    DIM pRegExp AS CRegExp
-'    DIM bsText AS BSTRING = "blah blah a234 blah blah x345 blah blah"
+'    DIM dwsText AS DWSTRING = "blah blah a234 blah blah x345 blah blah"
 '    pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
-'    DIM bs AS BSTRING = pRegExp.Extract(bsText)
-'    PRINT bs
+'    dwsText = pRegExp.Extract(dwsText)
+'    PRINT dwsText
 ' Output: "a234"
 ' ========================================================================================
-PRIVATE FUNCTION CRegExp.Extract (BYREF wszSourceString AS CONST WSTRING) AS BSTRING
+PRIVATE FUNCTION CRegExp.Extract (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
    IF m_pMatches THEN this.SafeRelease(m_pMatches)
-   DIM bstrSrc AS AFX_BSTR = SysAllocString(@wszSourceString)
+   DIM bstrSrc AS BSTR = SysAllocString(@wszSourceString)
    SetLastError(m_pRegExp->Execute(bstrSrc, cast(Afx_IDispatch PTR PTR, @m_pMatches)))
    SysFreeString(bstrSrc)
    DIM nPos AS LONG = this.MatchPos(0)
@@ -587,13 +602,13 @@ END FUNCTION
 ' - Returns the retrieved string on exit or an empty string on failure.
 ' Usage example:
 '    DIM pRegExp AS CRegExp
-'    DIM bsText AS BSTRING = "blah blah a234 blah blah x345 blah blah"
+'    DIM dwsText AS DWSTRING = "blah blah a234 blah blah x345 blah blah"
 '    pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
-'    DIM bs AS BSTRING = pRegExp.Extract(15, bsText)
-'    PRINT bs
+'    dwsText = pRegExp.Extract(15, dwsText)
+'    PRINT dwsText
 ' Output: "x345"
 ' ========================================================================================
-PRIVATE FUNCTION CRegExp.Extract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING) AS BSTRING
+PRIVATE FUNCTION CRegExp.Extract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
    IF m_pMatches THEN this.SafeRelease(m_pMatches)
    DIM bsSrc AS BSTRING = MID(wszSourceString, nStart)
    SetLastError(m_pRegExp->Execute(bsSrc, cast(Afx_IDispatch PTR PTR, @m_pMatches)))

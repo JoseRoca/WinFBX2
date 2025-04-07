@@ -2,7 +2,7 @@
 
 The `DWSTRING` class implements a dynamic unicode null terminated string. Free Basic has a dynamic string data type (STRING) and a fixed length unicode data type (WSTRING), but it lacks a dynamic unicode string. `DWSTRING` behaves as if it was a native data type, working transparently with all of the intrinsic Free Basic string functions and operators.
 
-For all thw string procedures and operators, see the FreeBasic documentation.
+For all the string procedures and operators, see the FreeBasic documentation. One important diference is that VARPTR and the @ operator don't return the address of the buffer, but the address of the class. To get the address of the buffer use STRPTR or the * operator.
 
 **Include file**: DWSTRING.INC.
 

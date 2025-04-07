@@ -33,7 +33,8 @@ Example: DIM dws AS DWSTRING
 
 3. Initializes a `DWSTRING` from an ANSI or UTF-8 encoded string, with optional code page support.
 ```
-Example: DIM dws AS DWSTRING = "Hello, world"
+Example: DIM s AS STRING = "Hello, world"
+         DIM dws AS DWSTRING = s
 Example: DIM dws AS DWSTRING = DWSTRING("Hello, utf", CP_UTF8)
 ```
 For a list of code pages see: [Code Page Identifiers](https://msdn.microsoft.com/en-us/library/windows/desktop/dd317756(v=vs.85).aspx)

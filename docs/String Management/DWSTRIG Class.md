@@ -32,7 +32,10 @@ CONSTRUCTOR (BYVAL n AS DOUBLE)
 Example: DIM dws AS DWSTRING
 ```
 2. Initializes a `DWSTRING` instance from a wide string pointer.
-
+```
+DIM wsz AS WSTRING * 30 = "This is a test string"
+DIM dwsText AS DWSTRING = wsz
+```
 3. Initializes a `DWSTRING` from an ANSI or UTF-8 encoded string, with optional code page support.
 ```
 Example: DIM s AS STRING = "Hello, world"

@@ -6,7 +6,7 @@ The `DWSTRING` class implements a dynamic unicode null terminated string. Free B
 
 | Name       | Description |
 | ---------- | ----------- |
-| [Constructors](#Constructors) | Initialize the class with the specified value. |
+| [Constructors](#constructors) | Initialize the class with the specified value. |
 | [Operator \*](#Operator*) | One * returns the address of the CWSTR buffer.<br> Two ** returns the address of the start of the string data. |
 | [sptr](#sptr) | Returns the address of the string data. Same as \*. |
 | [vptr](#vptr) | Returns the address of the CWSTR buffer. Same as \* |
@@ -53,106 +53,99 @@ The `DWSTRING` class implements a dynamic unicode null terminated string. Free B
 | [AfxCWstrLogicalSort](#AfxCWstrLogicalSort) | Sorts a one-dimensional CWSTR array calling the C qsort function. |
 | [AfxCWstrSort](#AfxCWstrSort) | Sorts a one-dimensional CWSTR array calling the C qsort function. |
 
-# <a name="Constructors"></a>Constructors
-
-Initialize the class with the specified value.
+# <a name="constructors"></a>Constructors
 
 ```
-CONSTRUCTOR CWStr
-CONSTRUCTOR CWStr (BYVAL nChars AS UINT, BYVAL bClear AS BOOLEAN)
-CONSTRUCTOR CWStr (BYVAL pwszStr AS WSTRING PTR)
-CONSTRUCTOR CWStr (BYREF cws AS CWSTR)
-CONSTRUCTOR CWstr (BYREF cbs AS CBSTR)
-CONSTRUCTOR CWStr (BYREF ansiStr AS STRING, BYVAL nCodePage AS UINT = 0)
-CONSTRUCTOR CWstr (BYREF n AS LONGINT)
-CONSTRUCTOR CWstr (BYREF n AS DOUBLE)
+CONSTRUCTOR DWSTRING
 ```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *nChars* | The number of characters to be pre-allocated. |
-| *bClear* | The newly allocated memory is initialized (TRUE) or not (FALSE). |
-| *pwszStr* | A WSTRING. |
-| *cws* | A CWSTR. |
-| *cbs* | A CBSTR. |
-| *ansiStr* | An ansi string or string literal. |
-| *nCodePage* | The code page to be used for ansi to unicode conversions. |
-| *n* | A number. |
-
+Creates an empty Unicode string buffer with an initial null-terminated string.
+```
+CONSTRUCTOR DWSTRING (BYVAL pwszStr AS WSTRING PTR)
+```
+Initializes a `DWSTRING` instance from a wide string pointer.
+Example: DIM dws AS DWSTRING
+```
+CONSTRUCTOR DWSTRING (BYREF ansiStr AS STRING, BYVAL nCodePage AS UINT = 0)
+```
+Initializes the string from an ANSI or UTF-8 encoded string, with optional code page support.
+Example: DIM dws AS DWSTRING = "Hello, world"
+Example: DIM dws AS DWSTRING = DWSTRING("Hello, utf", CP_UTF8)
 For a list of code pages see: [Code Page Identifiers](https://msdn.microsoft.com/en-us/library/windows/desktop/dd317756(v=vs.85).aspx)
+```
+CONSTRUCTOR DWSTRING (BYREF dws AS DWSTRING)
+```
+Creates a copy of an existing DWSTRING.
+Example: DIM dws1 AS DWSTRING = "Test string" : DIM dws2 AS DWSTRING = dws1
+```
+CONSTRUCTOR DWSTRING (BYVAL nChars AS LONG, BYREF wszFill AS CONST WSTRING)
+```
+Creates a DWSTRING with a fixed-length buffer, initialized with a fill character.
+Example: DIM dws AS DWSTRING = DWSTRING(260, " ")
+```
+CONSTRUCTOR DWSTRING (BYVAL n AS LONGINT)
+CONSTRUCTOR (BYVAL n AS DOUBLE)
+```
+Initializes a DWSTRING with a numeric value, allowing automatic conversion.
+Example: DIM dwsNum AS DWSTRING= 12345
+Example: DIM dwsFloat AS DWSTRING = 3.1415
 
-The first constructor pre-allocates memory using FreeBasic's Allocate or CAllocate, depending of the value of the *bClear* parameter. It is only useful to minimize memory allocations if you plan to construct a very big string using multiple string concatenations and you know in advance the maximum size of the final string. Initially, the memory is uninitialized (Allocate) or initializated with zeros (CAllocate).
+#### Remarks
 
-`CWSTR` works transparently with literals and Free Basic native strings, e.g.
+`DWSTRING` works transparently with literals and Free Basic native strings, e.g.
 
 ```
-DIM cws AS CWSTR = "One"
+DIM dws AS DWSTRING = "One"
 DIM s AS STRING = "Three"
-cws = cws + " Two " + s
-PRINT cws
+dws = dws & " Two " & s
+PRINT dws
 ```
 
 It can be used with Windows API functions, e.g.
 
 ```
 DIM nLen AS LONG = SendMessageW(hwnd, WM_GETTEXTLENGTH, 0, 0)
-DIM cwsText AS CWSTR = WSPACE(nLen + 1)
+DIM dwsText AS DWSTRING = WSPACE(nLen + 1)
 SendMessageW(hwnd, WM_GETTEXT, nLen + 1, cast(LPARAM, *cwsText))
+dwsText = LEFT(dwsText, LEN(dwsText) - 1)
+PRINT dwsText
 ```
 
-We can use arrays of `CWSTR` strings transparently, e.g.
+We can use arrays of `DWSTRING` strings transparently, e.g.
 
 ```
-DIM rg(1 TO 10) AS CWSTR
+DIM rg(1 TO 10) AS DWSTRING
 FOR i AS LONG = 1 TO 10
    rg(i) = "string " & i
 NEXT
 
 FOR i AS LONG = 1 TO 10
-   print rg(i)
+   PRINT rg(i)
 NEXT
 ```
 
 A two-dimensional array
 
 ```
-DIM rg2 (1 TO 2, 1 TO 2) AS CWSTR
+DIM rg2 (1 TO 2, 1 TO 2) AS DWSTRING
 rg2(1, 1) = "string 1 1"
 rg2(1, 2) = "string 1 2"
 rg2(2, 1) = "string 2 1"
 rg2(2, 2) = "string 2 2"
-print rg2(2, 1)
+PRINT rg2(2, 1)
 ```
 
 REDIM PRESERVE / ERASE
 
 ```
-REDIM rg(0) AS CWSTR
+REDIM rg(0) AS DWSTRING
 rg(0) = "string 0"
-REDIM PRESERVE rg(0 TO 2) AS CWSTR
+REDIM PRESERVE rg(0 TO 2) AS DWSTRING
 rg(1) = "string 1"
 rg(2) = "string 2"
-print rg(0)
-print rg(1)
-print rg(2)
+PRINT rg(0)
+PRINT rg(1)
+PRINT rg(2)
 ERASE rg
-```
-
-And we can also sort one-dimensional arrays calling the **AfxCWstrSort** procedure:
-
-```
-DIM rg(1 TO 10) AS CWSTR
-FOR i AS LONG = 1 TO 10
-   rg(i) = "string " & i
-NEXT
-FOR i AS LONG = 1 TO 10
-  print rg(i)
-NEXT
-print "---- after sorting ----"
-AfxCWstrSort @rg(1), 10
-FOR i AS LONG = 1 TO 10
-   print rg(i)
-NEXT
 ```
 
 You can also use it with files:
@@ -160,9 +153,9 @@ You can also use it with files:
 Using FreeBasic intrinsic statements:
 
 ```
-DIM cws AS CWSTR = "Дмитрий Дмитриевич Шостакович"
+DIM dws AS DWSTRING = "Дмитрий Дмитриевич Шостакович"
 DIM f AS LONG = FREEFILE
-OPEN "test.txt" FOR OUTPUT ENCODING "utf16" AS #f
+OPEN "тест.txt" FOR OUTPUT ENCODING "utf16" AS #f
 PRINT #f, cws
 CLOSE #f
 ```
@@ -171,26 +164,26 @@ Using the Windows API:
 
 ```
 ' // Writing to a file
-DIM cwsFilename AS CWSTR = "тест.txt"
-DIM cwsText AS CWSTR = "Дмитрий Дмитриевич Шостакович"
+DIM dwsFilename AS DWSTRING = "тест.txt"
+DIM dwsText AS DWSTRING = "Дмитрий Дмитриевич Шостакович"
 DIM hFile AS HANDLE = CreateFileW(cwsFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)
 IF hFile THEN
    DIM dwBytesWritten AS DWORD
-   DIM bSuccess AS LONG = WriteFile(hFile, cwsText, LEN(cwsText) * 2, @dwBytesWritten, NULL)
+   DIM bSuccess AS LONG = WriteFile(hFile, cwsText, LEN(dwsText) * 2, @dwBytesWritten, NULL)
    CloseHandle(hFile)
 END IF
 ```
 
 ```
 ' // Read the file
-hFile = CreateFileW(cwsFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL)
+hFile = CreateFileW(dwsFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL)
 IF hFile THEN
    DIM dwFileSize AS DWORD = GetFileSize(hFile, NULL)
    IF dwFileSize THEN
-      DIM cwsOut AS CWSTR = WSPACE(dwFileSize \ 2)
-      DIM bSuccess AS LONG = ReadFile(hFile, *cwsOut, dwFileSize, NULL, NULL)
+      DIM dwsOut AS DWSTRING = WSPACE(dwFileSize \ 2)
+      DIM bSuccess AS LONG = ReadFile(hFile, *dwsOut, dwFileSize, NULL, NULL)
       CloseHandle(hFile)
-      PRINT cwsOut
+      PRINT dwsOut
    END IF
 END IF
 ```

@@ -224,8 +224,8 @@ END FUNCTION
 PRIVATE FUNCTION wstrReplace (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
    BYREF wszReplaceString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" THEN RETURN ""
-   IF wszMatchString= "" THEN RETURN wszSourceString
-   ' Don't escape "[<text>]", used to specify indidual characters to search
+   IF wszMatchString = "" THEN RETURN wszSourceString
+   ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(wszMatchString)
@@ -246,11 +246,11 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION wstrRemove OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" THEN RETURN ""
-   IF wszMatchString= "" THEN RETURN wszSourceString
+   IF wszMatchString = "" THEN RETURN wszSourceString
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-   ' Don't escape "[<text>]", used to specify indidual characters to search
+   ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(wszMatchString)
@@ -265,7 +265,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" THEN RETURN ""
-   IF wszMatchString= "" THEN RETURN wszSourceString
+   IF wszMatchString = "" THEN RETURN wszSourceString
    DIM nLen AS LONG = LEN(wszSourceString)
    IF (nStart = 0) OR (nStart > nLen) THEN RETURN ""
    IF nStart < 0 THEN nStart = nLen + nStart + 1
@@ -274,7 +274,7 @@ PRIVATE FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceStrin
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-   ' Don't escape "[<text>]", used to specify indidual characters to search
+   ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(wszMatchString)
@@ -283,50 +283,61 @@ PRIVATE FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceStrin
    RETURN pRegExp.Remove(dwsSourceString)
 END FUNCTION
 ' ========================================================================================
-'+++++++++++++++++
+
 ' ========================================================================================
 ' Returns a copy of a string with a substring enclosed between the specified delimiters removed.
 ' Parameters:
-' nStart: [Optional]. The one-based starting position where to start the search
-' wszMainStr: The main string
-' wszDelim1: The first delimiter
-' wszDelim2: The second delimiter
-' fRemoveAll: TRUE or FALSE. TRUE = Recursively remove all the occurrences.
-' This function is case-sensitive.
+'    wszSourceString The main string
+'    leftDelimiter The first delimiter
+'    rightDelimiter The second delimiter
 ' Example:
-' DIM dwsText AS DWSTRING = "blah blah (text beween parentheses) blah blah"
-' print wstrRemove(dwsText, "(", ")")   ' Returns "blah blah  blah blah"
+'    DIM dwsText AS DWSTRING = "blah blah (text beween parentheses) blah blah"
+'    print wstrRemove(dwsText, "(", ")")   ' Returns "blah blah  blah blah"
 ' Example:
-' DIM dwsText AS DWSTRING = "As Long var1(34), var2(  73 ), var3(any)"
-' print WstrRemove(dwsText, "(", ")", TRUE)   ' Returns "As Long var1, var2, var3"
+'    DIM dwsText AS DWSTRING = "As Long var1(34), var2(  73 ), var3(any)"
+'    print WstrRemove(dwsText, "(", ")", TRUE)   ' Returns "As Long var1, var2, var3"
 ' ========================================================================================
-PRIVATE FUNCTION wstrRemove OVERLOAD (BYREF wszMainStr AS CONST WSTRING, BYREF wszDelim1 AS CONST WSTRING, BYREF wszDelim2 AS CONST WSTRING, BYVAL fRemoveAll AS BOOLEAN = FALSE) AS DWSTRING
-   DIM nPos1 AS LONG = INSTR(wszMainStr, wszDelim1)
-   IF nPos1 = 0 THEN RETURN wszMainStr
-   DIM nPos2 AS LONG = INSTR(nPos1 + LEN(wszDelim1), wszMainStr, wszDelim2)
-   IF nPos2 = 0 THEN RETURN wszMainStr
-   nPos2 += LEN(wszDelim2)
-   DIM nLen AS LONG = nPos2 - nPos1
-   IF fRemoveAll = FALSE THEN RETURN MID(wszMainStr, 1, nPos1 - 1) & MID(wszMainStr, nPos2)
-   RETURN wstrRemove(MID(wszMainStr, 1, nPos1 - 1) & MID(wszMainStr, nPos2), wszDelim1, wszDelim2, fRemoveAll)
+PRIVATE FUNCTION wstrRemove OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF leftDelimiter AS CONST WSTRING, BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+   IF wszSourceString = "" THEN RETURN ""
+   DIM pRegExp AS CRegExp
+   pRegExp.Global = TRUE
+   pRegExp.IgnoreCase = IgnoreCase
+   ' Escape special characters
+   DIM AS DWSTRING dwsLeftDelimiter, dwsRightDelimiter
+   dwsLeftDelimiter = wstrEscape(leftDelimiter)
+   dwsRightDelimiter = wstrEscape(rightDelimiter)
+   pRegExp.Pattern = dwsLeftDelimiter & ".+?" & dwsRightDelimiter
+   RETURN pRegExp.Replace(wszSourceString, "")
 END FUNCTION
 ' ========================================================================================
+
 ' ========================================================================================
-PRIVATE FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG = 1, BYREF wszMainStr AS CONST WSTRING, BYREF wszDelim1 AS CONST WSTRING, BYREF wszDelim2 AS CONST WSTRING, BYVAL fRemoveAll AS BOOLEAN = FALSE) AS DWsTRING
-   DIM nLen AS LONG = LEN(wszMainStr)
-   IF (nStart = 0) OR (nStart > nLen) THEN RETURN ""
-   IF nStart < 0 THEN nStart = nLen + nStart + 1
-   DIM nPos1 AS LONG = INSTR(nStart, wszMainStr, wszDelim1)
-   IF nPos1 = 0 THEN RETURN wszMainStr
-   DIM nPos2 AS LONG = INSTR(nPos1, wszMainStr, wszDelim2)
-   IF nPos2 = 0 THEN RETURN wszMainStr
-   nPos2 += LEN(wszDelim2)
-   nLen = nPos2 - nPos1
-   IF fRemoveAll = FALSE THEN RETURN MID(wszMainStr, 1, nPos1 - 1) & MID(wszMainStr, nPos2)
-   RETURN wstrRemove(nStart, MID(wszMainStr, 1, nPos1 - 1) & MID(wszMainStr, nPos2), wszDelim1, wszDelim2, fRemoveAll)
+' * Returns a copy of a string with a substring enclosed between the specified delimiters removed.
+' Parameters:
+'    wszSourceString The main string
+'    leftDelimiter The first delimiter
+'    rightDelimiter The second delimiter
+' Example:
+'    DIM dwsText AS DWSTRING = "blah blah (text beween parentheses) blah blah"
+'    print wstrRemove(dwsText, "(", ")")   ' Returns "blah blah  blah blah"
+' Example:
+'    DIM dwsText AS DWSTRING = "As Long var1(34), var2(  73 ), var3(any)"
+'    print WstrRemove(dwsText, "(", ")", TRUE)   ' Returns "As Long var1, var2, var3"
+' ========================================================================================
+PRIVATE FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, BYREF leftDelimiter AS CONST WSTRING, BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+   IF wszSourceString = "" THEN RETURN ""
+   DIM pRegExp AS CRegExp
+   pRegExp.Global = TRUE
+   pRegExp.IgnoreCase = IgnoreCase
+   ' Escape special characters
+   DIM AS DWSTRING dwsLeftDelimiter, dwsRightDelimiter
+   dwsLeftDelimiter = wstrEscape(leftDelimiter)
+   dwsRightDelimiter = wstrEscape(rightDelimiter)
+   pRegExp.Pattern = dwsLeftDelimiter & ".+?" & dwsRightDelimiter
+   RETURN pRegExp.Replace(wszSourceString, "")
 END FUNCTION
 ' ========================================================================================
-'++++++++++++++++
+
 ' ========================================================================================
 ' * Extracts characters from a string up to a character or group of characters.
 ' Returns a substring of wszSourceString starting with its first character and up to
@@ -350,13 +361,13 @@ PRIVATE FUNCTION wstrExtract OVERLOAD (BYREF wszSourceString AS CONST WSTRING, B
    pRegExp.IgnoreCase = IgnoreCase
    ' // This pattern matches the delimiter passed (can consist of a group of one or more characters)
    ' // Passing wszMatchString enclosed between "[]" will match any of the individual characters
-   ' Don't escape "[<text>]", used to specify indidual characters to search
+   ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(wszMatchString)
    END IF
    pRegExp.Pattern = "^(.*?)" & dwsMatchString
-   SetLastError(pRegExp.Execute(wszSourceString))
+   pRegExp.Execute(wszSourceString)
    IF pRegExp.SubMatchesCount THEN
       RETURN STRPTR(pRegExp.SubMatchValue(0, 0))
    END IF
@@ -398,13 +409,13 @@ PRIVATE FUNCTION wstrExtract OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceStri
    pRegExp.IgnoreCase = IgnoreCase
    ' // This pattern matches the delimiter passed (can consist of a group of one or more characters)
    ' // Passing wszMatchString enclosed between "[]" will match any of the individual characters
-   ' Don't escape "[<text>]", used to specify indidual characters to search
+   ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(dwsMatchString)
    END IF
    pRegExp.Pattern = "^(.*?)" & dwsMatchString
-   SetLastError(pRegExp.Execute(dwsSourceString))
+   pRegExp.Execute(dwsSourceString)
    IF pRegExp.SubMatchesCount THEN
       RETURN STRPTR(pRegExp.SubMatchValue(0, 0))
    END IF
@@ -426,12 +437,12 @@ PRIVATE FUNCTION wstrExtract OVERLOAD (BYREF wszSourceString AS CONST WSTRING, B
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
-   DIM AS DWSTRING dwsLeftDelimiter, dwsRightDelimiter
    ' Escape special characters
+   DIM AS DWSTRING dwsLeftDelimiter, dwsRightDelimiter
    dwsLeftDelimiter = wstrEscape(leftDelimiter)
    dwsRightDelimiter = wstrEscape(rightDelimiter)
    pRegExp.Pattern = dwsLeftDelimiter & "(.*?)" & dwsRightDelimiter
-   SetLastError(pRegExp.Execute(wszSourceString))
+   pRegExp.Execute(wszSourceString)
    IF pRegExp.SubMatchesCount THEN
       RETURN pRegExp.SubMatchValue(0, 0)
    END IF
@@ -464,7 +475,7 @@ PRIVATE FUNCTION wstrExtract OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceStri
    dwsLeftDelimiter = wstrEscape(leftDelimiter)
    dwsRightDelimiter = wstrEscape(rightDelimiter)
    pRegExp.Pattern = dwsLeftDelimiter & "(.*?)" & dwsRightDelimiter
-   SetLastError(pRegExp.Execute(dwsSourceString))
+   pRegExp.Execute(dwsSourceString)
    IF pRegExp.SubMatchesCount THEN
       RETURN pRegExp.SubMatchValue(0, 0)
    END IF
@@ -499,7 +510,7 @@ FUNCTION wstrRetain (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchStrin
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-   ' Don't escape "[<text>]", used to specify indidual characters to search
+   ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(dwsMatchString)
@@ -522,7 +533,7 @@ FUNCTION wstrRemain OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF wszM
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
-   ' Don't escape "[<text>]", used to specify indidual characters to search
+   ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(dwsMatchString)
@@ -554,7 +565,7 @@ FUNCTION wstrRemain OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CON
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
-   ' Don't escape "[<text>]", used to specify indidual characters to search
+   ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(dwsMatchString)
@@ -591,7 +602,7 @@ PRIVATE FUNCTION wstrTally (BYREF wszSourceString AS CONST WSTRING, BYREF wszMat
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-   ' Don't escape "[<text>]", used to specify indidual characters to search
+   ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(dwsMatchString)
@@ -622,7 +633,7 @@ PRIVATE FUNCTION wstrVerify (BYVAL nStart AS LONG, BYREF wszSourceString AS CONS
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
-      ' Don't escape "[<text>]", used to specify indidual characters to search
+      ' Don't escape "[<chars>]", used to specify individual characters to search
    DIM dwsMatchString AS DWSTRING = wszMatchString
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(dwsMatchString)
@@ -690,6 +701,7 @@ END FUNCTION
 '  [\+\-]? – Matches an optional plus (+) or minus (-) sign at the beginning (for signed numbers).
 '  \d* – Matches zero or more digits before the decimal point (allows integers or leading zero suppression).
 '  \.? – Matches an optional decimal point (if present, allows floating-point numbers).
+'  \,? – Matches an optional decimal point (in Spain, a comma is used instead of a colon).
 '  \d+ – Matches at least one digit after the decimal (ensuring valid numeric values).
 '  (?:[Ee][\+\-]?\d+)? – Handles scientific notation:
 '    E or e for exponent notation.
@@ -699,7 +711,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION wstrIsNumeric (BYREF wszSourcestring AS CONST WSTRING) AS BOOLEAN
    DIM pRegExp AS CRegExp
-   pRegExp.Pattern = $"^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$"
+   pRegExp.Pattern = $"^[\+\-]?\d*\.?\,?\d+(?:[Ee][\+\-]?\d+)?$"
    RETURN pRegExp.Test(wszSourcestring)
 END FUNCTION
 ' ========================================================================================
@@ -961,6 +973,25 @@ PRIVATE FUNCTION wstrLSet (BYREF wszSourceString AS CONST WSTRING, BYVAL nString
    RETURN dws
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+' Left-aligns a string within the space of another string.
+' If wszStr is empty, wstrLsetAbs leaves the padding positions unchanged from their original
+' content, rather than replacing them with spaces as LSET does.
+' If wszStr is longer than result_var, wstrLSet truncates it from the right until it fits
+' in the result string.
+' Example:
+' DIM dws AS DWSTRING = "NameBasic=SuperBasic"
+' PRINT wstrLSetAbs(dws, "FreeBasic")  ' Output: FreeBasic=SuperBasic"
+' ========================================================================================
+PRIVATE FUNCTION wstrLSetAbs (BYREF wszSourceString AS CONST WSTRING, BYREF wszStr AS CONST WSTRING) AS DWSTRING
+   DIM dwsStr AS DWSTRING = wszStr
+   IF dwsStr = "" THEN RETURN wszSourceString
+   IF LEN(dwsStr) > LEN(wszSourceString) THEN dwsStr = LEFT(dwsStr, LEN(wszSourceString))
+   DIM dws AS DWSTRING = wszSourceString
+   MID(dws, 1, LEN(dwsStr)) = dwsStr
+   RETURN dws
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' * Returns a string containing a right-justified (padded) string.
@@ -973,6 +1004,26 @@ PRIVATE FUNCTION wstrRSet (BYREF wszSourceString AS CONST WSTRING, BYVAL nString
    IF LEN(wszSourceString) > nStringLength THEN RETURN LEFT(wszSourceString, nStringLength)
    DIM dws AS DWSTRING = WSTRING(nStringLength, wszPadCharacter)
    MID(dws, nStringLength - LEN(wszSourceString) + 1, LEN(wszSourceString)) = wszSourceString
+   RETURN dws
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Returns a string containing a right-justified (padded) string.
+' If the optional parameter wszPadCharacter not specified, the function pads the string with
+' space characters to the left. Otherwise, the function pads the string with the first
+' character of wszPadCharacter.
+' Example:
+' DIM dws AS DWSTRING = "NameBasic=NameBasic"
+' PRINT wstrRSetAbs(dws, "FreeBasic")  ' Output: "NameBasic=FreeBasic"
+' ========================================================================================
+PRIVATE FUNCTION wstrRSetAbs (BYREF wszSourceString AS CONST WSTRING, BYREF wszStr AS CONST WSTRING) AS DWSTRING
+   DIM dwsStr AS DWSTRING = wszStr
+   IF dwsStr = "" THEN RETURN wszSourceString
+   IF LEN(dwsStr) > LEN(wszSourceString) THEN dwsStr = RIGHT(dwsStr, LEN(wszSourceString))
+   DIM dws AS DWSTRING = wszSourceString
+   DIM nPos AS LONG = LEN(wszSourceString) - LEN(dwsStr) + 1
+   IF nPos < 1 THEN nPos = 1
+   MID(dws, nPos, LEN(dwsStr)) = dwsStr
    RETURN dws
 END FUNCTION
 ' ========================================================================================
@@ -991,7 +1042,6 @@ PRIVATE FUNCTION wstrCSet (BYREF wszSourceString AS CONST WSTRING, BYVAL nString
    RETURN dws
 END FUNCTION
 ' ========================================================================================
-
 ' ========================================================================================
 ' * Returns a string containing a centered string within the space of another string.
 ' Example: DIM dwsPad AS DWSTRING = "COOL COOL COOL COOL COOL"
@@ -1012,12 +1062,16 @@ END FUNCTION
 ' Example:
 '   DIM dwsText AS DWSTRING = "129th"
 '   DIM dwsSet AS DWSTRING = "1234567890"
-'   DIM n AS LONG = StrSpnW(dwsText, dwsSet)
+'   DIM n AS LONG = wstrSpn(dwsText, dwsSet)
 '   PRINT "The initial number has " & WSTR(n) & " digits"   ' Output: 3
 ' The C++ wcsspn function can also be used.
 ' ========================================================================================
-PRIVATE FUNCTION wstrSpn (BYREF wszText AS CONST WSTRING, BYREF wszSet AS CONST WSTRING) AS LONG
-   RETURN StrSpnW(@wszText, @wszSet)
+PRIVATE FUNCTION wstrSpn (BYREF wszText AS CONST WSTRING, BYREF wszSet AS CONST WSTRING, BYVAL IgnoreCase AS LONG = TRUE) AS LONG
+   IF IgnoreCase THEN
+      RETURN StrSpnW(@wszText, @wszSet)
+   ELSE
+      RETURN StrCSpnIW(@wszText, @wszSet)
+   END IF
 END FUNCTION
 ' ========================================================================================
 
@@ -1025,7 +1079,7 @@ END FUNCTION
 ' * Converts a numeric value into a string that represents the number expressed as a size
 ' value in bytes, kilobytes, megabytes, or gigabytes, depending on the size.
 ' ========================================================================================
-PRIVATE FUNCTION wstrFormatByteSize (BYVAL ull AS ULONGLONG) AS DWSTRING
+PRIVATE FUNCTION wstrFormatByteSize (BYVAL ull AS LONGLONG) AS DWSTRING
    DIM wsz AS WSTRING * 260 = WSPACE(260)
    StrFormatByteSizeW(ull, @wsz, 260)
    RETURN wsz
@@ -1035,7 +1089,7 @@ END FUNCTION
 ' Converts a numeric value into a string that represents the number expressed as a size
 ' value in kilobytes.
 ' ========================================================================================
-PRIVATE FUNCTION wstrFormatKBSize (BYVAL ull AS ULONGLONG) AS DWSTRING
+PRIVATE FUNCTION wstrFormatKBSize (BYVAL ull AS LONGLONG) AS DWSTRING
    DIM wsz AS WSTRING * 260 = WSPACE(260)
    StrFormatKBSizeW(ull, @wsz, 260)
    RETURN wsz
@@ -1192,6 +1246,84 @@ PRIVATE FUNCTION wstrPathName (BYREF wszOption AS CONST WSTRING, BYREF wszFileSp
          ' // Retrieve the name and extension combined
          DIM nPos AS LONG = InstrRev(wszFileSpec, ANY ":/\")
          IF nPos THEN dws = MID(wszFileSpec, nPos + 1) ELSE dws = wszFileSpec
+         ' // Retrieve the extension
+         nPos = InStrRev(dws, ".")
+         IF nPos THEN dws = MID(dws, nPos) ELSE dws = ""
+   END SELECT
+   RETURN dws
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Searches a path for a file name.
+' Parameters:
+' - wszOption: This is one of the following words which is used to specify the requested part:
+'   FULL: Return the full drive/path/file name.
+'   PATH: Return the path portion of the path/file name.
+'         That is the text up to and including the last backslash (\).
+'   NAME: Return the name portion of the path/file name.
+'         That is the text to the right of the last backslash (\), ending just before the last period (.) in the string.
+'   EXTN: Return the extension portion of the path/file name.
+'         That is the last period (.) in the string plus the text to the right of it.
+'   NAMEX: Return the NAME and the EXTN parts combined.
+' - wszFileSpec: A file name which is expected to exist on disk. It must not be an ambiguous
+'   name -- that is, it may not include a query (?) or an asterisk (*) character.
+' - wszOtherDirs: An optional path string which includes one or more paths to be searched
+'   to find wszFileSpec. If multiple path names are included in this string, they must
+'   each be separated by a semicolon (;) delimiter. If wszOtherDirs: is not given, or it is
+'   a nul (zero-length) string, the following directories are searched:
+'      - The directory from which the application was loaded.
+'      - The current directory.
+'      - The standard directories such as System32 and the directories specified in the PATH
+'        environment variable.
+'   To expedite the process or enable wstrPathScan to search a wider range of directories,
+'   use the wszOtherDirs parameter to specify one or more directories to be searched first.
+' Return value:
+'   If the file is found, it returns either the full path/file name, or a selected part of it.
+'   If the file is not found, a nul (zero-length)  is returned. If you wish to simply parse
+'   a text file name, without regard to its validation on disk, you should use the companion
+'   function wstrPathName.
+' ========================================================================================
+PRIVATE FUNCTION wstrPathScan (BYREF wszOption AS CONST WSTRING, BYREF wszFileSpec AS CONST WSTRING, BYREF wszOtherDirs AS CONST WSTRING = "") AS DWSTRING
+   IF wszFileSpec = "" THEN RETURN ""
+   DIM _wszFilespec AS WSTRING * MAX_PATH = wszFileSpec
+   DIM nCount AS LONG, rgOtherDirs(ANY) AS WSTRING PTR
+   DIM dwsOtherDirs AS DWSTRING = wszOtherDirs
+   IF LEN(dwsOtherDirs) = 0 THEN dwsOtherDirs = ExePath & ";" &  CURDIR
+   nCount = wstrParseCount(dwsOtherDirs, ";")
+   IF nCount THEN
+      REDIM rgOtherDirs(0 TO nCount)
+      FOR i AS LONG = 0 TO nCount - 1
+         rgOtherDirs(i) = STRPTR(wstrParse(dwsOtherDirs, i + 1, ";"))
+      NEXT
+      rgOtherDirs(nCount) = NULL
+      IF PathFindOnPathW(@_wszFilespec, @rgotherDirs(0)) = 0 THEN _wszFilespec = ""
+   END IF
+   DIM dws AS DWSTRING = _wszFileSpec
+   IF LEN(_wszFileSpec) = 0 THEN RETURN dws
+   SELECT CASE UCASE(wszOption)
+      CASE "FULL"
+         RETURN _wszFileSpec
+      CASE "PATH"
+         ' // Returns the path portion of file spec
+         DIM nPos AS LONG = InstrRev(_wszFileSpec, ANY ":/\")
+         IF nPos THEN dws = MID(_wszFileSpec, 1, nPos)
+      CASE "NAME"
+         ' // Retrieve the full filename
+         dws = _wszFileSpec
+         DIM nPos AS LONG = InstrRev(_wszFileSpec, ANY ":/\")
+         IF nPos THEN dws = MID(_wszFileSpec, nPos + 1)
+         ' // Retrieve the filename
+         nPos = InstrRev(dws, ".")
+         IF nPos THEN dws = MID(dws, 1, nPos - 1)
+      CASE "NAMEX"
+         ' // Retrieve the name and extension combined
+         DIM nPos AS LONG = InStrRev(_wszFileSpec, ANY ":/\")
+         IF nPos THEN dws = MID(_wszFileSpec, nPos + 1) ELSE dws = _wszFileSpec
+      CASE "EXTN"
+         ' // Retrieve the name and extension combined
+         DIM nPos AS LONG = InstrRev(_wszFileSpec, ANY ":/\")
+         IF nPos THEN dws = MID(_wszFileSpec, nPos + 1) ELSE dws = _wszFileSpec
          ' // Retrieve the extension
          nPos = InStrRev(dws, ".")
          IF nPos THEN dws = MID(dws, nPos) ELSE dws = ""

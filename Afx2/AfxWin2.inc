@@ -311,7 +311,6 @@ END FUNCTION
 
 ' ========================================================================================
 ' * Returns the path of the program which is currently executing.
-' Contrarily to FreeBasic's ExePath, the returnes path has a trailing backslash.
 ' ========================================================================================
 PRIVATE FUNCTION AfxGetExePath () AS DWSTRING
    DIM buffer AS WSTRING * MAX_PATH, p AS LONG

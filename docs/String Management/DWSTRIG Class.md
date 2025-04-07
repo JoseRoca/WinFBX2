@@ -40,7 +40,8 @@ For a list of code pages see: [Code Page Identifiers](https://msdn.microsoft.com
 
 5. Creates a copy of an existing `DWSTRING`.
 ```
-Example: DIM dws1 AS DWSTRING = "Test string" : DIM dws2 AS DWSTRING = dws1
+Example: DIM dws1 AS DWSTRING = "Test string"
+         DIM dws2 AS DWSTRING = dws1
 ```
 6. Creates a `DWSTRING` with a fixed-length buffer, initialized with a fill character.
 ```

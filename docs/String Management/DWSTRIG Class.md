@@ -1,8 +1,8 @@
 # DWSTRING Class
 
-The `DWSTRING` class implements a dynamic unicode null terminated string. Free Basic has a dynamic string data type (STRING) and a fixed length unicode data type (WSTRING), but it lacks a dynamic unicode string. `DWSTRING` behaves as if it was a native data type, working transparently with the intrinsic Free Basic string functions and operators.
+The `DWSTRING` class implements a dynamic unicode null terminated string. Free Basic has a dynamic string data type (STRING) and a fixed length unicode data type (WSTRING), but it lacks a dynamic unicode string. `DWSTRING` behaves as if it was a native data type, working transparently with all of the intrinsic Free Basic string functions and operators.
 
-****Include file**: DWSTRING.INC.
+**Include file**: DWSTRING.INC.
 
 | Name       | Description |
 | ---------- | ----------- |
@@ -12,57 +12,44 @@ The `DWSTRING` class implements a dynamic unicode null terminated string. Free B
 | [Operator Cast](#operatorcast) | Returns a pointer to the `DWSTRING` buffer or the string data.<br>Casting is automatic. You don't have to call this operator. |
 | [bstr](#bstr) | Returns the contents of the `DWSTRING` as a `BSTR`. |
 | [wchar](#wchar) | Returns the string data as a new unicode string allocated with **CoTaskMemAlloc**. |
-| [Utf8](#utf8) | Converts from UTF8 to Unicode and from Unicode to UTF8. |
+| [utf8](#utf8) | Converts from UTF8 to Unicode and from Unicode to UTF8. |
 
 # <a name="constructors"></a>Constructors
 
 ```
 CONSTRUCTOR DWSTRING
-```
-Creates an empty Unicode string buffer with an initial null-terminated string.
-```
 CONSTRUCTOR DWSTRING (BYVAL pwszStr AS WSTRING PTR)
-```
-Initializes a `DWSTRING` instance from a wide string pointer.
-Example: DIM dws AS DWSTRING
-```
 CONSTRUCTOR DWSTRING (BYREF ansiStr AS STRING, BYVAL nCodePage AS UINT = 0)
-```
-Initializes the string from an ANSI or UTF-8 encoded string, with optional code page support.
-Example: DIM dws AS DWSTRING = "Hello, world"
-Example: DIM dws AS DWSTRING = DWSTRING("Hello, utf", CP_UTF8)
-For a list of code pages see: [Code Page Identifiers](https://msdn.microsoft.com/en-us/library/windows/desktop/dd317756(v=vs.85).aspx)
-```
 CONSTRUCTOR DWSTRING (BYREF dws AS DWSTRING)
-```
-Creates a copy of an existing DWSTRING.
-Example: DIM dws1 AS DWSTRING = "Test string" : DIM dws2 AS DWSTRING = dws1
-```
 CONSTRUCTOR DWSTRING (BYVAL nChars AS LONG, BYREF wszFill AS CONST WSTRING)
-```
-Creates a DWSTRING with a fixed-length buffer, initialized with a fill character.
-Example: DIM dws AS DWSTRING = DWSTRING(260, " ")
-```
 CONSTRUCTOR DWSTRING (BYVAL n AS LONGINT)
 CONSTRUCTOR (BYVAL n AS DOUBLE)
 ```
-Initializes a DWSTRING with a numeric value, allowing automatic conversion.
-Example: DIM dwsNum AS DWSTRING= 12345
+1. Creates an empty Unicode string buffer with an initial null-terminated string.
+Example: DIM dws AS DWSTRING
+2. Initializes a `DWSTRING` instance from a wide string pointer.
+3. Initializes the string from an ANSI or UTF-8 encoded string, with optional code page support.
+Example: DIM dws AS DWSTRING = "Hello, world"
+Example: DIM dws AS DWSTRING = DWSTRING("Hello, utf", CP_UTF8)
+For a list of code pages see: [Code Page Identifiers](https://msdn.microsoft.com/en-us/library/windows/desktop/dd317756(v=vs.85).aspx)
+5. Creates a copy of an existing DWSTRING.
+Example: DIM dws1 AS DWSTRING = "Test string" : DIM dws2 AS DWSTRING = dws1
+6. Creates a DWSTRING with a fixed-length buffer, initialized with a fill character.
+Example: DIM dws AS DWSTRING = DWSTRING(260, " ")
+7. Initializes a DWSTRING with a numeric value, allowing automatic conversion.
+Example: DIM dwsNum AS DWSTRING = 12345
 Example: DIM dwsFloat AS DWSTRING = 3.1415
 
 #### Remarks
 
 `DWSTRING` works transparently with literals and Free Basic native strings, e.g.
-
 ```
 DIM dws AS DWSTRING = "One"
 DIM s AS STRING = "Three"
 dws = dws & " Two " & s
 PRINT dws
 ```
-
 It can be used with Windows API functions, e.g.
-
 ```
 DIM nLen AS LONG = SendMessageW(hwnd, WM_GETTEXTLENGTH, 0, 0)
 DIM dwsText AS DWSTRING = WSPACE(nLen + 1)
@@ -70,22 +57,17 @@ SendMessageW(hwnd, WM_GETTEXT, nLen + 1, cast(LPARAM, *cwsText))
 dwsText = LEFT(dwsText, LEN(dwsText) - 1)
 PRINT dwsText
 ```
-
 We can use arrays of `DWSTRING` strings transparently, e.g.
-
 ```
 DIM rg(1 TO 10) AS DWSTRING
 FOR i AS LONG = 1 TO 10
    rg(i) = "string " & i
 NEXT
-
 FOR i AS LONG = 1 TO 10
    PRINT rg(i)
 NEXT
 ```
-
 A two-dimensional array
-
 ```
 DIM rg2 (1 TO 2, 1 TO 2) AS DWSTRING
 rg2(1, 1) = "string 1 1"
@@ -96,7 +78,6 @@ PRINT rg2(2, 1)
 ```
 
 REDIM PRESERVE / ERASE
-
 ```
 REDIM rg(0) AS DWSTRING
 rg(0) = "string 0"
@@ -108,11 +89,9 @@ PRINT rg(1)
 PRINT rg(2)
 ERASE rg
 ```
-
 You can also use it with files:
 
 Using FreeBasic intrinsic statements:
-
 ```
 DIM dws AS DWSTRING = "Дмитрий Дмитриевич Шостакович"
 DIM f AS LONG = FREEFILE
@@ -120,17 +99,15 @@ OPEN "Test.txt" FOR OUTPUT ENCODING "utf16" AS #f
 PRINT #f, dws
 CLOSE #f
 ```
-
 Using the Windows API:
-
 ```
 ' // Writing to a file
 DIM dwsFilename AS DWSTRING = "тест.txt"
 DIM dwsText AS DWSTRING = "Дмитрий Дмитриевич Шостакович"
-DIM hFile AS HANDLE = CreateFileW(cwsFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)
+DIM hFile AS HANDLE = CreateFileW(dwsFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)
 IF hFile THEN
    DIM dwBytesWritten AS DWORD
-   DIM bSuccess AS LONG = WriteFile(hFile, cwsText, LEN(dwsText) * 2, @dwBytesWritten, NULL)
+   DIM bSuccess AS LONG = WriteFile(hFile, dwsText, LEN(dwsText) * 2, @dwBytesWritten, NULL)
    CloseHandle(hFile)
 END IF
 ```
@@ -154,10 +131,10 @@ Notice that, contrarily to **CreateFileW**, FreeBasic's OPEN statement doesn't a
 
 ### <a name="Operator*"></a>Operator *
 
-Dereferences the CWSTR.<br>One * returns the address of the CWSTR buffer.<br>Two ** returns the address of the start of the string data.
+Dereferences the `DWSTRING`.<br>One * returns the address of the `DWSTRING` buffer.<br>Two ** returns the address of the start of the string data.
 
 ```
-OPERATOR * (BYREF cws AS CWSTR) AS WSTRING PTR
+OPERATOR * (BYREF dws AS DWSTRING) AS WSTRING PTR
 ```
 
 # Casting and Conversions

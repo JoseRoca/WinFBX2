@@ -26,19 +26,31 @@ CONSTRUCTOR DWSTRING (BYVAL n AS LONGINT)
 CONSTRUCTOR (BYVAL n AS DOUBLE)
 ```
 1. Creates an empty Unicode string buffer with an initial null-terminated string.
+```
 Example: DIM dws AS DWSTRING
+```
 2. Initializes a `DWSTRING` instance from a wide string pointer.
-3. Initializes the string from an ANSI or UTF-8 encoded string, with optional code page support.
+
+3. Initializes a `DWSTRING` from an ANSI or UTF-8 encoded string, with optional code page support.
+```
 Example: DIM dws AS DWSTRING = "Hello, world"
 Example: DIM dws AS DWSTRING = DWSTRING("Hello, utf", CP_UTF8)
+```
 For a list of code pages see: [Code Page Identifiers](https://msdn.microsoft.com/en-us/library/windows/desktop/dd317756(v=vs.85).aspx)
-5. Creates a copy of an existing DWSTRING.
+
+5. Creates a copy of an existing `DWSTRING`.
+```
 Example: DIM dws1 AS DWSTRING = "Test string" : DIM dws2 AS DWSTRING = dws1
-6. Creates a DWSTRING with a fixed-length buffer, initialized with a fill character.
+```
+6. Creates a `DWSTRING` with a fixed-length buffer, initialized with a fill character.
+```
 Example: DIM dws AS DWSTRING = DWSTRING(260, " ")
-7. Initializes a DWSTRING with a numeric value, allowing automatic conversion.
+```
+7. Initializes a `DWSTRING` with a numeric value, allowing automatic conversion.
+```
 Example: DIM dwsNum AS DWSTRING = 12345
 Example: DIM dwsFloat AS DWSTRING = 3.1415
+```
 
 #### Remarks
 

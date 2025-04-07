@@ -145,7 +145,7 @@ Notice that, contrarily to **CreateFileW**, FreeBasic's OPEN statement doesn't a
 
 # Operators
 
-### <a name="Operator*"></a>Operator *
+### <a name="Operator*"></a>operator *
 
 Dereferences the `DWSTRING`.<br>One * returns the address of the `DWSTRING` buffer.<br>Two ** returns the address of the start of the string data.
 

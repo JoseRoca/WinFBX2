@@ -200,8 +200,8 @@ Returns a list of comma separated "index, length" value pairs. The pairs are sep
 DIM pRegExp AS CRegExp
 DIM dwsText AS DWSTRING = "blah blah a234 blah blah x345 blah blah"
 pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
-DIM dwsOut AS DWSTRING = pRegExp.FindEx(bsText)
-PRINT bsOut
+DIM dwsOut AS DWSTRING = pRegExp.FindEx(dwsText)
+PRINT dwsOut
 ' Output: 11,4;26,4
 ```
 

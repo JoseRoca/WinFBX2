@@ -10,6 +10,7 @@ The `DWSTRING` class implements a dynamic unicode null terminated string. Free B
 | [Capacity](#capacity) | Gets/sets the size of the internal buffer. |
 | [Operator \*](#operator*) | One * returns the address of the `DWSTRING` buffer.<br> Two ** returns the address of the start of the string data. |
 | [Operator Cast](#operatorcast) | Returns a pointer to the `DWSTRING` buffer or the string data.<br>Casting is automatic. You don't have to call this operator. |
+| [CharW](#charw) | Returns a wide-character string from a codepoint. |
 | [bstr](#bstr) | Returns the contents of the `DWSTRING` as a `BSTR`. |
 | [wchar](#wchar) | Returns the string data as a new unicode string allocated with **CoTaskMemAlloc**. |
 | [utf8](#utf8) | Converts from UTF8 to Unicode and from Unicode to UTF8. |
@@ -206,3 +207,15 @@ PROPERTY Capacity (BYVAL nValue AS LONG)
 | Parameter  | Description |
 | ---------- | ----------- |
 | *nValue* | The new capacity value, in bytes. If the new capacity is equal to the current capacity, no operation is performed; is it is smaller, the buffer is shortened and the contents that exceed the new capacity are lost. If you pass an odd number, 1 is added to the value to make it even. |
+
+### <a name="charw"></a>CharW
+
+Returns a wide-character string from a codepoint. If the codepoint is higher than 65535, the value returned is the sum of a surrogate pair.
+
+```
+FUNCTION ChrW (BYVAL codePoint AS UInteger) AS DWSTRING
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *codepoint* | The code point. |

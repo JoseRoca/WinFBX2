@@ -210,7 +210,7 @@ PROPERTY Capacity (BYVAL nValue AS LONG)
 
 ### <a name="chrw"></a>ChrW
 
-Returns a wide-character string from a codepoint. If the codepoint is higher than 65535, the value returned is the sum of a surrogate pair.
+Returns a wide-character string from a codepoint. If the codepoint is higher than 65535, the value returned a surrogate pair.
 
 ```
 FUNCTION ChrW (BYVAL codePoint AS UInteger) AS DWSTRING

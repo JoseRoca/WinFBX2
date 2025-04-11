@@ -3,7 +3,7 @@
 ' File: CRegExp2.inc
 ' Contents: Regular expressions
 ' Compiler: FreeBasic 32 & 64-bit
-' Copyright (c) 2025 José Roca. Freeware. Use at your own risk.
+' Copyright (c) 2025 JosÃ© Roca. Freeware. Use at your own risk.
 ' THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
 ' EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
 ' MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
@@ -540,8 +540,8 @@ END FUNCTION
 '    DIM pRegExp AS CRegExp
 '    pRegExp.Global = TRUE
 '    pRegExp.Pattern = $"(\S+), (\S+)"
-'    PRINT pRegExp.Replace("Roca, José", "$2 $1")
-' Output: "José Roca"
+'    PRINT pRegExp.Replace("Roca, JosÃ©", "$2 $1")
+' Output: "JosÃ© Roca"
 ' ----------------------------------------------------------------------------------------
 '    DIM pRegExp AS CRegExp
 '    pRegExp.Global = TRUE

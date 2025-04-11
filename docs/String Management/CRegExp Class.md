@@ -323,6 +323,38 @@ print dwsRes
 ```
 What we have done is to search for 3 digits (\d{3}) followed by a dash, followed by 3 more digits and a dash, followed by 4 digits and add () to the first three digits and change the first dash with a space.  $1, $2, and $3 are examples of a regular expression "back reference." A back reference is simply a portion of the found text that can be saved and then reused.
 
+#### Other usage examples
+```
+DIM pRegExp AS CRegExp
+pRegExp.Global = TRUE
+pRegExp.IgnoreCase = TRUE
+pRegExp.Pattern = "World"
+PRINT pRegExp.Replace("Hello World", "Earth") 
+ 'Output: "Hello Earth"
+```
+```
+DIM pRegExp AS CRegExp
+pRegExp.Global = TRUE
+pRegExp.Pattern = "[bac]"
+' --or-- pRegExp.Pattern = "b|a|c"
+PRINT pRegExp.Replace("abacadabra", "*")
+' Output: "*****d**r*"
+```
+```
+DIM pRegExp AS CRegExp
+pRegExp.Global = TRUE
+pRegExp.Pattern = $"(\S+), (\S+)"
+PRINT pRegExp.Replace("Roca, José", "$2 $1")
+' Output: "José Roca"
+```
+```
+DIM pRegExp AS CRegExp
+pRegExp.Global = TRUE
+pRegExp.Pattern = $"\b0{1,}\."
+PRINT pRegExp.Replace("0000.34500044", ".")
+' Output: ".34500044"
+```
+
 ---
 
 ### <a name="submatchvalue"></a>SubMatchValue
@@ -330,7 +362,7 @@ What we have done is to search for 3 digits (\d{3}) followed by a dash, followed
 Retrieves the content of the specified submatch.
 
 ```
-FUNCTION SubMatchValue (BYVAL MatchIndex AS LONG = 0, BYVAL SubMatchIndex AS LONG = 0) AS CBSTR
+FUNCTION SubMatchValue (BYVAL MatchIndex AS LONG = 0, BYVAL SubMatchIndex AS LONG = 0) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -504,9 +536,8 @@ Special characters and sequences are used in writing patterns for regular expres
 #### Example
 
 ```
-'#CONSOLE ON
-#INCLUDE ONCE "Afx/CRegExp.inc"
-USING Afx
+#INCLUDE ONCE "Afx/CRegExp2.inc"
+USING Afx2
 
 DIM pRegExp AS CRegExp
 pRegExp.Pattern = "is."
@@ -523,11 +554,8 @@ ELSE
       print
    NEXT
 END IF
-
-PRINT
-PRINT "Press any key..."
-SLEEP
 ```
+
 ---
 
 ### <a name="submatchescount"></a>SubMatchesCount

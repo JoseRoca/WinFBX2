@@ -219,10 +219,10 @@ FUNCTION MatchCount () AS LONG
 
 ### <a name="regexpptr"></a>RegExpPtr
 
-Returns a direct pointer to the Afx_IRegExp2 interface.
+Returns a direct pointer to the IRegExp2 interface.
 
 ```
-FUNCTION RegExpPtr () AS Afx_IRegExp2 PTR
+FUNCTION RegExpPtr () AS IRegExp2 PTR
 ```
 #### Remarks
 
@@ -235,20 +235,21 @@ Since it is a direct pointer, you don't have to release it calling the **Release
 Returns a copy of a string with text removed using a regular expression as the search string.
 
 ```
-FUNCTION Remove (BYREF cbsSourceString AS CBSTR) AS CBSTR
+FUNCTION Remove (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *cbsSourceString* | The main string. |
+| *wszSourceString* | The string to parse. |
 
 #### Usage examples
 
 ```
 DIM pRegExp AS CRegExp
 pRegExp.Pattern = "ab"
+pRegExp.Global = TRUE
 PRINT pRegExp.Remove("abacadabra")
-' prints "acadra"
+' Output: "acadra"
 ```
 ```
 DIM pRegExp AS CRegExp
@@ -256,15 +257,9 @@ pRegExp.Pattern = "[bAc]"
 pRegExp.IgnoreCase = TRUE
 pRegExp.Global = TRUE
 PRINT pRegExp.Remove("abacadabra")
-' prints "dr"
+' Output: "dr"
 ```
-```
-DIM pRegExp AS CRegExp
-pRegExp.Pattern = "\bworld\b"
-pRegExp.IgnoreCase = TRUE
-pRegExp.Global = TRUE
-PRINT pRegExp.Remove("World, worldx, world")
-```
+
 ---
 
 ### <a name="replace"></a>Replace
@@ -272,32 +267,31 @@ PRINT pRegExp.Remove("World, worldx, world")
 Replaces text found in a regular expression search.
 
 ```
-FUNCTION Replace (BYREF cbsSourceString AS CBSTR, BYREF cvReplaceString AS CVAR) AS CBSTR
+FUNCTION Replace (BYREF wszSourceString AS CONST WSTRING, BYREF wszReplaceString AS CONST WSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *cbsSourceString* | The main string. |
-| *cvReplaceString* | The replacement text string. |
+| *wszSourceString* | The string to parse. |
+| *wszReplaceString* | The replacement string. |
 
 #### Remarks
 
-The **Replace** method returns a copy of *cbsSourceString* with the text of *cbsPattern* replaced with *cvsReplaceString*. If no match is found, a copy of *cbsSourceString* is returned unchanged.
+The **Replace** method returns a copy of *wszSourceString* with the text replaced with *wszReplaceString*. If no match is found, a copy of *wszSourceString* is returned unchanged.
 
 #### Examples
 
 ```
-'#CONSOLE ON
-#INCLUDE ONCE "Afx/CRegExp.inc"
-USING Afx
+#INCLUDE ONCE "Afx2/CRegExp.inc"
+USING Afx2
 
 DIM pRegExp AS CRegExp
 pRegExp.Pattern = "fox"
 pRegExp.IgnoreCase = TRUE
-DIM cbsText AS CBSTR = "The quick brown fox jumped over the lazy dog."
+DIM dwsText AS DWSTRING = "The quick brown fox jumped over the lazy dog."
 ' Make replacement
-DIM cbsRes AS CBSTR = pRegExp.Replace(cbsText, "cat")
-print cbsRes
+DIM dwsRes AS DWSTRING = pRegExp.Replace(dwsText, "cat")
+PRINT dwsRes
 ' Output: The quick brown cat jumped over the lazy dog.
 ```
 In addition, the **Replace** method can replace subexpressions in the pattern.
@@ -308,10 +302,10 @@ The following call to the function shown in the previous example swaps the first
 DIM pRegExp AS CRegExp
 pRegExp.Pattern = "(\S+)(\s+)(\S+)"
 pRegExp.IgnoreCase = TRUE
-DIM cbsText AS CBSTR = "The quick brown fox jumped over the lazy dog."
+DIM dwsText AS DWSTRING = "The quick brown fox jumped over the lazy dog."
 ' Make replacement
-DIM cbsRes AS CBSTR = pRegExp.Replace(cbsText, "$3$2$1")
-print cbsRes
+DIM dwsRes AS DWsTRING = pRegExp.Replace(dwsText, "$3$2$1")
+PRINT dwsRes
 ' Outpput: "quick The brown fox jumped over the lazy dog."
 ```
 
@@ -322,9 +316,9 @@ Suppose that you have a telephone directory, and all the phone numbers are forma
 DIM pRegExp AS CRegExp
 pRegExp.Global = TRUE
 pRegExp.Pattern = "(\d{3})-(\d{3})-(\d{4})"
-DIM cbsText AS CBSTR = "555-123-4567"
-DIM cbsRes AS CBSTR = pRegExp.Replace(cbsText, "($1) $2-$3")
-print cbsRes
+DIM dwsText AS DWSTRING = "555-123-4567"
+DIM dwsRes AS DWSTRING = pRegExp.Replace(dwsText, "($1) $2-$3")
+print dwsRes
 ' Output: "(555) 123-4567"
 ```
 What we have done is to search for 3 digits (\d{3}) followed by a dash, followed by 3 more digits and a dash, followed by 4 digits and add () to the first three digits and change the first dash with a space.  $1, $2, and $3 are examples of a regular expression "back reference." A back reference is simply a portion of the found text that can be saved and then reused.

@@ -161,17 +161,17 @@ Returns the position of the match or 0 if not found. The length of the match can
 
 ```
 DIM pRegExp AS CRegExp
-DIM cbsText AS CBSTR = "blah blah a234 blah blah x345 blah blah"
+DIM dwsText AS DWSTRING = "blah blah a234 blah blah x345 blah blah"
 pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
-DIM nPos AS LONG = pRegExp.Find(cbsText)
+DIM nPos AS LONG = pRegExp.Find(dwsText)
 PRINT nPos
 ' Output: 11
 ```
 ```
 DIM pRegExp AS CRegExp
-DIM cbsText AS CBSTR = "blah blah a234 blah blah x345 blah blah"
+DIM dwsText AS DWSTRING = "blah blah a234 blah blah x345 blah blah"
 pRegExp.Pattern = "[a-z][0-9][0-9][0-9]"
-DIM nPos AS LONG = pRegExp.Find(15, cbsText)
+DIM nPos AS LONG = pRegExp.Find(15, dwsText)
 PRINT nPos
 ' Output: 26
 ```
@@ -470,7 +470,7 @@ The **MatchPos** property uses a zero-based offset from the beginning of the sea
 Returns the value or text of a match found in a search string.
 
 ```
-PROPERTY MatchValue (BYVAL index AS LONG = 0) AS CBSTR
+PROPERTY MatchValue (BYVAL index AS LONG = 0) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -1090,7 +1090,7 @@ DIM dwsText AS DWSTRING = "0000.34500044"
 pRegExp.Pattern = $"\b0{1,}\."
 pRegExp.Global = TRUE
 pRegExp.IgnoreCase = TRUE
-DIM dws AS CBSTR = pRegExp.Replace(dwsText, ".")
+DIM dws AS DWSTRING = pRegExp.Replace(dwsText, ".")
 print dws
 ' Output: ".34500044"
 ```

@@ -25,8 +25,6 @@
 ' ########################################################################################
 
 #pragma once
-#include once "DWSTRING.inc"
-USING Afx2
 
 NAMESPACE Afx2
 
@@ -59,7 +57,7 @@ Public:
 
    DECLARE CONSTRUCTOR
    DECLARE CONSTRUCTOR (BYREF bs AS BSTRING)
-   DECLARE CONSTRUCTOR (BYREF dws AS DWSTRING)
+'   DECLARE CONSTRUCTOR (BYREF dws AS DWSTRING)
 '   DECLARE CONSTRUCTOR (BYVAL pwszStr AS WSTRING PTR, BYVAL fAttach AS BOOLEAN = FALSE)
    DECLARE CONSTRUCTOR (BYVAL pwszStr AS WSTRING PTR)
    DECLARE CONSTRUCTOR (BYREF ansiStr AS STRING = "", BYVAL nCodePage AS UINT = 0)
@@ -77,17 +75,17 @@ Public:
    DECLARE OPERATOR CAST () BYREF AS CONST WSTRING
    DECLARE OPERATOR CAST () AS ANY PTR
    DECLARE OPERATOR LET (BYREF bs AS BSTRING)
-   DECLARE OPERATOR LET (BYREF dws AS DWSTRING)
+'   DECLARE OPERATOR LET (BYREF dws AS DWSTRING)
    DECLARE OPERATOR LET (BYREF s AS STRING)
 '   DECLARE OPERATOR LET (BYVAL pwszStr AS WSTRING PTR)
    DECLARE OPERATOR += (BYVAL pwszStr AS WSTRING PTR)
    DECLARE OPERATOR += (BYREF bs AS BSTRING)
-   DECLARE OPERATOR += (BYREF dws AS DWSTRING)
+'   DECLARE OPERATOR += (BYREF dws AS DWSTRING)
    DECLARE OPERATOR += (BYVAL n AS LONGINT)
    DECLARE OPERATOR += (BYVAL n AS DOUBLE)
    DECLARE OPERATOR &= (BYVAL pwszStr AS WSTRING PTR)
    DECLARE OPERATOR &= (BYREF bs AS BSTRING)
-   DECLARE OPERATOR &= (BYREF dws AS DWSTRING)
+'   DECLARE OPERATOR &= (BYREF dws AS DWSTRING)
    DECLARE OPERATOR &= (BYVAL n AS LONGINT)
    DECLARE OPERATOR &= (BYVAL n AS DOUBLE)
    DECLARE PROPERTY Utf8 () AS STRING
@@ -111,10 +109,10 @@ PRIVATE CONSTRUCTOR BSTRING (BYREF bs AS BSTRING)
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE CONSTRUCTOR BSTRING (BYREF dws AS DWSTRING)
-   m_bstr = SysAllocString(dws)
-   BSTRING_DP("-1- BSTRING CONSTRUCTOR - DWSTRING - " & ..WSTR(m_bstr) & " - " & dws)
-END CONSTRUCTOR
+'PRIVATE CONSTRUCTOR BSTRING (BYREF dws AS DWSTRING)
+'   m_bstr = SysAllocString(dws)
+'   BSTRING_DP("-1- BSTRING CONSTRUCTOR - DWSTRING - " & ..WSTR(m_bstr) & " - " & dws)
+'END CONSTRUCTOR
 ' ========================================================================================
 
 ' ========================================================================================
@@ -254,14 +252,14 @@ END SUB
 ' will try to free the same BSTR when they are destroyed.
 ' ========================================================================================
 PRIVATE SUB BSTRING.Attach (BYVAL pbstrSrc AS BSTR)
-   BSTRING_DP("BSTRING Attach - " & ..WSTR(m_bstr))
    ' // Check if the passed pointer is really a BSTR
    DIM res AS DWORD = PEEK(DWORD, CAST(ANY PTR, pbstrSrc) - 4) \ 2
-   ' // If the retrieved length is the same that the returned by LEN, then it must be an OLE string
-   IF res = .LEN(*pbstrSrc) THEN
+  ' // If the retrieved length is the same that the returned by LEN, then it must be an OLE string
+   IF res = LEN(pbstrSrc) \2 THEN
       IF m_bstr THEN SysFreeString(m_bstr)
       m_bstr = pbstrSrc
    END IF
+   BSTRING_DP("END BSTRING Attach - " & ..WSTR(m_bstr))
 END SUB
 ' ========================================================================================
 
@@ -307,12 +305,12 @@ END OPERATOR
 ' the zero-based position specified by the nIndex parameter (0 for the first character,
 ' 1 for the second, etc.), e.g. value = dws[1]. To change the value: dws[1] = value.
 ' Example:
-'   DIM dwsText AS BSTRING = "This is my text."
-'   dwsText[1] = ASC("X")
-'   PRINT dwsText
+'   DIM bsText AS BSTRING = "This is my text."
+'   bsText[1] = ASC("X")
+'   PRINT bsText
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.[] (BYVAL nIndex AS UINT) BYREF AS USHORT
-   DWSTRING_DP("BSTRING Operator []")
+   BSTRING_DP("BSTRING Operator []")
    OPERATOR = *CAST(USHORT PTR, CAST(ANY PTR, m_bstr + nIndex))
 END OPERATOR
 ' ========================================================================================
@@ -350,12 +348,12 @@ PRIVATE OPERATOR BSTRING.LET (BYREF bs AS BSTRING)
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE OPERATOR BSTRING.LET (BYREF dws AS DWSTRING)
-   BSTRING_DP("-1- BSTRING LET - DWSTRING " & ..WSTR(m_bstr) & " - " & dws)
-   IF m_bstr THEN SysFreeString(m_bstr)
-   m_bstr = SysAllocString(dws)
-   BSTRING_DP("-2- BSTRING LET - DWSTRING " & ..WSTR(m_bstr) & " - " & dws)
-END OPERATOR
+'PRIVATE OPERATOR BSTRING.LET (BYREF dws AS DWSTRING)
+'   BSTRING_DP("-1- BSTRING LET - DWSTRING " & ..WSTR(m_bstr) & " - " & dws)
+'   IF m_bstr THEN SysFreeString(m_bstr)
+'   m_bstr = SysAllocString(dws)
+'   BSTRING_DP("-2- BSTRING LET - DWSTRING " & ..WSTR(m_bstr) & " - " & dws)
+'END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.LET (BYREF s AS STRING)
@@ -446,17 +444,17 @@ END OPERATOR
 ' ========================================================================================
 ' Appends a DWSTRING to the BSTRING.
 ' ========================================================================================
-PRIVATE OPERATOR BSTRING.+= (BYREF dws AS DWSTRING)
-   BSTRING_DP("BSTRING += - DWSTRING")
-   this.Append(dws)
-END OPERATOR
+'PRIVATE OPERATOR BSTRING.+= (BYREF dws AS DWSTRING)
+'   BSTRING_DP("BSTRING += - DWSTRING")
+'   this.Append(dws)
+'END OPERATOR
 ' ========================================================================================
 
 ' ========================================================================================
 ' Appends a number to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.+= (BYVAL n AS LONGINT)
-   BSTRING_DP("BSTRING += - DWSTRING")
+   BSTRING_DP("BSTRING += - LONGINT")
    DIM wsz AS WSTRING * 40 = ..WSTR(n)
    this.Append(wsz)
 END OPERATOR
@@ -490,10 +488,10 @@ END OPERATOR
 ' ========================================================================================
 ' Appends a DWSTRING to the BSTRING.
 ' ========================================================================================
-PRIVATE OPERATOR BSTRING.&= (BYREF dws AS DWSTRING)
-   BSTRING_DP("BSTRING &= - DWSTRING")
-   this.Append(dws)
-END OPERATOR
+'PRIVATE OPERATOR BSTRING.&= (BYREF dws AS DWSTRING)
+'   BSTRING_DP("BSTRING &= - DWSTRING")
+'   this.Append(dws)
+'END OPERATOR
 ' ========================================================================================
 
 ' ========================================================================================

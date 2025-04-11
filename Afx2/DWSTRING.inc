@@ -31,6 +31,7 @@
 #INCLUDE ONCE "/crt/wchar.bi"
 #INCLUDE ONCE "utf_conv.bi"
 #include once "win/Ole2.bi"
+'#include once "Afx2/BSTRING.inc"
 
 ' ========================================================================================
 ' Macro for debug
@@ -59,6 +60,7 @@ NAMESPACE Afx2
 
 TYPE DWSTRING EXTENDS WSTRING
 
+   ' // Don't change the order of these variables
    m_pBuffer AS WSTRING PTR   ' // Pointer to the buffer
    m_BufferLen AS ssize_t     ' // Length in UTF16 characters of the buffer
    m_Capacity AS ssize_t      ' // The total size of the buffer in UTF16 characters
@@ -67,19 +69,16 @@ TYPE DWSTRING EXTENDS WSTRING
    DECLARE CONSTRUCTOR (BYVAL pwszStr AS WSTRING PTR)
    DECLARE CONSTRUCTOR (BYREF ansiStr AS STRING, BYVAL nCodePage AS UINT = 0)
    DECLARE CONSTRUCTOR (BYREF dws AS DWSTRING)
+'   DECLARE CONSTRUCTOR (BYREF bs AS BSTRING)
    DECLARE CONSTRUCTOR (BYVAL nChars AS LONG, BYREF wszFill AS CONST WSTRING)
    DECLARE CONSTRUCTOR (BYVAL n AS LONGINT)
    DECLARE CONSTRUCTOR (BYVAL n AS DOUBLE)
    DECLARE DESTRUCTOR
    DECLARE PROPERTY Capacity () AS UINT
    DECLARE PROPERTY Capacity (BYVAL nValue AS UINT)
-   DECLARE FUNCTION ResizeBuffer (BYVAL nChars AS UINT, BYVAL bClear AS BOOLEAN = FALSE) AS WSTRING PTR
    DECLARE FUNCTION AppendBuffer (BYVAL memAddr AS ANY PTR, BYVAL nChars AS UINT) AS BOOLEAN
    DECLARE FUNCTION GetBuffer () AS WSTRING PTR
    DECLARE SUB Clear
-   DECLARE FUNCTION Add (BYVAL pwszStr AS WSTRING PTR) AS BOOLEAN
-   DECLARE FUNCTION Add (BYREF ansiStr AS STRING, BYVAL nCodePage AS UINT = 0) AS BOOLEAN
-   DECLARE FUNCTION Add (BYREF dws AS DWSTRING) AS BOOLEAN
    DECLARE OPERATOR [] (BYVAL nIndex AS UINT) BYREF AS USHORT
    DECLARE OPERATOR CAST () BYREF AS WSTRING
    DECLARE OPERATOR CAST () AS ANY PTR
@@ -88,11 +87,19 @@ TYPE DWSTRING EXTENDS WSTRING
    DECLARE OPERATOR LET (BYREF dws AS DWSTRING)
    DECLARE OPERATOR LET (BYVAL n AS LONGINT)
    DECLARE OPERATOR LET (BYVAL n AS DOUBLE)
+   DECLARE FUNCTION ChrW (BYVAL codepoint AS UInteger) AS DWSTRING
    DECLARE FUNCTION bstr () AS ..BSTR
    DECLARE PROPERTY utf8 () AS STRING
    DECLARE PROPERTY utf8 (BYREF utf8String AS STRING)
    DECLARE FUNCTION wchar () AS WSTRING PTR
 
+Private:
+   DECLARE FUNCTION Add (BYVAL pwszStr AS WSTRING PTR) AS BOOLEAN
+   DECLARE FUNCTION Add (BYREF ansiStr AS STRING, BYVAL nCodePage AS UINT = 0) AS BOOLEAN
+   DECLARE FUNCTION Add (BYREF dws AS DWSTRING) AS BOOLEAN
+   DECLARE FUNCTION ResizeBuffer (BYVAL nChars AS UINT, BYVAL bClear AS BOOLEAN = FALSE) AS WSTRING PTR
+   DECLARE FUNCTION ScanForSurrogates (BYVAL memAddr AS WSTRING PTR, BYVAL nChars AS LONG, BYVAL searchBrokenOnly AS BOOLEAN = TRUE) AS LONG
+   
 END TYPE
 ' ########################################################################################
 
@@ -162,6 +169,15 @@ PRIVATE CONSTRUCTOR DWSTRING (BYREF dws AS DWSTRING)
    END IF
    DWSTRING_DP("DWSTRING CONSTRUCTOR - DWSTRING - buffer: " & ..WSTR(m_pBuffer))
 END CONSTRUCTOR
+' ========================================================================================
+' ========================================================================================
+' Initializes the DWSTRING with the contents of the passed BSTRING.
+' ========================================================================================
+'PRIVATE CONSTRUCTOR DWSTRING (BYREF bs AS BSTRING)
+'   DWSTRING_DP("DWSTRING CONSTRUCTOR - BSTRING")
+'   this.Add(*bs)
+'   DWSTRING_DP("DWSTRING CONSTRUCTOR - BSTRING - buffer: " & ..WSTR(m_pBuffer))
+'END CONSTRUCTOR
 ' ========================================================================================
 
 ' ========================================================================================
@@ -333,11 +349,124 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Appends the specified number of characters from the specified memory address to the end of the buffer.
+' Scans a UTF-16 buffer (passed as a pointer to WSTRING) in chunks of 64 
+' characters. Returns the 0-based index (relative to memAddr) of the first
+' broken surrogate found, or -1 if none is found.
+'
+' Parameters:
+'   memAddr            - pointer to the UTF-16 buffer
+'   nChars             - number of UTF-16 code units (USHORTs) to scan
+'   searchBrokenOnly   - Optional (default TRUE): if TRUE, only broken surrogates 
+'                        are signaled. If FALSE, returns the position of the first 
+'                        surrogate (valid or not). 
+'
+' Note:
+'   This version avoids repeated casting by caching memAddr as a USHORT pointer 
+'   and uses bitmask comparisons instead of range comparisons.
+' ========================================================================================
+PRIVATE FUNCTION DWSTRING.ScanForSurrogates ( _
+   BYVAL memAddr AS WSTRING PTR, _
+   BYVAL nChars AS LONG, _
+   BYVAL searchBrokenOnly AS BOOLEAN = TRUE) AS LONG
+
+   DWSTRING_DP("DWSTRING ScanForSurrogates - nChars = " & ..WSTR(nChars))
+   DIM localPtr AS USHORT PTR = CAST(USHORT PTR, memAddr)
+   DIM AS LONG i, chunkSize = 64
+
+   FOR i = 0 TO nChars - 1 STEP chunkSize
+      DIM AS LONG endPos = i + chunkSize - 1
+      IF endPos >= nChars THEN endPos = nChars - 1
+      DIM AS LONG j
+      FOR j = i TO endPos
+         DIM AS USHORT ch = localPtr[j]
+         IF NOT searchBrokenOnly THEN
+            ' // Check for any surrogate (high or low)
+            IF (ch And &HFC00) = &HD800 OR (ch And &HFC00) = &HDC00 THEN
+               RETURN j
+            END IF
+         ELSE
+            ' // Check only for broken surrogates:
+            ' // If it's a high surrogate
+            IF (ch And &HFC00) = &HD800 THEN
+               ' Look ahead if possible
+               IF j + 1 < nChars THEN
+                  DIM AS USHORT nextCh = localPtr[j + 1]
+                  ' // If the following code unit is not a low surrogate,
+                  ' // then ch is a broken high surrogate.
+                  IF (nextCh And &HFC00) <> &HDC00 THEN
+                     RETURN j
+                  ELSE
+                     ' // Valid surrogate pair; skip the next code unit.
+                     j += 1
+                     CONTINUE FOR
+                  END IF
+               ELSE
+                  ' // High surrogate is the last element in the block.
+                  RETURN j
+               END IF
+            ' // If it's a low surrogate on its own.
+            ELSEIF (ch And &HFC00) = &HDC00 THEN
+               RETURN j
+            END IF
+         END IF
+      NEXT
+   NEXT
+
+   RETURN -1 ' // No (broken) surrogates found.
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Appends the specified number of characters from the specified memory address to the end
+' of the buffer. This version uses the pointer-based ScanForSurrogates function to detect
+' and fix any broken surrogates in the input before appending.
 ' ========================================================================================
 PRIVATE FUNCTION DWSTRING.AppendBuffer (BYVAL memAddr AS ANY PTR, BYVAL nChars AS UINT) AS BOOLEAN
    DWSTRING_DP("DWSTRING AppendBuffer - nChars = " & ..WSTR(nChars))
    IF memAddr = NULL OR nChars = 0 THEN RETURN FALSE
+
+   ' // Use the pointer-based scan routine, which returns the 0-based index of a broken surrogate,
+   ' // or -1 if the block is clean.
+   DIM localPtr AS USHORT PTR = CAST(USHORT PTR, memAddr)
+   DIM localLen AS LONG = nChars
+
+   ' // Get the first broken surrogate index in the new block (relative to localPtr).
+   DIM brokenIndex AS LONG = ScanForSurrogates(localPtr, localLen)
+   WHILE brokenIndex <> -1
+      DIM pCode AS USHORT PTR = localPtr + brokenIndex
+      DIM ch AS USHORT = *pCode
+      ' // Instead of checking using range comparisons, use bitwise masking.
+      IF (ch And &HFC00) = &HD800 THEN
+         ' // High surrogate: check if there is a following low surrogate.
+         IF (brokenIndex + 1) < localLen THEN
+            DIM nextCh AS USHORT = *(pCode + 1)
+            ' // If the next unit is not a low surrogate, it is broken.
+            IF (nextCh And &HFC00) <> &HDC00 THEN
+               *pCode = &HFFFD
+            END IF
+         ELSE
+            ' // High surrogate at end of block.
+            *pCode = &HFFFD
+         END IF
+       ELSEIF (ch And &HFC00) = &HDC00 THEN
+         ' // Isolated low surrogate.
+         *pCode = &HFFFD
+      END IF
+      ' // Resume scanning immediately after the found/fixed surrogate.
+      DIM newStart AS LONG = brokenIndex + 1
+      IF newStart >= localLen THEN EXIT WHILE
+      DIM subBroken AS LONG = ScanForSurrogates(localPtr + newStart, localLen - newStart)
+      IF subBroken = -1 THEN
+         EXIT WHILE
+      ELSE
+         brokenIndex = newStart + subBroken
+      END IF
+   WEND
+
+   ' -------------------------------------------------------------------------------------------------
+   ' Now that the input block is cleared of broken surrogates, proceed to append it to m_pBuffer.
+   ' -------------------------------------------------------------------------------------------------
+
    ' // Number of characters to append
    DIM nSize AS UINT = m_BufferLen + nChars
    ' // If there is not enough capacity, resize the buffer
@@ -350,10 +479,11 @@ PRIVATE FUNCTION DWSTRING.AppendBuffer (BYVAL memAddr AS ANY PTR, BYVAL nChars A
    ' // Mark the end of the string with a double null
    m_pBuffer[m_BufferLen] = 0
    RETURN TRUE
+
 END FUNCTION
 ' ========================================================================================
 
-' ========================================================================================
+ ' ========================================================================================
 ' Returns a pointer to the DWSTRING buffer.
 ' ========================================================================================
 PRIVATE FUNCTION DWSTRING.GetBuffer () AS WSTRING PTR
@@ -431,7 +561,8 @@ END FUNCTION
 ' The returned handle must be freed with SysFreeString to avoid memory leaks.
 ' ========================================================================================
 PRIVATE FUNCTION DWSTRING.bstr () AS ..BSTR
-    RETURN SysAllocString(m_pBuffer)
+   DWSTRING_DP("DWSTRING - bstr")
+   RETURN SysAllocString(m_pBuffer)
 END FUNCTION
 ' ========================================================================================
 
@@ -455,6 +586,21 @@ PRIVATE FUNCTION DWSTRING.wchar () AS WSTRING PTR
    RETURN pwchar
 END FUNCTION
 ' =====================================================================================
+
+' =====================================================================================
+' Returns a wide-character string from a codepoint. Returns a wide-character string from
+' a codepoint. If the codepoint is higher than 65535, the value returned is the sum of
+' a surrogate pair.
+' =====================================================================================
+PRIVATE FUNCTION DWSTRING.ChrW (BYVAL codepoint AS UInteger) AS DWSTRING
+   If codepoint <= &HFFFF Then RETURN WCHR(codepoint)
+   ' Convert to UTF-16 surrogate pair for higher codepoints
+   DIM AS USHORT highSurrogate = &HD800 OR ((codepoint - &H10000) SHR 10)
+   DIM AS USHORT lowSurrogate = &HDC00 OR ((codepoint - &H10000) AND &H3FF)
+   RETURN WCHR(highSurrogate) + WCHR(lowSurrogate)
+END FUNCTION
+' =====================================================================================
+
 
 END NAMESPACE
 

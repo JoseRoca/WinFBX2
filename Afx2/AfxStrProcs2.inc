@@ -1434,6 +1434,143 @@ PRIVATE FUNCTION wstrBase64DecodeW (BYREF dwsData AS DWSTRING) AS DWSTRING
 END FUNCTION
 ' ========================================================================================
 
+' ########################################################################################
+'                                UNICODE - SURROGATES
+' ########################################################################################
+
+'const HIGH_SURROGATE_START = &hd800
+'const HIGH_SURROGATE_END = &hdbff
+'const LOW_SURROGATE_START = &hdc00
+'const LOW_SURROGATE_END = &hdfff
+'#define IS_HIGH_SURROGATE(wch) (((wch) >= HIGH_SURROGATE_START) andalso ((wch) <= HIGH_SURROGATE_END))
+'#define IS_LOW_SURROGATE(wch) (((wch) >= LOW_SURROGATE_START) andalso ((wch) <= LOW_SURROGATE_END))
+'#define IS_SURROGATE_PAIR(hs, ls) (IS_HIGH_SURROGATE(hs) andalso IS_LOW_SURROGATE(ls))
+
+' ========================================================================================
+' Checks if the passed string has surrogates.
+' ========================================================================================
+FUNCTION HasSurrogates (BYREF wszStr AS WSTRING) AS BOOLEAN
+   FOR i AS LONG = 1 TO LEN(wszStr)
+      IF ASC(wszStr, i) >= &hD800 AND ASC(wszStr, i) <= &hDBFF THEN RETURN TRUE
+   NEXT
+   RETURN False
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Checks whether a UTF-16 encoded string contains valid high-low surrogate pairs.
+' ========================================================================================
+PRIVATE FUNCTION AfxIsValidSurrogatePair (BYVAL high AS USHORT, BYVAL low AS USHORT) AS BOOLEAN
+   RETURN (high >= &hD800 AND high <= &hDBFF) AND (low >= &hDC00 AND low <= &hDFFF)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Converts surrogate pair to unicode code point
+' Extracts the actual Unicode code point from a valid surrogate pair.
+' ========================================================================================
+PRIVATE FUNCTION AfxSurrogatePairToCodePoint (BYVAL high AS USHORT, BYVAL low AS USHORT) AS ULONG
+   IF IS_SURROGATE_PAIR(high, low) THEN
+      RETURN ((high - &hD800) * &h400) + (low - &hDC00) + &h10000
+  END IF
+  RETURN 0  ' Invalid surrogate pair
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Encode unicode code point as surrogate pair
+' Converts a Unicode code point (above U+FFFF) back into its high and low surrogate pair.
+' ========================================================================================
+PRIVATE SUB AfxCodePointToSurrogatePair (BYVAL codePoint AS ULONG, BYREF high AS USHORT, BYREF low AS USHORT)
+   IF codePoint >= &H10000 AND codePoint <= &h10FFFF THEN
+      high = &hD800 + ((codePoint - &h10000) \ &h400)
+      low = &hDC00 + ((codePoint - &h10000) MOD &h400)
+   ELSE
+      high = 0 : low = 0
+   END IF
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' Scans a UTF-16 buffer (passed as a pointer to WSTRING) in chunks of 64 
+' characters. Returns the 0-based index (relative to memAddr) of the first
+' broken surrogate found, or -1 if none is found.
+'
+' Parameters:
+'   memAddr            - pointer to the UTF-16 buffer
+'   nChars             - number of UTF-16 code units (USHORTs) to scan
+'   searchBrokenOnly   - Optional (default TRUE): if TRUE, only broken surrogates 
+'                        are signaled. If FALSE, returns the position of the first 
+'                        surrogate (valid or not). 
+'
+' Note:
+'   This version avoids repeated casting by caching memAddr as a USHORT pointer 
+'   and uses bitmask comparisons instead of range comparisons.
+' ========================================================================================
+PRIVATE FUNCTION AfxScanForSurrogates( _
+   BYVAL memAddr AS WSTRING PTR, _
+   BYVAL nChars AS LONG, _
+   BYVAL searchBrokenOnly AS BOOLEAN = TRUE) AS LONG
+
+   DIM localPtr AS USHORT PTR = CAST(USHORT PTR, memAddr)
+   DIM AS LONG i, chunkSize = 64
+
+   FOR i = 0 TO nChars - 1 STEP chunkSize
+      DIM AS LONG endPos = i + chunkSize - 1
+      IF endPos >= nChars THEN endPos = nChars - 1
+      DIM AS LONG j
+      FOR j = i TO endPos
+         DIM AS USHORT ch = localPtr[j]
+         IF NOT searchBrokenOnly THEN
+            ' // Check for any surrogate (high or low)
+            IF (ch And &HFC00) = &HD800 OR (ch And &HFC00) = &HDC00 THEN
+               RETURN j
+            END IF
+         ELSE
+            ' // Check only for broken surrogates:
+            ' // If it's a high surrogate
+            IF (ch And &HFC00) = &HD800 THEN
+               ' Look ahead if possible
+               IF j + 1 < nChars THEN
+                  DIM AS USHORT nextCh = localPtr[j + 1]
+                  ' // If the following code unit is not a low surrogate,
+                  ' // then ch is a broken high surrogate.
+                  IF (nextCh And &HFC00) <> &HDC00 THEN
+                     RETURN j
+                  ELSE
+                     ' // Valid surrogate pair; skip the next code unit.
+                     j += 1
+                     CONTINUE FOR
+                  END IF
+               ELSE
+                  ' // High surrogate is the last element in the block.
+                  RETURN j
+               END IF
+            ' // If it's a low surrogate on its own.
+            ELSEIF (ch And &HFC00) = &HDC00 THEN
+               RETURN j
+            END IF
+         END IF
+      NEXT
+   NEXT
+
+   RETURN -1 ' // No (broken) surrogates found.
+END FUNCTION
+' ========================================================================================
+
+' =====================================================================================
+' Returns a wide-character string from a codepoint.
+' The codepoint returned is the sum of a surrogate pair.
+' =====================================================================================
+PRIVATE FUNCTION AfxChrW (BYVAL codepoint AS UInteger) AS DWSTRING
+   If codepoint <= &hFFFF Then RETURN WCHR(codepoint)
+   ' Convert to UTF-16 surrogate pair for higher codepoints
+   DIM AS USHORT highSurrogate = &hD800 OR ((codepoint - &h10000) SHR 10)
+   DIM AS USHORT lowSurrogate = &hDC00 OR ((codepoint - &h10000) AND &h3FF)
+   RETURN WCHR(highSurrogate) + WCHR(lowSurrogate)
+END FUNCTION
+' =====================================================================================
+
 END NAMESPACE
 
 

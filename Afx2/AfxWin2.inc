@@ -18,12 +18,12 @@
 '#INCLUDE ONCE "win/shlobj.bi"
 '#INCLUDE ONCE "win/KnownFolders.bi"
 #INCLUDE ONCE "win/commdlg.bi"
-'#INCLUDE ONCE "win/cderr.bi"
+#INCLUDE ONCE "win/cderr.bi"
 '#INCLUDE ONCE "crt/string.bi"
 '#INCLUDE ONCE "win/richedit.bi"
 #INCLUDE ONCE "Afx2/DWSTRING.inc"
 '#INCLUDE ONCE "Afx2/BSTRING.inc"
-'#INCLUDE ONCE "Afx2/AfxDPIProcs2.inc"
+#INCLUDE ONCE "Afx2/AfxDPIProcs2.inc"
 '#INCLUDE ONCE "Afx2/AfxFileProcs2.inc"
 '#INCLUDE ONCE "Afx2/AfxPath2.inc"
 '#INCLUDE ONCE "Afx2/AfxStrProcs2.inc"
@@ -35,6 +35,10 @@ USING Afx2
 ' ========================================================================================
 PRIVATE FUNCTION AfxMsg OVERLOAD (BYREF wszText AS WSTRING, BYREF wszCaption AS WSTRING = "Message", BYVAL uType AS DWORD = 0) AS LONG
    RETURN MessageBoxW(GetActiveWindow, @wszText, @wszCaption, MB_APPLMODAL OR uType) 
+END FUNCTION
+' ========================================================================================
+PRIVATE FUNCTION AfxMsg OVERLOAD (BYVAL pwszText AS WSTRING PTR, BYREF wszCaption AS WSTRING = "Message", BYVAL uType AS DWORD = 0) AS LONG
+   RETURN MessageBoxW(GetActiveWindow, pwszText, @wszCaption, MB_APPLMODAL OR uType) 
 END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION AfxMsg OVERLOAD (BYVAL hwnd AS HWND, BYREF wszText AS WSTRING, BYREF wszCaption AS WSTRING = "Message", BYVAL uType AS DWORD = 0) AS LONG
@@ -1079,7 +1083,7 @@ PRIVATE FUNCTION AfxGetWindowText (BYVAL hwnd AS HWND) AS DWSTRING
    DIM nLen AS LONG = SendMessageW(hwnd, WM_GETTEXTLENGTH, 0, 0)
    DIM dwsText AS DWSTRING = SPACE(nLen + 1)
    SendMessageW(hwnd, WM_GETTEXT, nLen + 1, cast(LPARAM, *dwsText))
-   RETURN LEFT(**dwsText, LEN(dwsText) - 1)
+   RETURN LEFT(dwsText, LEN(dwsText) - 1)
 END FUNCTION
 ' ========================================================================================
 

@@ -31,7 +31,7 @@
 #INCLUDE ONCE "/crt/wchar.bi"
 #INCLUDE ONCE "utf_conv.bi"
 #include once "win/Ole2.bi"
-'#include once "Afx2/BSTRING.inc"
+#include once "Afx2/BSTRING.inc"
 
 ' ========================================================================================
 ' Macro for debug
@@ -69,7 +69,7 @@ TYPE DWSTRING EXTENDS WSTRING
    DECLARE CONSTRUCTOR (BYVAL pwszStr AS WSTRING PTR)
    DECLARE CONSTRUCTOR (BYREF ansiStr AS STRING, BYVAL nCodePage AS UINT = 0)
    DECLARE CONSTRUCTOR (BYREF dws AS DWSTRING)
-'   DECLARE CONSTRUCTOR (BYREF bs AS BSTRING)
+   DECLARE CONSTRUCTOR (BYREF bs AS BSTRING)
    DECLARE CONSTRUCTOR (BYVAL nChars AS LONG, BYREF wszFill AS CONST WSTRING)
    DECLARE CONSTRUCTOR (BYVAL n AS LONGINT)
    DECLARE CONSTRUCTOR (BYVAL n AS DOUBLE)
@@ -173,11 +173,11 @@ END CONSTRUCTOR
 ' ========================================================================================
 ' Initializes the DWSTRING with the contents of the passed BSTRING.
 ' ========================================================================================
-'PRIVATE CONSTRUCTOR DWSTRING (BYREF bs AS BSTRING)
-'   DWSTRING_DP("DWSTRING CONSTRUCTOR - BSTRING")
-'   this.Add(*bs)
-'   DWSTRING_DP("DWSTRING CONSTRUCTOR - BSTRING - buffer: " & ..WSTR(m_pBuffer))
-'END CONSTRUCTOR
+PRIVATE CONSTRUCTOR DWSTRING (BYREF bs AS BSTRING)
+   DWSTRING_DP("DWSTRING CONSTRUCTOR - BSTRING")
+   this.Add(*bs)
+   DWSTRING_DP("DWSTRING CONSTRUCTOR - BSTRING - buffer: " & ..WSTR(m_pBuffer))
+END CONSTRUCTOR
 ' ========================================================================================
 
 ' ========================================================================================

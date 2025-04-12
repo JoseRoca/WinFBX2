@@ -42,7 +42,7 @@ With regular expressions, you can:
 | [Find](#find) | Find function with VBScript regular expressions search patterns. |
 | [FindEx](#findex) | Global, multiline find function with VBScript regular expressions search patterns. |
 | [MatchCount](#matchcount) | Returns the number of matches found. |
-| [RegExpPtr](#regexpptr) | Returns a direct pointer to the **Afx_IRegExp2** interface. |
+| [RegExpPtr](#regexpptr) | Returns a direct pointer to the **IRegExp2** interface. |
 | [Remove](#remove) | Returns a copy of a string with text removed using a regular expression as the search string. |
 | [Replace](#replace) | Replaces text found in a regular expression search. |
 | [SubMatchValue](#submatchvalue) | Retrieves the content of the specified submatch. |

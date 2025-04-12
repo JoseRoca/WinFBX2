@@ -34,20 +34,20 @@ NAMESPACE Afx2
 ' Constructors
 ' ========================================================================================
 PRIVATE CONSTRUCTOR BSTRING
-   BSTRING_DP("BSTRING CONSTRUCTOR - Default")
+   BSTRING_DP("Default")
    ' // Do nothing.
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR BSTRING (BYREF bs AS BSTRING)
    m_bstr = SysAllocString(bs)
-   BSTRING_DP("BSTRING CONSTRUCTOR - BSTRING - " & ..WSTR(m_bstr) & " - " & bs)
+   BSTRING_DP("BSTRING - " & ..WSTR(m_bstr))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR BSTRING (BYREF dws AS DWSTRING)
    m_bstr = SysAllocString(dws)
-   BSTRING_DP("-1- BSTRING CONSTRUCTOR - DWSTRING - " & ..WSTR(m_bstr) & " - " & dws)
+   BSTRING_DP("DWSTRING - " & ..WSTR(m_bstr))
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -80,19 +80,19 @@ END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR BSTRING (BYVAL pwszStr AS WSTRING PTR)
-   BSTRING_DP("-1- BSTRING CONSTRUCTOR - pwszStr = " & ..WSTR(pwszStr) & " - " & *pwszStr)
+   BSTRING_DP("WSTRING PTR - pwszStr = " & ..WSTR(pwszStr))
    IF pwszStr = NULL THEN
       m_bstr = SysAllocString("")
    ELSE
       ' Allocate an OLE string with the contents of the string pointed by pwszStr
       m_bstr = SysAllocString(pwszStr)
    END IF
-   BSTRING_DP("-2- BSTRING CONSTRUCTOR - m_bstr - " & ..WSTR(m_bstr))
+   BSTRING_DP("m_bstr - " & ..WSTR(m_bstr))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR BSTRING (BYREF ansiStr AS STRING = "", BYVAL nCodePage AS UINT = 0)
-   BSTRING_DP("-1- BSTRING CONSTRUCTOR - ansi string - " & ansiStr)
+   BSTRING_DP("STRING - " & ansiStr)
    IF nCodePage = CP_UTF8 THEN
       DIM dwLen AS DWORD = MultiByteToWideChar(CP_UTF8, 0, STRPTR(ansiStr), .LEN(ansiStr), NULL, 0)
       IF dwLen THEN
@@ -109,7 +109,7 @@ PRIVATE CONSTRUCTOR BSTRING (BYREF ansiStr AS STRING = "", BYVAL nCodePage AS UI
          m_bstr = SysAllocString("")
       END IF
    END IF
-   BSTRING_DP("-2- BSTRING CONSTRUCTOR - ansi string - " & ..WSTR(m_bstr) & " - " & ansiStr)
+   BSTRING_DP("STRING - " & ..WSTR(m_bstr))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -118,7 +118,7 @@ END CONSTRUCTOR
 ' is empty or null, it will be filled with spaces.
 ' ========================================================================================
 PRIVATE CONSTRUCTOR BSTRING (BYVAL nChars AS LONG, BYREF wszFill AS CONST WSTRING)
-   BSTRING_DP("BSTRING CONSTRUCTOR - nChars = " & ..WSTR(nChars))
+   BSTRING_DP("chars = " & ..WSTR(nChars))
    IF nChars < 1 THEN nChars = 1
    IF LEN(wszFill) THEN
       m_bstr = SysAllocString(WSTRING(nChars, wszFill))
@@ -134,13 +134,13 @@ END CONSTRUCTOR
 ' ========================================================================================
 PRIVATE CONSTRUCTOR BSTRING (BYVAL n AS LONGINT)
    m_bstr = SysAllocString(..WSTR(n))
-   BSTRING_DP("BSTRING CONSTRUCTOR - LONGINT - " & ..WSTR(m_bstr))
+   BSTRING_DP("LONGINT - " & ..WSTR(m_bstr))
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR BSTRING (BYVAL n AS DOUBLE)
    m_bstr = SysAllocString(..WSTR(n))
-   BSTRING_DP("BSTRING CONSTRUCTOR - DOUBLE - " & ..WSTR(m_bstr))
+   BSTRING_DP("DOUBLE - " & ..WSTR(m_bstr))
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -149,7 +149,7 @@ END CONSTRUCTOR
 ' ========================================================================================
 PRIVATE DESTRUCTOR BSTRING
    IF m_bstr THEN SysFreeString m_bstr
-   BSTRING_DP("BSTRING DESTRUCTOR - " & ..WSTR(m_bstr))
+   BSTRING_DP(..WSTR(m_bstr))
 END DESTRUCTOR
 ' ========================================================================================
 
@@ -166,7 +166,7 @@ PRIVATE SUB BSTRING.Append (BYVAL pwszStr AS WSTRING PTR)
    memcpy(b + n1, pwszStr, nLen * SIZEOF(WSTRING))
    IF m_bstr THEN SysFreeString(m_bstr)
    m_bstr = b
-   BSTRING_DP("BSTRING Append - " & ..WSTR(m_bstr))
+   BSTRING_DP("handle: " & ..WSTR(m_bstr))
 END SUB
 ' ========================================================================================
 
@@ -174,7 +174,7 @@ END SUB
 ' Frees the m_bstr member.
 ' ========================================================================================
 PRIVATE SUB BSTRING.Clear
-   BSTRING_DP("BSTRING Clear - " & ..WSTR(m_bstr))
+   BSTRING_DP("handle: " & ..WSTR(m_bstr))
    IF m_bstr THEN SysFreeString(m_bstr)
    m_bstr = NULL
 END SUB
@@ -195,7 +195,7 @@ PRIVATE SUB BSTRING.Attach (BYVAL pbstrSrc AS BSTR)
       IF m_bstr THEN SysFreeString(m_bstr)
       m_bstr = pbstrSrc
    END IF
-   BSTRING_DP("END BSTRING Attach - " & ..WSTR(m_bstr))
+   BSTRING_DP("handle: " & ..WSTR(m_bstr))
 END SUB
 ' ========================================================================================
 
@@ -203,7 +203,7 @@ END SUB
 ' Detaches the BSTR pointer from the BSTRING object.
 ' ========================================================================================
 PRIVATE FUNCTION BSTRING.Detach () AS BSTRING
-   BSTRING_DP("BSTRING Detach - " & ..WSTR(m_bstr))
+   BSTRING_DP("handle: " & ..WSTR(m_bstr))
    DIM pbstr AS BSTR = m_bstr
    m_bstr = NULL
    RETURN pbstr
@@ -214,7 +214,7 @@ END FUNCTION
 ' Allocates and returns a copy of this BSTRING.
 ' ========================================================================================
 PRIVATE FUNCTION BSTRING.Copy () AS BSTRING
-   BSTRING_DP("BSTRING Copy - " & ..WSTR(m_bstr))
+   BSTRING_DP("handle: " & ..WSTR(m_bstr))
    RETURN SysAllocStringLen(m_bstr, SysStringLen(m_bstr))
 END FUNCTION
 ' ========================================================================================
@@ -223,7 +223,7 @@ END FUNCTION
 ' Returns the BSTR pointer
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.CAST () AS ANY PTR
-   BSTRING_DP("BSTRING CAST ANY PTR - " & ..WSTR(m_bstr))
+   BSTRING_DP("ANY PTR - handle: " & ..WSTR(m_bstr))
    OPERATOR =  CAST(ANY PTR, m_bstr)
 END OPERATOR
 ' ========================================================================================
@@ -231,7 +231,7 @@ END OPERATOR
 ' Returns a pointer to the string data (same as **)
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.CAST () BYREF AS CONST WSTRING
-   BSTRING_DP("BSTRING CAST BYREF AS CONST WSTRING - " & ..WSTR(m_bstr))
+   BSTRING_DP("BYREF WSTRING - handle: " & ..WSTR(m_bstr))
    OPERATOR = *CAST(WSTRING PTR, m_bstr)
 END OPERATOR
 ' ========================================================================================
@@ -246,7 +246,7 @@ END OPERATOR
 '   PRINT bsText
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.[] (BYVAL nIndex AS UINT) BYREF AS USHORT
-   BSTRING_DP("BSTRING Operator []")
+   BSTRING_DP("index: " & ..WSTR(nIndex))
    OPERATOR = *CAST(USHORT PTR, CAST(ANY PTR, m_bstr + nIndex))
 END OPERATOR
 ' ========================================================================================
@@ -255,32 +255,32 @@ END OPERATOR
 ' Assigns new text to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.LET (BYREF bs AS BSTRING)
-   BSTRING_DP("-1- BSTRING LET - BSTRING " & ..WSTR(m_bstr) & " - " & bs)
+   BSTRING_DP("handle: " & ..WSTR(m_bstr))
    IF m_bstr = bs.m_bstr THEN  EXIT OPERATOR  ' // If the user has done cbs = cbs, ignore it
    IF m_bstr THEN SysFreeString(m_bstr)
    m_bstr = SysAllocString(bs)
-   BSTRING_DP("-2- BSTRING LET - BSTRING " & ..WSTR(m_bstr))
+   BSTRING_DP("new handle: " & ..WSTR(m_bstr))
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.LET (BYREF dws AS DWSTRING)
-   BSTRING_DP("-1- BSTRING LET - DWSTRING " & ..WSTR(m_bstr) & " - " & dws)
+   BSTRING_DP("DWSTRING - handle: " & ..WSTR(m_bstr))
    IF m_bstr THEN SysFreeString(m_bstr)
    m_bstr = SysAllocString(dws)
-   BSTRING_DP("-2- BSTRING LET - DWSTRING " & ..WSTR(m_bstr) & " - " & dws)
+   BSTRING_DP("DWSTRING - new handle: " & ..WSTR(m_bstr))
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.LET (BYREF s AS STRING)
-   BSTRING_DP("-1- BSTRING LET - STRING " & ..WSTR(m_bstr) & " - " & s)
+   BSTRING_DP("STRING - handle: " & ..WSTR(m_bstr))
    IF m_bstr THEN SysFreeString(m_bstr)
    m_bstr = SysAllocString(s)
-   BSTRING_DP("-2- BSTRING LET - STRING " & ..WSTR(m_bstr) & " - " & s)
+   BSTRING_DP("STRING - new handle: " & ..WSTR(m_bstr))
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.Let (BYVAL n AS LONGINT)
-   BSTRING_DP("BSTRING OPERATOR Let LONGINT")
+   BSTRING_DP("LONGINT - " & ..WSTR(n))
    this.Clear
    DIM wsz AS WSTRING * 260 = .WSTR(n)
    m_bstr = SysAllocString(wsz)
@@ -288,7 +288,7 @@ END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.Let (BYVAL n AS DOUBLE)
-   BSTRING_DP("BSTRING OPERATOR Let DOUBLE")
+   BSTRING_DP("DOUBLE - " & ..WSTR(n))
    this.Clear
    DIM wsz AS WSTRING * 260 = .WSTR(n)
    m_bstr = SysAllocString(wsz)
@@ -325,7 +325,7 @@ END OPERATOR
 ' Converts the BSTRING to UTF8.
 ' ========================================================================================
 PRIVATE PROPERTY BSTRING.Utf8 () AS STRING
-   BSTRING_DP("BSTRING - TO Utf8")
+   BSTRING_DP("STRING - TO Utf8")
    DIM cbLen AS INTEGER, bstrLen AS LONG
    IF m_bstr = NULL THEN RETURN ""
    bstrLen = SysStringLen(m_bstr)
@@ -338,7 +338,7 @@ END PROPERTY
 ' Converts UTF8 to unicode and assigns it to the BSTRING.
 ' ========================================================================================
 PRIVATE PROPERTY BSTRING.Utf8 (BYREF utf8String AS STRING)
-   BSTRING_DP("BSTRING - FROM Utf8")
+   BSTRING_DP("STRING - FROM Utf8")
    IF m_bstr THEN SysFreeString(m_bstr)
    DIM dwLen AS DWORD = MultiByteToWideChar(CP_UTF8, 0, STRPTR(utf8String), .LEN(utf8String), NULL, 0)
    IF dwLen THEN
@@ -366,6 +366,7 @@ PRIVATE FUNCTION BSTRING.wchar () AS WSTRING PTR
    IF pwchar = NULL THEN RETURN NULL
    IF nLen THEN memcpy pwchar, m_bstr, nLen
    IF nLen = 0 THEN *pwchar = CHR(0)
+   BSTRING_DP("pwchar: " & ..WSTR(pwchar))
    RETURN pwchar
 END FUNCTION
 ' =====================================================================================
@@ -380,7 +381,7 @@ END FUNCTION
 ' Appends a string to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.+= (BYVAL pwszStr AS WSTRING PTR)
-   BSTRING_DP("BSTRING += - WSTRING PTR")
+   BSTRING_DP("WSTRING PTR")
    this.Append(pwszStr)
 END OPERATOR
 ' ========================================================================================
@@ -388,7 +389,7 @@ END OPERATOR
 ' Appends a BSTRING to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.+= (BYREF bs AS BSTRING)
-   BSTRING_DP("BSTRING += - BSTRING")
+   BSTRING_DP("BSTRING")
    this.Append(bs)
 END OPERATOR
 ' ========================================================================================
@@ -396,7 +397,7 @@ END OPERATOR
 ' Appends a DWSTRING to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.+= (BYREF dws AS DWSTRING)
-   BSTRING_DP("BSTRING += - DWSTRING")
+   BSTRING_DP("DWSTRING")
    this.Append(dws)
 END OPERATOR
 ' ========================================================================================
@@ -405,14 +406,14 @@ END OPERATOR
 ' Appends a number to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.+= (BYVAL n AS LONGINT)
-   BSTRING_DP("BSTRING += - LONGINT")
+   BSTRING_DP("LONGINT - " & ..WSTR(n))
    DIM wsz AS WSTRING * 40 = ..WSTR(n)
    this.Append(wsz)
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.+= (BYVAL n AS DOUBLE)
-   BSTRING_DP("BSTRING += - DOUBLE")
+   BSTRING_DP("DOUBLE - " & ..WSTR(n))
    DIM wsz AS WSTRING * 40 = ..WSTR(n)
    this.Append(wsz)
 END OPERATOR
@@ -422,7 +423,7 @@ END OPERATOR
 ' Appends a string to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.&= (BYVAL pwszStr AS WSTRING PTR)
-   BSTRING_DP("BSTRING &= - WSTRING PTR")
+   BSTRING_DP("WSTRING PTR")
    this.Append(pwszStr)
 END OPERATOR
 ' ========================================================================================
@@ -431,7 +432,7 @@ END OPERATOR
 ' Appends a BSTRING to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.&= (BYREF bs AS BSTRING)
-   BSTRING_DP("BSTRING &= - BSTRING")
+   BSTRING_DP("BSTRING")
    this.Append(bs)
 END OPERATOR
 ' ========================================================================================
@@ -440,7 +441,7 @@ END OPERATOR
 ' Appends a DWSTRING to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.&= (BYREF dws AS DWSTRING)
-   BSTRING_DP("BSTRING &= - DWSTRING")
+   BSTRING_DP("DWSTRING")
    this.Append(dws)
 END OPERATOR
 ' ========================================================================================
@@ -449,14 +450,14 @@ END OPERATOR
 ' Appends a number to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.&= (BYVAL n AS LONGINT)
-   BSTRING_DP("BSTRING &= - LONGINT")
+   BSTRING_DP("LONGINT - " & ..WSTR(n))
    DIM wsz AS WSTRING * 40 = ..WSTR(n)
    this.Append(wsz)
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.&= (BYVAL n AS DOUBLE)
-   BSTRING_DP("BSTRING &= - DOUBLE")
+   BSTRING_DP("DOUBLE  " & ..WSTR(n))
    DIM wsz AS WSTRING * 40 = ..WSTR(n)
    this.Append(wsz)
 END OPERATOR
@@ -477,7 +478,6 @@ using Afx2
 ' ========================================================================================
 PRIVATE OPERATOR LEN (BYREF bs AS BSTRING) AS UINT
    OPERATOR = SysStringLen(bs)
-   BSTRING_DP("BSTRING - LEN BSTRING - SysStringLen = " & ..WSTR(SysStringLen(bs) & " - " & WSTR(bs.m_bstr)))
 END OPERATOR
 ' ========================================================================================
 
@@ -487,7 +487,6 @@ END OPERATOR
 ' Two ** deferences de string data.
 ' ========================================================================================
 PRIVATE OPERATOR * (BYREF bs AS BSTRING) AS WSTRING PTR
-   BSTRING_DP("BSTRING - * BSTRING")
    OPERATOR = bs.m_bstr
 END OPERATOR
 ' ========================================================================================
@@ -499,31 +498,31 @@ END OPERATOR
 ' The operator + doesn't have problems with this.
 ' ========================================================================================
 PRIVATE OPERATOR & (BYREF bs1 AS BSTRING, BYREF bs2 AS BSTRING) AS BSTRING
-   BSTRING_DP("BSTRING - OPERATOR & BSTRING+BSTRING")
+   BSTRING_DP("BSTRING+BSTRING")
    OPERATOR = bs1 + bs2
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR & (BYREF bs AS BSTRING, BYREF dws AS DWSTRING) AS BSTRING
-   BSTRING_DP("BSTRING - OPERATOR & - BSTRING+DWSTRING")
+   BSTRING_DP("BSTRING+DWSTRING")
    OPERATOR = bs + dws
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR & (BYREF dws AS DWSTRING, BYREF bs AS BSTRING) AS BSTRING
-   BSTRING_DP("BSTRING - OPERATOR & - DWSTRING+BSTRING")
+   BSTRING_DP("DWSTRING+BSTRING")
    OPERATOR = dws + bs
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR & (BYREF bs AS BSTRING, BYREF s AS STRING) AS BSTRING
-   BSTRING_DP("BSTRING - OPERATOR & - BSTRING+STRING")
+   BSTRING_DP("BSTRING+STRING")
    OPERATOR = bs + s
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR & (BYREF s AS STRING, BYREF bs AS BSTRING) AS BSTRING
-   BSTRING_DP("BSTRING - OPERATOR & - STRING+BSTRING")
+   BSTRING_DP("STRING+BSTRING")
    OPERATOR = s + bs
 END OPERATOR
 ' ========================================================================================
@@ -533,7 +532,6 @@ END OPERATOR
 ' Overloaded because the intrinsic LEFT operator fails with an ambiguous call error.
 ' ========================================================================================
 PRIVATE FUNCTION Left OVERLOAD (BYREF bs AS BSTRING, BYVAL nChars AS INTEGER) AS BSTRING
-   BSTRING_DP("LEFT - BSTRING")
    RETURN LEFT(**bs, nChars)
 END FUNCTION
 ' ========================================================================================
@@ -543,7 +541,6 @@ END FUNCTION
 ' Overloaded because the intrinsic LEFT operator fails with an ambiguous call error.
 ' ========================================================================================
 PRIVATE FUNCTION Right OVERLOAD (BYREF bs AS BSTRING, BYVAL nChars AS INTEGER) AS BSTRING
-   BSTRING_DP("RIGHT - BSTRING")
    RETURN RIGHT(**bs, nChars)
 END FUNCTION
 ' ========================================================================================

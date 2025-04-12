@@ -45,7 +45,7 @@
    #define _DWSTRING_DP_ 1
    #MACRO DWSTRING_DP(st)
       #IF (_DWSTRING_DEBUG_ = 1)
-         OutputDebugStringW(st)
+         OutputDebugStringW(__FUNCTION__ + ": " + st)
       #ENDIF
    #ENDMACRO
 #ENDIF
@@ -64,7 +64,7 @@
    #define _BSTRING_DP_ 1
    #MACRO BSTRING_DP(st)
       #IF (_BSTRING_DEBUG_ = 1)
-         OutputDebugStringW(st)
+         OutputDebugStringW(__FUNCTION__ + ": " + st)
       #ENDIF
    #ENDMACRO
 #ENDIF

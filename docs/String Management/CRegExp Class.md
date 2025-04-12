@@ -1,6 +1,8 @@
 # CRegExp Class
 
-`CRegExp` is a wrapper class on top of the VB Script Regular Expressions.
+`CRegExp` is a wrapper class on top of the VBScript Regular Expressions.
+
+It hides the complexity of COM programming (creating an instance of the COM server, managing pointers to interfaces, avoiding the use of BSTR and VARIANT data types, and bypassing low-level virtual table calls), offering a clean interface to FreeBasic users by exposing only the standard `WSTRING` data type and my own `DWSTRING` class, which implements a dynamic Unicode string type.
 
 In a typical search and replace operation, you must provide the exact text for which you are searching. That technique may be adequate for simple search and replace tasks in static text, but it lacks flexibility and makes searching dynamic text difficult, if not impossible.
 

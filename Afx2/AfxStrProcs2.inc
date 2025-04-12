@@ -3,7 +3,7 @@
 ' File: AfxWstrProcs2.inc
 ' Contents: Wide char string functions for FreeBasic
 ' Compiler: Free Basic 32 & 64 bit
-' Copyright (c) 2025 José Roca. Freeware. Use at your own risk.
+' Copyright (c) 2025 JosÃ© Roca. Freeware. Use at your own risk.
 ' THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
 ' EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
 ' MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
@@ -63,7 +63,7 @@ PRIVATE FUNCTION wstrUCase (BYVAL pwszStr AS WSTRING PTR, _
    BYVAL pwszLocaleName AS WSTRING PTR = LOCALE_NAME_USER_DEFAULT, _
    BYVAL dwMapFlags AS DWORD = 0) AS DWSTRING
 
-   ' // Check the vailidy of the passed parameters
+   ' // Check the validity of the passed parameters
    IF pwszStr = NULL THEN RETURN ""
    IF LEN(*pwszStr) = 0 THEN RETURN ""
    DIM dwsOut AS DWSTRING = *pwszStr
@@ -71,7 +71,7 @@ PRIVATE FUNCTION wstrUCase (BYVAL pwszStr AS WSTRING PTR, _
    dwMapFlags = dwMapFlags AND (NOT LCMAP_LOWERCASE)
    ' // Make sure that LCMAP_LINGUISTIC_CASING OR LCMAP_UPPERCASE is being used
    dwMapFlags OR= LCMAP_LINGUISTIC_CASING OR LCMAP_UPPERCASE
-   ' // Ususally, the length of the converted string will be the same that the one of
+   ' // Usually, the length of the converted string will be the same that the one of
    ' // the input string, so let's try it
    DIM cbLen AS LONG = LCMapStringEx(pwszLocaleName, dwMapFlags, pwszStr, LEN(*pwszStr), _
        dwsOut, LEN(dwsOut), NULL, NULL, 0)
@@ -121,7 +121,7 @@ PRIVATE FUNCTION wstrLCase (BYVAL pwszStr AS WSTRING PTR, _
    dwMapFlags = dwMapFlags AND (NOT LCMAP_UPPERCASE)
    ' // Make sure that LCMAP_LINGUISTIC_CASING OR LCMAP_LOWERCASE is being used
    dwMapFlags OR= LCMAP_LINGUISTIC_CASING OR LCMAP_LOWERCASE
-   ' // Ususally, the length of the converted string will be the same that the one of
+   ' // Usually, the length of the converted string will be the same that the one of
    ' // the input string, so let's try it
    DIM cbLen AS LONG = LCMapStringEx(pwszLocaleName, dwMapFlags, pwszStr, LEN(*pwszStr), _
        dwsOut, LEN(dwsOut), NULL, NULL, 0)
@@ -142,12 +142,12 @@ END FUNCTION
 #endif
 
 ' ========================================================================================
-' * Translates ansi bytes to unicode bytes.
+' * Translates ansi bytes to Unicode bytes.
 ' Parameters:
 ' - ansiStr = An ansi or UTF8 string.
 ' - nCodePage = The code page used in the conversion, e.g. 1251 for Russian.
 '   If you specify CP_UTF8, the returned string will be UTF8 encoded.
-'   If you don't pass an unicode page, the function will use CP_ACP (0), which is the
+'   If you don't pass an Unicode page, the function will use CP_ACP (0), which is the
 '   system default Windows ANSI code page.
 ' Return value:
 '   The converted string as a DWSTRING.
@@ -184,12 +184,12 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Translates unicode bytes to ansi bytes.
+' * Translates Unicode bytes to ansi bytes.
 ' Parameters:
-' - pwszStr = The unicode string to convert
+' - pwszStr = The Unicode string to convert
 ' - nCodePage = The code page used in the conversion, e.g. 1251 for Russian.
-'   If you specify CP_UT8, it is assumed that ansiStr contains an UTF8 encoded string.
-'   If you don't pass an unicode page, the function will use CP_ACP (0), which is the
+'   If you specify CP_UTF8, it is assumed that ansiStr contains an UTF8 encoded string.
+'   If you don't pass an Unicode page, the function will use CP_ACP (0), which is the
 '   system default Windows ANSI code page.
 ' Return value:
 '   The converted string.
@@ -291,7 +291,7 @@ END FUNCTION
 '    leftDelimiter The first delimiter
 '    rightDelimiter The second delimiter
 ' Example:
-'    DIM dwsText AS DWSTRING = "blah blah (text beween parentheses) blah blah"
+'    DIM dwsText AS DWSTRING = "blah blah (text between parentheses) blah blah"
 '    print wstrRemove(dwsText, "(", ")")   ' Returns "blah blah  blah blah"
 ' Example:
 '    DIM dwsText AS DWSTRING = "As Long var1(34), var2(  73 ), var3(any)"
@@ -318,7 +318,7 @@ END FUNCTION
 '    leftDelimiter The first delimiter
 '    rightDelimiter The second delimiter
 ' Example:
-'    DIM dwsText AS DWSTRING = "blah blah (text beween parentheses) blah blah"
+'    DIM dwsText AS DWSTRING = "blah blah (text between parentheses) blah blah"
 '    print wstrRemove(dwsText, "(", ")")   ' Returns "blah blah  blah blah"
 ' Example:
 '    DIM dwsText AS DWSTRING = "As Long var1(34), var2(  73 ), var3(any)"
@@ -428,7 +428,7 @@ END FUNCTION
 ' Returns the portion of a string following the occurrence of a specified delimiter up to
 ' the second delimiter. If no match is found, an empty string is returned.
 ' Example:
-'    DIM dwsText AS DWSTRING = "blah blah text beween parentheses) blah blah"
+'    DIM dwsText AS DWSTRING = "blah blah text between parentheses) blah blah"
 '    PRINT wstrExtract(dwsText, "(", ")")
 ' ========================================================================================
 PRIVATE FUNCTION wstrExtract OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF leftDelimiter AS CONST WSTRING, BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
@@ -456,7 +456,7 @@ END FUNCTION
 ' the second delimiter. If no match is found, an empty string is returned. If nStart is 0
 ' or greater than the length of wszSourceString, an empty string is returned.
 ' Example:
-'    DIM dwsText AS DWSTRING = "blah blah text beween parentheses) blah blah"
+'    DIM dwsText AS DWSTRING = "blah blah text between parentheses) blah blah"
 '    PRINT wstrExtract(dwsText, "(", ")")
 ' ========================================================================================
 PRIVATE FUNCTION wstrExtract OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, BYREF leftDelimiter AS CONST WSTRING, BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
@@ -540,7 +540,7 @@ FUNCTION wstrRemain OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF wszM
    END IF
    pRegExp.Pattern = dwsMatchString & "(.*)"
    IF pRegExp.Execute(wszSourceString) THEN
-      iF pRegExp.SubMatchesCount THEN
+      IF pRegExp.SubMatchesCount THEN
          RETURN STRPTR(pRegExp.SubMatchValue(0, 0))
       END IF
    END IF
@@ -576,7 +576,7 @@ FUNCTION wstrRemain OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CON
    IF nStart < 0 OR nStart > LEN(wszSourceString) THEN RETURN ""
    bsSrc = MID(wszSourceString, nStart)
    IF pRegExp.Execute(bsSrc) THEN
-      iF pRegExp.SubMatchesCount THEN
+      IF pRegExp.SubMatchesCount THEN
          RETURN pRegExp.SubMatchValue(0, 0)
       END IF
    END IF
@@ -697,17 +697,17 @@ END FUNCTION
 ' * Retuns TRUE if the passed string is muneric.
 ' Example: PRINT wstrIsNumeric("1.2345678901234567e+029")   ' Output: true
 ' Explanation of the pattern used: "^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$"
-'  ^ – Anchors the match to the start of the string.
-'  [\+\-]? – Matches an optional plus (+) or minus (-) sign at the beginning (for signed numbers).
-'  \d* – Matches zero or more digits before the decimal point (allows integers or leading zero suppression).
-'  \.? – Matches an optional decimal point (if present, allows floating-point numbers).
-'  \,? – Matches an optional decimal point (in Spain, a comma is used instead of a colon).
-'  \d+ – Matches at least one digit after the decimal (ensuring valid numeric values).
-'  (?:[Ee][\+\-]?\d+)? – Handles scientific notation:
+'  ^ Â– Anchors the match to the start of the string.
+'  [\+\-]? Â– Matches an optional plus (+) or minus (-) sign at the beginning (for signed numbers).
+'  \d* Â– Matches zero or more digits before the decimal point (allows integers or leading zero suppression).
+'  \.? Â– Matches an optional decimal point (if present, allows floating-point numbers).
+'  \,? Â– Matches an optional decimal point (in Spain, a comma is used instead of a colon).
+'  \d+ Â– Matches at least one digit after the decimal (ensuring valid numeric values).
+'  (?:[Ee][\+\-]?\d+)? Â– Handles scientific notation:
 '    E or e for exponent notation.
 '    [\+\-]? for optional sign after the exponent indicator.
 '    \d+ ensures at least one digit in the exponent.
-'  $ – Anchors the match to the end of the string, ensuring a full numeric match.
+'  $ Â– Anchors the match to the end of the string, ensuring a full numeric match.
 ' ========================================================================================
 PRIVATE FUNCTION wstrIsNumeric (BYREF wszSourcestring AS CONST WSTRING) AS BOOLEAN
    DIM pRegExp AS CRegExp
@@ -773,7 +773,7 @@ END FUNCTION
 ' ========================================================================================
 ' * Splits a string into tokens, which are sequences of contiguous characters separated by
 ' any of the characters that are part of delimiters. Each token is added to a DWSTRING
-' (my own dynamic unicode string data type for Free Basic) and delimited by a carriage
+' (my own dynamic Unicode string data type for Free Basic) and delimited by a carriage
 ' return and line feed. The returned string will be parsed later to get the individual tokens.
 ' Instead of DWSTRING (which is not an intrinsic Free Basic data type) a buffer could be used.
 ' wcstok is a C function.
@@ -880,7 +880,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION wstrMCase (BYREF wszSourceString AS WSTRING) AS DWSTRING
    DIM dwRes AS DWSTRING
-   Dim PunctSymbols AS DWSTRING = $" .,!?:;()[]{}\""-'…"   ' // List of punctuation symbols
+   Dim PunctSymbols AS DWSTRING = $" .,!?:;()[]{}\""-'Â…"   ' // List of punctuation symbols
    DIM capitalizeNext AS BOOLEAN = TRUE ' // Flag to indicate when to capitalize
    FOR i AS LONG = 1 TO LEN(wszSourceString)
       DIM currentChar AS DWSTRING = MID(wszSourceString, i, 1)
@@ -1466,7 +1466,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Converts surrogate pair to unicode code point
+' Converts surrogate pair to Unicode code point
 ' Extracts the actual Unicode code point from a valid surrogate pair.
 ' ========================================================================================
 PRIVATE FUNCTION AfxSurrogatePairToCodePoint (BYVAL high AS USHORT, BYVAL low AS USHORT) AS ULONG
@@ -1478,7 +1478,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Encode unicode code point as surrogate pair
+' Encode Unicode code point as surrogate pair
 ' Converts a Unicode code point (above U+FFFF) back into its high and low surrogate pair.
 ' ========================================================================================
 PRIVATE SUB AfxCodePointToSurrogatePair (BYVAL codePoint AS ULONG, BYREF high AS USHORT, BYREF low AS USHORT)

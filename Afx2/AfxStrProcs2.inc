@@ -638,7 +638,7 @@ PRIVATE FUNCTION wstrVerify (BYVAL nStart AS LONG, BYREF wszSourceString AS CONS
    IF LEFT(wszMatchString, 1) <> "[" ANDALSO RIGHT(wszMatchString, 1) <> "]" THEN
       dwsMatchString = wstrEscape(dwsMatchString)
    END IF
-pRegExp.Pattern = "[^" & dwsMatchString & "]"
+   pRegExp.Pattern = "[^" & dwsMatchString & "]"
    DIM bsSrc AS BSTRING = MID(wszSourceString, nStart)
    IF pRegExp.Execute(bsSrc) THEN
       RETURN pRegExp.MatchPos + nStart - 1

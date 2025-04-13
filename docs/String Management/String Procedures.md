@@ -2,7 +2,7 @@
 
 This is a collection of assorted, ready-to-use string procedures to manipulate FreeBasic strings and my own DWSTRING (Dynamic Unicode string) and BSTRING (OLE strings, aka BSTR).
 
-The procedures that need tobe fast have been hard coded, whereas the ones that need flexibility use `CRegExp`, a wrapper class on top of the VBScript regular expressions engine.
+The procedures that need to be fast have been hard coded, whereas the ones that need flexibility use `CRegExp`, a wrapper class on top of the VBScript regular expressions engine.
 
 [`CRegExp`](https://github.com/JoseRoca/WinFBX2/blob/main/docs/String%20Management/CRegExp%20Class.md) can also be used to build other string procedures not included in this collection.
 

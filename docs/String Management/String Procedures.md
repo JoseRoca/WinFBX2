@@ -264,7 +264,7 @@ FUNCTION wstrFormatKBSize (BYVAL ull AS LONGLONG) AS DWSTRING
 
 ---
 
-### <a name="wtrfromtimeinterval"></a>wtrFromTimeInterval
+### <a name="wstrfromtimeinterval"></a>wstrFromTimeInterval
 
 Converts a time interval, specified in milliseconds, to a string.
 

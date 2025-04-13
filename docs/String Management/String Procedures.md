@@ -111,7 +111,7 @@ FUNCTION FUNCTION wstrClip (BYREF wszSide AS CONST WSTRING, BYREF wszSourceStrin
 DIM dws AS DWSTRING = wstrClip("LEFT", "1234567890", 3)     ' Output: "4567890"
 DIM dws AS DWSTRING = wstrClip("RIGHT", "1234567890", 3)    ' Output: "1234567"
 DIM dws AS DWSTRING = wstrClip("MID", "1234567890", 3, 4)   ' Output: "1237890"
-
+```
 ---
 
 ### <a name="AfxStrCSet"></a>AfxStrCSet

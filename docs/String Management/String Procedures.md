@@ -867,7 +867,7 @@ PRINT dwsTokens
 ' Output: "This","a","sample","string"
 ' Passing " # " in wszSeparator:
 ' DIM dwsTokens AS DWSTRING = wstrSplit(wsz, " ,.-", " # ", -1)
-' Outpus This # a # sample # string
+' Output: "This # a # sample # string"
 ```
 ---
 

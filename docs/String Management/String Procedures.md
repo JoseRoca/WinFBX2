@@ -46,9 +46,9 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrWrap](#wstrwrap) | Adds paired characters to the beginning and end of a string. |
 | [wstrUnWrap](#wstrunwrap) | Removes paired characters to the beginning and end of a string. |
 | [AfxStrPathName](#AfxStrPathName) | Parses a path to extract component parts. |
-| [AfxStrFormatByteSize](#AfxStrFormatByteSize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
-| [AfxStrFormatKBSize](#AfxStrFormatKBSize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
-| [AfxStrFromTimeInterval](#AfxStrFromTimeInterval) | Converts a time interval, specified in milliseconds, to a string. |
+| [wstrFormatByteSize](#wstrformatbytesize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
+| [wstrFormatKBSize](#wstrformatknsize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
+| [wstrFromTimeInterval](#wstrfromtimeinterval) | Converts a time interval, specified in milliseconds, to a string. |
 | [AfxBase64DecodeA](#AfxBase64DecodeA) | Converts the contents of a Base64 mime encoded string to an ascii string. |
 | [AfxBase64DecodeW](#AfxBase64DecodeW) | Converts the contents of a Base64 mime encoded string to an unicode string. |
 | [AfxBase64EncodeA](#AfxBase64EncodeA) | Converts the contents of an ascii string to Base64 mime encoding. |
@@ -236,12 +236,12 @@ PRINT wstrExtract(dwsText, "(", ")")   ' Output: "text between parentheses"
 ```
 ---
 
-### <a name="AfxStrFormatByteSize"></a>AfxStrFormatByteSize
+### <a name="wstrformatbytesize"></a>wstrFormatByteSize
 
 Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size.
 
 ```
-FUNCTION AfxStrFormatByteSize (BYVAL ull AS ULONGLONG) AS CWSTR
+FUNCTION wstrFormatByteSize (BYVAL ull AS LONGLONG) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -250,12 +250,12 @@ FUNCTION AfxStrFormatByteSize (BYVAL ull AS ULONGLONG) AS CWSTR
 
 ---
 
-### <a name="AfxStrFormatKBSize"></a>AfxStrFormatKBSize
+### <a name="wstrformatkbsize"></a>wstrFormatKBSize
 
 Converts a numeric value into a string that represents the number expressed as a size value in kilobytes.
 
 ```
-FUNCTION AfxStrFormatKBSize (BYVAL ull AS ULONGLONG) AS CWSTR
+FUNCTION wstrFormatKBSize (BYVAL ull AS LONGLONG) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -264,12 +264,12 @@ FUNCTION AfxStrFormatKBSize (BYVAL ull AS ULONGLONG) AS CWSTR
 
 ---
 
-### <a name="AfxStrFromTimeInterval"></a>AfxStrFromTimeInterval
+### <a name="wtrfromtimeinterval"></a>wtrFromTimeInterval
 
 Converts a time interval, specified in milliseconds, to a string.
 
 ```
-FUNCTION AfxStrFromTimeInterval (BYVAL dwTimeMS AS DWORD, BYVAL digits AS LONG) AS CWSTR
+FUNCTION wtrFromTimeInterval (BYVAL dwTimeMS AS DWORD, BYVAL digits AS LONG) AS CWSTR
 ```
 
 | Parameter  | Description |

@@ -10,6 +10,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 
 | Name       | Description |
 | ---------- | ----------- |
+| [wstrACode](#wstracode) | Translates Unicode chas to ansi bytes. |
 | [AfxStrClipLeft](#AfxStrClipLeft) | Returns a string with the specified number of characters removed from the left side of the string. |
 | [AfxStrClipMid](#AfxStrClipMid) | Returns a string with the specified number of characters removed starting at the specified position. |
 | [AfxStrClipRight](#AfxStrClipRight) | Returns a string with the specified number of characters removed from the right side of the string. |

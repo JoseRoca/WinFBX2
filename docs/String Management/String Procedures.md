@@ -68,7 +68,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 
 ### Surrogate macros
 
-The wollowing macros are available inthe Windows headers (winnls.bi):
+The wollowing macros are available in the Windows headers (winnls.bi):
 ```
 const HIGH_SURROGATE_START = &hd800
 const HIGH_SURROGATE_END = &hdbff

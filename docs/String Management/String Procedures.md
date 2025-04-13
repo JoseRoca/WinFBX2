@@ -769,7 +769,7 @@ DIM dws AS DWSTRING = wstrShrink(",,, one , two     three, four,", " ,")
 
 ### <a name="wstrSplit"></a>wstrSplit
 
-Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. Each token is added to a DWSTRING (my own dynamic Unicode string data type for FreeBasic) and delimited by a carriage return and line feed. The returned string will be parsed later to get the individual tokens. Instead of DWSTRING (which is not an intrinsic FreeBasic data type) a buffer could be used. **wcstok** is a C function.
+Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. Each token is added to a DWSTRING (my own dynamic Unicode string data type for FreeBasic) and delimited by a carriage return and line feed. The returned string will be parsed later to get the individual tokens.
 
 ```
 FUNCTION wstrSplit (BYREF wszStr AS WSTRING, BYREF wszDelimiters AS WSTRING = " ", _

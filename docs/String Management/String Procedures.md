@@ -24,8 +24,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
 | [wstrLSetAbs](#wstrlsetabs) | Left-aligns a string within the space of another string. |
 | [wstrMCase](#wstrmcase) | Returns a mixed case version of its string argument. |
-| [AfxStrParse](#AfxStrParse) | Returns a delimited field from a string expression. |
-| [AfxStrParseAny](#AfxStrParseAny) | Returns a delimited field from a string expression. Supports more than one character for the delimiter. |
+| [wstrParse](#wstrparse) | Returns a delimited field from a string expression. |
 | [wstrParseCount](#wstrparsecount) | Returns the count of delimited fields from a string expression. |
 | [wstrRemain](#wstrremain) | Returns the portion of a string following the first occurrence of a string. |
 | [wstrRemove](#wstrremove) | Returns a new string with substrings removed. |
@@ -465,48 +464,27 @@ DIM dws AS DWSTRING = strMCase("Cats aren't AL.WAYS good.")
 ' Note: It mimincs the Power Basic's MCase$ function.
 ```
 
-### <a name="AfxStrParse"></a>AfxStrParse 
+### <a name="wstrparse"></a>wstrParse 
 
 Returns a delimited field from a string expression.
 
 ```
-FUNCTION AfxStrParse (BYREF wszMainStr AS CONST WSTRING, _
-   BYVAL nPosition AS LONG = 1, BYREF wszDelimiter AS CONST WSTRING = ",") AS CWSTR
+FUNCTION wstrParse (BYREF wszSourceString AS CONST WSTRING, BYVAL index AS LONG = 1, _
+   BYREF wszDelimiter AS CONST WSTRING = ",") AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The string to be parsed. |
+| *wszSourceString* | The string to be parsed. |
 | *nPosition* | Starting position. If *nPosition* is zero or is outside of the actual field count, an empty string is returned. If *nPosition* is negative, fields are searched from the right to left of the *wszMainStr*. |
 | *wszDelimiter* | A string of one or more characters that must be fully matched to be successful. |
 
 #### Usage example
 
 ```
-DIM cws AS CWSTR = AfxStrParse("one,two,three", 2)   ' Returns "two"
-DIM cws AS CWSTR = AfxStrParse("one;two,three", 1, ";")   ' Returns "one"
-```
----
-
-### <a name="AfxStrParseAny"></a>AfxStrParseAny 
-
-Returns a delimited field from a string expression.
-
-```
-FUNCTION AfxStrParse (BYREF wszMainStr AS CONST WSTRING, _
-   BYVAL nPosition AS LONG = 1, BYREF wszDelimiter AS CONST WSTRING = ",") AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The string to be parsed. |
-| *nPosition* | Starting position. If *nPosition* is zero or is outside of the actual field count, an empty string is returned. If *nPosition* is negative, fields are searched from the right to left of the *wszMainStr*. |
-| *wszDelimiter* | A string of one or more characters any of which may act as a delimiter character. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrParseAny("1;2,3", 2, ",;")   ' Returns "2"
+DIM dws AS DWSTRING = wstrParse("one,two,three")           ' Output: one
+DIM dws AS DWSTRING = wstrParse("one;two,three", 1, ";")   ' Output: one
+DIM dws AS DWSTRING = wstrParse("1;2,3", 2, ",;")          ' Output: 2
 ```
 ---
 

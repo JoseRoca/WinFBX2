@@ -22,7 +22,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrJoin](#wstrjoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
 | [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
-| [AfxStrLSet](#AfxStrLSet) | Returns a string containing a left justified string. |
+| [wstrLSet](#wstrlset) | Returns a string containing a left justified string. |
 | [wstrMCase](#wstrmcase) | Returns a mixed case version of its string argument. |
 | [AfxStrParse](#AfxStrParse) | Returns a delimited field from a string expression. |
 | [AfxStrParseAny](#AfxStrParseAny) | Returns a delimited field from a string expression. Supports more than one character for the delimiter. |
@@ -407,25 +407,48 @@ The lowercased string.
 
 ---
 
-### <a name="AfxStrLSet"></a>AfxStrLSet
+### <a name="wtrlset"></a>wstrLSet
 
 Returns a string containing a left justified string.
 
 ```
-FUNCTION AfxStrLSet (BYREF wszMainStr AS CONST WSTRING, _
-   BYVAL nStringLength AS LONG, BYREF wszPadCharacter AS CONST WSTRING = " ") AS CWSTR
+FUNCTION wstrLSet (BYREF wszSourceString AS CONST WSTRING, BYVAL nStringLength AS LONG, _
+   BYREF wszPadCharacter AS CONST WSTRING = " ") AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The string to be justified. |
+| *wszSourceString* | The string to be justified. |
 | *nStringLength* | The length of the new string. |
 | *wszPadCharacter* | The character to be used for padding. If it is not specified, the string will be padded with spaces. |
 
 #### Usage example
 
 ```
-DIM cws AS CWSTR = AfxStrLSet("FreeBasic", 20, "*")
+DIM dws AS DWSTRING = wstrLSet("FreeBasic", 20, "*")
+```
+---
+
+
+### <a name="wtrlsetabs"></a>wstrLSetAbs
+
+Left-aligns a string within the space of another string. If *wszStr* is empty, wstrLsetAbs leaves the padding positions unchanged from their original content, rather than replacing them with spaces as LSET does. If *wszStr* is longer than result_var, wstrLSet truncates it from the right until it fits in the result string.
+
+```
+FUNCTION wstrLSetAbs (BYREF wszSourceString AS CONST WSTRING, BYREF wszStr AS CONST WSTRING) AS DWSTRING
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *wszSourceString* | The source string. |
+| *wszStr* | The string to be left aligned inside the source string. |
+
+#### Usage example
+
+```
+DIM dws AS DWSTRING = "NameBasic=SuperBasic"
+PRINT wstrLSetAbs(dws, "FreeBasic")
+' Output: FreeBasic=SuperBasic"DIM dws AS DWSTRING = wstrLSet("FreeBasic", 20, "*")
 ```
 
 ### <a name="wstrmcase"></a>wstrMCase

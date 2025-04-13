@@ -13,6 +13,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrACode](#wstracode) | Translates Unicode chas to ansi bytes. |
 | [wstrClip](#wstrclip) | Returns a string with the specified number of characters removed from the left, right or mid side of the string. |
 | [wstrCSet](#wstrcset) | Returns a string containing a centered (padded) string. |
+| [wstrCSetAbs](#wstrcsetabs) | Returns a string containing a centered string within the space of another string. |
 | [AfxStrDelete](#AfxStrDelete) | Deletes a specified number of characters from a string expression. |
 | [wstrEscape](#wstrescape) | Escapes any potential regex syntax characters in a string. |
 | [AfxStrExtract](#AfxStrExtract) | Extracts characters from a string up to (but not including) the specified matching. Case sensitive. |
@@ -133,6 +134,29 @@ FUNCTION wstrCSet (BYREF wszSourceString AS CONST WSTRING, BYVAL nStringLength A
 
 ```
 DIM dws AS DWSTRING = wstrCSet("FreeBasic", 20, "*")   ' Output: "*****FreeBasic******"
+```
+---
+
+### <a name="wstrcsetabs"></a>wstrCSetAbs
+
+Returns a string containing a centered string within the space of another string.
+
+```
+FUNCTION wstrCSetAbs (BYREF wszPadString AS CONST WSTRING, BYREF wszString AS CONST WSTRING) AS DWSTRING
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *wszPadString* | The padding string. |
+| *wszString* | The string to be centered inside the padding string. |
+
+#### Usage example
+
+```
+DIM dwsPad AS DWSTRING = "COOL COOL COOL COOL COOL"
+DIM dws AS DWSTRING = "..FreeBasic is.."
+PRINT wstrCSetAbs(dwsPad, dws)
+' Output: "COOL..FreeBasic is..COOL"
 ```
 ---
 

@@ -783,16 +783,16 @@ DIM dws AS DWSTRING = wstrRSet("FreeBasic", 20, "*")
 
 ### <a name="wtrrsetabs"></a>wstrRSetAbs
 
-Right-aligns a string within the space of another string. If *wszStr* is empty, the function leaves the padding positions unchanged from their original content, rather than replacing them with spaces as LSET does. If *wszStr* is longer than *wszSourceString*, **wstrLSet** truncates it from the right until it fits in the result string.
+Right-aligns a string within the space of another string. If *wszStr* is empty, the function leaves the padding positions unchanged from their original content, rather than replacing them with spaces as `RSET` does. If *wszStr* is longer than *wszSourceString*, **wstRSet** truncates it from the right until it fits in the result string.
 
 ```
-FUNCTION wstrLSetAbs (BYREF wszSourceString AS CONST WSTRING, BYREF wszStr AS CONST WSTRING) AS DWSTRING
+FUNCTION wstrRSetAbs (BYREF wszSourceString AS CONST WSTRING, BYREF wszStr AS CONST WSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *wszSourceString* | The source string. |
-| *wszStr* | The string to be left aligned inside the source string. |
+| *wszStr* | The string to be right aligned inside the source string. |
 
 #### Usage example
 

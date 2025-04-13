@@ -69,7 +69,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 ### Surrogate macros
 
 The wollowing macros are available inthe Windows headers (winnls.bi):
-
+```
 const HIGH_SURROGATE_START = &hd800
 const HIGH_SURROGATE_END = &hdbff
 const LOW_SURROGATE_START = &hdc00
@@ -77,7 +77,7 @@ const LOW_SURROGATE_END = &hdfff
 #define IS_HIGH_SURROGATE(wch) (((wch) >= HIGH_SURROGATE_START) andalso ((wch) <= HIGH_SURROGATE_END))
 #define IS_LOW_SURROGATE(wch) (((wch) >= LOW_SURROGATE_START) andalso ((wch) <= LOW_SURROGATE_END))
 #define IS_SURROGATE_PAIR(hs, ls) (IS_HIGH_SURROGATE(hs) andalso IS_LOW_SURROGATE(ls))
-
+```
 **IS_HIGH_SURROGATE**: Determines if a character is a UTF-16 high surrogate code point, ranging from &hD800 to &hDBFF, inclusive.
 
 **IS_LOW_SURROGATE**: Determines if a character is a UTF-16 low surrogate code point, ranging from &HDC00 to &HDFFF, inclusive.

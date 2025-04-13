@@ -96,7 +96,7 @@ FUNCTION wstrAcode (BYVAL pwszStr AS WSTRING PTR, BYVAL nCodePage AS LONG = 0) A
 | Parameter  | Description |
 | ---------- | ----------- |
 | *pwszStr* | The Unicode string to translate. |
-| *nCodePage* | The code page used in the conversion, e.g. 1251 for Russian. If CP_UTF8 is specified, it is assumed that ansiStr contains an UTF8 encoded string. IF the code page is omited, the function will use CP_ACP (0), which is the system default Windows ANSI code page.|
+| *nCodePage* | The code page used in the conversion, e.g. 1251 for Russian. If the code page is omited, the function will use CP_ACP (0), which is the system default Windows ANSI code page.|
 
 #### Return value
 
@@ -190,7 +190,7 @@ FUNCTION wstrDelete (BYREF wszSourceString AS CONST WSTRING, BYVAL nStart AS LON
 #### Usage example
 
 ```
-DIM dws AS DWSTRING = wstrDelete("1234567890", 4, 3)   ' Output: 1237890
+DIM dws AS DWSTRING = wstrDelete("1234567890", 4, 3)   ' Output: "1237890"
 ```
 ---
 
@@ -251,13 +251,13 @@ FUNCTION wstrExtract OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CO
 ```
 DIM dws AS DWSTRING = "abacadabra"
 PRINT wstrExtract(dws, "cad")
-' Output: aba - match on "cad"
+' Output: "aba" - match on "cad"
 ```
 *wszMatchStr* can specify a list of single characters, enclosed between [], to be searched for individually, a match on any one of which will cause the extract operation to be performed up to that character.
 ```
 DIM dws AS DWSTRING = "abacadabra"
 PRINT wstrExtract(dws, "[dr]")
-' Output: abaca - match on "d"
+' Output: "abaca" - match on "d"
 ```
 ```
 DIM dwsText AS DWSTRING = "blah blah text between parentheses) blah blah"
@@ -351,7 +351,7 @@ FUNCTION wstrIsNumeric (BYREF wszSourcestring AS CONST WSTRING) AS BOOLEAN
 #### Example
 
 ```
-wstrIsNumeric("1.2345678901234567e+029")   ' Output: true
+wstrIsNumeric("1.2345678901234567e+029")   ' Output: "true"
 ```
 Explanation of the pattern used: "^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$"
 ```
@@ -371,7 +371,7 @@ $ ? Anchors the match to the end of the string, ensuring a full numeric match.
 
 ### <a name="wstrjoin"></a>wstrJoin
 
-Returns a string consisting of all of the strings in an array, each separated by a delimiter. If the delimiter is a null (zero-length) string then no separators are inserted between the string sections. If the delimiter expression is the 3-byte value of "," which may be expressed in your source code as the string literal """,""" or as Chr(34,44,34) then a leading and trailing double-quote is added to each string section. This ensures that the returned string contains standard comma-delimited quoted fields that can be easily parsed.
+Returns a string consisting of all of the strings in an array, each separated by a delimiter. If the delimiter is a null (zero-length) string then no separators are inserted between the string sections. If the delimiter expression is the 3-byte value of '","', which may be expressed in your source code as the string literal """,""" or as Chr(34,44,34) then a leading and trailing double-quote is added to each string section. This ensures that the returned string contains standard comma-delimited quoted fields that can be easily parsed.
 
 ```
 #macro wstrJoin(array, dest, delim)
@@ -476,8 +476,7 @@ FUNCTION wstrLSetAbs (BYREF wszSourceString AS CONST WSTRING, BYREF wszStr AS CO
 
 ```
 DIM dws AS DWSTRING = "NameBasic=SuperBasic"
-PRINT wstrLSetAbs(dws, "FreeBasic")  ' Output: FreeBasic=SuperBasic"
-' Output: FreeBasic=SuperBasic"
+PRINT wstrLSetAbs(dws, "FreeBasic")  ' Output: "FreeBasic=SuperBasic"
 ```
 ---
 
@@ -491,7 +490,7 @@ FUNCTION wstrMCase (BYREF wszSourceString AS WSTRING) AS DWSTRING
 #### Example
 ```
 DIM dws AS DWSTRING = strMCase("Cats aren't AL.WAYS good.")
-' Output: Cats Aren'T Al.Ways Good.
+' Output: "Cats Aren'T Al.Ways Good."
 ' Note: It mimincs PowerBASIC's MCase$ function.
 ```
 
@@ -513,9 +512,9 @@ FUNCTION wstrParse (BYREF wszSourceString AS CONST WSTRING, BYVAL index AS LONG 
 #### Usage example
 
 ```
-DIM dws AS DWSTRING = wstrParse("one,two,three")           ' Output: one
-DIM dws AS DWSTRING = wstrParse("one;two,three", 1, ";")   ' Output: one
-DIM dws AS DWSTRING = wstrParse("1;2,3", 2, ",;")          ' Output: 2
+DIM dws AS DWSTRING = wstrParse("one,two,three")           ' Output: "one"
+DIM dws AS DWSTRING = wstrParse("one;two,three", 1, ";")   ' Output: "one"
+DIM dws AS DWSTRING = wstrParse("1;2,3", 2, ",;")          ' Output: "2"
 ```
 ---
 
@@ -535,8 +534,8 @@ FUNCTION wstrParseCount (BYREF wszSourceString AS CONST WSTRING, BYREF wszDelimi
 #### Usage example
 
 ```
-DIM nCount AS LONG = wstrParseCount("one,two,three", ",")   ' Output: 3
-DIM nCount AS LONG = wstrParseCount("1;2,3", ",;")          ' Output: 3
+DIM nCount AS LONG = wstrParseCount("one,two,three", ",")   ' Output: "3"
+DIM nCount AS LONG = wstrParseCount("1;2,3", ",;")          ' Output: "3"
 
 ```
 ---
@@ -577,11 +576,11 @@ FUNCTION wstrPathScan (BYREF wszOption AS CONST WSTRING, BYREF wszFileSpec AS CO
 | ---------- | ----------- |
 | *wszOption* | One of the following words which is used to specify the requested part: PATH, NAME, EXTN, NAMEX. |
 | *wszFileSpec* | The path to be scanned. |
-| *wszOtherDirs* | An optional path string which includes one or more paths to be searched to find wszFileSpec. If multiple path names are included in this string, they musteach be separated by a semicolon (;) delimiter. If wszOtherDirs: is not given, or it is a nul (zero-length) string, the following directories are searched:<br>- The directory from which the application was loaded.<br>- The current directory.<br>- The standard directories such as System32 and the directories specified in the PATH environment variable.<br>To expedite the process or enable wstrPathScan to search a wider range of directories,use the wszOtherDirs parameter to specify one or more directories to be searched first. |
+| *wszOtherDirs* | An optional path string which includes one or more paths to be searched to find wszFileSpec. If multiple path names are included in this string, they musteach be separated by a semicolon (;) delimiter. If wszOtherDirs: is not given, or it is a null (zero-length) string, the following directories are searched:<br>- The directory from which the application was loaded.<br>- The current directory.<br>- The standard directories such as System32 and the directories specified in the PATH environment variable.<br>To expedite the process or enable wstrPathScan to search a wider range of directories,use the wszOtherDirs parameter to specify one or more directories to be searched first. |
 
 #### Return value
 
-If the file is found, it returns either the full path/file name, or a selected part of it.If the file is not found, a nul (zero-length)  is returned. If you wish to simply parsea text file name, without regard to its validation on disk, you should use the companionfunction *wstrPathName*.
+If the file is found, it returns either the full path/file name, or a selected part of it.If the file is not found, a null (zero-length)  is returned. If you wish to simply parsea text file name, without regard to its validation on disk, you should use the companionfunction *wstrPathName*.
 
 ---
 
@@ -600,7 +599,7 @@ FUNCTION wstrRemain (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRIN
 | ---------- | ----------- |
 | *nStart* | Starting position to begin the search. If *nStart* is not specified, the search will begin at position 1. If *nStart* is zero, a nul string is returned. If *nStart* is negative, the starting position is counted from right to left: -1 for the last character, -2 for the second to last, etc. |
 | *wszSourceString* | The main string. |
-| *wszMatchStr* | The string to search for. |
+| *wszMatchString* | The string to search for. |
 
 #### Usage examples
 
@@ -892,7 +891,7 @@ FUNCTION wstrSpn (BYREF wszText AS CONST WSTRING, BYREF wszSet AS CONST WSTRING,
 DIM dwsText AS DWSTRING = "129th"
 DIM dwsSet AS DWSTRING = "1234567890"
 DIM n AS LONG = wstrSpn(dwsText, dwsSet)
-PRINT "The initial number has " & WSTR(n) & " digits"   ' Output: 3
+PRINT "The initial number has " & WSTR(n) & " digits"   ' Output: "3"
 ```
 
 #### Remarks
@@ -984,7 +983,7 @@ FUNCTION wstrUCode (BYREF ansiStr AS CONST STRING, BYVAL nCodePage AS LONG = 0) 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *ansiStr* | The ANSI or UTF8 string to translate. |
-| *nCodePage* | The code page used in the conversion, e.g. 1251 for Russian. If CP_UTF8 is specified, the returned string will be UTF8 encoded. IF the code page is omited, the function will use CP_ACP (0), which is the system default Windows ANSI code page.|
+| *nCodePage* | The code page used in the conversion, e.g. 1251 for Russian. If CP_UTF8 is specified, it is assumed that *ansiStr* contains an UTF8-encoded string. If the code page is omited, the function will use CP_ACP (0), which is the system default Windows ANSI code page.|
 
 #### Return value
 
@@ -1055,8 +1054,8 @@ Returns zero if each character in *wszSourceString* is present in *wszMatchStr*;
 DIM dws AS DWSTRING = "123.65,22.5"
 DIM nPos AS LONG = wstrVerify(5, dws, "0123456789", TRUE)
 PRINT nPos
-' Output: 7.
-' Returns 7 since 5 starts it past the first non-digit ("." at position 4)
+' Output: "7"
+' Returns "7" since 5 starts it past the first non-digit ("." at position 4)
 ```
 
 ### <a name="wstrWrap"></a>wstrWrap

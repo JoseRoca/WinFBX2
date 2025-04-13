@@ -23,6 +23,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrInsert](#AfxStrInsert) | Inserts a string at a specified position within another string expression. |
 | [AfxStrJoin](#AfxStrJoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
+| [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
 | [AfxStrLSet](#AfxStrLSet) | Returns a string containing a left justified string. |
 | [AfxStrParse](#AfxStrParse) | Returns a delimited field from a string expression. |
 | [AfxStrParseAny](#AfxStrParseAny) | Returns a delimited field from a string expression. Supports more than one character for the delimiter. |
@@ -55,6 +56,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrTallyAny](#AfxStrTallyAny) | Count the number of occurrences of a list of characters within a string. Case sensitive. |
 | [AfxStrTallyAnyI](#AfxStrTallyAnyI) | Count the number of occurrences of a list of characters within a string. Case insensitive. |
 | [wstrUCase](#wstrucase) | Returns an uppercased version of a string. |
+| [wstrUCode](#wstrucode) | Translates ansi bytes to Unicode bytes. |
 | [AfxStrVerify](#AfxStrVerify) | Determine whether each character of a string is present in another string. Case sensitive. |
 | [AfxStrVerifyI](#AfxStrVerifyI) | Determine whether each character of a string is present in another string. Case insensitive. |
 | [AfxStrWrap](#AfxStrWrap) | Adds paired characters to the beginning and end of a string. |
@@ -69,6 +71,25 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxBase64EncodeW](#AfxBase64EncodeW) | Converts the contents of an unicode string to Base64 mime encoding. |
 | [AfxCryptBinaryToString](#AfxCryptBinaryToString) | Converts an array of bytes into a formatted string. |
 | [AfxCryptStringToBinary](#AfxCryptStringToBinary) | Converts a formatted string into an array of bytes. |
+
+
+### <a name="wstrACode"></a>wstrLCode
+
+Translates Unicode chars to ansi bytes.
+
+```
+FUNCTION wstrAcode (BYVAL pwszStr AS WSTRING PTR, BYVAL nCodePage AS LONG = 0) AS STRING
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *pwszStr* | The Unicode string to translate. |
+| *nCodePage* | The code page used in the conversion, e.g. 1251 for Russian. If CP_UTF8 is specified, it is assumed that ansiStr contains an UTF8 encoded string. IF the code page is omited, the function will use CP_ACP (0), which is the system default Windows ANSI code page.|
+
+#### Return value
+
+The translated string.
+
+---
 
 ### <a name="AfxStrClipLeft"></a>AfxStrClipLeft
 
@@ -1219,7 +1240,7 @@ Returns an uppercased version of a string.
 ```
 FUNCTION wstrUCase (BYVAL pwszStr AS WSTRING PTR, _
    BYVAL pwszLocaleName AS WSTRING PTR = LOCALE_NAME_USER_DEFAULT, _
-   BYVAL dwMapFlags AS DWORD = 0) AS CWSTR
+   BYVAL dwMapFlags AS DWORD = 0) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -1245,6 +1266,24 @@ wstrLCase("KARIŞIKLIĞI", "tr-TR")
 #### Return value
 
 The uppercased string.
+
+---
+
+### <a name="wstrUCode"></a>wstrUCode
+
+Translates ansi bytes to Unicode chars.
+
+```
+FUNCTION wstrUcode (BYREF ansiStr AS CONST STRING, BYVAL nCodePage AS LONG = 0) AS DWSTRING
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *ansiStr* | The ANSI or UTF8 string to translate. |
+| *nCodePage* | The code page used in the conversion, e.g. 1251 for Russian. If CP_UTF8 is specified, the returned string will be UTF8 encoded. IF the code page is omited, the function will use CP_ACP (0), which is the system default Windows ANSI code page.|
+
+#### Return value
+
+The translated string.
 
 ---
 

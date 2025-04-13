@@ -337,7 +337,7 @@ FUNCTION wstrInsert (BYREF wszSourceString AS CONST WSTRING, BYREF wszInsertStri
 #### Usage example
 
 ```
-DIM dws AS DWSTRING = strInsert("1234567890", "--", 6)
+DIM dws AS DWSTRING = wstrInsert("1234567890", "--", 6)
 ```
 ---
 

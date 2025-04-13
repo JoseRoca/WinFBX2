@@ -1456,7 +1456,7 @@ FUNCTION wstrScanForSurrogates( _
 ```
 #### Result code
 
-Returns the 0-based index (relative to *memAddr*) of the first broken surrogate found, or -1 if none is found. If the optional parameter *searchBrokenOnly* is set to false, then it returns the 0-based indez of the first surroghate found, broken or not.
+Returns the 0-based index (relative to *memAddr*) of the first broken surrogate found, or -1 if none is found. If the optional parameter *searchBrokenOnly* is set to false, then it returns the 0-based index of the first surroghate found, broken or not.
 
 ---
 

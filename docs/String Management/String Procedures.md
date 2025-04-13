@@ -635,7 +635,7 @@ PRINT WstrRemove(19, dwsText, "(", ")", TRUE)   ' Returns "var2, var3"
 
 ### <a name="wstrRepeat"></a>wstrRepeat
 
-Returns a string consisting of multiple copies of the specified string. This function is similar to STRING, but STRING only makes multiple copies of a single character.
+Returns a string consisting of multiple copies of the specified string. This function is similar to FreeBasic `STRING`, but `STRING` only makes multiple copies of a single character.
 
 ```
 FUNCTION wstrRepeat (BYVAL nCount AS LONG, BYREF wszSourceString AS CONST WSTRING) AS DWSTRING

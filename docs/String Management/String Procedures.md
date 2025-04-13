@@ -1375,5 +1375,55 @@ FUNCTION wstrIsValidSurrogatePair (BYVAL high AS USHORT, BYVAL low AS USHORT) AS
 
 #### Return value
 
-BOOLEAN. True if the tha surrogate pair is valid; False, otherwise.
+BOOLEAN. True if the surrogate pair is valid; False, otherwise.
 
+---
+
+### <a name="wstrsurrogatepairtocodepoint"></a>wstrSurrogatePairToCodePoint
+
+Converts a surrogate pair to a Unicode code point.
+```
+FUNCTION wstrSurrogatePairToCodePoint (BYVAL high AS USHORT, BYVAL low AS USHORT) AS ULONG
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *high* | The high surrogate part. |
+| *low* | The low surrogate part. |
+
+#### Return value
+
+BOOLEAN. True if the surrogate pair is valid; False, otherwise.
+
+
+### <a name="wstrcodepointtosurrogatpair"></a>wstrCodePointToSurrogatePair
+
+Converts a Unicode code point (above U+FFFF) back into its high and low surrogate pair.
+```
+SUB wstrCodePointToSurrogatePair (BYVAL codePoint AS ULONG, BYREF high AS USHORT, BYREF low AS USHORT)
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *high* | The high surrogate part. |
+| *low* | The low surrogate part. |
+
+#### Return value
+
+This method does not return a value.
+
+### <a name="wstrscanforsurrogates"></a>wstrScanForSurrogates
+
+Scans a UTF-16 buffer (passed as a pointer to WSTRING) in chunks of 64 characters. Returns the 0-based index (relative to *memAddr*) of the first
+' broken surrogate found, or -1 if none is found.
+'
+' Parameters:
+'   memAddr            - pointer to the UTF-16 buffer
+'   nChars             - number of UTF-16 code units (USHORTs) to scan
+'   searchBrokenOnly   - Optional (default TRUE): if TRUE, only broken surrogates 
+'                        are signaled. If FALSE, returns the position of the first 
+'                        surrogate (valid or not). 
+'
+' Note:
+'   This version avoids repeated casting by caching memAddr as a USHORT pointer 
+'   and uses bitmask comparisons instead of range comparisons.

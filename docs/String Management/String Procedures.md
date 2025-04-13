@@ -23,6 +23,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
 | [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
 | [AfxStrLSet](#AfxStrLSet) | Returns a string containing a left justified string. |
+| [wstrMCase](#wstrmcase) | Returns a mixed case version of its string argument. |
 | [AfxStrParse](#AfxStrParse) | Returns a delimited field from a string expression. |
 | [AfxStrParseAny](#AfxStrParseAny) | Returns a delimited field from a string expression. Supports more than one character for the delimiter. |
 | [AfxStrParseCount](#AfxStrParseCount) | Returns the count of delimited fields from a string expression. |
@@ -425,6 +426,20 @@ FUNCTION AfxStrLSet (BYREF wszMainStr AS CONST WSTRING, _
 
 ```
 DIM cws AS CWSTR = AfxStrLSet("FreeBasic", 20, "*")
+```
+
+### <a name="wstrmcase"></a>wstrMCase
+
+Returns a mixed case version of its string argument.
+
+```
+FUNCTION wstrMCase (BYREF wszSourceString AS WSTRING) AS DWSTRING
+```
+#### Example
+```
+DIM dws AS DWSTRING = strMCase("Cats aren't AL.WAYS good.")
+' Output: Cats Aren'T Al.Ways Good.
+' Note: It mimincs the Power Basic's MCase$ function.
 ```
 
 ### <a name="AfxStrParse"></a>AfxStrParse 

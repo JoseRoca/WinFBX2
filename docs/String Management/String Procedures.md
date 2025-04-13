@@ -205,7 +205,7 @@ FUNCTION wstrExtract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRI
 | *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszMainStr*, all of *wszMainStr* is returned intact. |
 | *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
-*nStart* is the optional starting position to begin extracting. If *nStart is not specified, it will start at position 1. If start is zero, or beyond the length of *wszSourceString*, a nul string is returned. If start is negative, the starting position is counted from right to left: if -1, the search begins at the last character; if -2, the second to last, and so forth.
+*nStart* is the optional starting position to begin extracting. If *nStart* is not specified, it will start at position 1. If start is zero, or beyond the length of *wszSourceString*, a nul string is returned. If start is negative, the starting position is counted from right to left: if -1, the search begins at the last character; if -2, the second to last, and so forth.
 
 #### Overloaded methods:
 

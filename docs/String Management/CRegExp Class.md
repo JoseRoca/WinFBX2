@@ -48,7 +48,7 @@ With regular expressions, you can:
 | [SubMatchValue](#submatchvalue) | Retrieves the content of the specified submatch. |
 | [Test](#test) | Executes a regular expression search against a specified string and returns a boolean value that indicates if a pattern match was found. |
 
-## Error and result codes procedure
+## Error and result codes
 
 | Name       | Description |
 | ---------- | ----------- |

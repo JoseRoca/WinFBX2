@@ -11,12 +11,21 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | Name       | Description |
 | ---------- | ----------- |
 | [wstrACode](#wstracode) | Translates Unicode chas to ansi bytes. |
+| [wstrBase64DecodeA](#wstrbase64decodea) | Converts the contents of a Base64 mime encoded string to an ascii string. |
+| [wstrBase64DecodeW](#wstrbase64decodew) | Converts the contents of a Base64 mime encoded string to an unicode string. |
+| [wstrBase64EncodeA](#wstrbase64encodea) | Converts the contents of an ascii string to Base64 mime encoding. |
+| [wstrBase64EncodeW](#wstrbase64encodew) | Converts the contents of an unicode string to Base64 mime encoding. |
 | [wstrClip](#wstrclip) | Returns a string with the specified number of characters removed from the left, right or mid side of the string. |
+| [wstrCryptBinaryToString](#wstrcryptbinarytostring) | Converts an array of bytes into a formatted string. |
+| [wstrCryptStringToBinary](#wstrcryptstringtobinary) | Converts a formatted string into an array of bytes. |
 | [wstrCSet](#wstrcset) | Returns a string containing a centered (padded) string. |
 | [wstrCSetAbs](#wstrcsetabs) | Returns a string containing a centered string within the space of another string. |
 | [wstrDelete](#wstrdelete) | Deletes a specified number of characters from a string expression. |
 | [wstrEscape](#wstrescape) | Escapes any potential regex syntax characters in a string. |
 | [wstrExtract](#wstrextract) | Extracts characters from a string up to (but not including) the specified matching. |
+| [wstrFormatByteSize](#wstrformatbytesize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
+| [wstrFormatKBSize](#wstrformatkbsize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
+| [wstrFromTimeInterval](#wstrfromtimeinterval) | Converts a time interval, specified in milliseconds, to a string. |
 | [wstrInsert](#wstrinsert) | Inserts a string at a specified position within another string expression. |
 | [wstrIsNumeric](#wstrisnumeric) | Retuns True if the passed string is muneric. |
 | [wstrJoin](#wstrjoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
@@ -26,6 +35,8 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrMCase](#wstrmcase) | Returns a mixed case version of its string argument. |
 | [wstrParse](#wstrparse) | Returns a delimited field from a string expression. |
 | [wstrParseCount](#wstrparsecount) | Returns the count of delimited fields from a string expression. |
+| [wstrPathName](#wstrpathname) | Parses a path to extract component parts. |
+| [wstrPathScan](#wstrpathscan) | Searches a path for a file name. |
 | [wstrRemain](#wstrremain) | Returns the portion of a string following the first occurrence of a string. |
 | [wstrRemove](#wstrremove) | Returns a new string with substrings removed. |
 | [wstrRepeat](#wstrrepeat) | Returns a string consisting of multiple copies of the specified string. |
@@ -43,18 +54,8 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrVerify](#wstrverify) | Determine whether each character of a string is present in another string. |
 | [wstrWrap](#wstrwrap) | Adds paired characters to the beginning and end of a string. |
 | [wstrUnWrap](#wstrunwrap) | Removes paired characters to the beginning and end of a string. |
-| [wstrPathName](#wstrpathname) | Parses a path to extract component parts. |
-| [wstrPathScan](#wstrpathscan) | Searches a path for a file name. |
-| [wstrFormatByteSize](#wstrformatbytesize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
-| [wstrFormatKBSize](#wstrformatkbsize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
-| [wstrFromTimeInterval](#wstrfromtimeinterval) | Converts a time interval, specified in milliseconds, to a string. |
-| [wstrBase64DecodeA](#wstrbase64decodea) | Converts the contents of a Base64 mime encoded string to an ascii string. |
-| [wstrBase64DecodeW](#wstrbase64decodew) | Converts the contents of a Base64 mime encoded string to an unicode string. |
-| [wstrBase64EncodeA](#wstrbase64encodea) | Converts the contents of an ascii string to Base64 mime encoding. |
-| [wstrBase64EncodeW](#wstrbase64encodew) | Converts the contents of an unicode string to Base64 mime encoding. |
-| [wstrCryptBinaryToString](#wstrcryptbinarytostring) | Converts an array of bytes into a formatted string. |
-| [wstrCryptStringToBinary](#wstrcryptstringtobinary) | Converts a formatted string into an array of bytes. |
 
+---
 
 ### <a name="wstracode"></a>wstrACode
 

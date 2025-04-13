@@ -937,7 +937,7 @@ The translated string.
 
 ---
 
-### <a name="wstrunwrap"></a>wstrStrUnWrap
+### <a name="wstrunwrap"></a>wstrUnWrap
 
 Removes paired characters to the beginning and end of a string.
 

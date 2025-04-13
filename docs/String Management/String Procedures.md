@@ -30,7 +30,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrParseCountAny](#AfxStrParseCountAny) | Returns the count of delimited fields from a string expression. Supports more than one character for the delimiter. |
 | [wstrRemain](#wstrremain) | Returns the portion of a string following the first occurrence of a string. |
 | [wstrRemove](#wstrremove) | Returns a new string with substrings removed. |
-| [AfxStrRepeat](#AfxStrRepeat) | Returns a string consisting of multiple copies of the specified string. |
+| [wstrRepeat](#wstrrepeat) | Returns a string consisting of multiple copies of the specified string. |
 | [wstrReplace](#wstrreplace) | Replaces all the occurrences of a string with another string. |
 | [wstrRetain](#wstrretain) | Returns a string containing only the characters contained in a specified match string. |
 | [wstrReverse](#wstrreverse) | Reverses the contents of a string expression. |
@@ -633,12 +633,12 @@ PRINT WstrRemove(19, dwsText, "(", ")", TRUE)   ' Returns "var2, var3"
 ```
 ---
 
-### <a name="AfxStrRepeat"></a>AfxStrRepeat
+### <a name="wstrRepeat"></a>wstrRepeat
 
 Returns a string consisting of multiple copies of the specified string. This function is similar to STRING, but STRING only makes multiple copies of a single character.
 
 ```
-FUNCTION AfxStrRepeat (BYVAL nCount AS LONG, BYREF wszStr AS CONST WSTRING) AS CWSTR
+FUNCTION wstrRepeat (BYVAL nCount AS LONG, BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -649,7 +649,7 @@ FUNCTION AfxStrRepeat (BYVAL nCount AS LONG, BYREF wszStr AS CONST WSTRING) AS C
 #### Usage example
 
 ```
-DIM cws AS CWSTR = AfxStrRepeat(5, "Paul")
+DIM dws AS DWSTRING = wstrRepeat(5, "Paul")
 ```
 ---
 

@@ -1275,7 +1275,7 @@ The uppercased string.
 Translates ansi bytes to Unicode chars.
 
 ```
-FUNCTION wstrUcode (BYREF ansiStr AS CONST STRING, BYVAL nCodePage AS LONG = 0) AS DWSTRING
+FUNCTION wstrUCode (BYREF ansiStr AS CONST STRING, BYVAL nCodePage AS LONG = 0) AS DWSTRING
 ```
 | Parameter  | Description |
 | ---------- | ----------- |

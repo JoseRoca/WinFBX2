@@ -1418,6 +1418,7 @@ This method does not return a value.
 ### <a name="wstrscanforsurrogates"></a>wstrScanForSurrogates
 
 Scans a UTF-16 buffer (passed as a pointer to WSTRING) in chunks of 64 characters. Returns the 0-based index (relative to *memAddr*) of the first broken surrogate found, or -1 if none is found.
+
 | Parameter  | Description |
 | ---------- | ----------- |
 | *memAddr* | Pointer to the passes UTF-16 buffer. |

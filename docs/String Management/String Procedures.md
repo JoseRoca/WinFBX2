@@ -152,6 +152,19 @@ FUNCTION AfxStrDelete (BYREF wszMainStr AS CONST WSTRING, _
 DIM cws AS CWSTR = AfxStrDelete("1234567890", 4, 3)   ' Returns 1237890"
 ```
 
+### <a name="wstrEscape"></a>wstrEscape
+
+Escapes any potential regex syntax characters in a pattern string and returns a new string that can be safely used as a literal pattern.
+
+```
+FUNCTION wstrEscape (BYREF wszStr AS CONST WSTRING) AS DWSTRING
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *wszStr* | The pattern string. |
+
+
 ### <a name="AfxStrExtract"></a>AfxStrExtract
 
 Extracts characters from a string up to (but not including) a string. Case sensitive.

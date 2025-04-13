@@ -42,7 +42,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrUCase](#wstrucase) | Returns an uppercased version of a string. |
 | [wstrUCode](#wstrucode) | Translates ansi bytes to Unicode bytes. |
 | [wstrVerify](#wstrverify) | Determine whether each character of a string is present in another string. |
-| [AfxStrWrap](#AfxStrWrap) | Adds paired characters to the beginning and end of a string. |
+| [wstrWrap](#wstrwrap) | Adds paired characters to the beginning and end of a string. |
 | [AfxStrUnWrap](#AfxStrUnWrap) | Removes paired characters to the beginning and end of a string. |
 | [AfxStrPathName](#AfxStrPathName) | Parses a path to extract component parts. |
 | [AfxStrFormatByteSize](#AfxStrFormatByteSize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
@@ -1004,28 +1004,28 @@ PRINT nPos
 ' Returns 7 since 5 starts it past the first non-digit ("." at position 4)
 ```
 
-### <a name="AfxStrWrap"></a>AfxStrWrap
+### <a name="wstrWrap"></a>wstrWrap
 
 Adds paired characters to the beginning and end of a string.
 
 ```
-FUNCTION AfxStrWrap (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszLeftChar AS CONST WSTRING, BYREF wszRightChar AS CONST WSTRING) AS CWSTR
+FUNCTION wstrWrap (BYREF wszSourceString AS CONST WSTRING, BYREF wszLeftChar AS CONST WSTRING, _
+   BYREF wszRightChar AS CONST WSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *wszSourceString* | The main string. |
 | *wszLeftChar* | The left character. |
 | *wszRightChar* | The right character. |
 
 ```
-FUNCTION AfxStrWrap (BYREF wszMainStr AS CONST WSTRING, BYREF wszChar AS CONST WSTRING) AS CWSTR
+FUNCTION wstrWrap (BYREF wszSourceString AS CONST WSTRING, BYREF wszChar AS CONST WSTRING = CHR(34)) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *wszSourceString* | The main string. |
 | *wszChar* | The same character for both the left and right sides. |
 
 #### Remarks
@@ -1035,9 +1035,9 @@ If only one wrap character/string is specified then that character or string is 
 #### Usage examples
 
 ```
-AfxStrWrap("Paul", "<", ">") results in <Paul>
-AfxStrWrap("Paul", "'") results in 'Paul'
-AfxStrWrap("Paul") results in "Paul"
+wstrWrap("Paul", "<", ">") results in <Paul>
+wstrWrap("Paul", "'") results in 'Paul'
+wstrWrap("Paul") results in "Paul"
 ```
 ---
 

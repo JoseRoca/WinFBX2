@@ -34,7 +34,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrReplace](#wstrreplace) | Replaces all the occurrences of a string with another string. |
 | [wstrRetain](#wstrretain) | Returns a string containing only the characters contained in a specified match string. |
 | [wstrReverse](#wstrreverse) | Reverses the contents of a string expression. |
-| [AfxStrRSet](#AfxStrRSet) | Returns a string containing a right justified string. |
+| [wstrRSet](#wstrrset) | Returns a string containing a right justified string. |
 | [wstrShrink](#wstrshrink) | Shrinks a string to use a consistent single character delimiter. |
 | [wstrSplit](#wstrsplit) | Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. |
 | [wstrSpn](#wstrspn) | Returns the index of the initial portion of a string which consists only of characters that are part of a specified set of characters. |
@@ -757,25 +757,25 @@ DIM dws AS DWSTRING = wstrReverse("garden")   ' Output: "nedrag"
 ```
 ---
 
-### <a name="AfxStrRSet"></a>AfxStrRSet
+### <a name="wstrrset"></a>wstrRSet
 
 Returns a string containing a right justified string.
 
 ```
-FUNCTION AfxStrRSet (BYREF wszMainStr AS CONST WSTRING, _
-   BYVAL nStringLength AS LONG, BYREF wszPadCharacter AS CONST WSTRING = " ") AS CWSTR
+FUNCTION wstrRSet (BYREF wszSourceString AS CONST WSTRING, BYVAL nStringLength AS LONG, _
+   BYREF wszPadCharacter AS CONST WSTRING = " ") AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The string to be justified. |
+| *wszSourceString* | The string to be justified. |
 | *nStringLength* | The length of the new string. |
 | *wszPadCharacter* | The character to be used for padding. If it is not specified, the string will be padded with spaces. |
 
 #### Usage example
 
 ```
-DIM cws AS CWSTR = AfxStrRSet("FreeBasic", 20, "*")
+DIM dws AS DWSTRING = wstrRSet("FreeBasic", 20, "*")
 ```
 ---
 

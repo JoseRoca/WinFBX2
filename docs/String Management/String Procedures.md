@@ -860,7 +860,6 @@ FUNCTION wstrReplace (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchStri
 | *wszSourceString* | The string from which you want to replace the specified string. |
 | *wszMatchStr* | The string expression to be replaced. |
 | *wszReplaceWith* | The replacement string. |
-| *wszReplaceWith* | The replacement string. |
 | *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
 #### Usage examples

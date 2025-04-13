@@ -55,6 +55,18 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrWrap](#wstrwrap) | Adds paired characters to the beginning and end of a string. |
 | [wstrUnWrap](#wstrunwrap) | Removes paired characters to the beginning and end of a string. |
 
+### Surrogates
+
+| Name       | Description |
+| ---------- | ----------- |
+| [wstrChrW](#wstrchrw) | Returns a wide-character string from a codepoint. |
+| [wstrCodePointToSurrogatePair](#wstrcodepointtosurrogatepair) | Converts a Unicode code point (above U+FFFF) back into its high and low surrogate pair. |
+| [wstrHasSurrogates](#wstrhassurrogates) | Checks if the passed string has surrogates. |
+| [wstrIsValidSurrogatePair](#wstrisvalidsurrogatepair) | Checks whether a UTF-16 encoded string contains valid high-low surrogate pairs. |
+| [wstrScanForSurrogates](#wstrscanforsurrogates) | Converts surrogate pair to Unicode code point. |
+| [wstrSurrogatePairToCodePoint](#wstrsurrogatepairtocodepoint) | Converts surrogate pair to Unicode code point. |
+
+
 ---
 
 ### <a name="wstracode"></a>wstrACode

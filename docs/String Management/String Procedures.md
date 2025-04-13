@@ -533,10 +533,10 @@ PRINT dws
 ' Output: " therefore I am"
 ```
 ```
-DIM dws AS DWSTRING = "I think, therefore I am"
+DIM dws AS DWSTRING = "One, two, three"
 dws = wstrRemain(5, dws, ",", TRUE)
 PRINT dws
-' Output: " therefore I am"
+' Output: " three"
 ```
 ---
 

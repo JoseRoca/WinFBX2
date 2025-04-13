@@ -322,6 +322,7 @@ FUNCTION wstrIsNumeric (BYREF wszSourcestring AS CONST WSTRING) AS BOOLEAN
 ```
 wstrIsNumeric("1.2345678901234567e+029")   ' Output: true
 ```
+```
 Explanation of the pattern used: "^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$"
 ^ ? Anchors the match to the start of the string.
 [\+\-]? ? Matches an optional plus (+) or minus (-) sign at the beginning (for signed numbers).
@@ -334,7 +335,7 @@ Explanation of the pattern used: "^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$"
   [\+\-]? for optional sign after the exponent indicator.
   \d+ ensures at least one digit in the exponent.
 $ ? Anchors the match to the end of the string, ensuring a full numeric match.
-
+```
 ---
 
 ### <a name="AfxStrJoin"></a>AfxStrJoin

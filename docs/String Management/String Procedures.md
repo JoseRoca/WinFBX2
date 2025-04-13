@@ -22,7 +22,8 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrJoin](#wstrjoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
 | [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
-| [wstrLSet](#wstrlset) | Returns a string containing a left justified string. |
+| [wstrLSetabs](#wstrlsetabd) | Left-aligns a string within the space of another string. |
+| [wstrRSetAbs](#wstrrsetbns) | Right-aligns a string within the space of another string. |
 | [wstrMCase](#wstrmcase) | Returns a mixed case version of its string argument. |
 | [AfxStrParse](#AfxStrParse) | Returns a delimited field from a string expression. |
 | [AfxStrParseAny](#AfxStrParseAny) | Returns a delimited field from a string expression. Supports more than one character for the delimiter. |
@@ -35,6 +36,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrRetain](#wstrretain) | Returns a string containing only the characters contained in a specified match string. |
 | [wstrReverse](#wstrreverse) | Reverses the contents of a string expression. |
 | [wstrRSet](#wstrrset) | Returns a string containing a right justified string. |
+| [wstrRSetAbs](#wstrrsetabs) | Returns a string containing a right justified within the space of another string. |
 | [wstrShrink](#wstrshrink) | Shrinks a string to use a consistent single character delimiter. |
 | [wstrSplit](#wstrsplit) | Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. |
 | [wstrSpn](#wstrspn) | Returns the index of the initial portion of a string which consists only of characters that are part of a specified set of characters. |
@@ -446,9 +448,9 @@ FUNCTION wstrLSetAbs (BYREF wszSourceString AS CONST WSTRING, BYREF wszStr AS CO
 #### Usage example
 
 ```
-DIM dws AS DWSTRING = "NameBasic=SuperBasic"
-PRINT wstrLSetAbs(dws, "FreeBasic")
-' Output: FreeBasic=SuperBasic"DIM dws AS DWSTRING = wstrLSet("FreeBasic", 20, "*")
+DIM dws AS DWSTRING = "NameBasic=NameBasic"
+PRINT wstrRSetAbs(dws, "FreeBasic")  ' Output: "NameBasic=FreeBasic"
+' Output: FreeBasic=SuperBasic"
 ```
 
 ### <a name="wstrmcase"></a>wstrMCase

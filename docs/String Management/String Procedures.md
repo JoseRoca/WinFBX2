@@ -53,7 +53,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxBase64EncodeA](#AfxBase64EncodeA) | Converts the contents of an ascii string to Base64 mime encoding. |
 | [AfxBase64EncodeW](#AfxBase64EncodeW) | Converts the contents of an unicode string to Base64 mime encoding. |
 | [wstrCryptBinaryToString](#wstrcryptbinarytostring) | Converts an array of bytes into a formatted string. |
-| [AfxCryptStringToBinary](#AfxCryptStringToBinary) | Converts a formatted string into an array of bytes. |
+| [wstrCryptStringToBinary](#wstrcryptstringtobinary) | Converts a formatted string into an array of bytes. |
 
 
 ### <a name="wstracode"></a>wstrACode

@@ -32,7 +32,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrRepeat](#AfxStrRepeat) | Returns a string consisting of multiple copies of the specified string. |
 | [wstrReplace](#wstrreplace) | Replaces all the occurrences of a string with another string. |
 | [wstrRetain](#wstrretain) | Returns a string containing only the characters contained in a specified match string. |
-| [AfxStrReverse](#AfxStrReverse) | Reverses the contents of a string expression. |
+| [wstrReverse](#wstrreverse) | Reverses the contents of a string expression. |
 | [AfxStrRSet](#AfxStrRSet) | Returns a string containing a right justified string. |
 | [wstrShrink](#wstrshrink) | Shrinks a string to use a consistent single character delimiter. |
 | [AfxStrSplit](#AfxStrSplit) | Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. |
@@ -699,22 +699,22 @@ PRINT dws
 ```
 ---
 
-### <a name="AfxStrReverse"></a>AfxStrReverse
+### <a name="wstrreverse"></a>wstrReverse
 
 Reverses the contents of a string expression.
 
 ```
-FUNCTION AfxStrReverse (BYREF wszMainStr AS CONST WSTRING) AS CWSTR
+FUNCTION wstrReverse (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The string to be reversed. |
+| *wszSourceString* | The string to be reversed. |
 
 #### Usage example
 
 ```
-DIM cws AS CWSTR = AfxStrReverse("garden")   ' Returns "nedrag"
+DIM dws AS DWSTRING = wstrReverse("garden")   ' Output: "nedrag"
 ```
 ---
 

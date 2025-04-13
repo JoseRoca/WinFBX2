@@ -291,7 +291,7 @@ FUNCTION wtrFromTimeInterval (BYVAL dwTimeMS AS DWORD, BYVAL digits AS LONG) AS 
 
 Some examples for *digits*:
 
-| dwTimeMS   | digits      | cwsOut      |
+| dwTimeMS   | digits      | dwsOut      |
 | ---------- | ----------- | ----------- |
 | 34000 | 3 | 34 sec |
 | 34000 | 2 | 34 sec |
@@ -1195,7 +1195,7 @@ FUNCTION wstrBase64EncodWeA (BYREF dwsData AS DWSTRING) AS DWSTRING
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *cwsData* | The string to encode. |
+| *dwsData* | The string to encode. |
 
 #### Return value
 
@@ -1341,4 +1341,39 @@ Values available for the *pdwFlags* parameter:
 | CRYPT_STRING_ANY | This variable will receive one of the following values. Each value indicates the actual format of the string. CRYPT_STRING_BASE64HEADER, CRYPT_STRING_BASE64, CRYPT_STRING_BINARY. |
 | CRYPT_STRING_BASE64_ANY | This variable will receive one of the following values. Each value indicates the actual format of the string. CRYPT_STRING_BASE64HEADER, CRYPT_STRING_BASE64. |
 | CRYPT_STRING_HEX_ANY | This variable will receive one of the following values. Each value indicates the actual format of the string. CRYPT_STRING_HEXADDR, CRYPT_STRING_HEXASCIIADDR, CRYPT_STRING_HEX, CRYPT_STRING_HEXRAW, CRYPT_STRING_HEXASCII. |
+
+---
+
+### <a name="wstrhassurrogates"></a>wstrHasSurrogates
+
+Checks if the specified string has surrogates.
+```
+FUNCTION wstrHasSurrogates (BYREF wszStr AS WSTRING) AS BOOLEAN
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *wszStr* | The string to parse. |
+
+#### Return value
+
+BOOLEAN. True if the string has rurrogates; False, otherwise.
+
+---
+
+### <a name="wstrisvalidsurrogatepair"></a>wstrIsValidSurrogatePair
+
+Checks whether a UTF-16 encoded string contains valid high-low surrogate pairs.
+```
+FUNCTION wstrIsValidSurrogatePair (BYVAL high AS USHORT, BYVAL low AS USHORT) AS BOOLEAN
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *high* | The high surrogate part. |
+| *low* | The low surrogate part. |
+
+#### Return value
+
+BOOLEAN. True if the tha surrogate pair is valid; False, otherwise.
 

@@ -1431,12 +1431,12 @@ Scans a UTF-16 buffer (passed as a pointer to WSTRING) in chunks of 64 character
 | *nChars* | The low surrogate part. |
 | *searchBrokenOnly* | The low surrogate part. |
 
-``
+```
 FUNCTION wstrScanForSurrogates( _
    BYVAL memAddr AS WSTRING PTR, _
    BYVAL nChars AS LONG, _
    BYVAL searchBrokenOnly AS BOOLEAN = TRUE) AS LONG
-``
+```
 #### Result code
 
 Returns -1 if no surrogates are found or the zero-based position of the first broken surrogates.

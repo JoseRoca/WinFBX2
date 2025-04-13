@@ -80,7 +80,7 @@ const LOW_SURROGATE_END = &hdfff
 ```
 **IS_HIGH_SURROGATE**: Determines if a character is a UTF-16 high surrogate code point, ranging from &hD800 to &hDBFF, inclusive.
 
-**IS_LOW_SURROGATE**: Determines if a character is a UTF-16 low surrogate code point, ranging from &HDC00 to &HDFFF, inclusive.
+**IS_LOW_SURROGATE**: Determines if a character is a UTF-16 low surrogate code point, ranging from &hDC00 to &hDFFF, inclusive.
 
 **IS_SURROGATE_PAIR**: Determines if the specified code units form a UTF-16 surrogate pair.
 

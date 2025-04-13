@@ -14,7 +14,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrClip](#wstrclip) | Returns a string with the specified number of characters removed from the left, right or mid side of the string. |
 | [wstrCSet](#wstrcset) | Returns a string containing a centered (padded) string. |
 | [wstrCSetAbs](#wstrcsetabs) | Returns a string containing a centered string within the space of another string. |
-| [AfxStrDelete](#AfxStrDelete) | Deletes a specified number of characters from a string expression. |
+| [wstrDelete](#wstrdelete) | Deletes a specified number of characters from a string expression. |
 | [wstrEscape](#wstrescape) | Escapes any potential regex syntax characters in a string. |
 | [wstrExtract](#wstrextract) | Extracts characters from a string up to (but not including) the specified matching. |
 | [AfxStrInsert](#AfxStrInsert) | Inserts a string at a specified position within another string expression. |
@@ -141,13 +141,12 @@ PRINT wstrCSetAbs(dwsPad, dws)
 ```
 ---
 
-### <a name="AfxStrDelete"></a>AfxStrDelete
+### <a name="wstrdelete"></a>wstrDelete
 
 Deletes a specified number of characters from a string expression.
 
 ```
-FUNCTION AfxStrDelete (BYREF wszMainStr AS CONST WSTRING, _
-   BYVAL nStart AS LONG, BYVAL nCount AS LONG) AS CWSTR
+FUNCTION wstrDelete (BYREF wszSourceString AS CONST WSTRING, BYVAL nStart AS LONG, BYVAL nCount AS LONG) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -159,7 +158,7 @@ FUNCTION AfxStrDelete (BYREF wszMainStr AS CONST WSTRING, _
 #### Usage example
 
 ```
-DIM cws AS CWSTR = AfxStrDelete("1234567890", 4, 3)   ' Returns 1237890"
+DIM dws AS DWSTRING = wstrDelete("1234567890", 4, 3)   ' Output: 1237890
 ```
 ---
 

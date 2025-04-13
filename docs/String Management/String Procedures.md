@@ -442,8 +442,9 @@ For a complete list see: [LCMapStringEx function](https://docs.microsoft.com/en-
 The string conversion functions available in FreeBasic are not fully suitable for some languages. For example, the Turkish word "karışıklığı" is uppercased as "KARıŞıKLıĞı" instead of "KARIŞIKLIĞI", and "KARIŞIKLIĞI" is lowercased to "karişikliği" instead of "karışıklığı". Notice the "ı", that is not an "i".
 
 For Turkey, use:
-  wstrUCase("karışıklığı", "tr-TR")
-  wstrLCase("KARIŞIKLIĞI", "tr-TR")
+
+wstrUCase("karışıklığı", "tr-TR")
+wstrLCase("KARIŞIKLIĞI", "tr-TR")
 
 #### Return value
 
@@ -1235,6 +1236,7 @@ For a complete list see: [LCMapStringEx function](https://docs.microsoft.com/en-
 The string conversion functions available in FreeBasic are not fully suitable for some languages. For example, the Turkish word "karışıklığı" is uppercased as "KARıŞıKLıĞı" instead of "KARIŞIKLIĞI", and "KARIŞIKLIĞI" is lowercased to "karişikliği" instead of "karışıklığı". Notice the "ı", that is not an "i".
 
 For Turkey, use:
+
 wstrUcase("karışıklığı", "tr-TR")
 wstrLCase("KARIŞIKLIĞI", "tr-TR")
 

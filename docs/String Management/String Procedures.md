@@ -83,6 +83,8 @@ FUNCTION AfxStrClipLeft (BYREF wszMainStr AS CONST WSTRING, BYVAL nCount AS LONG
 | *wszMainStr* | The main string. |
 | *nCount* | The number of characters to be removed. |
 
+---
+
 ### <a name="AfxStrClipMid"></a>AfxStrClipMid
 
 Returns a string with *nCount* characters removed from the left side of the string.
@@ -97,6 +99,8 @@ FUNCTION AfxStrClipMid (BYREF wszMainStr AS CONST WSTRING, BYVAL nStart AS LONG,
 | *nStart* | The one-based starting position. |
 | *nCount* | The number of characters to be removed. |
 
+---
+
 ### <a name="AfxStrClipRight"></a>AfxStrClipRight
 
 Returns a string with *nCount* characters removed from the right side of the string.
@@ -109,6 +113,8 @@ FUNCTION AfxStrClipRight  (BYREF wszMainStr AS CONST WSTRING, BYVAL nCount AS LO
 | ---------- | ----------- |
 | *wszMainStr* | The main string. |
 | *nCount* | The number of characters to be removed. |
+
+---
 
 ### <a name="AfxStrCSet"></a>AfxStrCSet
 
@@ -130,6 +136,7 @@ FUNCTION AfxStrCSet (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrCSet("FreeBasic", 20, "*")
 ```
+---
 
 ### <a name="AfxStrDelete"></a>AfxStrDelete
 
@@ -151,6 +158,7 @@ FUNCTION AfxStrDelete (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrDelete("1234567890", 4, 3)   ' Returns 1237890"
 ```
+---
 
 ### <a name="wstrEscape"></a>wstrEscape
 
@@ -164,6 +172,7 @@ FUNCTION wstrEscape (BYREF wszStr AS CONST WSTRING) AS DWSTRING
 | ---------- | ----------- |
 | *wszStr* | The pattern string. |
 
+---
 
 ### <a name="AfxStrExtract"></a>AfxStrExtract
 
@@ -187,6 +196,7 @@ FUNCTION AfxStrExtract (BYVAL nStart AS LONG, _
 The following line returns "aba" (match on "cad")
 DIM cws AS CWSTR = AfxStrExtract(1, "abacadabra","cad")
 ```
+---
 
 ### AfxStrExtract (Overload)
 
@@ -210,6 +220,7 @@ The following lines return "text between parentheses" (text delimited by "(" and
 DIM cws AS CWSTR = "blah blah (text between parentheses) blah blah"
 PRINT AfxStrExtract(cws, "(", ")")
 ```
+---
 
 ### AfxStrExtract (Overload)
 
@@ -224,6 +235,8 @@ FUNCTION AfxStrExtract (BYVAL nStart AS LONG, BYREF wszMainStr AS CONST WSTRING,
 | *wszMainStr* | The main string. |
 | *wszDelim1* | The first delimiter. |
 | *wszDelim2* | The second delimiter. |
+
+---
 
 ### <a name="AfxStrExtractI"></a>AfxStrExtractI
 
@@ -247,6 +260,8 @@ FUNCTION AfxStrExtractI (BYVAL nStart AS LONG, _
 The following line returns "aba" (match on "CaD")
 DIM cws AS CWSTR = AfxStrExtractI(1, "abacadabra","CaD")
 ```
+---
+
 ### <a name="AfxStrExtractAny"></a>AfxStrExtractAny
 
 Extracts characters from a string up to (but not including) a group of characters. Case sensitive.
@@ -269,6 +284,8 @@ FUNCTION AfxStrExtractAny (BYVAL nStart AS LONG, _
 The following line returns "aba" (match on "c")
 DIM cws AS CWSTR = AfxStrExtractAny(1, "abacadabra","cd")
 ```
+---
+
 ### <a name="AfxStrExtractAnyI"></a>AfxStrExtractAnyI
 
 Extracts characters from a string up to (but not including) a group of characters. Case insensitive.
@@ -291,6 +308,7 @@ FUNCTION AfxStrExtractAnyI (BYVAL nStart AS LONG, _
 The following line returns "aba" (match on "c")
 DIM cws AS CWSTR = AfxStrExtractAnyI(1, "abacadabra","Cd")
 ```
+---
 
 ### <a name="AfxStrFormatByteSize"></a>AfxStrFormatByteSize
 
@@ -304,6 +322,8 @@ FUNCTION AfxStrFormatByteSize (BYVAL ull AS ULONGLONG) AS CWSTR
 | ---------- | ----------- |
 | *ull* | The numeric value to be converted. |
 
+---
+
 ### <a name="AfxStrFormatKBSize"></a>AfxStrFormatKBSize
 
 Converts a numeric value into a string that represents the number expressed as a size value in kilobytes.
@@ -315,6 +335,8 @@ FUNCTION AfxStrFormatKBSize (BYVAL ull AS ULONGLONG) AS CWSTR
 | Parameter  | Description |
 | ---------- | ----------- |
 | *ull* | The numeric value to be converted. |
+
+---
 
 ### <a name="AfxStrFromTimeInterval"></a>AfxStrFromTimeInterval
 
@@ -340,6 +362,8 @@ Some examples for *digits*:
 | 74000 | 2 | 1 min 10 sec |
 | 74000 | 2 | 1 min |
 
+---
+
 ### <a name="AfxStrInsert"></a>AfxStrInsert
 
 Inserts a string at a specified position within another string expression.
@@ -360,6 +384,7 @@ FUNCTION AfxStrInsert (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrInsert("1234567890", "--", 6)   ' Returns "123456--7890"
 ```
+---
 
 ### <a name="AfxStrJoin"></a>AfxStrJoin
 
@@ -390,6 +415,8 @@ PRINT cws   ' ouput: One,Two,Three
 ```
 **Include file**: CSafeArray.inc
 
+---
+
 ### <a name="AfxStrLCase"></a>AfxStrLCase
 
 Returns a lowercased version of a string.
@@ -417,6 +444,8 @@ The string conversion functions available in FreeBasic are not fully suitable fo
 #### Return value
 
 The lowercased string.
+
+---
 
 ### <a name="AfxStrLSet"></a>AfxStrLSet
 
@@ -460,6 +489,7 @@ FUNCTION AfxStrParse (BYREF wszMainStr AS CONST WSTRING, _
 DIM cws AS CWSTR = AfxStrParse("one,two,three", 2)   ' Returns "two"
 DIM cws AS CWSTR = AfxStrParse("one;two,three", 1, ";")   ' Returns "one"
 ```
+---
 
 ### <a name="AfxStrParseAny"></a>AfxStrParseAny 
 
@@ -481,6 +511,7 @@ FUNCTION AfxStrParse (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrParseAny("1;2,3", 2, ",;")   ' Returns "2"
 ```
+---
 
 ### <a name="AfxStrParseCount"></a>AfxStrParseCount 
 
@@ -501,6 +532,7 @@ FUNCTION AfxStrParseCount (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM nCount AS LONG = AfxStrParseCount("one,two,three", ",")   ' Returns 3
 ```
+---
 
 ### <a name="AfxStrParseCountAny"></a>AfxStrParseCountAny 
 
@@ -521,6 +553,7 @@ FUNCTION AfxStrParseCountAny (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM nCount AS LONG = AfxStrParseCountAny("1;2,3", ",;")   ' Returns 3
 ```
+---
 
 ### <a name="AfxStrPathName"></a>AfxStrPathName 
 
@@ -542,6 +575,8 @@ FUNCTION AfxStrPathName (BYREF wszOption AS CONST WSTRING, BYREF wszFileSpec AS 
 | **EXTN** | Returns the extension portion of the path/file name. That is the last period (.) in the string plus the text to the right of it. |
 | **NAMEX** | Returns the name and the extension parts combined. |
 
+---
+
 ### <a name="AfxStrRemain"></a>AfxStrRemain
 
 Returns the portion of a string following the first occurrence of a string. Case sensitive.
@@ -562,6 +597,7 @@ FUNCTION AfxStrRemain (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrRemain("Brevity is the soul of wit", "is ")   ' Returns "the soul of wit"
 ```
+---
 
 ### <a name="AfxStrRemainI"></a>AfxStrRemainI
 
@@ -583,6 +619,7 @@ FUNCTION AfxStrRemainI (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrRemain("Brevity is the soul of wit", "Is ")   ' Returns "the soul of wit"
 ```
+---
 
 ### <a name="AfxStrRemainAny"></a>AfxStrRemainAny
 
@@ -604,6 +641,7 @@ FUNCTION AfxStrRemainAny (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrRemainAny("I think, therefore I am", ",")   ' Returns " therefore I am"
 ```
+---
 
 ### <a name="AfxStrRemainAnyI"></a>AfxStrRemainAnyI
 
@@ -625,6 +663,7 @@ FUNCTION AfxStrRemainAnyI (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrRemainAnyI("I think, therefore I am", "E")   ' -> "refore I am"
 ```
+---
 
 ### <a name="AfxStrRemove"></a>AfxStrRemove
 
@@ -644,6 +683,7 @@ FUNCTION AfxStrRemove (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS C
 ```
 DIM cws AS CWSTR = AfxStrRemove("Hello World. Welcome to the Freebasic World", "World")
 ```
+---
 
 ### AfxStrRemove (Overload)
 
@@ -673,6 +713,7 @@ DIM cws AS CWSTR = AfxStrRemove(cwsText, "(", ")")   ' Returns "blah blah  blah 
 DIM cwsText AS CWSTR = "As Long var1(34), var2(  73 ), var3(any)"
 DIM cws AS CWSTR = AfxStrRemove(cwsText, "(", ")", TRUE)   ' Returns "As Long var1, var2, var3"
 ```
+---
 
 ### AfxStrRemove (Overload)
 
@@ -698,6 +739,7 @@ FUNCTION AfxStrRemove (BYVAL nStart AS LONG = 1, BYREF wszMainStr AS CONST WSTRI
 DIM cwsText AS CWSTR = "blah blah (text beween parentheses) blah blah"
 DIM cws AS CWSTR = AfxStrRemove(cwsText, "(", ")")   ' Returns "blah blah  blah blah"
 ```
+---
 
 ### <a name="AfxStrRemoveI"></a>AfxStrRemoveI
 
@@ -717,6 +759,7 @@ FUNCTION AfxStrRemoveI (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS 
 ```
 AfxStrRemoveI("Hello World. Welcome to the Freebasic World", "world")
 ```
+---
 
 ### <a name="AfxStrRemoveAny"></a>AfxStrRemoveAny
 
@@ -736,6 +779,7 @@ FUNCTION AfxStrRemoveAny (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr A
 ```
 DIM cws AS CWSTR = AfxStrRemoveAny("abacadabra", "bac")   ' -> "dr"
 ```
+---
 
 ### <a name="AfxStrRemoveAnyI"></a>AfxStrRemoveAnyI
 
@@ -755,6 +799,7 @@ FUNCTION AfxStrRemoveAnyI (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr 
 ```
 DIM cws AS CWSTR = AfxStrRemoveAnyI("abacadabra", "BaC")   ' -> "dr"
 ```
+---
 
 ### <a name="AfxStrRepeat"></a>AfxStrRepeat
 
@@ -774,6 +819,7 @@ FUNCTION AfxStrRepeat (BYVAL nCount AS LONG, BYREF wszStr AS CONST WSTRING) AS C
 ```
 DIM cws AS CWSTR = AfxStrRepeat(5, "Paul")
 ```
+---
 
 ### <a name="AfxStrReplace"></a>AfxStrReplace
 
@@ -795,6 +841,7 @@ FUNCTION AfxStrReplace (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrReplace("Hello World", "World", "Earth")   ' Returns "Hello Earth"
 ```
+---
 
 ### <a name="AfxStrReplaceI"></a>AfxStrReplaceI
 
@@ -816,6 +863,7 @@ FUNCTION AfxStrReplaceI (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrReplaceI("Hello world", "World", "Earth")   ' -> "Hello Earth"
 ```
+---
 
 ### <a name="AfxStrReplaceAny"></a>AfxStrReplaceAny
 
@@ -837,6 +885,7 @@ FUNCTION AfxStrReplaceAny  (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrReplaceAny("abacadabra", "bac", "*")   ' -> *****d**r*
 ```
+---
 
 ### <a name="AfxStrReplaceAnyI"></a>AfxStrReplaceAnyI
 
@@ -858,6 +907,7 @@ FUNCTION AfxStrReplaceAnyI  (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrReplaceAnyI("abacadabra", "BaC", "*")   ' -> *****d**r*
 ```
+---
 
 ### <a name="AfxStrRetain"></a>AfxStrRetain
 
@@ -877,6 +927,7 @@ FUNCTION AfxStrRetain (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS C
 ```
 DIM cws AS CWSTR = AfxStrRetain("abacadabra","b")   ' -> "bb"
 ```
+---
 
 ### <a name="AfxStrRetainI"></a>AfxStrRetainI
 
@@ -896,6 +947,7 @@ FUNCTION AfxStrRetainI (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS 
 ```
 DIM cws AS CWSTR = AfxStrRetainI("abacadabra","B")   ' -> "bb"
 ```
+---
 
 ### <a name="AfxStrRetainAny"></a>AfxStrRetainAny
 
@@ -915,6 +967,7 @@ FUNCTION AfxStrRetainAny (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr A
 ```
 DIM cws AS CWSTR = AfxStrRetainAny("<p>1234567890<ak;lk;l>1234567890</p>", "<;/p>")
 ```
+---
 
 ### <a name="AfxStrRetainAnyI"></a>AfxStrRetainAnyI
 
@@ -934,6 +987,7 @@ FUNCTION AfxStrRetainAnyI (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr 
 ```
 DIM cws AS CWSTR = AfxStrRetainAnyI("<p>1234567890<ak;lk;l>1234567890</p>", "<;/P>")
 ```
+---
 
 ### <a name="AfxStrReverse"></a>AfxStrReverse
 
@@ -952,6 +1006,7 @@ FUNCTION AfxStrReverse (BYREF wszMainStr AS CONST WSTRING) AS CWSTR
 ```
 DIM cws AS CWSTR = AfxStrReverse("garden")   ' Returns "nedrag"
 ```
+---
 
 ### <a name="AfxStrRSet"></a>AfxStrRSet
 
@@ -973,6 +1028,7 @@ FUNCTION AfxStrRSet (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrRSet("FreeBasic", 20, "*")
 ```
+---
 
 ### <a name="AfxStrShrink"></a>AfxStrShrink
 
@@ -996,6 +1052,7 @@ This function creates a string with consecutive words separated by a consistent 
 ```
 DIM cws AS CWSTR = AfxStrShrink(",,, one , two     three, four,", " ,")  ' Returns "one two three four"
 ```
+---
 
 ### <a name="AfxStrSplit"></a>AfxStrSplit
 
@@ -1025,6 +1082,8 @@ NEXT
 ```
 **Include file**: CSafeArray.inc
 
+---
+
 ### <a name="AfxStrSpn"></a>AfxStrSpn
 
 Returns the length of the initial portion of a string which consists only of characters that are part of a specified set of characters.
@@ -1046,6 +1105,7 @@ DIM wszSet AS WSTRING * 260 = "1234567890"
 DIM n AS LONG = StrSpnW(@wszText, @wszSet)
 printf(!"The initial number has %d digits.\n", n)
 ```
+---
 
 ### <a name="AfxStrTally"></a>AfxStrTally
 
@@ -1070,6 +1130,7 @@ The number of occurrences of *wszMatchStr* in *wszMainStr*.
 ```
 DIM nCount AS LONG = AfxStrTally("abacadabra", "ab")   ' Returns 2
 ```
+---
 
 ### <a name="AfxStrTallyI"></a>AfxStrTallyI
 
@@ -1094,6 +1155,7 @@ The number of occurrences of *wszMatchStr* in *wszMainStr*.
 ```
 DIM nCount AS LONG = AfxStrTallyI("abacadabra", "Ab")   ' -> 2
 ```
+---
 
 ### <a name="AfxStrTallyAny"></a>AfxStrTallyAny
 
@@ -1118,6 +1180,7 @@ The number of occurrences of *wszMatchStr* in *wszMainStr*.
 ```
 DIM nCount AS LONG = AfxStrTallyAny("abacadabra", "bac")   ' -> 8
 ```
+---
 
 ### <a name="AfxStrTallyAnyI"></a>AfxStrTallyAnyI
 
@@ -1141,6 +1204,7 @@ The number of occurrences of *wszMatchStr* in *wszMainStr*.
 ```
 DIM nCount AS LONG = AfxStrTallyAnyI("abacadabra", "bAc")   ' -> 8
 ```
+---
 
 ### <a name="AfxStrUCase"></a>AfxStrUCase
 
@@ -1173,6 +1237,8 @@ AfxStrLCase("KARIŞIKLIĞI", "tr-TR")
 #### Return value
 
 The uppercased string.
+
+---
 
 ### <a name="AfxStrUnWrap"></a>AfxStrUnWrap
 
@@ -1209,6 +1275,7 @@ AfxStrUnWrap("<Paul>", "<", ">") results in Paul
 AfxStrUnWrap("'Paul'", "'") results in Paul
 AfxStrUnWrap("""Paul""") results in Paul
 ```
+---
 
 ### <a name="AfxStrVerify"></a>AfxStrVerify
 
@@ -1238,6 +1305,8 @@ DIM nCount AS LONG = AfxStrVerify(5, "123.65,22.5", "0123456789")   ' Returns 7
 
 Returns 7 since 5 starts it past the first non-digit "." at position 4.
 
+---
+
 ### <a name="AfxStrVerifyI"></a>AfxStrVerifyI
 
 Determine whether each character of a string is present in another string. Case insensitive.
@@ -1261,6 +1330,7 @@ Returns zero if each character in wszMainStr is present in *wszMatchStr*; otherw
 ```
 DIM nCount AS LONG = AfxStrVerifyI(5, "123.65abcx22.5", "0123456789ABC")   ' -> 10
 ```
+---
 
 ### <a name="AfxStrWrap"></a>AfxStrWrap
 
@@ -1297,6 +1367,7 @@ AfxStrWrap("Paul", "<", ">") results in <Paul>
 AfxStrWrap("Paul", "'") results in 'Paul'
 AfxStrWrap("Paul") results in "Paul"
 ```
+---
 
 ### <a name="AfxBase64DecodeA"></a>AfxBase64DecodeA
 
@@ -1335,10 +1406,11 @@ DIM cwsOut AS CWSTR = CWSTR(AfxBase64DecodeA(s), CP_UTF8)
 
 or
 
-````
+```
 DIM cwsOut AS CWSTR
 cws.utf8 = AfxBase64DecodeA(s)
-````
+```
+---
 
 ### <a name="AfxBase64DecodeW"></a>AfxBase64DecodeW
 
@@ -1361,6 +1433,8 @@ The decoded string on success, or a null string on failure.
 Base64 is a group of similar encoding schemes that represent binary data in an ASCII string format by translating it into a radix-64 representation. The Base64 term originates from a specific MIME content transfer encoding.
 
 Base64 encoding schemes are commonly used when there is a need to encode binary data that needs be stored and transferred over media that are designed to deal with textual data. This is to ensure that the data remains intact without modification during transport. Base64 is used commonly in a number of applications including email via MIME, and storing complex data in XML.
+
+---
 
 ### <a name="AfxBase64EncodeA"></a>AfxBase64EncodeA
 
@@ -1403,6 +1477,7 @@ or
 DIM cwsOut AS CWSTR
 cws.utf8 = AfxBase64DecodeA(s)
 ````
+---
 
 ### <a name="AfxBase64EncodeW"></a>AfxBase64EncodeW
 
@@ -1425,6 +1500,8 @@ The encoded string on succeess, or a null string on failure.
 Base64 is a group of similar encoding schemes that represent binary data in an ASCII string format by translating it into a radix-64 representation. The Base64 term originates from a specific MIME content transfer encoding.
 
 Base64 encoding schemes are commonly used when there is a need to encode binary data that needs be stored and transferred over media that are designed to deal with textual data. This is to ensure that the data remains intact without modification during transport. Base64 is used commonly in a number of applications including email via MIME, and storing complex data in XML.
+
+---
 
 ### <a name="AfxCryptBinaryToString"></a>AfxCryptBinaryToString
 
@@ -1490,6 +1567,8 @@ If the function fails, it returns zero (FALSE).
 #### Remarks
 
 With the exception of when **CRYPT_STRING_BINARY** encoding is used, all strings are appended with a new line sequence. By default, the new line sequence is a CR/LF pair (0x0D/0x0A). If the *dwFlags* parameter contains the **CRYPT_STRING_NOCR** flag, then the new line sequence is a LF character (0x0A). If the *dwFlags* parameter contains the **CRYPT_STRING_NOCRLF** flag, then no new line sequence is appended to the string.
+
+---
 
 ### <a name="AfxCryptStringToBinary"></a>AfxCryptStringToBinary
 

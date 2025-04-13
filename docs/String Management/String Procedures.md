@@ -1436,7 +1436,6 @@ FUNCTION wstrScanForSurrogates( _
    BYVAL nChars AS LONG, _
    BYVAL searchBrokenOnly AS BOOLEAN = TRUE) AS LONG
 ``
-
 #### Result code
 
 Returns -1 if no surrogates are found or the zero-based position of the first broken surrogates.

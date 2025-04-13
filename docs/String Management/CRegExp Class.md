@@ -58,14 +58,14 @@ With regular expressions, you can:
 
 ---
 
-## <a name="geterrorinfo"></a>GetErrorInfo
+### <a name="geterrorinfo"></a>GetErrorInfo
 
 Returns a localized description of the specified error code. If the error is omited, it will return the value returned by the Windows API function **GetLastError**.
 ```
 PRIVATE FUNCTION GetErrorInfo (BYVAL nError AS LONG = -1) AS DWSTRING
 ```
 
-## <a name="getlastresult"></a>GetLastResult
+### <a name="getlastresult"></a>GetLastResult
 
 Returns the last result code
 ```
@@ -75,7 +75,7 @@ END FUNCTION
 ```
 ---
 
-## <a name="setresult"></a>SetResult
+### <a name="setresult"></a>SetResult
 
 Sets the last result code.
 ```

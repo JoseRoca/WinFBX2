@@ -974,7 +974,7 @@ wstrUnWrap("""Paul""") results in Paul
 ```
 ---
 
-### <a name="wstrverify"></a>wstVerify
+### <a name="wstrverify"></a>wstrVerify
 
 Determine whether each character of a string is present in another string.
 

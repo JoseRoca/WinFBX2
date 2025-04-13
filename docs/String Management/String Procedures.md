@@ -17,7 +17,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrDelete](#wstrdelete) | Deletes a specified number of characters from a string expression. |
 | [wstrEscape](#wstrescape) | Escapes any potential regex syntax characters in a string. |
 | [wstrExtract](#wstrextract) | Extracts characters from a string up to (but not including) the specified matching. |
-| [AfxStrInsert](#AfxStrInsert) | Inserts a string at a specified position within another string expression. |
+| [wstrInsert](#wstrinsert) | Inserts a string at a specified position within another string expression. |
 | [wstrIsNumeric](#wstrisnumeric) | Retuns True if the passed string is muneric. |
 | [wstrJoin](#wstrjoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
@@ -288,13 +288,13 @@ Some examples for *digits*:
 
 ---
 
-### <a name="AfxStrInsert"></a>AfxStrInsert
+### <a name="wstrinsert"></a>wstrInsert
 
 Inserts a string at a specified position within another string expression.
 
 ```
-FUNCTION AfxStrInsert (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszInsertString AS CONST WSTRING, BYVAL nPosition AS LONG) AS CWSTR
+FUNCTION wstrInsert (BYREF wszSourceString AS CONST WSTRING, BYREF wszInsertString AS CONST WSTRING, _
+   BYVAL nPosition AS LONG) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -306,7 +306,7 @@ FUNCTION AfxStrInsert (BYREF wszMainStr AS CONST WSTRING, _
 #### Usage example
 
 ```
-DIM cws AS CWSTR = AfxStrInsert("1234567890", "--", 6)   ' Returns "123456--7890"
+DIM dws AS DWSTRING = strInsert("1234567890", "--", 6)
 ```
 ---
 

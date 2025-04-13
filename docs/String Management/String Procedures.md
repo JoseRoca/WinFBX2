@@ -22,7 +22,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrJoin](#wstrjoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
 | [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
-| [wstrLSetabs](#wstrlsetabs) | Left-aligns a string within the space of another string. |
+| [wstrLSetAbs](#wstrlsetabs) | Left-aligns a string within the space of another string. |
 | [wstrMCase](#wstrmcase) | Returns a mixed case version of its string argument. |
 | [AfxStrParse](#AfxStrParse) | Returns a delimited field from a string expression. |
 | [AfxStrParseAny](#AfxStrParseAny) | Returns a delimited field from a string expression. Supports more than one character for the delimiter. |

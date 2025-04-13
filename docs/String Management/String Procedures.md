@@ -50,7 +50,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrRSet](#AfxStrRSet) | Returns a string containing a right justified string. |
 | [AfxStrShrink](#AfxStrShrink) | Shrinks a string to use a consistent single character delimiter. |
 | [AfxStrSplit](#AfxStrSplit) | Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. |
-| [AfxStrSpn](#AfxStrSpn) | Returns the length of the initial portion of a string which consists only of characters that are part of a specified set of characters. |
+| [wstrSpn](#wstrspn) | Returns the index of the initial portion of a string which consists only of characters that are part of a specified set of characters. |
 | [AfxStrTally](#AfxStrTally) | Count the number of occurrences of a string within a string. Case sensitive. |
 | [AfxStrTallyI](#AfxStrTallyI) | Count the number of occurrences of a string within a string. Case insensitive. |
 | [AfxStrTallyAny](#AfxStrTallyAny) | Count the number of occurrences of a list of characters within a string. Case sensitive. |
@@ -1112,27 +1112,33 @@ NEXT
 
 ---
 
-### <a name="AfxStrSpn"></a>AfxStrSpn
+### <a name="wstrspn"></a>wstrSpn
 
-Returns the length of the initial portion of a string which consists only of characters that are part of a specified set of characters.
+Returns the index of the initial portion of a string which consists only of characters that are part of a specified set of characters.
 
 ```
-FUNCTION AfxStrSpn (BYREF wszText AS CONST WSTRING, BYREF wszSet AS CONST WSTRING) AS LONG
+FUNCTION wstrSpn (BYREF wszText AS CONST WSTRING, BYREF wszSet AS CONST WSTRING, BYVAL IgnoreCase AS LONG = TRUE) AS LONG
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *wszText* | The string to be scanned. |
 | *wszSet* | The set of characters for which to search. |
+| *IgnoreCase* | If False, the serach is case-sensitive; otherwise, it is case-insensitive. |
 
 #### Usage example
 
 ```
-DIM wszText AS WSTRING * 260 = "129th"
-DIM wszSet AS WSTRING * 260 = "1234567890"
+DIM wszText AS DWSTRING = "129th"
+DIM wszSet AS DWSTRING = "1234567890"
 DIM n AS LONG = StrSpnW(@wszText, @wszSet)
-printf(!"The initial number has %d digits.\n", n)
+PRINT "The initial number has " & WSTR(n) & " digits"   ' Output: 3
 ```
+
+#### Remarks
+
+The C **wcsspn** function can also be used.
+
 ---
 
 ### <a name="AfxStrTally"></a>AfxStrTally

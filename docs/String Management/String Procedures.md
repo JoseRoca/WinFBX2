@@ -18,6 +18,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrEscape](#wstrescape) | Escapes any potential regex syntax characters in a string. |
 | [wstrExtract](#wstrextract) | Extracts characters from a string up to (but not including) the specified matching. |
 | [AfxStrInsert](#AfxStrInsert) | Inserts a string at a specified position within another string expression. |
+| [wstrIsNumeric](#wstrisnumeric) | Retuns True if the passed string is muneric. |
 | [AfxStrJoin](#AfxStrJoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
 | [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
@@ -307,6 +308,33 @@ FUNCTION AfxStrInsert (BYREF wszMainStr AS CONST WSTRING, _
 ```
 DIM cws AS CWSTR = AfxStrInsert("1234567890", "--", 6)   ' Returns "123456--7890"
 ```
+---
+
+### <a name="wstrisnumeric"></a>wstrIsNumeric
+
+Retuns True if the passed string is muneric.
+
+```
+FUNCTION wstrIsNumeric (BYREF wszSourcestring AS CONST WSTRING) AS BOOLEAN
+```
+#### Example
+
+```
+wstrIsNumeric("1.2345678901234567e+029")   ' Output: true
+```
+Explanation of the pattern used: "^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$"
+^ ? Anchors the match to the start of the string.
+[\+\-]? ? Matches an optional plus (+) or minus (-) sign at the beginning (for signed numbers).
+\d* ? Matches zero or more digits before the decimal point (allows integers or leading zero suppression).
+\.? ? Matches an optional decimal point (if present, allows floating-point numbers).
+\,? ? Matches an optional decimal point (in Spain, a comma is used instead of a colon).
+\d+ ? Matches at least one digit after the decimal (ensuring valid numeric values).
+(?:[Ee][\+\-]?\d+)? ? Handles scientific notation:
+  E or e for exponent notation.
+  [\+\-]? for optional sign after the exponent indicator.
+  \d+ ensures at least one digit in the exponent.
+$ ? Anchors the match to the end of the string, ensuring a full numeric match.
+
 ---
 
 ### <a name="AfxStrJoin"></a>AfxStrJoin

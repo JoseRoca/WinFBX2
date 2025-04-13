@@ -54,7 +54,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrTallyI](#AfxStrTallyI) | Count the number of occurrences of a string within a string. Case insensitive. |
 | [AfxStrTallyAny](#AfxStrTallyAny) | Count the number of occurrences of a list of characters within a string. Case sensitive. |
 | [AfxStrTallyAnyI](#AfxStrTallyAnyI) | Count the number of occurrences of a list of characters within a string. Case insensitive. |
-| [AfxStrUCase](#AfxStrUCase) | Returns an uppercased version of a string. |
+| wstrUCase](#wstrUCase) | Returns an uppercased version of a string. |
 | [AfxStrVerify](#AfxStrVerify) | Determine whether each character of a string is present in another string. Case sensitive. |
 | [AfxStrVerifyI](#AfxStrVerifyI) | Determine whether each character of a string is present in another string. Case insensitive. |
 | [AfxStrWrap](#AfxStrWrap) | Adds paired characters to the beginning and end of a string. |
@@ -1206,19 +1206,19 @@ DIM nCount AS LONG = AfxStrTallyAnyI("abacadabra", "bAc")   ' -> 8
 ```
 ---
 
-### <a name="AfxStrUCase"></a>AfxStrUCase
+### <a name="wstrUCase"></a>wstrUCase
 
 Returns an uppercased version of a string.
 
 ```
-FUNCTION AfxStrUCase (BYVAL pwszStr AS WSTRING PTR, _
+FUNCTION wstrUCase (BYVAL pwszStr AS WSTRING PTR, _
    BYVAL pwszLocaleName AS WSTRING PTR = LOCALE_NAME_USER_DEFAULT, _
    BYVAL dwMapFlags AS DWORD = 0) AS CWSTR
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *pwszStr* | The main string. |
+| *pwszStr* | The string to uppercase. |
 | *pwszLocaleName* | Optional. Pointer to a locale name or one of these pre-defined values: LOCALE_NAME_INVARIANT, LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_NAME_USER_DEFAULT |
 | *dwMapFlags* | Optional. Flag specifying the type of transformation to use during string mapping or the type of sort key to generate. |
 
@@ -1231,8 +1231,8 @@ For a complete list see: [LCMapStringEx function](https://docs.microsoft.com/en-
 The string conversion functions available in FreeBasic are not fully suitable for some languages. For example, the Turkish word "karışıklığı" is uppercased as "KARıŞıKLıĞı" instead of "KARIŞIKLIĞI", and "KARIŞIKLIĞI" is lowercased to "karişikliği" instead of "karışıklığı". Notice the "ı", that is not an "i".
 
 For Turkey, use:
-AfxStrUcase("karışıklığı", "tr-TR")
-AfxStrLCase("KARIŞIKLIĞI", "tr-TR")
+wstrUcase("karışıklığı", "tr-TR")
+wstrLCase("KARIŞIKLIĞI", "tr-TR")
 
 #### Return value
 

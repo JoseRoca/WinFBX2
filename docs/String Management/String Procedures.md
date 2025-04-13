@@ -16,10 +16,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrCSetAbs](#wstrcsetabs) | Returns a string containing a centered string within the space of another string. |
 | [AfxStrDelete](#AfxStrDelete) | Deletes a specified number of characters from a string expression. |
 | [wstrEscape](#wstrescape) | Escapes any potential regex syntax characters in a string. |
-| [AfxStrExtract](#AfxStrExtract) | Extracts characters from a string up to (but not including) the specified matching. Case sensitive. |
-| [AfxStrExtractI](#AfxStrExtractI) | Extracts characters from a string up to (but not including) the specified matching string. Case insensitive. |
-| [AfxStrExtractAny](#AfxStrExtractAny) | Extracts characters from a string up to (but not including) any character in the matching string. Case sensitive. |
-| [AfxStrExtractAnyI](#AfxStrExtractAnyI) | Extracts characters from a string up to (but not including) any character in the matching string. Case insensitive. |
+| [wstrExtract](#wstrextract) | Extracts characters from a string up to (but not including) the specified matching. |
 | [AfxStrInsert](#AfxStrInsert) | Inserts a string at a specified position within another string expression. |
 | [AfxStrJoin](#AfxStrJoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
@@ -190,139 +187,60 @@ FUNCTION wstrEscape (BYREF wszStr AS CONST WSTRING) AS DWSTRING
 
 ---
 
-### <a name="AfxStrExtract"></a>AfxStrExtract
+### <a name="wstrExtract"></a>wstrExtract
 
-Extracts characters from a string up to (but not including) a string. Case sensitive.
-
-```
-FUNCTION AfxStrExtract (BYVAL nStart AS LONG, _
-   BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *nStart* | The one-based starting position. |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The string to be searched. |
-
-#### Usage example
+Extracts characters from a string up to (but not including) a string.
 
 ```
-The following line returns "aba" (match on "cad")
-DIM cws AS CWSTR = AfxStrExtract(1, "abacadabra","cad")
-```
----
-
-### AfxStrExtract (Overload)
-
-```
-FUNCTION AfxStrExtract (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszDelim1 AS WSTRING, BYREF wszDelim2 AS WSTRING) AS CWSTR
-```
-
-Extracts the portion of a string following the occurrence of a specified delimiter up to the second delimiter. If one or both of the delimiters aren't found, it returns an empty string.
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *wszDelim1* | The first delimiter. |
-| *wszDelim2* | The second delimiter. |
-
-#### Usage example
-
-```
-The following lines return "text between parentheses" (text delimited by "(" and ")")
-DIM cws AS CWSTR = "blah blah (text between parentheses) blah blah"
-PRINT AfxStrExtract(cws, "(", ")")
-```
----
-
-### AfxStrExtract (Overload)
-
-```
-FUNCTION AfxStrExtract (BYVAL nStart AS LONG, BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszDelim1 AS WSTRING, BYREF wszDelim2 AS WSTRING) AS CWSTR
+UNCTION wstrExtract (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
+   BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+FUNCTION wstrExtract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, _
+   BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *nStart* | The one-based starting position. |
-| *wszMainStr* | The main string. |
-| *wszDelim1* | The first delimiter. |
-| *wszDelim2* | The second delimiter. |
+| *nStart* | The one-based starting position to begin the search. |
+| *wszSourceString* | The source string. |
+| *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszMainStr*, all of *wszMainStr* is returned intact. |
+| *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
----
+*nStart* is the optional starting position to begin extracting. If nStart is not specified, it will start at position 1. If start is zero, or beyond the length of *wszSourceString*, a nul string is returned. If start is negative, the starting position is counted from right to left: if -1, the search begins at the last character; if -2, the second to last, and so forth.
 
-### <a name="AfxStrExtractI"></a>AfxStrExtractI
+#### Overloaded methods:
 
-Extracts characters from a string up to (but not including) a string. Case insensitive.
-
+Returns the portion of a string following the occurrence of a specified delimiter up to the second delimiter. If no match is found, an empty string is returned. If *nStart* is 0 or greater than the length of *wszSourceString*, an empty string is returned.
 ```
-FUNCTION AfxStrExtractI (BYVAL nStart AS LONG, _
-   BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *nStart* | The one-based starting position. |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The string to be searched. |
-
-#### Usage example
-
-```
-The following line returns "aba" (match on "CaD")
-DIM cws AS CWSTR = AfxStrExtractI(1, "abacadabra","CaD")
-```
----
-
-### <a name="AfxStrExtractAny"></a>AfxStrExtractAny
-
-Extracts characters from a string up to (but not including) a group of characters. Case sensitive.
-
-```
-FUNCTION AfxStrExtractAny (BYVAL nStart AS LONG, _
-   BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
+FUNCTION wstrExtract OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF leftDelimiter AS CONST WSTRING, _
+   BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+FUNCTION wstrExtract OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, _
+   BYREF leftDelimiter AS CONST WSTRING, BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *nStart* | The one-based starting position. |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The characters to be searched individually. A match on any one of which will cause the extract operation to be performed up to that character. |
+| *nStart* | The one-based starting position to begin the search. |
+| *wszSourceString* | The source string. |
+| *leftDelimiter* | The left delimiter. |
+| *rightDelimiter* | The right delimiter. |
+| *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
-#### Usage example
-
-```
-The following line returns "aba" (match on "c")
-DIM cws AS CWSTR = AfxStrExtractAny(1, "abacadabra","cd")
-```
----
-
-### <a name="AfxStrExtractAnyI"></a>AfxStrExtractAnyI
-
-Extracts characters from a string up to (but not including) a group of characters. Case insensitive.
+#### Usage examples
 
 ```
-FUNCTION AfxStrExtractAnyI (BYVAL nStart AS LONG, _
-   BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
+DIM dws AS DWSTRING = "abacadabra"
+PRINT wstrExtract(dws, "cad")
+' Output: aba - match on "cad"
 ```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *nStart* | The one-based starting position. |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The characters to be searched individually. A match on any one of which will cause the extract operation to be performed up to that character. |
-
-#### Usage example
-
+wszMatchStr can specify a list of single characters, enclosed between [], to be searched for individually, a match on any one of which will cause the extract operation to be performed up to that character.
 ```
-The following line returns "aba" (match on "c")
-DIM cws AS CWSTR = AfxStrExtractAnyI(1, "abacadabra","Cd")
+DIM dws AS DWSTRING = "abacadabra"
+PRINT wstrExtract(dws, "[dr]")
+' Output: abaca - match on "d"
+```
+```
+DIM dwsText AS DWSTRING = "blah blah text between parentheses) blah blah"
+PRINT wstrExtract(dwsText, "(", ")")   ' Output: "text between parentheses"
 ```
 ---
 
@@ -699,12 +617,12 @@ FUNCTION wstrRemove (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRIN
 ```
 | Parameter  | Description |
 | ---------- | ----------- |
-| *nStart* | The starting position to begin the search. |
+| *nStart* | The one-based starting position to begin the search. |
 | *wszSourceString* | The source string. |
 | *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszMainStr*, all of *wszMainStr* is returned intact. |
 | *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
-#### Overloaded functions:
+#### Overloaded methods:
 
 Return a copy of a string with a substring enclosed between the specified delimiters removed.
 

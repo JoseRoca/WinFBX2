@@ -709,6 +709,7 @@ FUNCTION wstrRetain (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchStrin
 | ---------- | ----------- |
 | *wszSourceString* | The source string. |
 | *wszMatchStr* | The string expression to be searched. |
+| *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
 #### Usage examples
 

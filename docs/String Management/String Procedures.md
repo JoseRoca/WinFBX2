@@ -22,8 +22,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrJoin](#wstrjoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
 | [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
-| [wstrLSetabs](#wstrlsetabd) | Left-aligns a string within the space of another string. |
-| [wstrRSetAbs](#wstrrsetbns) | Right-aligns a string within the space of another string. |
+| [wstrLSetabs](#wstrlsetabs) | Left-aligns a string within the space of another string. |
 | [wstrMCase](#wstrmcase) | Returns a mixed case version of its string argument. |
 | [AfxStrParse](#AfxStrParse) | Returns a delimited field from a string expression. |
 | [AfxStrParseAny](#AfxStrParseAny) | Returns a delimited field from a string expression. Supports more than one character for the delimiter. |
@@ -36,7 +35,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrRetain](#wstrretain) | Returns a string containing only the characters contained in a specified match string. |
 | [wstrReverse](#wstrreverse) | Reverses the contents of a string expression. |
 | [wstrRSet](#wstrrset) | Returns a string containing a right justified string. |
-| [wstrRSetAbs](#wstrrsetabs) | Returns a string containing a right justified within the space of another string. |
+| [wstrRSetAbs](#wstrrsetabs) | Right-aligns a string within the space of another string. |
 | [wstrShrink](#wstrshrink) | Shrinks a string to use a consistent single character delimiter. |
 | [wstrSplit](#wstrsplit) | Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. |
 | [wstrSpn](#wstrspn) | Returns the index of the initial portion of a string which consists only of characters that are part of a specified set of characters. |

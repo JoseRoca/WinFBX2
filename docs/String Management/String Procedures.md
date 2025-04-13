@@ -33,10 +33,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrRemainI](#AfxStrRemainI) | Returns the portion of a string following the first occurrence of a string. Case insensitive. |
 | [AfxStrRemainAny](#AfxStrRemainAny) | Returns the portion of a string following the first occurrence of a group of characters. Case sensitive. |
 | [AfxStrRemainAnyI](#AfxStrRemainAnyI) | Returns the portion of a string following the first occurrence of a group of characters. Case insensitive. |
-| [AfxStrRemove](#AfxStrRemove) | Returns a new string with substrings removed. Case sensitive. |
-| [AfxStrRemoveI](#AfxStrRemoveI) | Returns a new string with substrings removed. Case insensitive. |
-| [AfxStrRemoveAny](#AfxStrRemoveAny) | Returns a new string with characters removed. Case sensitive. |
-| [AfxStrRemoveAnyI](#AfxStrRemoveAnyI) | Returns a new string with characters removed. Case insensitive. |
+| [wstrRemove](#wstrremove) | Returns a new string with substrings removed. |
 | [AfxStrRepeat](#AfxStrRepeat) | Returns a string consisting of multiple copies of the specified string. |
 | [wstrReplace](#wstrreplace) | Replaces all the occurrences of a string with another string. |
 | [AfxStrRetain](#AfxStrRetain) | Returns a string containing only the characters contained in a specified match string. Case sensitive. |
@@ -690,139 +687,52 @@ DIM cws AS CWSTR = AfxStrRemainAnyI("I think, therefore I am", "E")   ' -> "refo
 ```
 ---
 
-### <a name="AfxStrRemove"></a>AfxStrRemove
+### <a name="wstrRemove"></a>wstrRemove
 
-Returns a new string with strings removed. Case sensitive.
+Returns a new string with strings removed.
 
 ```
-FUNCTION AfxStrRemove (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
+FUNCTION wstrRemove (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
+   BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+FUNCTION wstrRemove (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, _
+   BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
 ```
-
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *nStart* | The starting position to begin the search. |
+| *wszSourceString* | The source string. |
 | *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszMainStr*, all of *wszMainStr* is returned intact. |
+| *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
-#### Usage example
+#### Overloaded functions:
 
-```
-DIM cws AS CWSTR = AfxStrRemove("Hello World. Welcome to the Freebasic World", "World")
-```
----
-
-### AfxStrRemove (Overload)
-
-Returns a copy of a string with a substring enclosed between the specified delimiters removed. Case sensitive.
+Return a copy of a string with a substring enclosed between the specified delimiters removed.
 
 ```
-FUNCTION AfxStrRemove (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszDelim1 AS CONST WSTRING, BYREF wszDelim2 AS CONST WSTRING, _
-   BYVAL fRemoveAll AS BOOLEAN = FALSE) AS CWSTR
+FUNCTION wstrRemove (BYREF wszSourceString AS CONST WSTRING, BYREF leftDelimiter AS CONST WSTRING, _
+   BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, _
+   BYREF leftDelimiter AS CONST WSTRING, BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *wszDelim1* | The first delimiter |
-| *wszDelim2* | The second delimiter |
-| *fRemoveAll* | Recursively remove all the occurrences. |
+| *nStart* | The starting position to begin the search. |
+| *wszSourceString* | The source string. |
+| *leftDelimiter* | The left delimiter. |
+| *rightDelimiter* | The right delimiter. |
+| *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
 #### Usage examples
 
 ```
-DIM cwsText AS CWSTR = "blah blah (text between parentheses) blah blah"
-DIM cws AS CWSTR = AfxStrRemove(cwsText, "(", ")")   ' Returns "blah blah  blah blah"
+wstrRemove("Hello World. Welcome to the Freebasic World", "World")   'Output: "Hello . Welcome to the Freebasic"
+wstrRemove("abacadabra", "bac")        ' Output: "aaabra"
+wstrRemove("abacadabra", "[bac]")      ' Output: "dr"
 ```
-
 ```
-DIM cwsText AS CWSTR = "As Long var1(34), var2(  73 ), var3(any)"
-DIM cws AS CWSTR = AfxStrRemove(cwsText, "(", ")", TRUE)   ' Returns "As Long var1, var2, var3"
-```
----
-
-### AfxStrRemove (Overload)
-
-Returns a copy of a string with a substring enclosed between the specified delimiters removed. Case sensitive.
-
-```
-FUNCTION AfxStrRemove (BYVAL nStart AS LONG = 1, BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszDelim1 AS CONST WSTRING, BYREF wszDelim2 AS CONST WSTRING, _
-   BYVAL fRemoveAll AS BOOLEAN = FALSE) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *nStart* | Optional. The one-based starting position where to start the search. |
-| *wszMainStr* | The main string. |
-| *wszDelim1* | The first delimiter |
-| *wszDelim2* | The second delimiter |
-| *fRemoveAll* | Recursively remove all the occurrences. |
-
-#### Usage examples
-
-```
-DIM cwsText AS CWSTR = "blah blah (text beween parentheses) blah blah"
-DIM cws AS CWSTR = AfxStrRemove(cwsText, "(", ")")   ' Returns "blah blah  blah blah"
-```
----
-
-### <a name="AfxStrRemoveI"></a>AfxStrRemoveI
-
-Returns a new string with strings removed. Case insensitive.
-
-```
-FUNCTION AfxStrRemoveI (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszMainStr*, all of *wszMainStr* is returned intact. |
-
-#### Usage example
-
-```
-AfxStrRemoveI("Hello World. Welcome to the Freebasic World", "world")
-```
----
-
-### <a name="AfxStrRemoveAny"></a>AfxStrRemoveAny
-
-Returns a new string with characters removed. Case sensitive.
-
-```
-FUNCTION AfxStrRemoveAny (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszMainStr*, all of *wszMainStr* is returned intact. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrRemoveAny("abacadabra", "bac")   ' -> "dr"
-```
----
-
-### <a name="AfxStrRemoveAnyI"></a>AfxStrRemoveAnyI
-
-Returns a new string with characters removed. Case insensitive.
-
-```
-FUNCTION AfxStrRemoveAnyI (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszMainStr*, all of *wszMainStr* is returned intact. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrRemoveAnyI("abacadabra", "BaC")   ' -> "dr"
+DIM dwsText AS DWSTRING = "As Long var1(34), var2(  73 ), var3(any)"
+PRINT WstrRemove(19, dwsText, "(", ")", TRUE)   ' Returns "var2, var3"
 ```
 ---
 
@@ -868,72 +778,6 @@ FUNCTION wstrReplace (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchStri
 wstrReplace("Hello World", "World", "Earth")   ' Output: "Hello Earth"
 wstrReplace("abacadabra", "bac", "***")        ' Output: "a***adabra"
 wstrReplace("abacadabra", "[bac]", "*")        ' Output: "*****d**r*"
-```
----
-
-### <a name="AfxStrReplaceI"></a>AfxStrReplaceI
-
-Replaces all the occurrences of *wszMatchStr* in *wszMainstr* with the contents of *wszReplaceWith*. Case insensitive.
-
-```
-FUNCTION AfxStrReplaceI (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING, BYREF wszReplaceWith AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string from which you want to replace the specified string. |
-| *wszMatchStr* | The string expression to be replaced. |
-| *wszReplaceWith* | The replacement string. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrReplaceI("Hello world", "World", "Earth")   ' -> "Hello Earth"
-```
----
-
-### <a name="AfxStrReplaceAny"></a>AfxStrReplaceAny
-
-Replaces all the occurrences of any of the individual characters *wszMatchStr* in *wszMainstr* with the contents of *wszReplaceWith*. *wszReplaceWith* must be a single character (this function does not replace words; therefore, *wszMatchStr* will not shrink or grow). Case sensitive. 
-
-```
-FUNCTION AfxStrReplaceAny  (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING, BYREF wszReplaceWith AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string from which you want to replace the specified characters. |
-| *wszMatchStr* | The characters to be replaced. |
-| *wszReplaceWith* | The replacement character. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrReplaceAny("abacadabra", "bac", "*")   ' -> *****d**r*
-```
----
-
-### <a name="AfxStrReplaceAnyI"></a>AfxStrReplaceAnyI
-
-Replaces all the occurrences of any of the individual characters *wszMatchStr* in *wszMainstr* with the contents of *wszReplaceWith*. *wszReplaceWith* must be a single character (this function does not replace words; therefore, *wszMatchStr* will not shrink or grow). Case insensitive. 
-
-```
-FUNCTION AfxStrReplaceAnyI  (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING, BYREF wszReplaceWith AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string from which you want to replace the specified characters. |
-| *wszMatchStr* | The characters to be replaced. |
-| *wszReplaceWith* | The replacement character. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrReplaceAnyI("abacadabra", "BaC", "*")   ' -> *****d**r*
 ```
 ---
 

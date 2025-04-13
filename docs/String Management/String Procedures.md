@@ -432,7 +432,7 @@ DIM dws AS DWSTRING = wstrLSet("FreeBasic", 20, "*")
 
 ### <a name="wtrlsetabs"></a>wstrLSetAbs
 
-Left-aligns a string within the space of another string. If *wszStr* is empty, the function leaves the padding positions unchanged from their original content, rather than replacing them with spaces as LSET does. If *wszStr* is longer than result_var, wstrLSet truncates it from the right until it fits in the result string.
+Left-aligns a string within the space of another string. If *wszStr* is empty, the function leaves the padding positions unchanged from their original content, rather than replacing them with spaces as `LSET` does. If *wszStr* is longer than *wszSourceString*, **wstrLSet** truncates it from the right until it fits in the result string.
 
 ```
 FUNCTION wstrLSetAbs (BYREF wszSourceString AS CONST WSTRING, BYREF wszStr AS CONST WSTRING) AS DWSTRING
@@ -450,6 +450,7 @@ DIM dws AS DWSTRING = "NameBasic=SuperBasic"
 PRINT wstrLSetAbs(dws, "FreeBasic")  ' Output: FreeBasic=SuperBasic"
 ' Output: FreeBasic=SuperBasic"
 ```
+---
 
 ### <a name="wstrmcase"></a>wstrMCase
 
@@ -778,6 +779,27 @@ FUNCTION wstrRSet (BYREF wszSourceString AS CONST WSTRING, BYVAL nStringLength A
 DIM dws AS DWSTRING = wstrRSet("FreeBasic", 20, "*")
 ```
 ---
+
+
+### <a name="wtrrsetabs"></a>wstrRSetAbs
+
+Right-aligns a string within the space of another string. If *wszStr* is empty, the function leaves the padding positions unchanged from their original content, rather than replacing them with spaces as LSET does. If *wszStr* is longer than *wszSourceString*, **wstrLSet** truncates it from the right until it fits in the result string.
+
+```
+FUNCTION wstrLSetAbs (BYREF wszSourceString AS CONST WSTRING, BYREF wszStr AS CONST WSTRING) AS DWSTRING
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *wszSourceString* | The source string. |
+| *wszStr* | The string to be left aligned inside the source string. |
+
+#### Usage example
+
+```
+DIM dws AS DWSTRING = "NameBasic=NameBasic"
+PRINT wstrRSetAbs(dws, "FreeBasic")  ' Output: "NameBasic=FreeBasic"
+```
 
 ### <a name="wstrShrink"></a>wstrShrink
 

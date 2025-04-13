@@ -1456,3 +1456,5 @@ FUNCTION wstrChrW (BYVAL codepoint AS UInteger) AS DWSTRING
 #### Return value
 
 The resulting code point.
+
+---

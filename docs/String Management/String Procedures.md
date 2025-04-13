@@ -33,10 +33,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrRemove](#wstrremove) | Returns a new string with substrings removed. |
 | [AfxStrRepeat](#AfxStrRepeat) | Returns a string consisting of multiple copies of the specified string. |
 | [wstrReplace](#wstrreplace) | Replaces all the occurrences of a string with another string. |
-| [AfxStrRetain](#AfxStrRetain) | Returns a string containing only the characters contained in a specified match string. Case sensitive. |
-| [AfxStrRetainI](#AfxStrRetainI) | Returns a string containing only the characters contained in a specified match string. Case insensitive. |
-| [AfxStrRetainAny](#AfxStrRetainAny) | Returns a string containing only the characters contained in a specified group of characters. Case sensitive. |
-| [AfxStrRetainAnyI](#AfxStrRetainAnyI) | Returns a string containing only the characters contained in a specified group of characters. Case insensitive. |
+| [wstrRetain](#wstrretain) | Returns a string containing only the characters contained in a specified match string. |
 | [AfxStrReverse](#AfxStrReverse) | Reverses the contents of a string expression. |
 | [AfxStrRSet](#AfxStrRSet) | Returns a string containing a right justified string. |
 | [AfxStrShrink](#AfxStrShrink) | Shrinks a string to use a consistent single character delimiter. |
@@ -699,83 +696,39 @@ wstrReplace("abacadabra", "[bac]", "*")        ' Output: "*****d**r*"
 ```
 ---
 
-### <a name="AfxStrRetain"></a>AfxStrRetain
+### <a name="wstrRetain"></a>wstrRetain
 
-Returns a string containing only the characters contained in a specified match string. Case sensitive.
+Returns a string containing only the characters contained in a specified match string. If *wszMatchString* is an empty string, **strRetain** returns an empty string.
 
 ```
-FUNCTION AfxStrRetain (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
+FUNCTION wstrRetain (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
+   BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string from which you want to replace the specified string. |
+| *wszSourceString* | The source string. |
 | *wszMatchStr* | The string expression to be searched. |
 
-#### Usage example
+#### Usage examples
 
 ```
-DIM cws AS CWSTR = AfxStrRetain("abacadabra","b")   ' -> "bb"
+DIM dws AS DWSTRING = "abacadabra"
+dws = wstrRetain(dws, "B", TRUE)
+PRINT dws
+' Output: "bb"
 ```
----
-
-### <a name="AfxStrRetainI"></a>AfxStrRetainI
-
-Returns a string containing only the characters contained in a specified match string. Case insensitive.
-
 ```
-FUNCTION AfxStrRetainI (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
+DIM dws AS DWSTRING = "<p>1234567890<ak;lk;l>1234567890</p>"
+dws = wstrRetain(dws, "<;/p>", TRUE)
+PRINT dws
+' Output: "<p><;;></p>"
 ```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string from which you want to replace the specified string. |
-| *wszMatchStr* | The string expression to be searched. |
-
-#### Usage example
-
 ```
-DIM cws AS CWSTR = AfxStrRetainI("abacadabra","B")   ' -> "bb"
-```
----
-
-### <a name="AfxStrRetainAny"></a>AfxStrRetainAny
-
-Returns a string containing only the characters contained in a specified group of characters. Case sensitive.
-
-```
-FUNCTION AfxStrRetainAny (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string from which you want to replace the specified string. |
-| *wszMatchStr* |A list of single characters to be searched for individually. A match on any one of which will cause that character to be removed from the result. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrRetainAny("<p>1234567890<ak;lk;l>1234567890</p>", "<;/p>")
-```
----
-
-### <a name="AfxStrRetainAnyI"></a>AfxStrRetainAnyI
-
-Returns a string containing only the characters contained in a specified group of characters. Case insensitive.
-
-```
-FUNCTION AfxStrRetainAnyI (BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string from which you want to replace the specified string. |
-| *wszMatchStr* |A list of single characters to be searched for individually. A match on any one of which will cause that character to be removed from the result. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrRetainAnyI("<p>1234567890<ak;lk;l>1234567890</p>", "<;/P>")
+DIM dws AS DWSTRING = "<p>1234567890<ak;lk;l>1234567890</p>"
+dws = wstrRetain(dws, "0123456789", TRUE)
+PRINT dws
+' Output: "12345678901234567890"
 ```
 ---
 

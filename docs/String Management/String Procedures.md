@@ -1462,9 +1462,15 @@ Returns the 0-based index (relative to memAddr) of the first broken surrogate fo
 
 ### <a name="wstrchrw"></a>wstrChrW
 
-Converts a Unicode code point (above U+FFFF) back into its high and low surrogate pair.
+Returns a wide-character string from a codepoint.
 ```
 FUNCTION wstrChrW (BYVAL codepoint AS UInteger) AS DWSTRING
+   If codepoint <= &hFFFF Then RETURN WCHR(codepoint)
+   ' Convert to UTF-16 surrogate pair for higher codepoints
+   DIM AS USHORT highSurrogate = &hD800 OR ((codepoint - &h10000) SHR 10)
+   DIM AS USHORT lowSurrogate = &hDC00 OR ((codepoint - &h10000) AND &h3FF)
+   RETURN WCHR(highSurrogate) + WCHR(lowSurrogate)
+END FUNCTION
 ```
 
 | Parameter  | Description |
@@ -1473,6 +1479,6 @@ FUNCTION wstrChrW (BYVAL codepoint AS UInteger) AS DWSTRING
 
 #### Return value
 
-The resulting code point as a high-low surrogate pair.
+The codepoint returned is the sum of a surrogate pair.
 
 ---

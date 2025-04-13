@@ -47,7 +47,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrUnWrap](#wstrunwrap) | Removes paired characters to the beginning and end of a string. |
 | [AfxStrPathName](#AfxStrPathName) | Parses a path to extract component parts. |
 | [wstrFormatByteSize](#wstrformatbytesize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
-| [wstrFormatKBSize](#wstrformatknsize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
+| [wstrFormatKBSize](#wstrformatkbsize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
 | [wstrFromTimeInterval](#wstrfromtimeinterval) | Converts a time interval, specified in milliseconds, to a string. |
 | [AfxBase64DecodeA](#AfxBase64DecodeA) | Converts the contents of a Base64 mime encoded string to an ascii string. |
 | [AfxBase64DecodeW](#AfxBase64DecodeW) | Converts the contents of a Base64 mime encoded string to an unicode string. |

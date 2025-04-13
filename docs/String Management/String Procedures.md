@@ -268,7 +268,7 @@ FUNCTION wstrFormatKBSize (BYVAL ull AS LONGLONG) AS DWSTRING
 Converts a time interval, specified in milliseconds, to a string.
 
 ```
-FUNCTION wtrFromTimeInterval (BYVAL dwTimeMS AS DWORD, BYVAL digits AS LONG) AS CWSTR
+FUNCTION wtrFromTimeInterval (BYVAL dwTimeMS AS DWORD, BYVAL digits AS LONG) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -378,7 +378,7 @@ Returns a lowercased version of a string.
 ```
 FUNCTION wstrLCase (BYVAL pwszStr AS WSTRING PTR, _
    BYVAL pwszLocaleName AS WSTRING PTR = LOCALE_NAME_USER_DEFAULT, _
-   BYVAL dwMapFlags AS DWORD = 0) AS CWSTR
+   BYVAL dwMapFlags AS DWORD = 0) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -1066,12 +1066,12 @@ wstrWrap("Paul") results in "Paul"
 ```
 ---
 
-### <a name="AfxBase64DecodeA"></a>AfxBase64DecodeA
+### <a name="wstrbase64decodea"></a>wstrBase64DecodeA
 
 Converts the contents of a Base64 mime encoded string to an ascii string.
 
 ```
-FUNCTION AfxBase64DecodeA (BYREF strData AS STRING) AS STRING
+FUNCTION wstrBase64DecodeA (BYREF strData AS STRING) AS STRING
 ```
 
 | Parameter  | Description |
@@ -1091,35 +1091,33 @@ Base64 encoding schemes are commonly used when there is a need to encode binary 
 If we want to encode a unicode string, we must convert it to utf8 before calling AfxBase64EncodeA, e.g.
 
 ````
-DIM cws AS CWSTR = "おはようございます – Good morning!"
-DIM s AS STRING = AfxBase64EncodeA(cws.Utf8)
+DIM dws AS DWSTRING = "おはようございます – Good morning!"
+DIM s AS STRING = wstrBase64EncodeA(dws.Utf8)
 ````
 
 To decode it, we can use
 
 ````
-DIM cwsOut AS CWSTR = CWSTR(AfxBase64DecodeA(s), CP_UTF8)
+DIM dwsOut AS dwsTRING = DWSTRING(wstrBase64DecodeA(s), CP_UTF8)
 ````
-
 or
-
 ```
-DIM cwsOut AS CWSTR
-cws.utf8 = AfxBase64DecodeA(s)
+DIM dwsOut AS DWSTRING
+dws.utf8 = wstrBase64DecodeA(s)
 ```
 ---
 
-### <a name="AfxBase64DecodeW"></a>AfxBase64DecodeW
+### <a name="wstrbase64decodew"></a>wstrBase64DecodeW
 
 Converts the contents of a Base64 mime encoded string to an unicode string.
 
 ```
-FUNCTION AfxBase64DecodeW (BYREF cwsData AS CWSTR) AS CWSTR
+FUNCTION wstrBase64DecodeW (BYREF dwsData AS DWSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *cwsData* | The string to decode. |
+| *dwsData* | The string to decode. |
 
 #### Return value
 
@@ -1133,12 +1131,12 @@ Base64 encoding schemes are commonly used when there is a need to encode binary 
 
 ---
 
-### <a name="AfxBase64EncodeA"></a>AfxBase64EncodeA
+### <a name="wstrbase64encodea"></a>wstrBase64EncodeA
 
 Converts the contents of an ascii string to Base64 mime encoding.
 
 ```
-FUNCTION AfxBase64EncodeA (BYREF strData AS STRING) AS STRING
+FUNCTION wstrBase64EncodeA (BYREF strData AS STRING) AS STRING
 ```
 
 | Parameter  | Description |
@@ -1158,30 +1156,28 @@ Base64 encoding schemes are commonly used when there is a need to encode binary 
 If we want to encode a unicode string, we must convert it to utf8 before calling AfxBase64Encode, e.g.
 
 ````
-DIM cws AS CWSTR = "おはようございます – Good morning!"
-DIM s AS STRING = AfxBase64EncodeA(cws.Utf8)
+DIM dws AS DWSTRING = "おはようございます – Good morning!"
+DIM s AS STRING = wstrBase64EncodeA(dws.Utf8)
 ````
 
 To decode it, we can use
 
 ````
-DIM cwsOut AS CWSTR = CWSTR(AfxBase64DecodeA(s), CP_UTF8)
+DIM dwsOut AS DWSTRING = DWSTRING(wstrBase64DecodeA(s), CP_UTF8)
 ````
-
 or
-
 ````
-DIM cwsOut AS CWSTR
-cws.utf8 = AfxBase64DecodeA(s)
+DIM dwsOut AS DWSTRING
+dws.utf8 = wstrBase64DecodeA(s)
 ````
 ---
 
-### <a name="AfxBase64EncodeW"></a>AfxBase64EncodeW
+### <a name="wstrbase64encodew"></a>wstrBase64EncodeW
 
 Converts the contents of an unicode string to Base64 mime encoding.
 
 ```
-FUNCTION AfxBase64EncodWeA (BYREF cwsData AS CWSTR) AS CWSTR
+FUNCTION wstrBase64EncodWeA (BYREF dwsData AS DWSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |

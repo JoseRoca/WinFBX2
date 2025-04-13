@@ -1451,10 +1451,10 @@ FUNCTION wstrChrW (BYVAL codepoint AS UInteger) AS DWSTRING
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *codePoint* | The surrogate pair. |
+| *codePoint* | The value of a Unicode code point. |
 
 #### Return value
 
-The resulting code point.
+The resulting code point as a high-low surrogate pair.
 
 ---

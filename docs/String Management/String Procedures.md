@@ -74,7 +74,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxCryptStringToBinary](#AfxCryptStringToBinary) | Converts a formatted string into an array of bytes. |
 
 
-### <a name="wstrACode"></a>wstrLCode
+### <a name="wstracode"></a>wstrACode
 
 Translates Unicode chars to ansi bytes.
 

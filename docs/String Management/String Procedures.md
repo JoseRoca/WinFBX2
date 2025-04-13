@@ -38,10 +38,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrRemoveAny](#AfxStrRemoveAny) | Returns a new string with characters removed. Case sensitive. |
 | [AfxStrRemoveAnyI](#AfxStrRemoveAnyI) | Returns a new string with characters removed. Case insensitive. |
 | [AfxStrRepeat](#AfxStrRepeat) | Returns a string consisting of multiple copies of the specified string. |
-| [AfxStrReplace](#AfxStrReplace) | Replaces all the occurrences of a string with another string. Case sensitive. |
-| [AfxStrReplaceI](#AfxStrReplaceI) | Replaces all the occurrences of a string with another string. Case insensitive. |
-| [AfxStrReplaceAny](#AfxStrReplaceAny) | Replaces all the occurrences of a group of characters with another character. Case sensitive. |
-| [AfxStrReplaceAnyI](#AfxStrReplaceAnyI) | Replaces all the occurrences of a group of characters with another character. Case insensitive. |
+| [wstrReplace](#wstrreplace) | Replaces all the occurrences of a string with another string. |
 | [AfxStrRetain](#AfxStrRetain) | Returns a string containing only the characters contained in a specified match string. Case sensitive. |
 | [AfxStrRetainI](#AfxStrRetainI) | Returns a string containing only the characters contained in a specified match string. Case insensitive. |
 | [AfxStrRetainAny](#AfxStrRetainAny) | Returns a string containing only the characters contained in a specified group of characters. Case sensitive. |
@@ -849,25 +846,29 @@ DIM cws AS CWSTR = AfxStrRepeat(5, "Paul")
 ```
 ---
 
-### <a name="AfxStrReplace"></a>AfxStrReplace
+### <a name="wstrreplace"></a>wstrReplace
 
-Replaces all the occurrences of *wszMatchStr* in *wszMainstr* with the contents of *wszReplaceWith*. Case sensitive.
+Replaces all the occurrences of *wszMatchStr* in *wszSourceString* with the contents of *wszReplaceWith*.
 
 ```
-FUNCTION AfxStrReplace (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING, BYREF wszReplaceWith AS CONST WSTRING) AS CWSTR
+FUNCTION wstrReplace (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
+   BYREF wszReplaceString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string from which you want to replace the specified string. |
+| *wszSourceString* | The string from which you want to replace the specified string. |
 | *wszMatchStr* | The string expression to be replaced. |
 | *wszReplaceWith* | The replacement string. |
+| *wszReplaceWith* | The replacement string. |
+| *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
-#### Usage example
+#### Usage examples
 
 ```
-DIM cws AS CWSTR = AfxStrReplace("Hello World", "World", "Earth")   ' Returns "Hello Earth"
+wstrReplace("Hello World", "World", "Earth")   ' Output: "Hello Earth"
+wstrReplace("abacadabra", "bac", "***")        ' Output: "a***adabra"
+wstrReplace("abacadabra", "[bac]", "*")        ' Output: "*****d**r*"
 ```
 ---
 
@@ -1124,7 +1125,7 @@ FUNCTION wstrSpn (BYREF wszText AS CONST WSTRING, BYREF wszSet AS CONST WSTRING,
 | ---------- | ----------- |
 | *wszText* | The string to be scanned. |
 | *wszSet* | The set of characters for which to search. |
-| *IgnoreCase* | If False, the serach is case-sensitive; otherwise, it is case-insensitive. |
+| *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
 #### Usage example
 

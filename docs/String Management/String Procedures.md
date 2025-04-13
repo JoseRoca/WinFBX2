@@ -338,7 +338,7 @@ $ ? Anchors the match to the end of the string, ensuring a full numeric match.
 ```
 ---
 
-### <a name="wstrJoin"></a>wsStrJoin
+### <a name="wstrjoin"></a>wstrJoin
 
 Returns a string consisting of all of the strings in an array, each separated by a delimiter. If the delimiter is a null (zero-length) string then no separators are inserted between the string sections. If the delimiter expression is the 3-byte value of "," which may be expressed in your source code as the string literal """,""" or as Chr(34,44,34) then a leading and trailing double-quote is added to each string section. This ensures that the returned string contains standard comma-delimited quoted fields that can be easily parsed.
 

@@ -1440,3 +1440,18 @@ FUNCTION wstrScanForSurrogates( _
 #### Result code
 
 Returns -1 if no surrogates are found or the zero-based position of the first broken surrogates.
+
+### <a name="wstrchrw"></a>wstrChrW
+
+Converts a Unicode code point (above U+FFFF) back into its high and low surrogate pair.
+```
+FUNCTION wstrChrW (BYVAL codepoint AS UInteger) AS DWSTRING
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *codePoint* | The surrogate pair. |
+
+#### Return value
+
+The resulting code point.

@@ -35,7 +35,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrReverse](#wstrreverse) | Reverses the contents of a string expression. |
 | [AfxStrRSet](#AfxStrRSet) | Returns a string containing a right justified string. |
 | [wstrShrink](#wstrshrink) | Shrinks a string to use a consistent single character delimiter. |
-| [AfxStrSplit](#AfxStrSplit) | Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. |
+| [wstrSplit](#wstrsplit) | Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. |
 | [wstrSpn](#wstrspn) | Returns the index of the initial portion of a string which consists only of characters that are part of a specified set of characters. |
 | [wstrTally](#wstrtally) | Count the number of occurrences of a string within a string |
 | [wstrUCase](#wstrucase) | Returns an uppercased version of a string. |
@@ -767,34 +767,38 @@ DIM dws AS DWSTRING = wstrShrink(",,, one , two     three, four,", " ,")
 ```
 ---
 
-### <a name="AfxStrSplit"></a>AfxStrSplit
+### <a name="wstrSplit"></a>wstrSplit
 
-Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters.
+Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. Each token is added to a DWSTRING (my own dynamic Unicode string data type for FreeBasic) and delimited by a carriage return and line feed. The returned string will be parsed later to get the individual tokens. Instead of DWSTRING (which is not an intrinsic FreeBasic data type) a buffer could be used. **wcstok** is a C function.
 
 ```
-FUNCTION AfxStrSplit (BYREF wszStr AS CONST WSTRING, BYREF wszDelimiters AS WSTRING = " ") AS CSafeArray
+FUNCTION wstrSplit (BYREF wszStr AS WSTRING, BYREF wszDelimiters AS WSTRING = " ", _
+   BYREF wszSeparator AS WSTRING = CHR(34, 44, 34), BYVAL maxsplits AS LONG = -1) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *wszStr* | The string to split. |
-| *wszDelimiters* | The delimiter characters. |
+| *wszDelimiters* | The delimiter characters to use when splitting the string. |
+| *wszSeparator* | Optional. Specifies the separator to use in the returned tokens. If the delimiter expression is the 3-byte value of "," which may be expressed in your source code as the string literal """,""" or as Chr(34,44,34) then a leading and trailing double-quote is added to each token. |
+| *maxsplits* | Optional. Specifies how many splits to do. Default value is -1, which is "all occurrences" |
 
 #### Return value
 
-A CSafeArray containing a token in each element.
+A list of tokens separated by the optional seoarator specified in *wszSeparator*.
 
 #### Usage example
 
 ```
-DIM cws AS CWSTR = "- This, a sample string."
-DIM cwsa AS CSafeArray = AfxStrSplit(cws, " ,.-")
-FOR i AS LONG = cwsa.LBound TO cwsa.UBound
-  PRINT cwsa.GetStr(i)
-NEXT
+DIM wsz AS WSTRING * 260 = "- This, a sample string."
+DIM dwsTokens AS DWSTRING = wstrSplit(wsz, " ,.-", , -1)
+PRINT "len dwsTokens: ", len(dwsTokens)
+PRINT dwsTokens
+' Output: "This","a","sample","string"
+' Passing " # " in wszSeparator:
+' DIM dwsTokens AS DWSTRING = wstrSplit(wsz, " ,.-", " # ", -1)
+' Outpus This # a # sample # string
 ```
-**Include file**: CSafeArray.inc
-
 ---
 
 ### <a name="wstrspn"></a>wstrSpn

@@ -26,10 +26,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrParseAny](#AfxStrParseAny) | Returns a delimited field from a string expression. Supports more than one character for the delimiter. |
 | [AfxStrParseCount](#AfxStrParseCount) | Returns the count of delimited fields from a string expression. |
 | [AfxStrParseCountAny](#AfxStrParseCountAny) | Returns the count of delimited fields from a string expression. Supports more than one character for the delimiter. |
-| [AfxStrRemain](#AfxStrRemain) | Returns the portion of a string following the first occurrence of a string. Case sensitive. |
-| [AfxStrRemainI](#AfxStrRemainI) | Returns the portion of a string following the first occurrence of a string. Case insensitive. |
-| [AfxStrRemainAny](#AfxStrRemainAny) | Returns the portion of a string following the first occurrence of a group of characters. Case sensitive. |
-| [AfxStrRemainAnyI](#AfxStrRemainAnyI) | Returns the portion of a string following the first occurrence of a group of characters. Case insensitive. |
+| [wstrRemain](#wstrremain) | Returns the portion of a string following the first occurrence of a string. |
 | [wstrRemove](#wstrremove) | Returns a new string with substrings removed. |
 | [AfxStrRepeat](#AfxStrRepeat) | Returns a string consisting of multiple copies of the specified string. |
 | [wstrReplace](#wstrreplace) | Replaces all the occurrences of a string with another string. |
@@ -39,14 +36,10 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrShrink](#AfxStrShrink) | Shrinks a string to use a consistent single character delimiter. |
 | [AfxStrSplit](#AfxStrSplit) | Splits a string into tokens, which are sequences of contiguous characters separated by any of the characters that are part of delimiters. |
 | [wstrSpn](#wstrspn) | Returns the index of the initial portion of a string which consists only of characters that are part of a specified set of characters. |
-| [AfxStrTally](#AfxStrTally) | Count the number of occurrences of a string within a string. Case sensitive. |
-| [AfxStrTallyI](#AfxStrTallyI) | Count the number of occurrences of a string within a string. Case insensitive. |
-| [AfxStrTallyAny](#AfxStrTallyAny) | Count the number of occurrences of a list of characters within a string. Case sensitive. |
-| [AfxStrTallyAnyI](#AfxStrTallyAnyI) | Count the number of occurrences of a list of characters within a string. Case insensitive. |
+| [AfxStrTally](#AfxStrTally) | Count the number of occurrences of a string within a string |
 | [wstrUCase](#wstrucase) | Returns an uppercased version of a string. |
 | [wstrUCode](#wstrucode) | Translates ansi bytes to Unicode bytes. |
-| [AfxStrVerify](#AfxStrVerify) | Determine whether each character of a string is present in another string. Case sensitive. |
-| [AfxStrVerifyI](#AfxStrVerifyI) | Determine whether each character of a string is present in another string. Case insensitive. |
+| [AfxStrVerify](#AfxStrVerify) | Determine whether each character of a string is present in another string. |
 | [AfxStrWrap](#AfxStrWrap) | Adds paired characters to the beginning and end of a string. |
 | [AfxStrUnWrap](#AfxStrUnWrap) | Removes paired characters to the beginning and end of a string. |
 | [AfxStrPathName](#AfxStrPathName) | Parses a path to extract component parts. |
@@ -514,91 +507,36 @@ FUNCTION AfxStrPathName (BYREF wszOption AS CONST WSTRING, BYREF wszFileSpec AS 
 
 ---
 
-### <a name="AfxStrRemain"></a>AfxStrRemain
+### <a name="wstrremain"></a>wstrRemain
 
-Returns the portion of a string following the first occurrence of a string. Case sensitive.
+Returns the portion of a string following the first occurrence of a character or group of characters. If *wszMatchString* is not present in *wszSourceString* (or is null) then a zero-length empty string is returned.
 
 ```
-FUNCTION AfxStrRemain (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING, BYVAL nStart AS LONG = 1) AS CWSTR
+FUNCTION wstrRemain (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
+   BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+FUNCTION wstrRemain (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, _
+   BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
+| *nStart* | Starting position to begin the search. If *nStart* is not specified, the search will begin at position 1. If *nStart* is zero, a nul string is returned. If *nStart* is negative, the starting position is counted from right to left: -1 for the last character, -2 for the second to last, etc. |
 | *wszMainStr* | The main string. |
 | *wszMatchStr* | The string to search for. |
-| *nStart* | Optional. Starting position to begin the search. If *nStart* is not specified, the search will begin at position 1. If nStart is zero, a nul string is returned. If *nStart* is negative, the starting position is counted from right to left: -1 for the last character, -2 for the second to last, etc. |
 
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrRemain("Brevity is the soul of wit", "is ")   ' Returns "the soul of wit"
-```
----
-
-### <a name="AfxStrRemainI"></a>AfxStrRemainI
-
-Returns the portion of a string following the first occurrence of a string. Case insensitive.
+#### Usage examples
 
 ```
-FUNCTION AfxStrRemainI (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING, BYVAL nStart AS LONG = 1) AS CWSTR
+DIM dws AS DWSTRING = "I think, therefore I am"
+dws = wstrRemain(dws, ",", TRUE)
+PRINT dws
+' Output: " therefore I am"
 ```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The string to search for. |
-| *nStart* | Optional. starting position to begin the search. If *nStart* is not specified, the search will begin at position 1. If nStart is zero, a nul string is returned. If *nStart* is negative, the starting position is counted from right to left: -1 for the last character, -2 for the second to last, etc. |
-
-#### Usage example
-
 ```
-DIM cws AS CWSTR = AfxStrRemain("Brevity is the soul of wit", "Is ")   ' Returns "the soul of wit"
-```
----
-
-### <a name="AfxStrRemainAny"></a>AfxStrRemainAny
-
-Returns the portion of a string following the first occurrence of a list of characters. Case sensitive.
-
-```
-FUNCTION AfxStrRemainAny (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING, BYVAL nStart AS LONG = 1) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The characters to search for. |
-| *nStart* | Optional. starting position to begin the search. If *nStart* is not specified, the search will begin at position 1. If nStart is zero, a nul string is returned. If *nStart* is negative, the starting position is counted from right to left: -1 for the last character, -2 for the second to last, etc. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrRemainAny("I think, therefore I am", ",")   ' Returns " therefore I am"
-```
----
-
-### <a name="AfxStrRemainAnyI"></a>AfxStrRemainAnyI
-
-Returns the portion of a string following the first occurrence of a list of characters. Case insensitive.
-
-```
-FUNCTION AfxStrRemainAnyI (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszMatchStr AS CONST WSTRING, BYVAL nStart AS LONG = 1) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The characters to search for. |
-| *nStart* | Optional. starting position to begin the search. If *nStart* is not specified, the search will begin at position 1. If nStart is zero, a nul string is returned. If *nStart* is negative, the starting position is counted from right to left: -1 for the last character, -2 for the second to last, etc. |
-
-#### Usage example
-
-```
-DIM cws AS CWSTR = AfxStrRemainAnyI("I think, therefore I am", "E")   ' -> "refore I am"
+DIM dws AS DWSTRING = "I think, therefore I am"
+dws = wstrRemain(5, dws, ",", TRUE)
+PRINT dws
+' Output: " therefore I am"
 ```
 ---
 

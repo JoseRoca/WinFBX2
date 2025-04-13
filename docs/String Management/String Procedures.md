@@ -39,7 +39,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrTally](#wstrtally) | Count the number of occurrences of a string within a string |
 | [wstrUCase](#wstrucase) | Returns an uppercased version of a string. |
 | [wstrUCode](#wstrucode) | Translates ansi bytes to Unicode bytes. |
-| [AfxStrVerify](#AfxStrVerify) | Determine whether each character of a string is present in another string. |
+| [wstrVerify](#wstrverify) | Determine whether each character of a string is present in another string. |
 | [AfxStrWrap](#AfxStrWrap) | Adds paired characters to the beginning and end of a string. |
 | [AfxStrUnWrap](#AfxStrUnWrap) | Removes paired characters to the beginning and end of a string. |
 | [AfxStrPathName](#AfxStrPathName) | Parses a path to extract component parts. |
@@ -923,60 +923,35 @@ AfxStrUnWrap("""Paul""") results in Paul
 ```
 ---
 
-### <a name="AfxStrVerify"></a>AfxStrVerify
+### <a name="wstrverify"></a>wstVerify
 
-Determine whether each character of a string is present in another string. Case sensitive.
-
-```
-FUNCTION AfxStrVerify (BYVAL nStart AS LONG, _
-   BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS LONG
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *wszMatchStr* | The string expression to be searched. |
-
-#### Return value
-
-Returns zero if each character in wszMainStr is present in *wszMatchStr*; otherwise, it returns the position of the first non-matching character in *wszMainStr*. If *nStart* is zero, a negative number of a value greater that the length of wszMainstr, zero is returned.
-
-#### Usage example
+Determine whether each character of a string is present in another string.
 
 ```
-DIM nCount AS LONG = AfxStrVerify(5, "123.65,22.5", "0123456789")   ' Returns 7
-```
-
-#### Remark
-
-Returns 7 since 5 starts it past the first non-digit "." at position 4.
-
----
-
-### <a name="AfxStrVerifyI"></a>AfxStrVerifyI
-
-Determine whether each character of a string is present in another string. Case insensitive.
-
-```
-FUNCTION AfxStrVerifyI (BYVAL nStart AS LONG, _
-   BYREF wszMainStr AS CONST WSTRING, BYREF wszMatchStr AS CONST WSTRING) AS LONG
+FUNCTION wstrVerify (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, _
+   BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS LONG
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *nStart* | The one-based starting position. |
+| *wszSourceString* | The main string. |
 | *wszMatchStr* | The string expression to be searched. |
+| *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
 #### Return value
 
-Returns zero if each character in wszMainStr is present in *wszMatchStr*; otherwise, it returns the position of the first non-matching character in *wszMainStr*. If *nStart* is zero, a negative number of a value greater that the length of wszMainstr, zero is returned.
+Returns zero if each character in *wszSourceString* is present in *wszMatchStr*; otherwise, it returns the position of the first non-matching character in *wszMainStr*. If *nStart* is zero, a negative number of a value greater that the length of *wszMainstr*, zero is returned.
 
 #### Usage example
 
 ```
-DIM nCount AS LONG = AfxStrVerifyI(5, "123.65abcx22.5", "0123456789ABC")   ' -> 10
+DIM dws AS DWSTRING = "123.65,22.5"
+DIM nPos AS LONG = wstrVerify(5, dws, "0123456789", TRUE)
+PRINT nPos
+' Output: 7.
+' Returns 7 since 5 starts it past the first non-digit ("." at position 4)
 ```
----
 
 ### <a name="AfxStrWrap"></a>AfxStrWrap
 

@@ -12,7 +12,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | ---------- | ----------- |
 | [wstrACode](#wstracode) | Translates Unicode chas to ansi bytes. |
 | [wstrClip](#wstrclip) | Returns a string with the specified number of characters removed from the left, right or mid side of the string. |
-| [AfxStrCSet](#AfxStrCSet) | Returns a string containing a centered string. |
+| [wstrCSet](#wstrcset) | Returns a string containing a centered (padded) string. |
 | [AfxStrDelete](#AfxStrDelete) | Deletes a specified number of characters from a string expression. |
 | [wstrEscape](#wstrescape) | Escapes any potential regex syntax characters in a string. |
 | [AfxStrExtract](#AfxStrExtract) | Extracts characters from a string up to (but not including) the specified matching. Case sensitive. |
@@ -114,25 +114,25 @@ DIM dws AS DWSTRING = wstrClip("MID", "1234567890", 3, 4)   ' Output: "1237890"
 ```
 ---
 
-### <a name="AfxStrCSet"></a>AfxStrCSet
+### <a name="wstrcset"></a>wstrCSet
 
-Returns a string containing a centered string.
+Returns a string containing a centered (padded) string.
 
 ```
-FUNCTION AfxStrCSet (BYREF wszMainStr AS CONST WSTRING, _
-   BYVAL nStringLength AS LONG, BYREF wszPadCharacter AS CONST WSTRING = " ") AS CWSTR
+FUNCTION wstrCSet (BYREF wszSourceString AS CONST WSTRING, BYVAL nStringLength AS LONG, _
+   BYREF wszPadCharacter AS CONST WSTRING = " ") AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The string to be justified. |
+| *wszSourceString* | The string to be justified. |
 | *nStringLength* | The length of the new string. |
 | *wszPadCharacter* | The character to be used for padding. If it is not specified, the string will be padded with spaces. |
 
 #### Usage example
 
 ```
-DIM cws AS CWSTR = AfxStrCSet("FreeBasic", 20, "*")
+DIM dws AS DWSTRING = wstrCSet("FreeBasic", 20, "*")   ' Output: "*****FreeBasic******"
 ```
 ---
 

@@ -1,8 +1,8 @@
 # String Procedures
 
-This is a collection of assorted ready to use string procedures to manipulate FreeBasic strings and my own DWSTRING (Dynamic Unicodde string) and BSTRING (OLE strings, aka BSTR).
+This is a collection of assorted, ready-to-use string procedures to manipulate FreeBasic strings and my own DWSTRING (Dynamic Unicode string) and BSTRING (OLE strings, aka BSTR).
 
-The procedures that need tobe fast have been hard coded, whereas the ones that need flexibility use `CRegExp`a wrapper class on top of the VBScript regular expressions engine.
+The procedures that need tobe fast have been hard coded, whereas the ones that need flexibility use `CRegExp`, a wrapper class on top of the VBScript regular expressions engine.
 
 [`CRegExp`](https://github.com/JoseRoca/WinFBX2/blob/main/docs/String%20Management/CRegExp%20Class.md) can also be used to build other string procedures not included in this collection.
 
@@ -10,12 +10,12 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 
 | Name       | Description |
 | ---------- | ----------- |
-| [wstrACode](#wstracode) | Translates Unicode chas to ansi bytes. |
-| [wstrBase64DecodeA](#wstrbase64decodea) | Converts the contents of a Base64 mime encoded string to an ascii string. |
-| [wstrBase64DecodeW](#wstrbase64decodew) | Converts the contents of a Base64 mime encoded string to an unicode string. |
-| [wstrBase64EncodeA](#wstrbase64encodea) | Converts the contents of an ascii string to Base64 mime encoding. |
-| [wstrBase64EncodeW](#wstrbase64encodew) | Converts the contents of an unicode string to Base64 mime encoding. |
-| [wstrClip](#wstrclip) | Returns a string with the specified number of characters removed from the left, right or mid side of the string. |
+| [wstrACode](#wstracode) | Translates Unicode chars to ansi bytes. |
+| [wstrBase64DecodeA](#wstrbase64decodea) | Converts the contents of a Base64 mime encoded string to an ASCII string. |
+| [wstrBase64DecodeW](#wstrbase64decodew) | Converts the contents of a Base64 mime encoded string to an Unicode string. |
+| [wstrBase64EncodeA](#wstrbase64encodea) | Converts the contents of an ASCII string to Base64 mime encoding. |
+| [wstrBase64EncodeW](#wstrbase64encodew) | Converts the contents of an Unicode string to Base64 mime encoding. |
+| [wstrClip](#wstrclip) | Returns a string with the specified number of characters removed from the left, right or mid section of the string. |
 | [wstrCryptBinaryToString](#wstrcryptbinarytostring) | Converts an array of bytes into a formatted string. |
 | [wstrCryptStringToBinary](#wstrcryptstringtobinary) | Converts a formatted string into an array of bytes. |
 | [wstrCSet](#wstrcset) | Returns a string containing a centered (padded) string. |
@@ -27,7 +27,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrFormatKBSize](#wstrformatkbsize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
 | [wstrFromTimeInterval](#wstrfromtimeinterval) | Converts a time interval, specified in milliseconds, to a string. |
 | [wstrInsert](#wstrinsert) | Inserts a string at a specified position within another string expression. |
-| [wstrIsNumeric](#wstrisnumeric) | Retuns True if the passed string is muneric. |
+| [wstrIsNumeric](#wstrisnumeric) | Returns True if the passed string is numeric. |
 | [wstrJoin](#wstrjoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
 | [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
@@ -183,7 +183,7 @@ FUNCTION wstrDelete (BYREF wszSourceString AS CONST WSTRING, BYVAL nStart AS LON
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *wszSourceString* | The main string. |
 | *nStart* | The one-based starting position. |
 | *nCount* | The number of characters to be removed. |
 
@@ -213,7 +213,7 @@ FUNCTION wstrEscape (BYREF wszStr AS CONST WSTRING) AS DWSTRING
 Extracts characters from a string up to (but not including) a string.
 
 ```
-UNCTION wstrExtract (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
+FUNCTION wstrExtract (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
    BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
 FUNCTION wstrExtract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, _
    BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
@@ -223,7 +223,7 @@ FUNCTION wstrExtract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRI
 | ---------- | ----------- |
 | *nStart* | The one-based starting position to begin the search. |
 | *wszSourceString* | The source string. |
-| *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszMainStr*, all of *wszMainStr* is returned intact. |
+| *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszSourceString*, all of *wszSourceString* is returned intact. |
 | *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
 *nStart* is the optional starting position to begin extracting. If *nStart* is not specified, it will start at position 1. If *nStart* is zero, or beyond the length of *wszSourceString*, a nul string is returned. If *nStart* is negative, the starting position is counted from right to left: if -1, the search begins at the last character; if -2, the second to last, and so forth.
@@ -330,9 +330,9 @@ FUNCTION wstrInsert (BYREF wszSourceString AS CONST WSTRING, BYREF wszInsertStri
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *wszSourceString* | The main string. |
 | *wszInsertString* | The string to be inserted. |
-| *nPosition* | The one-based starting position. If *nPosition* is greater than the length of *wszMainStr* or <= zero then *wszInsertString* is appended to *wszMainStr*. |
+| *nPosition* | The one-based starting position. If *nPosition* is greater than the length of *wszSourceString* or <= zero then *wszInsertString* is appended to *wszSourceString*. |
 
 #### Usage example
 
@@ -492,7 +492,7 @@ FUNCTION wstrMCase (BYREF wszSourceString AS WSTRING) AS DWSTRING
 ```
 DIM dws AS DWSTRING = strMCase("Cats aren't AL.WAYS good.")
 ' Output: Cats Aren'T Al.Ways Good.
-' Note: It mimincs the Power Basic's MCase$ function.
+' Note: It mimincs PowerBASIC's MCase$ function.
 ```
 
 ### <a name="wstrparse"></a>wstrParse 
@@ -507,7 +507,7 @@ FUNCTION wstrParse (BYREF wszSourceString AS CONST WSTRING, BYVAL index AS LONG 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *wszSourceString* | The string to be parsed. |
-| *nPosition* | Starting position. If *nPosition* is zero or is outside of the actual field count, an empty string is returned. If *nPosition* is negative, fields are searched from the right to left of the *wszMainStr*. |
+| *nPosition* | Starting position. If *nPosition* is zero or is outside of the actual field count, an empty string is returned. If *nPosition* is negative, fields are searched from the right to left of *wszSourceString*. |
 | *wszDelimiter* | A string of one or more characters that must be fully matched to be successful. |
 
 #### Usage example
@@ -599,7 +599,7 @@ FUNCTION wstrRemain (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRIN
 | Parameter  | Description |
 | ---------- | ----------- |
 | *nStart* | Starting position to begin the search. If *nStart* is not specified, the search will begin at position 1. If *nStart* is zero, a nul string is returned. If *nStart* is negative, the starting position is counted from right to left: -1 for the last character, -2 for the second to last, etc. |
-| *wszMainStr* | The main string. |
+| *wszSourceString* | The main string. |
 | *wszMatchStr* | The string to search for. |
 
 #### Usage examples
@@ -632,7 +632,7 @@ FUNCTION wstrRemove (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRIN
 | ---------- | ----------- |
 | *nStart* | The one-based starting position to begin the search. |
 | *wszSourceString* | The source string. |
-| *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszMainStr*, all of *wszMainStr* is returned intact. |
+| *wszMatchStr* | The string expression to be removed. If *wszMatchStr* is not present in *wszSourceString*, all of *wszSourceString* is returned intact. |
 | *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
 #### Overloaded methods:
@@ -822,7 +822,7 @@ FUNCTION wstrShrink(BYREF wszSourceString AS CONST WSTRING, BYREF wszMask AS CON
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *wszSourceString* | The main string. |
 | *wszMask* | One or more character delimiters to shrink. |
 | *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
@@ -912,14 +912,14 @@ FUNCTION wstrTally (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *wszSourceString* | The main string. |
 | *wszMatchStr* | The string expression to be searched. |
 | *IgnoreCase* | Boolean. If False, the search is case-sensitive; otherwise, it is case-insensitive. |
 
 
 #### Return value
 
-The number of occurrences of *wszMatchStr* in *wszMainStr*.
+The number of occurrences of *wszMatchStr* in *wszSourceString*.
 
 #### Usage examples
 
@@ -1003,7 +1003,7 @@ FUNCTION wstrUnWrap (BYREF wszSourceString AS CONST WSTRING, BYREF wszLeftChar A
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *wszSourceString* | The main string. |
 | *wszLeftChar* | The left character. |
 | *wszRightChar* | The right character. |
 
@@ -1013,7 +1013,7 @@ FUNCTION wstrUnWrap (BYREF wszSourceString AS CONST WSTRING, BYREF wszChar AS CO
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
+| *wszSourceString* | The main string. |
 | *wszChar* | The same character for both the left and right sides. |
 
 #### Remarks
@@ -1047,7 +1047,7 @@ FUNCTION wstrVerify (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRIN
 
 #### Return value
 
-Returns zero if each character in *wszSourceString* is present in *wszMatchStr*; otherwise, it returns the position of the first non-matching character in *wszMainStr*. If *nStart* is zero, a negative number of a value greater that the length of *wszMainstr*, zero is returned.
+Returns zero if each character in *wszSourceString* is present in *wszMatchStr*; otherwise, it returns the position of the first non-matching character in *wszSourceString*. If *nStart* is zero, a negative number of a value greater that the length of *wszSourceString*, zero is returned.
 
 #### Usage example
 

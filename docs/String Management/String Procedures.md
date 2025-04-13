@@ -44,6 +44,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrWrap](#wstrwrap) | Adds paired characters to the beginning and end of a string. |
 | [wstrUnWrap](#wstrunwrap) | Removes paired characters to the beginning and end of a string. |
 | [wstrPathName](#wstrpathname) | Parses a path to extract component parts. |
+| [wstrPathScan](#wstrpathscan) | Searches a path for a file name. |
 | [wstrFormatByteSize](#wstrformatbytesize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
 | [wstrFormatKBSize](#wstrformatkbsize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
 | [wstrFromTimeInterval](#wstrfromtimeinterval) | Converts a time interval, specified in milliseconds, to a string. |
@@ -529,6 +530,28 @@ FUNCTION wstrPathName (BYREF wszOption AS CONST WSTRING, BYREF wszFileSpec AS WS
 | **NAME** | Returns the name portion of the path/file Name. That is the text to the right of the last backslash (\) or colon (:), ending just before the last period (.). |
 | **EXTN** | Returns the extension portion of the path/file name. That is the last period (.) in the string plus the text to the right of it. |
 | **NAMEX** | Returns the name and the extension parts combined. |
+
+---
+
+
+### <a name="wstrpathscan"></a>wstrPathScan
+
+Searches a path for a file name.
+
+```
+FUNCTION wstrPathScan (BYREF wszOption AS CONST WSTRING, BYREF wszFileSpec AS CONST WSTRING,_
+   BYREF wszOtherDirs AS CONST WSTRING = "") AS DWSTRING
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *wszOption* | One of the following words which is used to specify the requested part: PATH, NAME, EXTN, NAMEX. |
+| *wszFileSpec* | The path to be scanned. |
+| *wszOtherDirs* | An optional path string which includes one or more paths to be searched to find wszFileSpec. If multiple path names are included in this string, they musteach be separated by a semicolon (;) delimiter. If wszOtherDirs: is not given, or it is a nul (zero-length) string, the following directories are searched:<br>- The directory from which the application was loaded.<br>- The current directory.<br>- The standard directories such as System32 and the directories specified in the PATH environment variable.<br>To expedite the process or enable wstrPathScan to search a wider range of directories,use the wszOtherDirs parameter to specify one or more directories to be searched first. |
+
+#### Return value
+
+If the file is found, it returns either the full path/file name, or a selected part of it.If the file is not found, a nul (zero-length)  is returned. If you wish to simply parsea text file name, without regard to its validation on disk, you should use the companionfunction *wstrPathName*.
 
 ---
 

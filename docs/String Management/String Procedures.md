@@ -48,10 +48,10 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrFormatByteSize](#wstrformatbytesize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
 | [wstrFormatKBSize](#wstrformatkbsize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
 | [wstrFromTimeInterval](#wstrfromtimeinterval) | Converts a time interval, specified in milliseconds, to a string. |
-| [AfxBase64DecodeA](#AfxBase64DecodeA) | Converts the contents of a Base64 mime encoded string to an ascii string. |
-| [AfxBase64DecodeW](#AfxBase64DecodeW) | Converts the contents of a Base64 mime encoded string to an unicode string. |
-| [AfxBase64EncodeA](#AfxBase64EncodeA) | Converts the contents of an ascii string to Base64 mime encoding. |
-| [AfxBase64EncodeW](#AfxBase64EncodeW) | Converts the contents of an unicode string to Base64 mime encoding. |
+| [wstrBase64DecodeA](#wstrbase64decodea) | Converts the contents of a Base64 mime encoded string to an ascii string. |
+| [wstrBase64DecodeW](#wstrbase64decodew) | Converts the contents of a Base64 mime encoded string to an unicode string. |
+| [wstrBase64EncodeA](#wstrbase64encodea) | Converts the contents of an ascii string to Base64 mime encoding. |
+| [wstrBase64EncodeW](#wstrbase64encodew) | Converts the contents of an unicode string to Base64 mime encoding. |
 | [wstrCryptBinaryToString](#wstrcryptbinarytostring) | Converts an array of bytes into a formatted string. |
 | [wstrCryptStringToBinary](#wstrcryptstringtobinary) | Converts a formatted string into an array of bytes. |
 

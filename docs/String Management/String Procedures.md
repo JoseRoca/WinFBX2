@@ -43,7 +43,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrUCode](#wstrucode) | Translates ansi bytes to Unicode bytes. |
 | [wstrVerify](#wstrverify) | Determine whether each character of a string is present in another string. |
 | [wstrWrap](#wstrwrap) | Adds paired characters to the beginning and end of a string. |
-| [AfxStrUnWrap](#AfxStrUnWrap) | Removes paired characters to the beginning and end of a string. |
+| [wstrUnWrap](#wstrunwrap) | Removes paired characters to the beginning and end of a string. |
 | [AfxStrPathName](#AfxStrPathName) | Parses a path to extract component parts. |
 | [AfxStrFormatByteSize](#AfxStrFormatByteSize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
 | [AfxStrFormatKBSize](#AfxStrFormatKBSize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
@@ -937,13 +937,13 @@ The translated string.
 
 ---
 
-### <a name="AfxStrUnWrap"></a>AfxStrUnWrap
+### <a name="wstrunwrap"></a>wstrStrUnWrap
 
 Removes paired characters to the beginning and end of a string.
 
 ```
-FUNCTION AfxStrUnWrap (BYREF wszMainStr AS CONST WSTRING, _
-   BYREF wszLeftChar AS CONST WSTRING, BYREF wszRightChar AS CONST WSTRING) AS CWSTR
+FUNCTION wstrUnWrap (BYREF wszSourceString AS CONST WSTRING, BYREF wszLeftChar AS CONST WSTRING, _
+   BYREF wszRightChar AS CONST WSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -953,7 +953,7 @@ FUNCTION AfxStrUnWrap (BYREF wszMainStr AS CONST WSTRING, _
 | *wszRightChar* | The right character. |
 
 ```
-FUNCTION AfxStrUnWrap (BYREF wszMainStr AS CONST WSTRING, BYREF wszChar AS CONST WSTRING) AS CWSTR
+FUNCTION wstrUnWrap (BYREF wszSourceString AS CONST WSTRING, BYREF wszChar AS CONST WSTRING = CHR(34)) AS DWSTRING
 ```
 
 | Parameter  | Description |
@@ -968,9 +968,9 @@ If only one wrap character/string is specified then that character or string is 
 #### Usage examples
 
 ```
-AfxStrUnWrap("<Paul>", "<", ">") results in Paul
-AfxStrUnWrap("'Paul'", "'") results in Paul
-AfxStrUnWrap("""Paul""") results in Paul
+wstrUnWrap("<Paul>", "<", ">") results in Paul
+wstrUnWrap("'Paul'", "'") results in Paul
+wstrUnWrap("""Paul""") results in Paul
 ```
 ---
 

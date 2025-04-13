@@ -11,9 +11,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | Name       | Description |
 | ---------- | ----------- |
 | [wstrACode](#wstracode) | Translates Unicode chas to ansi bytes. |
-| [AfxStrClipLeft](#AfxStrClipLeft) | Returns a string with the specified number of characters removed from the left side of the string. |
-| [AfxStrClipMid](#AfxStrClipMid) | Returns a string with the specified number of characters removed starting at the specified position. |
-| [AfxStrClipRight](#AfxStrClipRight) | Returns a string with the specified number of characters removed from the right side of the string. |
+| [wstrClip](#wstrclip) | Returns a string with the specified number of characters removed from the left, right or mid side of the string. |
 | [AfxStrCSet](#AfxStrCSet) | Returns a string containing a centered string. |
 | [AfxStrDelete](#AfxStrDelete) | Deletes a specified number of characters from a string expression. |
 | [wstrEscape](#wstrescape) | Escapes any potential regex syntax characters in a string. |
@@ -92,49 +90,27 @@ The translated string.
 
 ---
 
-### <a name="AfxStrClipLeft"></a>AfxStrClipLeft
+### <a name="wstrclip"></a>wstrClip
 
-Returns a string with *nCount* characters removed from the left side of the string.
-
-```
-FUNCTION AfxStrClipLeft (BYREF wszMainStr AS CONST WSTRING, BYVAL nCount AS LONG) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *nCount* | The number of characters to be removed. |
-
----
-
-### <a name="AfxStrClipMid"></a>AfxStrClipMid
-
-Returns a string with *nCount* characters removed from the left side of the string.
+Returns a string with the specified number of characters removed from the left, middle or right side of the string.
 
 ```
-FUNCTION AfxStrClipMid (BYREF wszMainStr AS CONST WSTRING, BYVAL nStart AS LONG, BYVAL nCount AS LONG) AS CWSTR
+FUNCTION FUNCTION wstrClip (BYREF wszSide AS CONST WSTRING, BYREF wszSourceString AS CONST WSTRING, _
+   BYVAL nCount AS LONG, BYVAL nStart AS LONG = 0) AS DWSTRING
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *nStart* | The one-based starting position. |
-| *nCount* | The number of characters to be removed. |
+| *wszSide* | The "LEFT", "MID" or "RIGHT". |
+| *wszSourceString:* | The source string. |
+| *nCount* | The number of characters to be removed. If it is 0 or negative, the source string is inaltered. |
+| *nStart* | The starting position. It is only used with the "MID" option. |
 
----
-
-### <a name="AfxStrClipRight"></a>AfxStrClipRight
-
-Returns a string with *nCount* characters removed from the right side of the string.
-
+#### Usage examples
 ```
-FUNCTION AfxStrClipRight  (BYREF wszMainStr AS CONST WSTRING, BYVAL nCount AS LONG) AS CWSTR
-```
-
-| Parameter  | Description |
-| ---------- | ----------- |
-| *wszMainStr* | The main string. |
-| *nCount* | The number of characters to be removed. |
+DIM dws AS DWSTRING = wstrClip("LEFT", "1234567890", 3)     ' Output: "4567890"
+DIM dws AS DWSTRING = wstrClip("RIGHT", "1234567890", 3)    ' Output: "1234567"
+DIM dws AS DWSTRING = wstrClip("MID", "1234567890", 3, 4)   ' Output: "1237890"
 
 ---
 

@@ -19,7 +19,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrExtract](#wstrextract) | Extracts characters from a string up to (but not including) the specified matching. |
 | [AfxStrInsert](#AfxStrInsert) | Inserts a string at a specified position within another string expression. |
 | [wstrIsNumeric](#wstrisnumeric) | Retuns True if the passed string is muneric. |
-| [AfxStrJoin](#AfxStrJoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
+| [wstrJoin](#wstrjoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
 | [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
 | [AfxStrLSet](#AfxStrLSet) | Returns a string containing a left justified string. |
@@ -338,35 +338,36 @@ $ ? Anchors the match to the end of the string, ensuring a full numeric match.
 ```
 ---
 
-### <a name="AfxStrJoin"></a>AfxStrJoin
+### <a name="wstrJoin"></a>wsStrJoin
 
 Returns a string consisting of all of the strings in an array, each separated by a delimiter. If the delimiter is a null (zero-length) string then no separators are inserted between the string sections. If the delimiter expression is the 3-byte value of "," which may be expressed in your source code as the string literal """,""" or as Chr(34,44,34) then a leading and trailing double-quote is added to each string section. This ensures that the returned string contains standard comma-delimited quoted fields that can be easily parsed.
 
 ```
-FUNCTION AfxStrJoin (BYREF cwsa AS CSafeArray, BYREF wszDelimiter AS WSTRING = " ") AS CWSTR
+#macro wstrJoin(array, dest, delim)
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *cwsa* | The one-dimensional VT_BSTR CSafeArray to join. |
+| *array* | The one-dimensional array to join. |
+| *dest* | The destination string. |
 | *wszDelimiter* | The delimiter character. |
 
 #### Return value
 
-A CWSTR containing the joined string.
+A string containing the joined string.
 
 #### Usage example
 
 ```
-DIM csa AS CSafeArray = CSafeArray("STRING", 3, 1)
-csa.PutStr(1, "One")
-csa.PutStr(2, "Two")
-csa.PutStr(3, "Three")
-DIM cws AS CWSTR = AfxStrJoin(csa, ",")
-PRINT cws   ' ouput: One,Two,Three
+DIM rg(1 TO 10) AS DWSTRING
+FOR i AS LONG = 1 TO 10
+   rg(i) = "string " & i
+NEXT
+DIM dws AS DWSTRING
+wstrJoin(rg, dws, """,""")
+PRINT dws
+' Instead of DWSTRING, any other data type can be used: BSTRING, STRING...
 ```
-**Include file**: CSafeArray.inc
-
 ---
 
 ### <a name="wstrlcase"></a>wstrLCase

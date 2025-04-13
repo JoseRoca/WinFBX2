@@ -1129,15 +1129,15 @@ FUNCTION wstrSpn (BYREF wszText AS CONST WSTRING, BYREF wszSet AS CONST WSTRING,
 #### Usage example
 
 ```
-DIM wszText AS DWSTRING = "129th"
-DIM wszSet AS DWSTRING = "1234567890"
-DIM n AS LONG = StrSpnW(@wszText, @wszSet)
+DIM dwsText AS DWSTRING = "129th"
+DIM dwsSet AS DWSTRING = "1234567890"
+DIM n AS LONG = wstrSpn(dwsText, dwsSet)
 PRINT "The initial number has " & WSTR(n) & " digits"   ' Output: 3
 ```
 
 #### Remarks
 
-The C **wcsspn** function can also be used.
+The Windows API **StrSpnW** function and the C **wcsspn** function can also be used.
 
 ---
 

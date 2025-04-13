@@ -350,7 +350,7 @@ Returns a string consisting of all of the strings in an array, each separated by
 | ---------- | ----------- |
 | *array* | The one-dimensional array to join. |
 | *dest* | The destination string. |
-| *dwlim* | The delimiter character. |
+| *delim* | The delimiter character. |
 
 #### Return value
 

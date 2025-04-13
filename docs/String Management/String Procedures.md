@@ -22,7 +22,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrExtractAnyI](#AfxStrExtractAnyI) | Extracts characters from a string up to (but not including) any character in the matching string. Case insensitive. |
 | [AfxStrInsert](#AfxStrInsert) | Inserts a string at a specified position within another string expression. |
 | [AfxStrJoin](#AfxStrJoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
-| [AfxStrLCase](#AfxStrLCase) | Returns a lowercased version of a string. |
+| [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
 | [AfxStrLSet](#AfxStrLSet) | Returns a string containing a left justified string. |
 | [AfxStrParse](#AfxStrParse) | Returns a delimited field from a string expression. |
 | [AfxStrParseAny](#AfxStrParseAny) | Returns a delimited field from a string expression. Supports more than one character for the delimiter. |
@@ -54,7 +54,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxStrTallyI](#AfxStrTallyI) | Count the number of occurrences of a string within a string. Case insensitive. |
 | [AfxStrTallyAny](#AfxStrTallyAny) | Count the number of occurrences of a list of characters within a string. Case sensitive. |
 | [AfxStrTallyAnyI](#AfxStrTallyAnyI) | Count the number of occurrences of a list of characters within a string. Case insensitive. |
-| [wstrUCase](#wstrUCase) | Returns an uppercased version of a string. |
+| [wstrUCase](#wstrucase) | Returns an uppercased version of a string. |
 | [AfxStrVerify](#AfxStrVerify) | Determine whether each character of a string is present in another string. Case sensitive. |
 | [AfxStrVerifyI](#AfxStrVerifyI) | Determine whether each character of a string is present in another string. Case insensitive. |
 | [AfxStrWrap](#AfxStrWrap) | Adds paired characters to the beginning and end of a string. |
@@ -417,12 +417,12 @@ PRINT cws   ' ouput: One,Two,Three
 
 ---
 
-### <a name="AfxStrLCase"></a>AfxStrLCase
+### <a name="wstrlcase"></a>wstrLCase
 
 Returns a lowercased version of a string.
 
 ```
-FUNCTION AfxStrLCase (BYVAL pwszStr AS WSTRING PTR, _
+FUNCTION wstrLCase (BYVAL pwszStr AS WSTRING PTR, _
    BYVAL pwszLocaleName AS WSTRING PTR = LOCALE_NAME_USER_DEFAULT, _
    BYVAL dwMapFlags AS DWORD = 0) AS CWSTR
 ```
@@ -440,6 +440,10 @@ For a complete list see: [LCMapStringEx function](https://docs.microsoft.com/en-
 #### Remarks
 
 The string conversion functions available in FreeBasic are not fully suitable for some languages. For example, the Turkish word "karışıklığı" is uppercased as "KARıŞıKLıĞı" instead of "KARIŞIKLIĞI", and "KARIŞIKLIĞI" is lowercased to "karişikliği" instead of "karışıklığı". Notice the "ı", that is not an "i".
+
+For Turkey, use:
+wstrUCase("karışıklığı", "tr-TR")
+wstrLCase("KARIŞIKLIĞI", "tr-TR")
 
 #### Return value
 

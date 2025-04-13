@@ -52,7 +52,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [AfxBase64DecodeW](#AfxBase64DecodeW) | Converts the contents of a Base64 mime encoded string to an unicode string. |
 | [AfxBase64EncodeA](#AfxBase64EncodeA) | Converts the contents of an ascii string to Base64 mime encoding. |
 | [AfxBase64EncodeW](#AfxBase64EncodeW) | Converts the contents of an unicode string to Base64 mime encoding. |
-| [AfxCryptBinaryToString](#AfxCryptBinaryToString) | Converts an array of bytes into a formatted string. |
+| [wstrCryptBinaryToString](#wstrcryptbinarytostring) | Converts an array of bytes into a formatted string. |
 | [AfxCryptStringToBinary](#AfxCryptStringToBinary) | Converts a formatted string into an array of bytes. |
 
 
@@ -1200,12 +1200,12 @@ Base64 encoding schemes are commonly used when there is a need to encode binary 
 
 ---
 
-### <a name="AfxCryptBinaryToString"></a>AfxCryptBinaryToString
+### <a name="wstrcryptbinarytostring"></a>wstrCryptBinaryToString
 
 Converts an array of bytes into a formatted string.
 
 ```
-FUNCTION FUNCTION AfxCryptBinaryToStringA ( _
+FUNCTION FUNCTION wstrCryptBinaryToStringA ( _
    BYVAL pbBinary AS CONST UBYTE PTR, _
    BYVAL cbBinary AS DWORD, _
    BYVAL dwFlags AS DWORD, _
@@ -1215,7 +1215,7 @@ FUNCTION FUNCTION AfxCryptBinaryToStringA ( _
 ```
 
 ```
-FUNCTION AfxCryptBinaryToStringW ( _
+FUNCTION wstrCryptBinaryToStringW ( _
    BYVAL pbBinary AS CONST UBYTE PTR, _
    BYVAL cbBinary AS DWORD, _
    BYVAL dwFlags AS DWORD, _
@@ -1255,7 +1255,6 @@ In addition to the values above, one or more of the following values can be spec
 | CRYPT_STRING_NOCRLF | Do not append any new line characters to the encoded string. The default behavior is to use a carriage return/line feed (CR/LF) pair (0x0D/0x0A) to represent a new line. Not supported in Windows Server 2003 and Windows XP. |
 | CRYPT_STRING_NOCR | Only use the line feed (LF) character (0x0A) for a new line. The default behavior is to use a CR/LF pair (0x0D/0x0A) to represent a new line. |
 
-
 #### Return value
 
 If the function succeeds, the function returns nonzero (CTRUE).
@@ -1267,12 +1266,12 @@ With the exception of when **CRYPT_STRING_BINARY** encoding is used, all strings
 
 ---
 
-### <a name="AfxCryptStringToBinary"></a>AfxCryptStringToBinary
+### <a name="wstrcryptstringtobinary"></a>wstrCryptStringToBinary
 
 Converts a formatted string into an array of bytes.
 
 ```
-FUNCTION AfxCryptStringToBinaryA ( _
+FUNCTION wstrCryptStringToBinaryA ( _
    BYVAL pszString AS LPCSTR, _
    BYVAL cchString AS DWORD, _
    BYVAL dwFlags AS DWORD, _
@@ -1284,7 +1283,7 @@ FUNCTION AfxCryptStringToBinaryA ( _
 ```
 
 ```
-FUNCTION AfxCryptStringToBinaryW ( _
+FUNCTION wstrCryptStringToBinaryW ( _
    BYVAL pszString AS LPCWSTR, _
    BYVAL cchString AS DWORD, _
    BYVAL dwFlags AS DWORD, _

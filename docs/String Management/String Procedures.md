@@ -43,7 +43,7 @@ The procedures that need tobe fast have been hard coded, whereas the ones that n
 | [wstrVerify](#wstrverify) | Determine whether each character of a string is present in another string. |
 | [wstrWrap](#wstrwrap) | Adds paired characters to the beginning and end of a string. |
 | [wstrUnWrap](#wstrunwrap) | Removes paired characters to the beginning and end of a string. |
-| [AfxStrPathName](#AfxStrPathName) | Parses a path to extract component parts. |
+| [wstrPathName](#wstrpathname) | Parses a path to extract component parts. |
 | [wstrFormatByteSize](#wstrformatbytesize) | Converts a numeric value into a string that represents the number expressed as a size value in bytes, kilobytes, megabytes, or gigabytes, depending on the size. |
 | [wstrFormatKBSize](#wstrformatkbsize) | Converts a numeric value into a string that represents the number expressed as a size value in kilobytes. |
 | [wstrFromTimeInterval](#wstrfromtimeinterval) | Converts a time interval, specified in milliseconds, to a string. |
@@ -510,12 +510,12 @@ DIM nCount AS LONG = wstrParseCount("1;2,3", ",;")          ' Output: 3
 ```
 ---
 
-### <a name="AfxStrPathName"></a>AfxStrPathName 
+### <a name="wstrpathname"></a>wstrPathName 
 
 Parses a path to extract component parts.
 
 ```
-FUNCTION AfxStrPathName (BYREF wszOption AS CONST WSTRING, BYREF wszFileSpec AS WSTRING) AS CWSTR
+FUNCTION wstrPathName (BYREF wszOption AS CONST WSTRING, BYREF wszFileSpec AS WSTRING) AS DWSTRING
 ```
 
 | Parameter  | Description |

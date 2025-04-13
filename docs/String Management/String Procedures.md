@@ -1395,6 +1395,7 @@ FUNCTION wstrSurrogatePairToCodePoint (BYVAL high AS USHORT, BYVAL low AS USHORT
 
 BOOLEAN. True if the surrogate pair is valid; False, otherwise.
 
+---
 
 ### <a name="wstrcodepointtosurrogatpair"></a>wstrCodePointToSurrogatePair
 
@@ -1412,18 +1413,30 @@ SUB wstrCodePointToSurrogatePair (BYVAL codePoint AS ULONG, BYREF high AS USHORT
 
 This method does not return a value.
 
+---
+
 ### <a name="wstrscanforsurrogates"></a>wstrScanForSurrogates
 
-Scans a UTF-16 buffer (passed as a pointer to WSTRING) in chunks of 64 characters. Returns the 0-based index (relative to *memAddr*) of the first
-' broken surrogate found, or -1 if none is found.
-'
-' Parameters:
-'   memAddr            - pointer to the UTF-16 buffer
-'   nChars             - number of UTF-16 code units (USHORTs) to scan
-'   searchBrokenOnly   - Optional (default TRUE): if TRUE, only broken surrogates 
-'                        are signaled. If FALSE, returns the position of the first 
-'                        surrogate (valid or not). 
-'
-' Note:
-'   This version avoids repeated casting by caching memAddr as a USHORT pointer 
-'   and uses bitmask comparisons instead of range comparisons.
+Scans a UTF-16 buffer (passed as a pointer to WSTRING) in chunks of 64 characters. Returns the 0-based index (relative to *memAddr*) of the first broken surrogate found, or -1 if none is found.
+| Parameter  | Description |
+| ---------- | ----------- |
+| *memAddr* | Pointer to the passes UTF-16 buffer. |
+| *nChars* | Number of UTF-16 code units (USHORTs) to scan. |
+| *searchBrokenOnly* |  Optional (default TRUE): if True, only broken surrogates are signaled. If False, returns the position of the first surrogate (valid or not).  |
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *memAddr* | The high surrogate part. |
+| *nChars* | The low surrogate part. |
+| *searchBrokenOnly* | The low surrogate part. |
+
+``
+FUNCTION wstrScanForSurrogates( _
+   BYVAL memAddr AS WSTRING PTR, _
+   BYVAL nChars AS LONG, _
+   BYVAL searchBrokenOnly AS BOOLEAN = TRUE) AS LONG
+``
+
+#### Result code
+
+Returns -1 if no surrogates are found or the zero-based position of the first broken surrogates.

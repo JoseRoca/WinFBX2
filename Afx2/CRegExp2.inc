@@ -22,8 +22,8 @@ NAMESPACE Afx2
 ' ========================================================================================
 TYPE CRegExp
 
-Public:
-   m_Result AS LONG
+Private:
+   m_Result AS LONG                           ' // Last result code
    m_pRegExp AS IRegExp2 PTR                  ' // IRegExp2 interface
    m_pMatches AS IMatchCollection2 PTR        ' // IMatchCollection2 interface
 
@@ -58,8 +58,8 @@ Public:
    DECLARE FUNCTION Remove (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
    DECLARE FUNCTION Extract (BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
    DECLARE FUNCTION Extract (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
-   
-   ' // Helper method
+
+   ' // Helper function
    DECLARE FUNCTION VariantToString (BYVAL pvarIn AS VARIANT PTR) AS DWSTRING
 
 END TYPE

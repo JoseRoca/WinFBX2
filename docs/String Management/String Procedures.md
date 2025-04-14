@@ -8,8 +8,6 @@ The procedures that need to be fast have been hard coded, whereas the ones that 
 
 **Include file**: AfxStrProcs2.inc
 
-#### Remarks
-
 Additionally, we can call external variadic functions written in C. They can be very useful to do string formatting.
 
 **StringCbPrintf** (A/W):

@@ -8,6 +8,24 @@ The procedures that need to be fast have been hard coded, whereas the ones that 
 
 **Include file**: AfxStrProcs2.inc
 
+#### Remarks
+
+Additionally, we can call external variadic functions written in C, e.g.
+```
+DIM wszOut AS WSTRING * 260
+DIM wszFmt AS WSTRING * 260 = "%s %d + %d = %d."
+DIM wszText AS WSTRING * 260 = "The answer is"
+DIM hr AS HRESULT = StringCbPrintfW(@wszOut, SIZEOF(wszOut), @wszFmt, @wszText, 1, 2, 3)
+PRINT wszOut
+' Output: "The answer is 1 + 2 = 3."
+```
+**StringCbPrintf** function:
+https://msdn.microsoft.com/en-us/library/windows/desktop/ms647510(v=vs.85).aspx
+**StringCbPrintf_l** (A/W) is similar to **StringCbPrintf** but includes a parameter for locale information.
+**StringCbPrintfEx** (A/W) adds to the functionality of **StringCbPrintf** by returning a pointerto the end of the destination string as well as the number of bytes left unused in that string. Flags may also be passed to the function for additional control.
+**StringCbPrintf_lEx** (A/W) is similar to **StringCbPrintfEx** but includes a parameter for locale information.
+They can be very useful to do string formatting.
+
 | Name       | Description |
 | ---------- | ----------- |
 | [wstrACode](#wstracode) | Translates Unicode chars to ansi bytes. |

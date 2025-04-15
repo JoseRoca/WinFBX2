@@ -172,7 +172,7 @@ Public:
    DECLARE FUNCTION PutDoubleArray (BYVAL prgn AS DOUBLE PTR, BYVAL cElems AS ULONG) AS HRESULT
    DECLARE FUNCTION PutStringArray (BYVAL prgsz AS PCWSTR, BYVAL cElems AS ULONG) AS HRESULT
    DECLARE FUNCTION PutPropVariant (BYVAL pPropVar AS PROPVARIANT PTR) AS HRESULT
-   DECLARE FUNCTION PutVariantArrayElem (BYVAL pvarIn AS VARIANT PTR, BYVAL iElem AS ULONG) AS DVARIANT
+   DECLARE FUNCTION PutVariantArrayElement(BYVAL pvarIn AS VARIANT PTR, BYVAL iElem AS ULONG) AS DVARIANT
    ' // Assignments by reference
    DECLARE FUNCTION PutRef (BYVAL _value AS ANY PTR, BYVAL _vType AS WORD = VT_I8) AS HRESULT
    DECLARE FUNCTION PutRef (BYVAL _pvar AS ANY PTR, BYREF strType AS STRING) AS HRESULT
@@ -182,20 +182,20 @@ Public:
    DECLARE FUNCTION GetDim () AS ULONG
    DECLARE FUNCTION GetLBound (BYVAL nDim AS UINT = 1) AS LONG
    DECLARE FUNCTION GetUBound (BYVAL nDim AS UINT = 1) AS LONG
-   DECLARE FUNCTION GetVariantElem (BYVAL iElem AS ULONG) AS DVARIANT
+   DECLARE FUNCTION GetVariantElement (BYVAL iElem AS ULONG) AS DVARIANT
    ' =====================================================================================
 
    ' ==================================== ARRAYS =========================================
    DECLARE FUNCTION GetElementCount () AS ULONG
-   DECLARE FUNCTION GetBooleanElem (BYVAL iElem AS ULONG) AS BOOLEAN
-   DECLARE FUNCTION GetShortElem (BYVAL iElem AS ULONG) AS SHORT
-   DECLARE FUNCTION GetUShortElem (BYVAL iElem AS ULONG) AS USHORT
-   DECLARE FUNCTION GetLongElem (BYVAL iElem AS ULONG) AS LONG
-   DECLARE FUNCTION GetULongElem (BYVAL iElem AS ULONG) AS ULONG
-   DECLARE FUNCTION GetLongIntElem (BYVAL iElem AS ULONG) AS LONGINT
-   DECLARE FUNCTION GetULongIntElem (BYVAL iElem AS ULONG) AS ULONGINT
-   DECLARE FUNCTION GetDoubleElem (BYVAL iElem AS ULONG) AS DOUBLE
-   DECLARE FUNCTION GetStringElem (BYVAL iElem AS ULONG) AS DWSTRING
+   DECLARE FUNCTION GetBooleanElement (BYVAL iElem AS ULONG) AS BOOLEAN
+   DECLARE FUNCTION GetShortElement (BYVAL iElem AS ULONG) AS SHORT
+   DECLARE FUNCTION GetUShortElement (BYVAL iElem AS ULONG) AS USHORT
+   DECLARE FUNCTION GetLongElement (BYVAL iElem AS ULONG) AS LONG
+   DECLARE FUNCTION GetULongElement (BYVAL iElem AS ULONG) AS ULONG
+   DECLARE FUNCTION GetLongIntElement (BYVAL iElem AS ULONG) AS LONGINT
+   DECLARE FUNCTION GetULongIntElement (BYVAL iElem AS ULONG) AS ULONGINT
+   DECLARE FUNCTION GetDoubleElement (BYVAL iElem AS ULONG) AS DOUBLE
+   DECLARE FUNCTION GetStringElement (BYVAL iElem AS ULONG) AS DWSTRING
    ' =====================================================================================
 
    ' ============================== CONVERSION METHODS ===================================
@@ -662,7 +662,7 @@ END OPERATOR
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.LET (BYREF dv AS DVARIANT)
    DVARIANT_DP("DVARIANT")
-   VariantClear(@vd)
+   ' // No need to clear the variant because VariantCopy clears the destination variant
    m_Result = VariantCopy(@vd, @dv.vd)
 END OPERATOR
 ' ========================================================================================
@@ -671,7 +671,6 @@ END OPERATOR
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.LET (BYVAL v AS VARIANT)
    DVARIANT_DP("VARIANT")
-   VariantClear(@vd)
    m_Result = VariantCopy(@vd, @v)
 END OPERATOR
 ' ========================================================================================
@@ -680,7 +679,6 @@ END OPERATOR
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.LET (BYVAL pvar AS VARIANT PTR)
    DVARIANT_DP("VARIANT PTR")
-   VariantClear(@vd)
    m_Result = VariantCopy(@vd, pvar)
 END OPERATOR
 ' ========================================================================================
@@ -798,7 +796,6 @@ END OPERATOR
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.Put (BYREF dv AS DVARIANT) AS HRESULT
    DVARIANT_DP("DVARIANT")
-   VariantClear(@vd)
    m_Result = VariantCopy(@vd, @dv.vd)
    RETURN m_Result
 END FUNCTION
@@ -808,7 +805,6 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.Put (BYREF v AS VARIANT) AS HRESULT
    DVARIANT_DP("VARIANT")
-   VariantClear(@vd)
    m_Result = VariantCopy(@vd, @v)
    RETURN m_Result
 END FUNCTION
@@ -818,7 +814,6 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.Put (BYVAL pvar AS VARIANT PTR) AS HRESULT
    DVARIANT_DP("VARIANT PTR")
-   VariantClear(@vd)
    m_Result = VariantCopy(@vd, pvar)
    RETURN m_Result
 END FUNCTION
@@ -1550,10 +1545,10 @@ END FUNCTION
 ' =====================================================================================
 ' ========================================================================================
 ' Initializes a DVARIANT from a specified variant element.
-' Called VarGetElem (inline function) in the propvarutil.h header, which I find confusing.
-' VariantFromVariantArrayElem is more descriptive.
+' Called VarGetElement (inline function) in the propvarutil.h header, which I find confusing.
+' VariantFromVariantArrayElement is more descriptive.
 ' ========================================================================================
-PRIVATE FUNCTION DVARIANT.PutVariantArrayElem (BYVAL pvarIn AS VARIANT PTR, BYVAL iElem AS ULONG) AS DVARIANT
+PRIVATE FUNCTION DVARIANT.PutVariantArrayElement (BYVAL pvarIn AS VARIANT PTR, BYVAL iElem AS ULONG) AS DVARIANT
    DVARIANT_DP("")
    m_Result = 0
    VariantClear(@vd)
@@ -1609,7 +1604,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts a single Variant element from a safe array of variants.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetVariantElem (BYVAL iElem AS ULONG) AS DVARIANT
+PRIVATE FUNCTION DVARIANT.GetVariantElement (BYVAL iElem AS ULONG) AS DVARIANT
    DVARIANT_DP("")
    m_Result = 0
    DIM vItem AS VARIANT
@@ -1637,7 +1632,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts a single Boolean element from a DVARIANT.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetBooleanElem (BYVAL iElem AS ULONG) AS BOOLEAN
+PRIVATE FUNCTION DVARIANT.GetBooleanElement (BYVAL iElem AS ULONG) AS BOOLEAN
    DVARIANT_DP("")
    DIM pfVal AS WINBOOL
    m_Result = AfxVariantGetBooleanElem(@vd, iElem, @pfVal)
@@ -1647,7 +1642,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts a single Int16 element from a DVARIANT.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetShortElem (BYVAL iElem AS ULONG) AS SHORT
+PRIVATE FUNCTION DVARIANT.GetShortElement (BYVAL iElem AS ULONG) AS SHORT
    DVARIANT_DP("")
    DIM pnVal AS SHORT
    m_Result = AfxVariantGetInt16Elem(@vd, iElem, @pnVal)
@@ -1657,7 +1652,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts a single unsigned Int16 element from a DVARIANT.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetUShortElem (BYVAL iElem AS ULONG) AS USHORT
+PRIVATE FUNCTION DVARIANT.GetUShortElement (BYVAL iElem AS ULONG) AS USHORT
    DVARIANT_DP("")
    DIM pnVal AS USHORT
    m_Result = AfxVariantGetUInt16Elem(@vd, iElem, @pnVal)
@@ -1667,7 +1662,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts a single Int32 element from a DVARIANT.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetLongElem (BYVAL iElem AS ULONG) AS LONG
+PRIVATE FUNCTION DVARIANT.GetLongElement (BYVAL iElem AS ULONG) AS LONG
    DVARIANT_DP("")
    DIM pnVal AS LONG
    m_Result = AfxVariantGetInt32Elem(@vd, iElem, @pnVal)
@@ -1677,7 +1672,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts a single unsigned Int32 element from a DVARIANT.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetULongElem (BYVAL iElem AS ULONG) AS ULONG
+PRIVATE FUNCTION DVARIANT.GetULongElement (BYVAL iElem AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pnVal AS ULONG
    m_Result = AfxVariantGetUInt32Elem(@vd, iElem, @pnVal)
@@ -1687,7 +1682,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts a single Int64 element from a DVARIANT.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetLongIntElem (BYVAL iElem AS ULONG) AS LONGINT
+PRIVATE FUNCTION DVARIANT.GetLongIntElement (BYVAL iElem AS ULONG) AS LONGINT
    DVARIANT_DP("")
    DIM pnVal AS LONGINT
    m_Result = AfxVariantGetInt64Elem(@vd, iElem, @pnVal)
@@ -1697,7 +1692,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts a single UInt64 element from a DVARIANT.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetULongIntElem (BYVAL iElem AS ULONG) AS ULONGINT
+PRIVATE FUNCTION DVARIANT.GetULongIntElement (BYVAL iElem AS ULONG) AS ULONGINT
    DVARIANT_DP("")
    DIM pnVal AS ULONGINT
    m_Result = AfxVariantGetUInt64Elem(@vd, iElem, @pnVal)
@@ -1707,7 +1702,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts one double element from a DVARIANT.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetDoubleElem (BYVAL iElem AS ULONG) AS DOUBLE
+PRIVATE FUNCTION DVARIANT.GetDoubleElement (BYVAL iElem AS ULONG) AS DOUBLE
    DVARIANT_DP("")
    DIM pnVal AS DOUBLE
    m_Result = AfxVariantGetDoubleElem(@vd, iElem, @pnVal)
@@ -1717,7 +1712,7 @@ END FUNCTION
 ' =====================================================================================
 ' Extracts an string element from a DVARIANT.
 ' =====================================================================================
-PRIVATE FUNCTION DVARIANT.GetStringElem (BYVAL iElem AS ULONG) AS DWSTRING
+PRIVATE FUNCTION DVARIANT.GetStringElement (BYVAL iElem AS ULONG) AS DWSTRING
    DVARIANT_DP("")
    DIM pwszVal AS WSTRING PTR, dwsVal AS DWSTRING
    m_Result = AfxVariantGetStringElem(@vd, iElem, @pwszVal)

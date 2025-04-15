@@ -150,7 +150,7 @@ END OPERATOR
 ' ========================================================================================
 ' Returns the string data (same as **).
 ' ========================================================================================
-PRIVATE OPERATOR DWSTRING.CAST () BYREF AS WSTRING
+PRIVATE OPERATOR DWSTRING.CAST () BYREF AS CONST WSTRING
    DWSTRING_DP("BYREF AS WSTRING - buffer: " & ..WSTR(m_pBuffer))
    OPERATOR = *m_pBuffer
 END OPERATOR
@@ -173,6 +173,12 @@ END OPERATOR
 
 ' ========================================================================================
 ' Assigns new text to the DWSTRING
+' ========================================================================================
+PRIVATE OPERATOR DWSTRING.Let (BYREF wszStr AS WSTRING)
+   DWSTRING_DP("BYREF WSTRING")
+   this.Clear : this.Add(wszStr)
+END OPERATOR
+' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DWSTRING.Let (BYVAL pwszStr AS WSTRING PTR)
    DWSTRING_DP("WSTRING PTR")
@@ -500,9 +506,9 @@ END FUNCTION
 ' ========================================================================================
 ' Appends a string to the DWSTRING
 ' ========================================================================================
-PRIVATE OPERATOR DWSTRING.+= (BYREF wszStr AS WSTRING)
-   DWSTRING_DP("WSTRING")
-   this.Add(wszStr)
+PRIVATE OPERATOR DWSTRING.+= (BYVAL pwszStr AS WSTRING PTR)
+   DWSTRING_DP("WSTRING PTR")
+   this.Add(pwszStr)
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================

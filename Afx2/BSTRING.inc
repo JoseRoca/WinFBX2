@@ -271,6 +271,14 @@ PRIVATE OPERATOR BSTRING.LET (BYREF dws AS DWSTRING)
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
+PRIVATE OPERATOR BSTRING.LET (BYREF wsz AS WSTRING)
+   BSTRING_DP("WSTRING - handle: " & ..WSTR(m_bstr))
+   IF m_bstr THEN SysFreeString(m_bstr)
+   m_bstr = SysAllocString(wsz)
+   BSTRING_DP("STRING - new handle: " & ..WSTR(m_bstr))
+END OPERATOR
+' ========================================================================================
+' ========================================================================================
 PRIVATE OPERATOR BSTRING.LET (BYREF s AS STRING)
    BSTRING_DP("STRING - handle: " & ..WSTR(m_bstr))
    IF m_bstr THEN SysFreeString(m_bstr)
@@ -401,6 +409,14 @@ PRIVATE OPERATOR BSTRING.+= (BYREF dws AS DWSTRING)
    this.Append(dws)
 END OPERATOR
 ' ========================================================================================
+' ========================================================================================
+' Appends a STRING to the BSTRING.
+' ========================================================================================
+PRIVATE OPERATOR BSTRING.+= (BYREF s AS STRING)
+   BSTRING_DP("STRING")
+   this.Append(s)
+END OPERATOR
+' ========================================================================================
 
 ' ========================================================================================
 ' Appends a number to the BSTRING.
@@ -447,6 +463,15 @@ END OPERATOR
 ' ========================================================================================
 
 ' ========================================================================================
+' Appends a STRING to the BSTRING.
+' ========================================================================================
+PRIVATE OPERATOR BSTRING.&= (BYREF s AS STRING)
+   BSTRING_DP("STRING")
+   this.Append(s)
+END OPERATOR
+' ========================================================================================
+
+' ========================================================================================
 ' Appends a number to the BSTRING.
 ' ========================================================================================
 PRIVATE OPERATOR BSTRING.&= (BYVAL n AS LONGINT)
@@ -483,8 +508,8 @@ END OPERATOR
 
 ' ========================================================================================
 ' Global operator.
-' One * returns the BSTR handle.
-' Two ** deferences de string data.
+' One * returns the BSTR handle. Same as STRPTR.
+' Two ** deferences the string data. Same AS *STRPTR.
 ' ========================================================================================
 PRIVATE OPERATOR * (BYREF bs AS BSTRING) AS WSTRING PTR
    OPERATOR = bs.m_bstr

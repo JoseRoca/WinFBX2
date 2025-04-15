@@ -97,7 +97,7 @@ Public:
    ' =================================== CASTING =========================================
    DECLARE OPERATOR CAST () AS VARIANT
    DECLARE OPERATOR CAST () AS ANY PTR
-   DECLARE OPERATOR CAST () BYREF AS WSTRING
+   DECLARE OPERATOR CAST () BYREF AS CONST WSTRING
    ' =====================================================================================
 
    ' ================================== LET OPERATOR =====================================
@@ -646,7 +646,7 @@ END OPERATOR
 ' =====================================================================================
 ' Extracts the contents of a VARIANT and returns them as a WSTRING.
 ' =====================================================================================
-PRIVATE OPERATOR DVARIANT.CAST () BYREF AS WSTRING
+PRIVATE OPERATOR DVARIANT.CAST () BYREF AS CONST WSTRING
    DVARIANT_DP("BYREF AS WSTRING")
    m_dws = this.ToStr
    OPERATOR = *CAST(WSTRING PTR, m_dws.GetBuffer)
@@ -2522,14 +2522,15 @@ END NAMESPACE
 USING Afx2
 
 ' ========================================================================================
-' Returns the address ofthe data of the underlying variant. Same as STRPTR.
+' Returns the address of the data of the underlying variant. Same as STRPTR.
+' **dv Can't be used to deference the string data because * is already overloaded to
+' perform multiply. To deference the string data use *STRPTR(dv)
 ' ========================================================================================
 PRIVATE OPERATOR * (BYREF dv AS DVARIANT) AS VARIANT PTR
    DVARIANT_DP(..WSTR(CAST(VARIANT PTR, STRPTR(dv))))
    OPERATOR = CAST(VARIANT PTR, STRPTR(dv))
 END OPERATOR
 ' ========================================================================================
-
 ' ========================================================================================
 PRIVATE OPERATOR & (BYREF dv1 AS DVARIANT, BYREF dv2 AS DVARIANT) AS DVARIANT
    DIM dvRes AS DVARIANT

@@ -6,117 +6,118 @@ The `DVARIANT` class implements a `VARIANT` data type. The variant data type is 
 
 | Name       | Description |
 | ---------- | ----------- |
-| [Constructors](#Constructors) | Initialize the class with the specified value. |
-| [Operators](#Operators) | Procedures that perform a certain function with their operands. |
-| [vType](#vType) | Returns the VARIANT type. |
-| [Attach](#Attach) | Attaches a variant to the class. |
-| [Detach](#Detach) | Detaches the variant data from this class and transfers ownership to the passed variant. |
-| [ChangeType](#ChangeType) | Converts the variant from one type to another. |
-| [ChangeTypeEx](#ChangeTypeEx) | Converts the variant from one type to another. |
-| [GetDim](#GetDim) | Gets the number of dimensions in the array. |
-| [GetLBound](#GetLBound) | Gets the lower bound for the specified dimension of the safe array. |
-| [GetUBound](#GetUBound) | Gets the upper bound for the specified dimension of the safe array. |
-| [GetElementCount](#GetElementCount) | Gets the number of elements in the array. |
-| [DecToCY](#DecToCY) | Converts a DVARIANT of type decimal to a CY structure. |
-| [DecToDouble](#DecToDouble) | Converts a DVARIANT of type decimal to a double. |
-| [Round](#Round) | Rounds a variant to the specified number of decimal places. |
-| [FormatNumber](#FormatNumber) | Formats a DVARIANT containing numbers into a string form. |
-| [GetBooleanElem](#GetBooleanElem) | Extracts a single boolean element from a safe array of booleans. |
-| [GetDoubleElem](#GetDoubleElem) | Extracts a single DOUBLE element from a safe array of doubles. |
-| [GetLongElem](#GetLongElem) | Extracts a single LONG element from a safe array of longs. |
-| [GetLongIntElem](#GetLongIntElem) | Extracts a single LONGINT element from a safe array of long integers. |
-| [GetShortElem](#GetShortElem) | Extracts a single SHORT element from a safe array of shorts. |
-| [GetStringElem](#GetStringElem) | Extracts a single BSTR element from a safe array of unicode strings. |
-| [GetULongElem](#GetULongElem) | Extracts a single ULONG element from a safe array of unsigned longs. |
-| [GetULongIntElem](#GetULongIntElem) | Extracts a single ULONGINT element from a safe array of unsigned long integers. |
-| [GetUShortElem](#GetUShortElem) | Extracts a single USHORT element from a safe array of unsigned shorts. |
-| [GetVariantElem](#GetVariantElem) | Extracts a single Variant element from a safe array of variants. |
-| [Put](#Put) | Assigns values to a DVARIANT. |
-| [PutNull](#PutNull) | Assigns a null value. |
-| [PutBool](#PutBool) | Assigns a boolean value. |
-| [PutBoolean](#PutBoolean) | Assigns a boolean value. |
-| [PutByte](#PutByte) | Assigns a byte value. |
-| [PutUByte](#PutUByte) | Assigns an ubyte value. |
-| [PutShort](#PutShort) | Assigns a short value. |
-| [PutUShort](#PutUShort) | Assigns an ushort value. |
-| [PutInt](#PutInt) | Assigns an int_ value. |
-| [PutUInt](#PutUInt) | Assigns an uint value. |
-| [PutLong](#PutLong) | Assigns a long value. |
-| [PutULong](#PutULong) | Assigns an ulong value. |
-| [PutLongInt](#PutLongInt) | Assigns a longint value. |
-| [PutULongInt](#PutULongInt) | Assigns an ulongint value. |
-| [PutSingle](#PutSingle) | Assigns a single value. |
-| [PutFloat](#PutFloat) | Assigns a single value. |
-| [PutDouble](#PutDouble) | Assigns a double value. |
-| [PutBooleanArray](#PutBooleanArray) | Initializes DVARIANT from an array of Boolean values. |
-| [PutShortArray](#PutShortArray) | Initializes DVARIANT from an array of signed 16-bit integer values. |
-| [PutUShortArray](#PutUShortArray) | Initializes DVARIANT from an array of unsigned 16-bit integer values. |
-| [PutLongArray](#PutLongArray) | Initializes DVARIANT from an array of signed 32-bit integer values. |
-| [PutULongArray](#PutULongArray) | Initializes DVARIANT from an array of 32-bit unsigned integer values. |
-| [PutLongIntArray](#PutLongIntArray) | Initializes DVARIANT from an array of signed 64-bit integer values. |
-| [PutULongIntArray](#PutULongIntArray) | Initializes DVARIANT from an array of unsigned 64-bit integer values. |
-| [PutDoubleArray](#PutDoubleArray) | Initializes DVARIANT from an array of unsigned 64-bit integer values. |
-| [PutStringArray](#PutStringArray) | Initializes DVARIANT from an array of unsigned 64-bit integer values. |
-| [PutBuffer](#PutBuffer) | Initializes DVARIANT with the contents of a buffer. |
-| [PutDateString](#PutDateString) | Initializes DVARIANT VT_DATE from a string. |
-| [PutDec](#PutDec) | Initializes DVARIANT with the contents of a DECIMAL structure. |
-| [PutDecFromCY](#PutDecFromCY) | Converts a currency value to a variant of type VT_DECIMAL. |
-| [PutDecFromDouble](#PutDecFromDouble) | Converts a double value to a variant of type VT_DECIMAL. |
-| [PutDecFromStr](#PutDecFromStr) | Initializes DVARIANT as VT_DECIMAL from a string. |
-| [PutFileTime](#PutFileTime) | Initializes DVARIANT with the contents of a FILETIME structure. |
-| [PutFileTimeArray](#PutFileTimeArray) | Initializes DVARIANT with an array of FILETIME structures. |
-| [PutGuid](#PutGuid) | Initializes DVARIANT from a GUID. |
-| [PutPropVariant](#PutPropVariant) | Initializes DVARIANT from the contents of a PROPVARIANT structure. |
-| [PutRecord](#PutRecord) | Initializes DVARIANT with a reference to an UDT. |
-| [PutRef](#PutRef) | Assigns a value by reference (a pointer to a variable). |
-| [PutResource](#PutResource) | Initializes the DVARIANT based on a string resource imbedded in an executable file. |
-| [PutSafeArray](#PutSafeArray) | Initializes DVARIANT from a safe array. |
-| [PutStrRet](#PutStrRet) | Initializes DVARIANT with string stored in a STRRET structure. |
-| [PutSystemTime](#PutSystemTime) | Initializes DVARIANT with the contents of a SYSTEMTIME structure. |
-| [PutUtf8](#PutUtf8) | Initializes DVARIANT with the contents of an UTF-8 string. |
-| [PutVariantArrayElem](#PutVariantArrayElem) | Initializes DVARIANT with a value stored in another VARIANT structure. |
-| [PutVbDate](#PutVbDate) | Initializes DVARIANT with the contents of a DATE value. |
-| [ToBooleanArray](#ToBooleanArray) | Extracts an array of boolean values from DVARIANT. |
-| [ToBooleanArrayAlloc](#ToBooleanArrayAlloc) | Extracts an array of boolean values from DVARIANT. |
-| [ToBstr](#ToBstr) | Extracts the content of the underlying variant and returns it as a BSTRING. |
-| [ToBuffer](#ToBuffer) | Extracts the contents of a DVARIANT of type VT_ARRRAY OR VT_UI1 to a buffer. |
-| [ToBuffer (STRING)](#ToBufferString) | Extracts the contents of a DVARIANT of type VT_ARRRAY OR VT_UI1 to a string used as a buffer. |
-| [ToDosDateTime](#ToDosDateTime) | Extracts a date and time value in Microsoft MS-DOS format from a DVARIANT of type VT_DATE. |
-| [ToDoubleArray](#ToDoubleArray) | Extracts an array of DOUBLE values from DVARIANT. |
-| [ToDoubleArrayAlloc](#ToDoubleArrayAlloc) | Extracts an array of DOUBLE values from DVARIANT. |
-| [ToFileTime](#ToFileTime) | Returns the contents of a DVARIANT of type VT_DATE as a FILETIME structure. |
+| [Constructors](#constructors) | Initialize the class with the specified value. |
+| [Operators](#operators) | Procedures that perform a certain function with their operands. |
+| [vType](#vtype) | Returns the VARIANT type. |
+| [Attach](#attach) | Attaches a variant to the class. |
+| [Detach](#detach) | Detaches the variant data from this class and transfers ownership to the passed variant. |
+| [ChangeType](#changetype) | Converts the variant from one type to another. |
+| [ChangeTypeEx](#changetypeex) | Converts the variant from one type to another. |
+| [GetDim](#getdim) | Gets the number of dimensions in the array. |
+| [GetLBound](#getlbound) | Gets the lower bound for the specified dimension of the safe array. |
+| [GetUBound](#getubound) | Gets the upper bound for the specified dimension of the safe array. |
+| [GetElementCount](#getelementcount) | Gets the number of elements in the array. |
+| [DecToCY](#dectocy) | Converts a DVARIANT of type decimal to a CY structure. |
+| [DecToDouble](#dectodouble) | Converts a DVARIANT of type decimal to a double. |
+| [Round](#round) | Rounds a variant to the specified number of decimal places. |
+| [FormatNumber](#formatnumber) | Formats a DVARIANT containing numbers into a string form. |
+| [GetBooleanElem](#getbooleanrlem) | Extracts a single boolean element from a safe array of booleans. |
+| [GetDoubleElem](#getdoublerlem) | Extracts a single DOUBLE element from a safe array of doubles. |
+| [GetLongElem](#getlongelem) | Extracts a single LONG element from a safe array of longs. |
+| [GetLongIntElem](#getlongintrlem) | Extracts a single LONGINT element from a safe array of long integers. |
+| [GetShortElem](#getshortrlem) | Extracts a single SHORT element from a safe array of shorts. |
+| [GetStringElem](#getstringelem) | Extracts a single BSTR element from a safe array of unicode strings. |
+| [GetULongElem](#getulongelem) | Extracts a single ULONG element from a safe array of unsigned longs. |
+| [GetULongIntElem](#getulongintelem) | Extracts a single ULONGINT element from a safe array of unsigned long integers. |
+| [GetUShortElem](#getushortelem) | Extracts a single USHORT element from a safe array of unsigned shorts. |
+| [GetVariantElem](#getvariantelem) | Extracts a single Variant element from a safe array of variants. |
+| [Put](#put) | Assigns values to a DVARIANT. |
+| [PutNull](#putnull) | Assigns a null value. |
+| [PutBool](#putbool) | Assigns a boolean value. |
+| [PutBoolean](#putboolean) | Assigns a boolean value. |
+| [PutByte](#putbyte) | Assigns a byte value. |
+| [PutUByte](#putubyte) | Assigns an ubyte value. |
+| [PutShort](#putshort) | Assigns a short value. |
+| [PutUShort](#putushort) | Assigns an ushort value. |
+| [PutInt](#putint) | Assigns an int_ value. |
+| [PutUInt](#putuint) | Assigns an uint value. |
+| [PutLong](#putlong) | Assigns a long value. |
+| [PutULong](#putulong) | Assigns an ulong value. |
+| [PutLongInt](#putlongint) | Assigns a longint value. |
+| [PutULongInt](#putulongint) | Assigns an ulongint value. |
+| [PutSingle](#putsingle) | Assigns a single value. |
+| [PutFloat](#putfloat) | Assigns a single value. |
+| [PutDouble](#putdouble) | Assigns a double value. |
+| [PutBooleanArray](#putbooleanarray) | Initializes DVARIANT from an array of Boolean values. |
+| [PutShortArray](#putshortarray) | Initializes DVARIANT from an array of signed 16-bit integer values. |
+| [PutUShortArray](#putushortarray) | Initializes DVARIANT from an array of unsigned 16-bit integer values. |
+| [PutLongArray](#putlongarray) | Initializes DVARIANT from an array of signed 32-bit integer values. |
+| [PutULongArray](#putulongarray) | Initializes DVARIANT from an array of 32-bit unsigned integer values. |
+| [PutLongIntArray](#putlongintarray) | Initializes DVARIANT from an array of signed 64-bit integer values. |
+| [PutULongIntArray](#putulongintarray) | Initializes DVARIANT from an array of unsigned 64-bit integer values. |
+| [PutDoubleArray](#putdoublearray) | Initializes DVARIANT from an array of unsigned 64-bit integer values. |
+| [PutStringArray](#putstringarray) | Initializes DVARIANT from an array of unsigned 64-bit integer values. |
+| [PutBuffer](#putbuffer) | Initializes DVARIANT with the contents of a buffer. |
+| [PutDateString](#putdatestring) | Initializes DVARIANT VT_DATE from a string. |
+| [PutDec](#putdec) | Initializes DVARIANT with the contents of a DECIMAL structure. |
+| [PutDecFromCY](#putdecfromcy) | Converts a currency value to a variant of type VT_DECIMAL. |
+| [PutDecFromDouble](#putdecfromdouble) | Converts a double value to a variant of type VT_DECIMAL. |
+| [PutDecFromStr](#putdecfromstr) | Initializes DVARIANT as VT_DECIMAL from a string. |
+| [PutFileTime](#putfiletime) | Initializes DVARIANT with the contents of a FILETIME structure. |
+| [PutFileTimeArray](#putfiletimearray) | Initializes DVARIANT with an array of FILETIME structures. |
+| [PutGuid](#putguid) | Initializes DVARIANT from a GUID. |
+| [PutPropVariant](#putpropvariant) | Initializes DVARIANT from the contents of a PROPVARIANT structure. |
+| [PutRecord](#putrecord) | Initializes DVARIANT with a reference to an UDT. |
+| [PutRef](#putref) | Assigns a value by reference (a pointer to a variable). |
+| [PutResource](#putresource) | Initializes the DVARIANT based on a string resource imbedded in an executable file. |
+| [PutSafeArray](#putsafearray) | Initializes DVARIANT from a safe array. |
+| [PutStrRet](#putstrret) | Initializes DVARIANT with string stored in a STRRET structure. |
+| [PutSystemTime](#putsystemtime) | Initializes DVARIANT with the contents of a SYSTEMTIME structure. |
+| [PutUtf8](#pututf8) | Initializes DVARIANT with the contents of an UTF-8 string. |
+| [PutVariantArrayElem](#putvariantarrayelem) | Initializes DVARIANT with a value stored in another VARIANT structure. |
+| [PutVbDate](#putvbdate) | Initializes DVARIANT with the contents of a DATE value. |
+| [ToBooleanArray](#tobooleanarray) | Extracts an array of boolean values from DVARIANT. |
+| [ToBooleanArrayAlloc](#tobooleanarrayalloc) | Extracts an array of boolean values from DVARIANT. |
+| [ToBstr](#tobstr) | Extracts the content of the underlying variant and returns it as a BSTRING. |
+| [ToBuffer](#tobuffer) | Extracts the contents of a DVARIANT of type VT_ARRRAY OR VT_UI1 to a buffer. |
+| [ToBuffer (STRING)](#tobufferstring) | Extracts the contents of a DVARIANT of type VT_ARRRAY OR VT_UI1 to a string used as a buffer. |
+| [ToDosDateTime](#todosdatetime) | Extracts a date and time value in Microsoft MS-DOS format from a DVARIANT of type VT_DATE. |
+| [ToDoubleArray](#todoublearray) | Extracts an array of DOUBLE values from DVARIANT. |
+| [ToDoubleArrayAlloc](#todoublearrayalloc) | Extracts an array of DOUBLE values from DVARIANT. |
+| [ToFileTime](#tofiletime) | Returns the contents of a DVARIANT of type VT_DATE as a FILETIME structure. |
 | [ToGuid](#ToGuid) | Returns the contents of a DVARIANT containing a GUID string as a GUID structure. |
-| [ToGuidBStr](#ToGuidBStr) | Returns the contents of a DVARIANT containing a GUID string as an unicode GUID string. |
-| [ToGuidStr](#ToGuidStr) | Returns the contents of a DVARIANT containing a GUID string as an unicode GUID string. |
-| [ToGuidWStr](#ToGuidWStr) | Returns the contents of a DVARIANT containing a GUID string as an unicode GUID string. |
-| [ToLongArray](#ToLongArray) | Extracts an array of LONG values from DVARIANT. |
-| [ToLongArrayAlloc](#ToLongArrayAlloc) | Extracts an array of LONG values from DVARIANT. |
-| [ToLongIntArray](#ToLongIntArray) | Extracts an array of LONGINT values from DVARIANT. |
-| [ToLongIntArrayAlloc](#ToLongIntArrayAlloc) | Extracts an array of LONGINT values from DVARIANT. |
-| [ToShortArray](#ToShortArray) | Extracts an array of Int16 values from DVARIANT. |
-| [ToShortArrayAlloc](#ToShortArrayAlloc) | Extracts an array of SHORT values from DVARIANT. |
-| [ToStr](#ToStr) | Extracts the content of the underlying variant and returns it as a DWSTRING. |
-| [ToStringArray](#ToStringArray) | Extracts data from a vector structure into a PWSTR array. |
-| [ToStringArrayAlloc](#ToStringArrayAlloc) | Extracts an array of PWSTR values from DVARIANT. |
-| [ToStrRet](#ToStrRet) | Returns the contents of a DVARIANT of type VT_BSTR to a STRRET stucture. |
-| [ToSystemTime](#ToSystemTime) | Returns the contents of DVARIANT of type VT_DATE as a FILETIME structure. |
-| [ToULongArray](#ToULongArray) | Extracts an array of ULONG values from DVARIANT. |
-| [ToULongArrayAlloc](#ToULongArrayAlloc) | Extracts an array of ULONG values from DVARIANT. |
-| [ToULongIntArray](#ToULongIntArray) | Extracts an array of ULONGINT values from DVARIANT. |
-| [ToULongIntArrayAlloc](#ToULongIntArrayAlloc) | Extracts an array of ULONGINT values from DVARIANT. |
-| [ToUShortArray](#ToUShortArray) | Extracts an array of USHORT values from DVARIANT. |
-| [ToUShortArrayAlloc](#ToUShortArrayAlloc) | Extracts an array of USHORT values from DVARIANT. |
-| [ToUtf8](#ToUtf8) | Returns the contents of a DVARIANT containing a BSTR as an UTF-8 encoded string. |
-| [ToVbDate](#ToVbDate) | Returns the contents of a DVARIANT of type VT_DATE as a DATE value. |
-| [ToWStr](#ToWStr) | Extracts the content of the underlying variant and returns it as a DWSTRING. |
+| [ToGuidBStr](#toguidbdtr) | Returns the contents of a DVARIANT containing a GUID string as an unicode GUID string. |
+| [ToGuidStr](#toguidstr) | Returns the contents of a DVARIANT containing a GUID string as an unicode GUID string. |
+| [ToGuidWStr](#toguidwstr) | Returns the contents of a DVARIANT containing a GUID string as an unicode GUID string. |
+| [ToLongArray](#tolongarray) | Extracts an array of LONG values from DVARIANT. |
+| [ToLongArrayAlloc](#tolongarrayalloc) | Extracts an array of LONG values from DVARIANT. |
+| [ToLongIntArray](#tolongintarray) | Extracts an array of LONGINT values from DVARIANT. |
+| [ToLongIntArrayAlloc](#tolongintarrayalloc) | Extracts an array of LONGINT values from DVARIANT. |
+| [ToShortArray](#toshortarray) | Extracts an array of Int16 values from DVARIANT. |
+| [ToShortArrayAlloc](#toshortarrayalloc) | Extracts an array of SHORT values from DVARIANT. |
+| [ToStr](#tostr) | Extracts the content of the underlying variant and returns it as a DWSTRING. |
+| [ToStringArray](#tostringarray) | Extracts data from a vector structure into a PWSTR array. |
+| [ToStringArrayAlloc](#tostringarrayalloc) | Extracts an array of PWSTR values from DVARIANT. |
+| [ToStrRet](#tostrret) | Returns the contents of a DVARIANT of type VT_BSTR to a STRRET stucture. |
+| [ToSystemTime](#tosystemtime) | Returns the contents of DVARIANT of type VT_DATE as a FILETIME structure. |
+| [ToULongArray](#toulongarray) | Extracts an array of ULONG values from DVARIANT. |
+| [ToULongArrayAlloc](#toulongarrayalloc) | Extracts an array of ULONG values from DVARIANT. |
+| [ToULongIntArray](#toulongintarray) | Extracts an array of ULONGINT values from DVARIANT. |
+| [ToULongIntArrayAlloc](#toulongintarrayalloc) | Extracts an array of ULONGINT values from DVARIANT. |
+| [ToUShortArray](#toushortarray) | Extracts an array of USHORT values from DVARIANT. |
+| [ToUShortArrayAlloc](#toushortarrayalloc) | Extracts an array of USHORT values from DVARIANT. |
+| [ToUtf8](#toutf8) | Returns the contents of a DVARIANT containing a BSTR as an UTF-8 encoded string. |
+| [ToVbDate](#tovbdate) | Returns the contents of a DVARIANT of type VT_DATE as a DATE value. |
 
 #### Helper Procedures
 
 | Name       | Description |
 | ---------- | ----------- |
-| [AfxDVARIANTToStr](#AfxDVARIANTToStr) | Extracts the contents of a DVARIANT to a DWSTRING. |
-| [AfxDVARIANTiantToBuffer](#AfxDVARIANTiantToBuffer) | Extracts the contents of a variant that contains an array of bytes. |
-| [AfxDVARIANTOptPrm](#AfxDVARIANTOptPrm) | Returns a DVARIANT suitable to be used with optional parameters. |
+| [AfxDVarToStr](#AfxDVarToStr) | Extracts the contents of a DVARIANT to a DWSTRING. |
+| [AfxDVarToBuffer](#AfxDVarToBuffer) | Extracts the contents of a variant that contains an array of bytes. |
+| [AfxDVarToOptPrm](#AfxDVarToOptPrm) | Returns a DVARIANT suitable to be used with optional parameters. |
+
+---
 
 # <a name="Constructors"></a>Constructors
 
@@ -127,8 +128,8 @@ CONSTRUCTOR
 CONSTRUCTOR (BYREF dv AS DVARIANT)
 CONSTRUCTOR (BYVAL v AS VARIANT)
 CONSTRUCTOR (BYREF wsz AS WSTRING)
-CONSTRUCTOR (BYREF cws AS DWSTRING)
-CONSTRUCTOR (BYREF cbs AS BSTRING)
+CONSTRUCTOR (BYREF dws AS DWSTRING)
+CONSTRUCTOR (BYREF bs AS BSTRING)
 CONSTRUCTOR (BYVAL pvar AS VARIANT PTR)
 CONSTRUCTOR (BYVAL cy AS CURRENCY)
 CONSTRUCTOR (BYVAL dec AS DECIMAL)
@@ -152,8 +153,8 @@ CONSTRUCTOR (BYVAL _pvar AS ANY PTR, BYREF strType AS STRING)
 | *dec* | A decimal structure. |
 | *b* | A boolean value (TRUE or FALSE). |
 | *pwsz* | Pointer to an unicode string. You can also pass a Free Basic ansi string or a string literal. |
-| *cbs* | A BSTRING. |
-| *cws* | A DWSTRING. |
+| *bs* | A BSTRING. |
+| *dws* | A DWSTRING. |
 | *pDisp* | Pointer to a DISPATCH interface. |
 | *pUnk* | Pointer to a UNKNOWN interface. |
 | *_value* | A numeric value or variable. |
@@ -169,7 +170,6 @@ DIM dv AS DVARIANT = 12345           ' Creates a VT_I4 (3) variant
 DIM dv AS DVARIANT = 123456.78       ' Creates a VT_R8 (5) variant
 ```
 We can use the constructors to pass values to parameters in procedures without assigning them first to a variable, e.g.:
-
 ```
 SUB Foo (BYREF dv AS DVARIANT)
    PRINT AfxVarToStr(dv)
@@ -179,7 +179,6 @@ Foo DVARIANT("Test string")
 Foo DVARIANT(12345)
 Foo DVARIANT(12345, "LONG")
 ```
-
 ```
 SUB Foo (BYVAL dv AS DVARIANT PTR)
    PRINT AfxDVarToStr(dv)
@@ -188,7 +187,6 @@ Foo @DVARIANT("Test string")
 Foo @DVARIANT(12345)
 Foo @DVARIANT(12345, "LONG")
 ```
-
 ```
 SUB Foo (BYval v AS VARIANT PTR)
    PRINT AfxVarToStr(v)
@@ -197,6 +195,7 @@ Foo DVARIANT("Test string")
 Foo DVARIANT(12345)
 Foo DVARIANT(12345, "LONG")
 ```
+---
 
 # <a name="Operators"></a>Operators
 
@@ -332,6 +331,8 @@ Foo4 @DVARIANT(12345, "LONG")
 #### Remarks
 
 I haven't added a cast to return a numeric value because with procedures like PRINT that can use both a number or a string the compiler will fail, not knowing which cast it should use. If you want to convert it to a number, use VAL(DVARIANT).
+
+---
 
 ## <a name="vType"></a>vType
 

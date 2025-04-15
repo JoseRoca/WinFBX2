@@ -88,6 +88,12 @@ Public:
    DECLARE CONSTRUCTOR (BYVAL _pvar AS ANY PTR, BYREF strType AS STRING)
    ' =====================================================================================
 
+   ' ============================ ERRORS =================================================
+   DECLARE FUNCTION GetLastResult () AS LONG
+   DECLARE FUNCTION SetResult (BYVAL Result AS LONG) AS LONG
+   DECLARE FUNCTION GetErrorInfo (BYVAL dwError AS LONG = -1) AS DWSTRING
+   ' =====================================================================================
+
    ' =================================== CASTING =========================================
    DECLARE OPERATOR CAST () AS VARIANT
    DECLARE OPERATOR CAST () AS ANY PTR
@@ -140,8 +146,8 @@ Public:
    DECLARE SUB PutSingle (BYVAL _value AS SINGLE)
    DECLARE SUB PutFloat (BYVAL _value AS SINGLE)
    DECLARE SUB PutDouble (BYVAL _value AS DOUBLE)
+   DECLARE FUNCTION PutUtf8 (BYREF strUtf8 AS STRING) AS HRESULT
    DECLARE FUNCTION PutBuffer(BYVAL pv AS ANY PTR, BYVAL cb AS UINT) AS HRESULT
-'   DECLARE FUNCTION PutUtf8 (BYREF strUtf8 AS STRING) AS HRESULT
    DECLARE FUNCTION PutSafeArray (BYVAL parray AS SAFEARRAY PTR, BYVAL fAttach AS BOOLEAN = FALSE) AS HRESULT
    DECLARE FUNCTION PutResource (BYVAL hinst AS HINSTANCE, BYVAL id AS UINT) AS HRESULT
    DECLARE FUNCTION PutRecord (BYVAL pIRecordInfo AS IRecordInfo PTR, BYVAL pRec AS ANY PTR) AS HRESULT
@@ -195,6 +201,7 @@ Public:
    ' ============================== CONVERSION METHODS ===================================
    DECLARE FUNCTION ToStr () AS DWSTRING
    DECLARE FUNCTION ToBStr () AS BSTRING
+   DECLARE FUNCTION ToUtf8 () AS STRING
    DECLARE FUNCTION ToBuffer (BYVAL pv AS ANY PTR, BYVAL cb AS UINT) AS HRESULT
    DECLARE FUNCTION ToBuffer () AS STRING
    DECLARE FUNCTION ToUnknown () AS ANY PTR
@@ -308,7 +315,7 @@ END CONSTRUCTOR
 ' ========================================================================================
 PRIVATE DESTRUCTOR DVARIANT
    DVARIANT_DP(..WSTR(@vd))
-   VariantClear(@vd)
+   m_Result = VariantClear(@vd)
 END DESTRUCTOR
 ' ========================================================================================
 
@@ -317,7 +324,7 @@ END DESTRUCTOR
 ' ========================================================================================
 PRIVATE CONSTRUCTOR DVARIANT (BYREF dv AS DVARIANT)
    DVARIANT_DP("DVARIANT")
-   VariantCopy(@vd, @dv.vd)
+   m_Result = VariantCopy(@vd, @dv.vd)
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -325,7 +332,7 @@ END CONSTRUCTOR
 ' ========================================================================================
 PRIVATE CONSTRUCTOR DVARIANT (BYVAL v AS VARIANT)
    DVARIANT_DP("BYVAL VARIANT")
-   VariantCopy(@vd, @v)
+   m_Result = VariantCopy(@vd, @v)
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -334,18 +341,24 @@ END CONSTRUCTOR
 PRIVATE CONSTRUCTOR DVARIANT (BYVAL pwsz AS WSTRING PTR)
    DVARIANT_DP("WSTRING - " & ..WSTR(@vd))
    vd.vt = VT_BSTR : vd.bstrVal = SysAllocString(pwsz)
+   m_Result = 0
+   IF vd.bstrVal = NULL THEN m_Result = E_FAIL
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR DVARIANT (BYREF dws AS DWSTRING)
    DVARIANT_DP("DWSTRING")
    vd.vt = VT_BSTR : vd.bstrVal = SysAllocString(dws)
+   m_Result = 0
+   IF vd.bstrVal = NULL THEN m_Result = E_FAIL
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR DVARIANT (BYREF bs AS BSTRING)
    DVARIANT_DP("BSTRING")
    vd.vt = VT_BSTR : vd.bstrVal = SysAllocString(bs)
+   m_Result = 0
+   IF vd.bstrVal = NULL THEN m_Result = E_FAIL
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -353,7 +366,7 @@ END CONSTRUCTOR
 ' ========================================================================================
 PRIVATE CONSTRUCTOR DVARIANT (BYVAL pvar AS VARIANT PTR)
    DVARIANT_DP("VARIANT PTR")
-   VariantCopy(@vd, pvar)
+   m_Result = VariantCopy(@vd, pvar)
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -362,6 +375,7 @@ END CONSTRUCTOR
 PRIVATE CONSTRUCTOR DVARIANT (BYVAL cy AS CURRENCY)
    DVARIANT_DP("CURRENCY")
    vd.vt = VT_CY : vd.cyVal = cy
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -370,6 +384,7 @@ END CONSTRUCTOR
 PRIVATE CONSTRUCTOR DVARIANT (BYVAL dec AS DECIMAL)
    DVARIANT_DP("DECIMAL")
    vd.vt = VT_DECIMAL : vd.decVal = dec
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -380,6 +395,7 @@ END CONSTRUCTOR
 PRIVATE CONSTRUCTOR DVARIANT (BYVAL _value AS LONG)
    DVARIANT_DP("LONG")
    vd.vt = VT_I4 : vd.lVal = _value
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -406,6 +422,7 @@ PRIVATE CONSTRUCTOR DVARIANT (BYVAL pdisp AS IDispatch PTR, BYVAL fAddRef AS BOO
    DVARIANT_DP("IDISPATCH PTR")
    IF fAddRef THEN IDispatch_AddRef(pdisp)
    V_VT(@vd) = VT_DISPATCH : V_DISPATCH(@vd) = pdisp
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -415,6 +432,7 @@ PRIVATE CONSTRUCTOR DVARIANT (BYVAL punk AS IUnknown PTR, BYVAL fAddRef AS BOOLE
    DVARIANT_DP("IUNKNOWN PTR")
    IF fAddRef THEN IUnknown_AddRef(punk)
    V_VT(@vd) = VT_UNKNOWN : V_UNKNOWN(@vd) = punk
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -451,6 +469,7 @@ PRIVATE CONSTRUCTOR DVARIANT (BYVAL _value AS LONGINT, BYVAL _vType AS WORD = VT
          CASE ELSE     : vd.vt = VT_I4   : vd.llVal = CLNG(_value)
       END SELECT
    END IF
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -474,6 +493,7 @@ PRIVATE CONSTRUCTOR DVARIANT (BYVAL _value AS LONGINT, BYREF strType AS STRING)
       CASE "NULL"     : vd.vt = VT_NULL
       CASE ELSE       : vd.vt = VT_I4   : vd.llVal = CLNG(_value)
    END SELECT
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -488,6 +508,7 @@ PRIVATE CONSTRUCTOR DVARIANT (BYVAL _value AS DOUBLE, BYVAL _vType AS WORD = VT_
       CASE VT_R8    : vd.vt = VT_R8   : vd.dblVal = CDBL(_value)
       CASE ELSE     : vd.vt = VT_R8   : vd.dblVal = CDBL(_value)
    END SELECT
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -499,6 +520,7 @@ PRIVATE CONSTRUCTOR DVARIANT (BYVAL _value AS DOUBLE, BYREF strType AS STRING)
       CASE "DOUBLE" : vd.vt = VT_R8   : vd.dblVal = CDBL(_value)
       CASE ELSE     : vd.vt = VT_R8   : vd.dblVal = CDBL(_value)
    END SELECT
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -535,6 +557,7 @@ PRIVATE CONSTRUCTOR DVARIANT (BYVAL _pvar AS ANY PTR, BYVAL _vType AS WORD)
       CASE VT_VARIANT   : vd.vt = VT_VARIANT OR VT_BYREF   : vd.pvarVal = _pvar
       CASE VT_SAFEARRAY : vd.vt = VT_SAFEARRAY OR VT_BYREF : vd.pparray = _pvar
    END SELECT
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -568,6 +591,7 @@ PRIVATE CONSTRUCTOR DVARIANT (BYVAL _pvar AS ANY PTR, BYREF strType AS STRING)
          CASE "SAFEARRAY" : vd.vt = VT_SAFEARRAY OR VT_BYREF : vd.pparray = _pvar
       END SELECT
    END IF
+   m_Result = 0
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -638,7 +662,8 @@ END OPERATOR
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.LET (BYREF dv AS DVARIANT)
    DVARIANT_DP("DVARIANT")
-   VariantClear(@vd) : VariantCopy(@vd, @dv.vd)
+   VariantClear(@vd)
+   m_Result = VariantCopy(@vd, @dv.vd)
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -646,7 +671,8 @@ END OPERATOR
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.LET (BYVAL v AS VARIANT)
    DVARIANT_DP("VARIANT")
-   VariantClear(@vd) : VariantCopy(@vd, @v)
+   VariantClear(@vd)
+   m_Result = VariantCopy(@vd, @v)
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -654,7 +680,8 @@ END OPERATOR
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.LET (BYVAL pvar AS VARIANT PTR)
    DVARIANT_DP("VARIANT PTR")
-   VariantClear(@vd) : VariantCopy(@vd, pvar)
+   VariantClear(@vd)
+   m_Result = VariantCopy(@vd, pvar)
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -663,6 +690,8 @@ END OPERATOR
 PRIVATE OPERATOR DVARIANT.LET (BYVAL pwszStr AS WSTRING PTR)
    DVARIANT_DP("WSTRING PTR")
    VariantClear(@vd) : vd.vt = VT_BSTR : vd.bstrVal = SysAllocString(pwszStr)
+   m_Result = 0
+   IF vd.bstrVal = NULL THEN m_Result = E_FAIL
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -671,6 +700,8 @@ END OPERATOR
 PRIVATE OPERATOR DVARIANT.LET (BYREF dws AS DWSTRING)
    DVARIANT_DP("DWSTRING")
    VariantClear(@vd) : vd.vt = VT_BSTR : vd.bstrVal = SysAllocString(dws)
+   m_Result = 0
+   IF vd.bstrVal = NULL THEN m_Result = E_FAIL
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -679,6 +710,8 @@ END OPERATOR
 PRIVATE OPERATOR DVARIANT.LET (BYREF bs AS BSTRING)
    DVARIANT_DP("BSTRING")
    VariantClear(@vd) : vd.vt = VT_BSTR : vd.bstrVal = SysAllocString(bs)
+   m_Result = 0
+   IF vd.bstrVal = NULL THEN m_Result = E_FAIL
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -687,6 +720,7 @@ END OPERATOR
 PRIVATE OPERATOR DVARIANT.LET (BYVAL cy AS CURRENCY)
    DVARIANT_DP("CURRENCY")
    VariantClear(@vd) : vd.vt = VT_CY : vd.cyVal = cy
+   m_Result = 0
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -695,6 +729,7 @@ END OPERATOR
 PRIVATE OPERATOR DVARIANT.LET (BYVAL dec AS DECIMAL)
    DVARIANT_DP("DECIMAL")
    VariantClear(@vd) : vd.decVal = dec : vd.vt = VT_DECIMAL
+   m_Result = 0
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -703,6 +738,7 @@ END OPERATOR
 PRIVATE OPERATOR DVARIANT.LET (BYVAL _value AS LONG)
    DVARIANT_DP("LONG")
    VariantClear(@vd) : vd.vt = VT_I4 : vd.lVal = _value
+   m_Result = 0
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -719,6 +755,7 @@ END OPERATOR
 PRIVATE OPERATOR DVARIANT.LET (BYVAL pdisp AS IDispatch PTR)
    DVARIANT_DP("IDispatch PTR")
    VariantClear(@vd) : V_VT(@vd) = VT_DISPATCH : V_DISPATCH(@vd) = pdisp : IDispatch_AddRef(pdisp)
+   m_Result = 0
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -727,6 +764,7 @@ END OPERATOR
 PRIVATE OPERATOR DVARIANT.LET (BYVAL punk AS IUnknown PTR)
    DVARIANT_DP("IUnknown PTR")
    VariantClear(@vd) : V_VT(@vd) = VT_UNKNOWN : V_UNKNOWN(@vd) = punk : IUnknown_AddRef(punk)
+   m_Result = 0
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
@@ -740,17 +778,19 @@ PRIVATE OPERATOR DVARIANT.LET (BYVAL _value AS LONGINT)
    ELSE
       vd.vt = VT_I8   : vd.llVal = CLNGINT(_value)
    END IF
+   m_Result = 0
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.LET (BYVAL _value AS DOUBLE)
    DVARIANT_DP("DOUBLE")
    VariantClear(@vd) : vd.vt = VT_R8   : vd.dblVal = CDBL(_value)
+   m_Result = 0
 END OPERATOR
 ' ========================================================================================
 
 ' ########################################################################################
-'                                   ASSIGMENT METHODS
+'                                   ASSIGNMENT METHODS
 ' ########################################################################################
 
 ' ========================================================================================
@@ -759,7 +799,8 @@ END OPERATOR
 PRIVATE FUNCTION DVARIANT.Put (BYREF dv AS DVARIANT) AS HRESULT
    DVARIANT_DP("DVARIANT")
    VariantClear(@vd)
-   RETURN VariantCopy(@vd, @dv.vd)
+   m_Result = VariantCopy(@vd, @dv.vd)
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -768,7 +809,8 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.Put (BYREF v AS VARIANT) AS HRESULT
    DVARIANT_DP("VARIANT")
    VariantClear(@vd)
-   RETURN VariantCopy(@vd, @v)
+   m_Result = VariantCopy(@vd, @v)
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -777,7 +819,8 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.Put (BYVAL pvar AS VARIANT PTR) AS HRESULT
    DVARIANT_DP("VARIANT PTR")
    VariantClear(@vd)
-   RETURN VariantCopy(@vd, pvar)
+   m_Result = VariantCopy(@vd, pvar)
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -785,9 +828,11 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE SUB DVARIANT.Put (BYVAL pwszStr AS WSTRING PTR)
    DVARIANT_DP("WSTRING PTR")
+   m_Result = 0
    VariantClear(@vd)
    vd.vt = VT_BSTR
    vd.bstrVal = SysAllocString(pwszStr)
+   IF vd.bstrVal = NULL THEN m_Result = E_FAIL
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -795,9 +840,11 @@ END SUB
 ' ========================================================================================
 PRIVATE SUB DVARIANT.Put (BYREF dws AS DWSTRING)
    DVARIANT_DP("DWSTRING")
+   m_Result = 0
    VariantClear(@vd)
    vd.vt = VT_BSTR
    vd.bstrVal = SysAllocString(dws)
+   IF vd.bstrVal = NULL THEN m_Result = E_FAIL
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -805,9 +852,11 @@ END SUB
 ' ========================================================================================
 PRIVATE SUB DVARIANT.Put (BYREF bs AS BSTRING)
    DVARIANT_DP("BSTRING")
+   m_Result = 0
    VariantClear(@vd)
    vd.vt = VT_BSTR
    vd.bstrVal = SysAllocString(bs)
+   IF vd.bstrVal = NULL THEN m_Result = E_FAIL
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -815,11 +864,16 @@ END SUB
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.Put (BYVAL pdisp AS IDispatch PTR, BYVAL fAddRef AS BOOLEAN = FALSE) AS HRESULT
    DVARIANT_DP("IDispatch PTR")
+   m_Result = 0
    VariantClear(@vd)
-   IF pDisp = NULL THEN RETURN E_INVALIDARG
-   V_VT(@vd) = VT_DISPATCH
-   V_DISPATCH(@vd) = pdisp
-   IF fAddRef THEN IDispatch_AddRef(pdisp)
+   IF pDisp = NULL THEN
+      m_Result = E_INVALIDARG
+   ELSE
+      V_VT(@vd) = VT_DISPATCH
+      V_DISPATCH(@vd) = pdisp
+      IF fAddRef THEN IDispatch_AddRef(pdisp)
+   END IF
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -827,11 +881,16 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.Put (BYVAL punk AS IUnknown PTR, BYVAL fAddRef AS BOOLEAN = FALSE) AS HRESULT
    DVARIANT_DP("IUnknown PTR")
+   m_Result = 0
    VariantClear(@vd)
-   IF punk = NULL THEN RETURN E_INVALIDARG
-   V_VT(@vd) = VT_UNKNOWN
-   V_UNKNOWN(@vd) = punk
-   IF fAddRef THEN IUnknown_AddRef(punk)
+   IF punk = NULL THEN
+      m_Result = E_INVALIDARG
+   ELSE
+      V_VT(@vd) = VT_UNKNOWN
+      V_UNKNOWN(@vd) = punk
+      IF fAddRef THEN IUnknown_AddRef(punk)
+   END IF
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -869,6 +928,7 @@ PRIVATE SUB DVARIANT.Put (BYVAL _value AS LONGINT, BYVAL _vType AS WORD)
          CASE ELSE     : vd.vt = VT_I8   : vd.llVal = CLNGINT(_value)
       END SELECT
    END IF
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -893,6 +953,7 @@ PRIVATE SUB DVARIANT.Put (BYVAL _value AS LONGINT, BYREF strType AS STRING)
       CASE "NULL"     : vd.vt = VT_NULL
       CASE ELSE       : vd.vt = VT_I8   : vd.llVal = CLNGINT(_value)
    END SELECT
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -911,6 +972,7 @@ PRIVATE SUB DVARIANT.Put (BYVAL _value AS DOUBLE, BYVAL _vType AS WORD = VT_R8)
       CASE ELSE
          vd.vt = VT_R8 : vd.dblVal = CDBL(_value)
    END SELECT
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -923,6 +985,7 @@ PRIVATE SUB DVARIANT.Put (BYVAL _value AS DOUBLE, BYREF strType AS STRING)
       CASE "DOUBLE" : vd.vt = VT_R8   : vd.dblVal = CDBL(_value)
       CASE ELSE     : vd.vt = VT_R8   : vd.dblVal = CDBL(_value)
    END SELECT
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -957,6 +1020,7 @@ PRIVATE FUNCTION DVARIANT.PutRef (BYVAL _pvar AS ANY PTR, BYVAL _vType AS WORD) 
       CASE VT_ERROR     : vd.vt = VT_ERROR OR VT_BYREF     : vd.pparray = _pvar
       CASE ELSE         : RETURN E_INVALIDARG
    END SELECT
+   m_Result = 0
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -992,6 +1056,7 @@ PRIVATE FUNCTION DVARIANT.PutRef (BYVAL _pvar AS ANY PTR, BYREF strType AS STRIN
       CASE "ERROR"     : vd.vt = VT_ERROR OR VT_BYREF     : vd.pparray = _pvar
       CASE ELSE        : RETURN E_INVALIDARG
    END SELECT
+   m_Result = 0
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -1001,6 +1066,7 @@ PRIVATE SUB DVARIANT.PutNull
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_NULL
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1010,6 +1076,7 @@ PRIVATE SUB DVARIANT.PutBool (BYVAL _value AS BOOL)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_BOOL : vd.boolVal = IIF(_value = 0, 0, -1)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1019,6 +1086,7 @@ PRIVATE SUB DVARIANT.PutBoolean (BYVAL _value AS BOOLEAN)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_BOOL : vd.boolVal = IIF(_value = 0, 0, -1)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1028,6 +1096,7 @@ PRIVATE SUB DVARIANT.PutByte (BYVAL _value AS BYTE)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_I1 : vd.cVal = CBYTE(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1037,6 +1106,7 @@ PRIVATE SUB DVARIANT.PutUByte (BYVAL _value AS UBYTE)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_UI1 : vd.bVal = CUBYTE(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1046,6 +1116,7 @@ PRIVATE SUB DVARIANT.PutShort (BYVAL _value AS SHORT)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_I2 : vd.iVal = CSHORT(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1055,6 +1126,7 @@ PRIVATE SUB DVARIANT.PutUShort (BYVAL _value AS USHORT)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_UI2 : vd.uiVal = CUSHORT(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1064,6 +1136,7 @@ PRIVATE SUB DVARIANT.PutInt (BYVAL _value AS INT_)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_INT : vd.intVal = CLNG(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1073,6 +1146,7 @@ PRIVATE SUB DVARIANT.PutUInt (BYVAL _value AS UINT)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_UINT : vd.uintVal = CULNG(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1082,6 +1156,7 @@ PRIVATE SUB DVARIANT.PutLong (BYVAL _value AS LONG)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_I4 : vd.lVal = CLNG(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1091,6 +1166,7 @@ PRIVATE SUB DVARIANT.PutULong (BYVAL _value AS ULONG)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_UI4 : vd.ulVal = CULNG(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1100,6 +1176,7 @@ PRIVATE SUB DVARIANT.PutLongInt (BYVAL _value AS LONGINT)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_I8 : vd.llVal = CLNGINT(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1109,6 +1186,7 @@ PRIVATE SUB DVARIANT.PutULongInt (BYVAL _value AS ULONGINT)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_UI8 : vd.ullVal = _value
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1118,6 +1196,7 @@ PRIVATE SUB DVARIANT.PutSingle (BYVAL _value AS SINGLE)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_R4 : vd.fltVal = CSNG(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1127,6 +1206,7 @@ PRIVATE SUB DVARIANT.PutFloat (BYVAL _value AS SINGLE)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_R4 : vd.fltVal = CSNG(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1136,6 +1216,7 @@ PRIVATE SUB DVARIANT.PutDouble (BYVAL _value AS DOUBLE)
    DVARIANT_DP("")
    VariantClear(@vd)
    vd.vt = VT_R8 : vd.dblVal = CDBL(_value)
+   m_Result = 0
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -1144,19 +1225,24 @@ END SUB
 PRIVATE FUNCTION DVARIANT.PutBuffer (BYVAL pv AS ANY PTR, BYVAL cb AS UINT) AS HRESULT
    DVARIANT_DP("")
    VariantClear(@vd)
-   RETURN AfxVariantFromBuffer(pv, cb, @vd)
+   m_Result = AfxVariantFromBuffer(pv, cb, @vd)
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Initializes a DVARIANT from the contents of an UTF8 string.
 ' ========================================================================================
-'PRIVATE FUNCTION DVARIANT.PutUtf8 (BYREF strUtf8 AS STRING) AS HRESULT
-'   DVARIANT_DP("")
-'   VariantClear(@vd)
-'   vd.vt = VT_BSTR
-'   vd.bstrVal = SysAllocString(AfxUcode(strUtf8, CP_UTF8))
-'   RETURN S_OK
-'END FUNCTION
+PRIVATE FUNCTION DVARIANT.PutUtf8 (BYREF strUtf8 AS STRING) AS HRESULT
+   DVARIANT_DP("")
+   m_Result = 0
+   VariantClear(@vd)
+   vd.vt = VT_BSTR
+   DIM dws As DWSTRING
+   dws.Utf8 = strUtf8
+   vd.bstrVal = SysAllocString(dws)
+   IF vd.bstrval = NULL THEN m_Result = E_FAIL
+   RETURN m_Result
+END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Initializes a DVARIANT with the contents of a safe array. If fAttach = FALSE, the safe
@@ -1164,22 +1250,26 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.PutSafeArray (BYVAL parray AS SAFEARRAY PTR, BYVAL fAttach AS BOOLEAN = FALSE) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   IF parray = NULL THEN RETURN E_INVALIDARG
+   IF parray = NULL THEN
+      m_Result = E_INVALIDARG
+      RETURN E_INVALIDARG
+   END IF
    DIM vt AS VARTYPE
-   DIM hr AS HRESULT = SafeArrayGetVartype(parray, @vt)
-   IF hr <> S_OK THEN RETURN hr
+   m_Result = SafeArrayGetVartype(parray, @vt)
+   IF m_Result <> S_OK THEN RETURN m_Result
    IF fAttach = FALSE THEN
       DIM pcopy AS SAFEARRAY PTR
-      hr = SafeArrayCopy(parray, @pcopy)
-      IF hr <> S_OK THEN RETURN hr
+      m_Result = SafeArrayCopy(parray, @pcopy)
+      IF m_Result <> S_OK THEN RETURN m_Result
       vd.vt = vt OR VT_ARRAY
       vd.parray = pcopy
    ELSE
       vd.vt = vt OR VT_ARRAY
       vd.parray = parray
    END IF
-   RETURN S_OK
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -1188,7 +1278,8 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.PutResource (BYVAL hinst AS HINSTANCE, BYVAL id AS UINT) AS HRESULT
    DVARIANT_DP("")
    VariantClear(@vd)
-   RETURN AfxVariantFromResource(hinst, id, @vd)
+   m_Result = AfxVariantFromResource(hinst, id, @vd)
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' =====================================================================================
@@ -1196,12 +1287,16 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutRecord (BYVAL pIRecordInfo AS IRecordInfo PTR, BYVAL pRec AS ANY PTR) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   IF pIRecordInfo = NULL OR pRec = NULL THEN RETURN E_INVALIDARG
+   IF pIRecordInfo = NULL OR pRec = NULL THEN
+      m_Result = E_INVALIDARG
+      RETURN E_INVALIDARG
+   END IF
    vd.vt = VT_RECORD
    vd.pvRecord = pRec
    vd.pRecInfo = pIRecordInfo
-   RETURN S_OK
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1209,11 +1304,12 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutDateString (BYVAL pwszDate AS WSTRING PTR, BYVAL lcid AS LCID = 0, BYVAL dwFlags AS ULONG = 0) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
    DIM dateOut AS DOUBLE
-   DIM hr AS HRESULT = VarDateFromStr(pwszDate, lcid, dwFlags, @dateOut)
-   IF hr = S_OK THEN vd.vt = VT_DATE : vd.date = dateOut
-   RETURN hr
+   m_Result = VarDateFromStr(pwszDate, lcid, dwFlags, @dateOut)
+   IF m_Result = S_OK THEN vd.vt = VT_DATE : vd.date = dateOut
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1221,10 +1317,11 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutVbDate (BYVAL vbDate AS DATE_) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
    vd.vt = VT_DATE
    vd.date = vbDate
-   RETURN S_OK
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1232,10 +1329,12 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutSystemTime (BYVAL st AS SYSTEMTIME PTR) AS BOOLEAN
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
    DIM vbDate AS DATE_
    DIM bRes AS BOOLEAN = SystemTimeToVariantTime(st, @vbDate)
    IF bRes THEN vd.vt = VT_DATE : vd.date = vbDate
+   IF bRes =FALSE THEN m_Result = E_FAIL
    RETURN bRes
 END FUNCTION
 ' =====================================================================================
@@ -1244,8 +1343,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutGuid (BYVAL guid AS IID PTR) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromGUIDAsString(guid, @vd)
+   m_Result = AfxVariantFromGUIDAsString(guid, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1253,8 +1354,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutFileTime (BYVAL pft AS FILETIME PTR) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromFileTime(pft, @vd)
+   m_Result = AfxVariantFromFileTime(pft, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' ========================================================================================
@@ -1262,8 +1365,10 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.PutFileTimeArray (BYVAL prgft AS FILETIME PTR, BYVAL cElems AS ULONG) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromFileTimeArray(prgft, cElems, @vd)
+   m_Result = AfxVariantFromFileTimeArray(prgft, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1271,8 +1376,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutStrRet (BYVAL pstrret AS STRRET PTR, BYVAL pidl AS PCUITEMID_CHILD) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromStrRet(pstrret, pidl, @vd)
+   m_Result = AfxVariantFromStrRet(pstrret, pidl, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1280,10 +1387,11 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutDec (BYVAL dec AS DECIMAL) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
    vd.decVal = dec
    vd.vt = VT_DECIMAL
-   RETURN S_OK
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1291,12 +1399,17 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutDecFromStr (BYVAL pwszIn AS WSTRING PTR, BYVAL lcid AS LCID = 0, BYVAL dwFlags AS ULONG = 0) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   IF pwszIn = NULL THEN RETURN E_INVALIDARG
-   DIM dec AS DECIMAL
-   DIM hr AS HRESULT = VarDecFromStr(pwszIn, lcid, dwFlags, @dec)
-   IF hr = S_OK THEN vd.decVal = dec: vd.vt = VT_DECIMAL
-   RETURN hr
+   IF pwszIn = NULL THEN
+      m_Result = E_INVALIDARG
+      RETURN E_INVALIDARG
+   ELSE
+      DIM dec AS DECIMAL
+      m_Result = VarDecFromStr(pwszIn, lcid, dwFlags, @dec)
+      IF m_Result = S_OK THEN vd.decVal = dec: vd.vt = VT_DECIMAL
+   END IF
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1304,11 +1417,12 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutDecFromDouble (BYVAL dbIn AS DOUBLE) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
    DIM dec AS DECIMAL
-   DIM hr AS HRESULT = VarDecFromR8(dbIn, @dec)
-   IF hr = S_OK THEN vd.decVal = dec : vd.vt = VT_DECIMAL
-   RETURN hr
+   m_Result = VarDecFromR8(dbIn, @dec)
+   IF m_Result = S_OK THEN vd.decVal = dec : vd.vt = VT_DECIMAL
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1316,11 +1430,12 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutDecFromCy (BYVAL cyIn AS CY) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
    DIM decOut AS DECIMAL
-   DIM hr AS HRESULT = VarDecFromCy(cyIn, @decOut)
-   IF hr = S_OK THEN vd.decVal = decOut : vd.vt = VT_DECIMAL
-   RETURN hr
+   m_Result = VarDecFromCy(cyIn, @decOut)
+   IF m_Result = S_OK THEN vd.decVal = decOut : vd.vt = VT_DECIMAL
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1328,8 +1443,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutBooleanArray (BYVAL prgf AS WINBOOL PTR, BYVAL cElems AS ULONG) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromBooleanArray(prgf, cElems, @vd)
+   m_Result = AfxVariantFromBooleanArray(prgf, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1337,8 +1454,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutShortArray (BYVAL prgf AS SHORT PTR, BYVAL cElems AS ULONG) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromInt16Array(prgf, cElems, @vd)
+   m_Result = AfxVariantFromInt16Array(prgf, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1346,8 +1465,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutUShortArray (BYVAL prgf AS USHORT PTR, BYVAL cElems AS ULONG) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromUInt16Array(prgf, cElems, @vd)
+   m_Result = AfxVariantFromUInt16Array(prgf, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1355,8 +1476,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutLongArray (BYVAL prgn AS LONG PTR, BYVAL cElems AS ULONG) AS DVARIANT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromInt32Array(prgn, cElems, @vd)
+   m_Result = AfxVariantFromInt32Array(prgn, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1364,8 +1487,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutULongArray (BYVAL prgn AS ULONG PTR, BYVAL cElems AS ULONG) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromUInt32Array(prgn, cElems, @vd)
+   m_Result = AfxVariantFromUInt32Array(prgn, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1373,8 +1498,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutLongIntArray (BYVAL prgn AS LONGINT PTR, BYVAL cElems AS ULONG) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromInt64Array(prgn, cElems, @vd)
+   m_Result = AfxVariantFromInt64Array(prgn, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1382,8 +1509,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutULongIntArray (BYVAL prgn AS ULONGINT PTR, BYVAL cElems AS ULONG) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromUInt64Array(prgn, cElems, @vd)
+   m_Result = AfxVariantFromUInt64Array(prgn, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1391,8 +1520,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutDoubleArray (BYVAL prgn AS DOUBLE PTR, BYVAL cElems AS ULONG) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromDoubleArray(prgn, cElems, @vd)
+   m_Result = AfxVariantFromDoubleArray(prgn, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1400,8 +1531,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutStringArray (BYVAL prgsz AS PCWSTR, BYVAL cElems AS ULONG) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromStringArray(prgsz, cElems, @vd)
+   m_Result = AfxVariantFromStringArray(prgsz, cElems, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1409,8 +1542,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.PutPropVariant (BYVAL pPropVar AS PROPVARIANT PTR) AS HRESULT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxPropVariantToVariant(pPropVar, @vd)
+   m_Result = AfxPropVariantToVariant(pPropVar, @vd)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' ========================================================================================
@@ -1420,8 +1555,10 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.PutVariantArrayElem (BYVAL pvarIn AS VARIANT PTR, BYVAL iElem AS ULONG) AS DVARIANT
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
-   RETURN AfxVariantFromVariantArrayElem(pvarIn, iElem, @vd)
+   m_Result = AfxVariantFromVariantArrayElem(pvarIn, iElem, @vd)
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 
@@ -1434,6 +1571,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.GetDim () AS ULONG
    DVARIANT_DP("")
+   m_Result = 0
    IF (vd.vt AND VT_ARRAY) = VT_ARRAY THEN
       IF vd.parray THEN RETURN SafeArrayGetDim(vd.parray)
    END IF
@@ -1445,11 +1583,11 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.GetLBound (BYVAL nDim AS UINT = 1) AS LONG
    DVARIANT_DP("")
-   DIM hr AS HRESULT
+   m_Result = 0
    IF (vd.vt AND VT_ARRAY) = VT_ARRAY THEN
       DIM nBound AS LONG
-      IF vd.parray THEN hr = SafeArrayGetLBound(vd.parray, nDim, @nBound)
-      IF hr = S_OK THEN RETURN nBound
+      IF vd.parray THEN m_Result = SafeArrayGetLBound(vd.parray, nDim, @nBound)
+      IF m_Result = S_OK THEN RETURN nBound
    END IF
 END FUNCTION
 ' =====================================================================================
@@ -1459,11 +1597,11 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.GetUBound (BYVAL nDim AS UINT = 1) AS LONG
    DVARIANT_DP("")
-   DIM hr AS HRESULT
+   m_Result = 0
    IF (vd.vt AND VT_ARRAY) = VT_ARRAY THEN
       DIM nBound AS LONG
-      IF vd.parray THEN hr = SafeArrayGetUBound(vd.parray, nDim, @nBound)
-      IF hr = S_OK THEN RETURN nBound
+      IF vd.parray THEN m_Result = SafeArrayGetUBound(vd.parray, nDim, @nBound)
+      IF m_Result = S_OK THEN RETURN nBound
    END IF
    RETURN -1
 END FUNCTION
@@ -1473,10 +1611,11 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.GetVariantElem (BYVAL iElem AS ULONG) AS DVARIANT
    DVARIANT_DP("")
-   DIM hr AS HRESULT, vItem AS VARIANT
+   m_Result = 0
+   DIM vItem AS VARIANT
    IF vd.vt = VT_ARRAY OR VT_VARIANT THEN
       DIM idx AS LONG = iElem
-      SetLastError(SafeArrayGetElement(vd.parray, @idx, @vItem))
+      m_Result = SafeArrayGetElement(vd.parray, @idx, @vItem)
    END IF
    RETURN vItem
 END FUNCTION
@@ -1491,6 +1630,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.GetElementCount () AS ULONG
    DVARIANT_DP("")
+   m_Result = 0
    RETURN AfxVariantGetElementCount(@vd)
 END FUNCTION
 ' =====================================================================================
@@ -1500,7 +1640,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.GetBooleanElem (BYVAL iElem AS ULONG) AS BOOLEAN
    DVARIANT_DP("")
    DIM pfVal AS WINBOOL
-   SetLastError AfxVariantGetBooleanElem(@vd, iElem, @pfVal)
+   m_Result = AfxVariantGetBooleanElem(@vd, iElem, @pfVal)
    RETURN pfVal
 END FUNCTION
 ' =====================================================================================
@@ -1510,7 +1650,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.GetShortElem (BYVAL iElem AS ULONG) AS SHORT
    DVARIANT_DP("")
    DIM pnVal AS SHORT
-   SetLastError AfxVariantGetInt16Elem(@vd, iElem, @pnVal)
+   m_Result = AfxVariantGetInt16Elem(@vd, iElem, @pnVal)
    RETURN pnVal
 END FUNCTION
 ' =====================================================================================
@@ -1520,7 +1660,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.GetUShortElem (BYVAL iElem AS ULONG) AS USHORT
    DVARIANT_DP("")
    DIM pnVal AS USHORT
-   SetLastError AfxVariantGetUInt16Elem(@vd, iElem, @pnVal)
+   m_Result = AfxVariantGetUInt16Elem(@vd, iElem, @pnVal)
    RETURN pnVal
 END FUNCTION
 ' =====================================================================================
@@ -1530,7 +1670,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.GetLongElem (BYVAL iElem AS ULONG) AS LONG
    DVARIANT_DP("")
    DIM pnVal AS LONG
-   SetLastError AfxVariantGetInt32Elem(@vd, iElem, @pnVal)
+   m_Result = AfxVariantGetInt32Elem(@vd, iElem, @pnVal)
    RETURN pnVal
 END FUNCTION
 ' =====================================================================================
@@ -1540,7 +1680,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.GetULongElem (BYVAL iElem AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pnVal AS ULONG
-   SetLastError AfxVariantGetUInt32Elem(@vd, iElem, @pnVal)
+   m_Result = AfxVariantGetUInt32Elem(@vd, iElem, @pnVal)
    RETURN pnVal
 END FUNCTION
 ' =====================================================================================
@@ -1550,7 +1690,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.GetLongIntElem (BYVAL iElem AS ULONG) AS LONGINT
    DVARIANT_DP("")
    DIM pnVal AS LONGINT
-   SetLastError AfxVariantGetInt64Elem(@vd, iElem, @pnVal)
+   m_Result = AfxVariantGetInt64Elem(@vd, iElem, @pnVal)
    RETURN pnVal
 END FUNCTION
 ' =====================================================================================
@@ -1560,7 +1700,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.GetULongIntElem (BYVAL iElem AS ULONG) AS ULONGINT
    DVARIANT_DP("")
    DIM pnVal AS ULONGINT
-   SetLastError AfxVariantGetUInt64Elem(@vd, iElem, @pnVal)
+   m_Result = AfxVariantGetUInt64Elem(@vd, iElem, @pnVal)
    RETURN pnVal
 END FUNCTION
 ' =====================================================================================
@@ -1570,7 +1710,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.GetDoubleElem (BYVAL iElem AS ULONG) AS DOUBLE
    DVARIANT_DP("")
    DIM pnVal AS DOUBLE
-   SetLastError AfxVariantGetDoubleElem(@vd, iElem, @pnVal)
+   m_Result = AfxVariantGetDoubleElem(@vd, iElem, @pnVal)
    RETURN pnVal
 END FUNCTION
 ' =====================================================================================
@@ -1580,7 +1720,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.GetStringElem (BYVAL iElem AS ULONG) AS DWSTRING
    DVARIANT_DP("")
    DIM pwszVal AS WSTRING PTR, dwsVal AS DWSTRING
-   SetLastError AfxVariantGetStringElem(@vd, iElem, @pwszVal)
+   m_Result = AfxVariantGetStringElem(@vd, iElem, @pwszVal)
    IF pwszVal THEN
       dwsVal = *pwszVal
       CoTaskMemFree pwszVal
@@ -1598,7 +1738,18 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.ToStr () AS DWSTRING
    DVARIANT_DP(..WSTR(@vd))
+   m_Result = 0
    RETURN AfxVarToStr(@vd)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Extracts the value of a variant structure to a utf8 string.
+' ========================================================================================
+PRIVATE FUNCTION DVARIANT.ToUtf8 () AS STRING
+   DVARIANT_DP("")
+   m_Result = 0
+   DIM dws AS DWSTRING = AfxVarToStr(@vd)
+   RETURN dws.utf8
 END FUNCTION
 ' ========================================================================================
 ' =====================================================================================
@@ -1607,7 +1758,8 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToBuffer (BYVAL pv AS ANY PTR, BYVAL cb AS UINT) AS HRESULT
    DVARIANT_DP("")
-   RETURN AfxVariantToBuffer(@vd, pv, cb)
+   m_Result = AfxVariantToBuffer(@vd, pv, cb)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1616,6 +1768,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToBuffer () AS STRING
    DVARIANT_DP("STRING")
+   m_Result = 0
    IF (vd.vt = VT_ARRAY OR VT_UI1) THEN
       DIM cb AS LONG = this.GetElementCount
       IF cb THEN
@@ -1632,6 +1785,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToBStr () AS BSTRING
    DVARIANT_DP("BSTRING")
+   m_Result = 0
    RETURN AfxVarToStr(@vd)
 END FUNCTION
 ' =====================================================================================
@@ -1642,6 +1796,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToUnknown () AS ANY PTR
    DVARIANT_DP("")
+   m_Result = 0
    IF vd.vt <> VT_UNKNOWN AND vd.vt <> VT_DISPATCH THEN RETURN NULL
    IF vd.vt = VT_UNKNOWN THEN
       IF vd.punkVal = NULL THEN RETURN NULL
@@ -1651,8 +1806,8 @@ PRIVATE FUNCTION DVARIANT.ToUnknown () AS ANY PTR
    IF vd.vt = VT_DISPATCH THEN
       IF vd.pdispVal = NULL THEN RETURN NULL
       DIM punk AS IUnknown PTR
-      DIM hr AS HRESULT = vd.pdispVal->lpvtbl->QueryInterface(vd.pdispVal, @IID_IUnknown, @punk)
-      IF hr = S_OK THEN
+      m_Result = vd.pdispVal->lpvtbl->QueryInterface(vd.pdispVal, @IID_IUnknown, @punk)
+      IF m_Result = S_OK THEN
          ' // QueryInterface calls IUnknown_AddRef in the pointer it returns
          RETURN punk
       ELSE
@@ -1669,6 +1824,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToDispatch () AS ANY PTR
    DVARIANT_DP("")
+   m_Result = 0
    IF vd.vt <> VT_UNKNOWN AND vd.vt <> VT_DISPATCH THEN RETURN NULL
    IF vd.vt = VT_DISPATCH THEN
       IF vd.pdispVal = NULL THEN RETURN NULL
@@ -1678,8 +1834,8 @@ PRIVATE FUNCTION DVARIANT.ToDispatch () AS ANY PTR
    IF vd.vt = VT_UNKNOWN THEN
       IF vd.punkVal = NULL THEN RETURN NULL
       DIM pdisp AS IDispatch PTR
-      DIM hr AS HRESULT = vd.punkVal->lpvtbl->QueryInterface(vd.punkVal, @IID_IDispatch, @pdisp)
-      IF hr = S_OK THEN
+      m_Result = vd.punkVal->lpvtbl->QueryInterface(vd.punkVal, @IID_IDispatch, @pdisp)
+      IF m_Result = S_OK THEN
          ' // QueryInterface calls IUnknown_AddRef in the pointer it returns
          RETURN pdisp
       ELSE
@@ -1694,6 +1850,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.DecToDouble () AS DOUBLE
    DVARIANT_DP("")
+   m_Result = 0
    DIM dblOut AS DOUBLE
    IF vd.vt = VT_DECIMAL THEN VarR8FromDec(@vd.decVal, @dblOut)
    RETURN dblOut
@@ -1704,6 +1861,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.DecToCy () AS CY
    DVARIANT_DP("")
+   m_Result = 0
    DIM cyOut AS CY
    IF vd.vt = VT_DECIMAL THEN VarCyFromDec(@vd.decVal, @cyOut)
    RETURN cyOut
@@ -1714,6 +1872,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToVbDate () AS DATE_
    DVARIANT_DP("")
+   m_Result = 0
    IF vd.vt = VT_DATE THEN RETURN vd.date
 END FUNCTION
 ' =====================================================================================
@@ -1722,6 +1881,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToSystemTime () AS SYSTEMTIME
    DVARIANT_DP("")
+   m_Result = 0
    DIM st AS SYSTEMTIME
    IF vd.vt = VT_DATE THEN VariantTimeToSystemTime(vd.date, @st)
    RETURN st
@@ -1732,6 +1892,7 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToGuid () AS GUID
    DVARIANT_DP("")
+   m_Result = 0
    DIM guid_ AS GUID : AfxVariantToGUID(@vd, @guid_) : RETURN guid_
 END FUNCTION
 ' =====================================================================================
@@ -1740,9 +1901,10 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToGuidStr () AS DWSTRING
    DVARIANT_DP("")
+   m_Result = 0
    DIM guid_ AS GUID, dwsGuid AS DWSTRING, pwsz AS WSTRING PTR
-   DIM hr AS HRESULT = AfxVariantToGUID(@vd, @guid_)
-   IF hr = S_OK THEN
+   DIM m_Result AS HRESULT = AfxVariantToGUID(@vd, @guid_)
+   IF m_Result = S_OK THEN
       StringFromCLSID(@guid_, CAST(LPOLESTR PTR, @pwsz))
       IF pwsz THEN dwsGuid = *pwsz
       CoTaskMemFree(pwsz)
@@ -1755,7 +1917,8 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ToDosDateTime (BYVAL pwDate AS USHORT PTR, BYVAL pwTime AS USHORT PTR) AS HRESULT
    DVARIANT_DP("")
-   RETURN AfxVariantToDosDateTime(@vd, pwDate, pwTime)
+   m_Result = AfxVariantToDosDateTime(@vd, pwDate, pwTime)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
@@ -1764,7 +1927,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToFileTime (BYVAL stfOut AS AFX_PSTIME_FLAGS) AS FILETIME
    DVARIANT_DP("")
    DIM ft AS FILETIME
-   AfxVariantToFileTime(@vd, stfOut, @ft)
+   m_Result = AfxVariantToFileTime(@vd, stfOut, @ft)
    RETURN ft
 END FUNCTION
 ' =====================================================================================
@@ -1774,7 +1937,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToStrRet () AS STRRET
    DVARIANT_DP("")
    DIM strret_ AS STRRET
-   AfxVariantToStrRet(@vd, @strret_)
+   m_Result = AfxVariantToStrRet(@vd, @strret_)
    RETURN strret_
 END FUNCTION
 ' =====================================================================================
@@ -1789,7 +1952,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToBooleanArray (BYVAL prgf AS WINBOOL PTR, BYVAL crgn AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToBooleanArray(@vd, prgf, crgn, @pcElem)
+   m_Result = AfxVariantToBooleanArray(@vd, prgf, crgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1801,7 +1964,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToBooleanArrayAlloc (BYVAL pprgf AS WINBOOL PTR PTR) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToBooleanArrayAlloc(@vd, pprgf, @pcElem)
+   m_Result = AfxVariantToBooleanArrayAlloc(@vd, pprgf, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1816,7 +1979,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToShortArray (BYVAL prgn AS SHORT PTR, BYVAL crgn AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToInt16Array(@vd, prgn, crgn, @pcElem)
+   m_Result = AfxVariantToInt16Array(@vd, prgn, crgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1828,7 +1991,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToShortArrayAlloc (BYVAL pprgn AS SHORT PTR PTR) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToInt16ArrayAlloc(@vd, pprgn, @pcElem)
+   m_Result = AfxVariantToInt16ArrayAlloc(@vd, pprgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1843,7 +2006,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToUShortArray (BYVAL prgn AS USHORT PTR, BYVAL crgn AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToUInt16Array(@vd, prgn, crgn, @pcElem)
+   m_Result = AfxVariantToUInt16Array(@vd, prgn, crgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1855,7 +2018,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToUShortArrayAlloc (BYVAL pprgn AS USHORT PTR PTR) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToUInt16ArrayAlloc(@vd, pprgn, @pcElem)
+   m_Result = AfxVariantToUInt16ArrayAlloc(@vd, pprgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1870,7 +2033,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToLongArray (BYVAL prgn AS LONG PTR, BYVAL crgn AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToInt32Array(@vd, prgn, crgn, @pcElem)
+   m_Result = AfxVariantToInt32Array(@vd, prgn, crgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1882,7 +2045,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToLongArrayAlloc (BYVAL pprgn AS LONG PTR PTR) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToInt32ArrayAlloc(@vd, pprgn, @pcElem)
+   m_Result = AfxVariantToInt32ArrayAlloc(@vd, pprgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1897,7 +2060,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToULongArray (BYVAL prgn AS ULONG PTR, BYVAL crgn AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToUInt32Array(@vd, prgn, crgn, @pcElem)
+   m_Result = AfxVariantToUInt32Array(@vd, prgn, crgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1909,7 +2072,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToULongArrayAlloc (BYVAL pprgn AS ULONG PTR PTR) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToUInt32ArrayAlloc(@vd, pprgn, @pcElem)
+   m_Result = AfxVariantToUInt32ArrayAlloc(@vd, pprgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1924,7 +2087,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToLongIntArray (BYVAL prgn AS LONGINT PTR, BYVAL crgn AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToInt64Array(@vd, prgn, crgn, @pcElem)
+   m_Result = AfxVariantToInt64Array(@vd, prgn, crgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1936,7 +2099,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToLongIntArrayAlloc (BYVAL pprgn AS LONGINT PTR PTR) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToInt64ArrayAlloc(@vd, pprgn, @pcElem)
+   m_Result = AfxVariantToInt64ArrayAlloc(@vd, pprgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1952,7 +2115,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToULongIntArray (BYVAL prgn AS ULONGINT PTR, BYVAL crgn AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToUInt64Array(@vd, prgn, crgn, @pcElem)
+   m_Result = AfxVariantToUInt64Array(@vd, prgn, crgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1964,7 +2127,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToULongIntArrayAlloc (BYVAL pprgn AS ULONGINT PTR PTR) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToUInt64ArrayAlloc(@vd, pprgn, @pcElem)
+   m_Result = AfxVariantToUInt64ArrayAlloc(@vd, pprgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1979,7 +2142,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToDoubleArray (BYVAL prgn AS DOUBLE PTR, BYVAL crgn AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToDoubleArray(@vd, prgn, crgn, @pcElem)
+   m_Result = AfxVariantToDoubleArray(@vd, prgn, crgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -1991,7 +2154,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToDoubleArrayAlloc (BYVAL pprgn AS DOUBLE PTR PTR) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToDoubleArrayAlloc(@vd, pprgn, @pcElem)
+   m_Result = AfxVariantToDoubleArrayAlloc(@vd, pprgn, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -2006,7 +2169,7 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToStringArray (BYVAL prgsz AS PWSTR, BYVAL crgsz AS ULONG) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToStringArray(@vd, prgsz, crgsz, @pcElem)
+   m_Result = AfxVariantToStringArray(@vd, prgsz, crgsz, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
@@ -2018,13 +2181,13 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.ToStringArrayAlloc (BYVAL pprgsz AS PWSTR PTR) AS ULONG
    DVARIANT_DP("")
    DIM pcElem AS ULONG
-   SetLastError AfxVariantToStringArrayAlloc(@vd, pprgsz, @pcElem)
+   m_Result = AfxVariantToStringArrayAlloc(@vd, pprgsz, @pcElem)
    RETURN pcElem
 END FUNCTION
 ' =====================================================================================
 
 ' ########################################################################################
- '                                    MISCELLANEOUs
+ '                                    MISCELLANEOUS
 ' ########################################################################################
 
 ' ========================================================================================
@@ -2032,6 +2195,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE SUB DVARIANT.Clear
    DVARIANT_DP("")
+   m_Result = 0
    VariantClear(@vd)
 END SUB
 ' ========================================================================================
@@ -2040,28 +2204,39 @@ END SUB
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.Attach (BYVAL pvar AS VARIANT PTR) AS HRESULT
    DVARIANT_DP("VARIANT PTR")
-   IF pvar = NULL THEN RETURN E_INVALIDARG
+   m_Result = 0
+   IF pvar = NULL THEN
+      m_Result = E_INVALIDARG
+      RETURN E_INVALIDARG
+   END IF
    VariantClear @vd
    ' // Copy the contents and give control to CVar
    DIM pdest AS ANY PTR = memcpy(@vd, pvar, SIZEOF(VARIANT))
-   IF pdest = NULL THEN RETURN E_FAIL
+   IF pdest = NULL THEN
+      m_Result = E_FAIL
+      RETURN E_FAIL
+   END IF
    ' // Mark the source variant as VT_EMPTY instead of clearing it with VariantClear
    ' // because we aren't making a duplicate of the contents, but transfering ownership.
    pvar->vt = VT_EMPTY
-   RETURN S_OK
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.Attach (BYREF v AS VARIANT) AS HRESULT
    DVARIANT_DP("BYREF VARIANT")
+   m_Result = 0
    VariantClear @vd
    ' // Copy the contents and give control to CVar
    DIM pdest AS ANY PTR = memcpy(@vd, @v, SIZEOF(VARIANT))
-   IF pdest = NULL THEN RETURN E_FAIL
+   IF pdest = NULL THEN
+      m_Result = E_FAIL
+      RETURN E_FAIL
+   END IF
    ' // Mark the source variant as VT_EMPTY instead of clearing it with VariantClear
    ' // because we aren't making a duplicate of the contents, but transfering ownership.
    v.vt = VT_EMPTY
-   RETURN S_OK
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 
@@ -2071,22 +2246,33 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.Detach (BYVAL pvar AS VARIANT PTR) AS HRESULT
    DVARIANT_DP("VARIANT PTR")
-   IF pvar = NULL THEN RETURN E_INVALIDARG
+   m_Result = 0
+   IF pvar = NULL THEN
+      m_Result = E_FAIL
+      RETURN E_INVALIDARG
+   END IF
    VariantClear(pvar)
    DIM pdest AS ANY PTR = memcpy(pvar, @vd, SIZEOF(VARIANT))
-   IF pdest = NULL THEN RETURN E_FAIL
+   IF pdest = NULL THEN
+      m_Result = E_FAIL
+      RETURN E_FAIL
+   END IF
    vd.vt = VT_EMPTY
-   RETURN S_OK
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.Detach (BYREF v AS VARIANT) AS HRESULT
    DVARIANT_DP("BYREF VARIANT")
+   m_Result = 0
    VariantClear(@v)
    DIM pdest AS ANY PTR = memcpy(@v, @vd, SIZEOF(VARIANT))
-   IF pdest = NULL THEN RETURN E_FAIL
+   IF pdest = NULL THEN
+      m_Result = E_FAIL
+      RETURN E_FAIL
+   END IF
    vd.vt = VT_EMPTY
-   RETURN S_OK
+   RETURN m_Result
 END FUNCTION
 ' ========================================================================================
 
@@ -2096,6 +2282,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.vType () AS VARTYPE
    DVARIANT_DP("")
+   m_Result = 0
    FUNCTION = vd.vt
 END FUNCTION
 ' ========================================================================================
@@ -2105,13 +2292,15 @@ END FUNCTION
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ChangeType (BYVAL vtNew AS VARTYPE, BYVAL wFlags AS USHORT = 0) AS HRESULT
    DVARIANT_DP("")
-   RETURN VariantChangeType(@vd, @vd, wFlags, vtNew)
+   m_Result = VariantChangeType(@vd, @vd, wFlags, vtNew)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.ChangeTypeEx (BYVAL vtNew AS VARTYPE, BYVAL lcid AS LCID = 0, BYVAL wFlags AS USHORT = 0) AS HRESULT
    DVARIANT_DP("")
-   RETURN VariantChangeTypeEx(@vd, @vd, lcid, wFlags, vtNew)
+   m_Result = VariantChangeTypeEx(@vd, @vd, lcid, wFlags, vtNew)
+   RETURN m_Result
 END FUNCTION
 ' =====================================================================================
 
@@ -2119,15 +2308,17 @@ END FUNCTION
 PRIVATE FUNCTION DVARIANT.Round (BYREF dv AS DVARIANT, BYVAL cDecimals AS LONG) AS DVARIANT
    DVARIANT_DP("")
    DIM dvRes AS DVARIANT
-   VarRound(@dv.vd, cDecimals, @dvRes.vd)
+   m_Result = VarRound(@dv.vd, cDecimals, @dvRes.vd)
    RETURN dvRes
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================
 PRIVATE FUNCTION DVARIANT.Round (BYVAL cDecimals AS LONG) AS DVARIANT
    DVARIANT_DP("")
+   m_Result = 0
    DIM dwRes AS DVARIANT = vd
-   IF VarRound(@vd, cDecimals, @dwRes.vd) = S_OK THEN vd = dwRes.vd
+   m_Result = VarRound(@vd, cDecimals, @dwRes.vd)
+   IF m_Result = S_OK THEN vd = dwRes.vd
    RETURN dwRes
 END FUNCTION
 ' =====================================================================================
@@ -2138,7 +2329,7 @@ PRIVATE FUNCTION DVARIANT.FormatNumber (BYVAL iNumDig AS LONG = -1, BYVAL iIncLe
    BYVAL iUseParens AS LONG = -2, BYVAL iGroup AS LONG = -2, BYVAL dwFlags AS DWORD = 0) AS DWSTRING
    DVARIANT_DP("")
    DIM dwsOut AS DWSTRING, bstrOut AS BSTR
-   SetLastError VarFormatNumber(@vd, iNumDig, iIncLead, iUseParens, iGroup, dwFlags, @bstrOut)
+   m_Result = VarFormatNumber(@vd, iNumDig, iIncLead, iUseParens, iGroup, dwFlags, @bstrOut)
    dwsOut = *CAST(WSTRING PTR, bstrOut)
    SysFreeString bstrOut
    RETURN dwsOut
@@ -2153,11 +2344,12 @@ END FUNCTION
 PRIVATE OPERATOR DVARIANT.+= (BYREF dv AS DVARIANT)
    IF vd.vt = VT_BSTR AND dv.vd.vt = VT_BSTR THEN
       ' // Both values are strings, so concatenate
-      VarCat(@vd, @dv.vd, @vd)
+      m_Result = VarCat(@vd, @dv.vd, @vd)
    ELSE
       ' // Add
       DIM vRes AS VARIANT
-      IF VarAdd(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarAdd(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
@@ -2165,101 +2357,164 @@ END OPERATOR
 PRIVATE OPERATOR DVARIANT.&= (BYREF dv AS DVARIANT)
    IF vd.vt = VT_BSTR AND dv.vd.vt = VT_BSTR THEN
       ' // Both values are strings, so concatenate
-      VarCat(@vd, @dv.vd, @vd)
+      m_Result = VarCat(@vd, @dv.vd, @vd)
    ELSE
       ' // Add
       DIM vRes AS VARIANT
-      IF VarAdd(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarAdd(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.-= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarSub(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result= VarSub(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.*= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarMul(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarMul(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT./= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarDiv(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarDiv(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.\= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarIDiv(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarIDiv(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.^= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarPow(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarPow(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.And= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarAnd(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarAnd(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.Or= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarOr(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarOr(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.Xor= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarXor(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarXor(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.Eqv= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarEqv(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarEqv(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.Imp= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarImp(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarImp(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE OPERATOR DVARIANT.Mod= (BYREF dv AS DVARIANT)
+   m_Result = 0
    IF vd.vt <> VT_BSTR AND dv.vd.vt <> VT_BSTR THEN
       DIM vRes AS VARIANT
-      IF VarMod(@vd, @dv.vd, @vRes) = S_OK THEN VariantCopy(@vd, @vRes)
+      m_Result = VarMod(@vd, @dv.vd, @vRes)
+      IF m_Result = S_OK THEN m_Result = VariantCopy(@vd, @vRes)
    END IF
 END OPERATOR
+' ========================================================================================
+
+' ########################################################################################
+ '                                      ERRORS
+' ########################################################################################
+
+' =====================================================================================
+' Returns the last result code
+' ========================================================================================
+PRIVATE FUNCTION DVARIANT.GetLastResult () AS HRESULT
+   RETURN m_Result
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the last result code.
+' ========================================================================================
+PRIVATE FUNCTION DVARIANT.SetResult (BYVAL Result AS HRESULT) AS HRESULT
+   m_Result = Result
+   RETURN m_Result
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Returns a description of the last result code.
+' ========================================================================================
+PRIVATE FUNCTION DVARIANT.GetErrorInfo (BYVAL nError AS LONG = -1) AS DWSTRING
+   IF nError = -1 THEN nError = GetLastError
+   DIM cbLen AS DWORD, pBuffer AS WSTRING PTR, dwsMsg AS DWSTRING
+   cbLen = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER OR _
+           FORMAT_MESSAGE_FROM_SYSTEM OR FORMAT_MESSAGE_IGNORE_INSERTS, _
+           NULL, nError, BYVAL MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), _
+           cast(LPWSTR, @pBuffer), 0, NULL)
+   IF cbLen THEN
+      dwsMsg = *pBuffer
+      LocalFree pBuffer
+   END IF
+   IF nError THEN dwsMsg = "Error &h" & HEX(nError) & CHR(13, 10) & dwsMsg
+   RETURN dwsMsg
+END FUNCTION
 ' ========================================================================================
 
 END NAMESPACE
@@ -2512,7 +2767,7 @@ END FUNCTION
 ' ========================================================================================
 ' Extracts the contents of a variant that contains an array of bytes.
 ' ========================================================================================
-PRIVATE FUNCTION AfxDVarToBuffer (BYREF dvIn AS DVARIANT, BYVAL pv AS LPVOID, BYVAL cb AS ULONG) AS ULONG
+PRIVATE FUNCTION AfxDVarToBuffer (BYREF dvIn AS DVARIANT, BYVAL pv AS LPVOID, BYVAL cb AS ULONG) AS HRESULT
    RETURN AfxVariantToBuffer(@dvIn.vd, pv, cb)
 END FUNCTION
 ' ========================================================================================

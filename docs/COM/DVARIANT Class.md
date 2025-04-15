@@ -460,7 +460,7 @@ FUNCTION ChangeType (BYVAL vtNew AS VARTYPE, BYVAL wFlags AS USHORT = 0) AS HRES
 | Parameter  | Description |
 | ---------- | ----------- |
 | *vtNew* | The new variant type. |
-| *wFlags* | *VARIANT_NOVALUEPROP* : Prevents the function from attempting to coerce an object to a fundamental type by getting the Value property. Applications should set this flag only if necessary, because it makes their behavior inconsistent with other applications.<br>*VARIANT_ALPHABOOL* : Converts a VT_BOOL value to a string containing either "True" or "False".<br>*VARIANT_NOUSEROVERRIDE* : For conversions to or from VT_BSTR, passes LOCALE_NOUSEROVERRIDE to the core coercion routines.<br>*VARIANT_LOCALBOOL* : For conversions from VT_BOOL to VT_BSTR and back, uses the language specified by the locale in use on the local computer. |
+| *wFlags* | *VARIANT_NOVALUEPROP* : Prevents the function from coercing an object to a fundamental type by getting the Value property. Applications should set this flag only if necessary, because it makes their behavior inconsistent with other applications.<br>*VARIANT_ALPHABOOL* : Converts a VT_BOOL value to a string containing either "True" or "False".<br>*VARIANT_NOUSEROVERRIDE* : For conversions to or from VT_BSTR, passes LOCALE_NOUSEROVERRIDE to the core coercion routines.<br>*VARIANT_LOCALBOOL* : For conversions from VT_BOOL to VT_BSTR and back, uses the language specified by the locale in use on the local computer. |
 
 #### Return value
 
@@ -631,7 +631,7 @@ This function uses the user's default locale while calling **VarTokenizeFormatSt
 Extracts a single boolean element from a safe array of booleans.
 
 ```
-FUNCTION GetBooleanElem (BYVAL iElem AS ULONG) AS BOOLEAN
+FUNCTION GetBooleanElement (BYVAL iElem AS ULONG) AS BOOLEAN
 ```
 
 | Parameter  | Description |
@@ -649,7 +649,7 @@ The retrieved value.
 Extracts a single DOUBLE element from a safe array of doubles.
 
 ```
-FUNCTION GetDoubleElem (BYVAL iElem AS ULONG) AS DOUBLE
+FUNCTION GetDoubleElement (BYVAL iElem AS ULONG) AS DOUBLE
 ```
 
 | Parameter  | Description |
@@ -667,7 +667,7 @@ The retrieved value.
 Extracts a single LONG element from a safe array of longs.
 
 ```
-FUNCTION GetLongElem (BYVAL iElem AS ULONG) AS LONG
+FUNCTION GetLongElement (BYVAL iElem AS ULONG) AS LONG
 ```
 
 | Parameter  | Description |
@@ -685,7 +685,7 @@ The retrieved value.
 Extracts a single LONGINT element from a safe array of long integers.
 
 ```
-FUNCTION GetLongIntElem (BYVAL iElem AS ULONG) AS LONGINT
+FUNCTION GetLongIntElement (BYVAL iElem AS ULONG) AS LONGINT
 ```
 
 | Parameter  | Description |
@@ -703,7 +703,7 @@ The retrieved value.
 Extracts a single SHORT element from a safe array of short integers.
 
 ```
-FUNCTION GetShortElem (BYVAL iElem AS ULONG) AS SHORT
+FUNCTION GetShortElement (BYVAL iElem AS ULONG) AS SHORT
 ```
 
 | Parameter  | Description |
@@ -721,7 +721,7 @@ The retrieved value.
 Extracts a single BSTR element from a safe array of unicode strings.
 
 ```
-FUNCTION GetStringElem (BYVAL iElem AS ULONG) AS BSTR
+FUNCTION GetStringElement (BYVAL iElem AS ULONG) AS BSTR
 ```
 
 | Parameter  | Description |
@@ -739,7 +739,7 @@ The retrieved value.
 Extracts a single ULONG element from a safe array of unsigned longs.
 
 ```
-FUNCTION GetULongElem (BYVAL iElem AS ULONG) AS ULONG
+FUNCTION GetULongElement (BYVAL iElem AS ULONG) AS ULONG
 ```
 
 | Parameter  | Description |
@@ -757,7 +757,7 @@ The retrieved value.
 Extracts a single ULONGINT element from a safe array of unsigned long integers.
 
 ```
-FUNCTION GetULongIntElem (BYVAL iElem AS ULONG) AS ULONGINT
+FUNCTION GetULongIntElement (BYVAL iElem AS ULONG) AS ULONGINT
 ```
 
 | Parameter  | Description |
@@ -775,7 +775,7 @@ The retrieved value.
 Extracts a single USHORT element from a safe array of unsigned shorts.
 
 ```
-FUNCTION GetUShortElem (BYVAL iElem AS ULONG) AS USHORT
+FUNCTION GetUShortElement (BYVAL iElem AS ULONG) AS USHORT
 ```
 
 | Parameter  | Description |
@@ -793,7 +793,7 @@ The retrieved value.
 Extracts a single Variant element from a safe array of variants.
 
 ```
-FUNCTION GetVariantElem (BYVAL iElem AS ULONG) AS DVARIANT
+FUNCTION GetVariantElement (BYVAL iElem AS ULONG) AS DVARIANT
 ```
 
 | Parameter  | Description |
@@ -1651,7 +1651,7 @@ Creates a VT_BSTR variant.
 Initializes DVARIANT with a value stored in another VARIANT structure.
 
 ```
-FUNCTION PutVariantArrayElem (BYVAL pvarIn AS VARIANT PTR, BYVAL iElem AS ULONG) AS HRESULT
+FUNCTION PutVariantArrayElement (BYVAL pvarIn AS VARIANT PTR, BYVAL iElem AS ULONG) AS HRESULT
 ```
 
 | Parameter  | Description |

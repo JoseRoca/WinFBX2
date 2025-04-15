@@ -21,16 +21,16 @@ The `DVARIANT` class implements a `VARIANT` data type. The variant data type is 
 | [DecToDouble](#dectodouble) | Converts a DVARIANT of type decimal to a double. |
 | [Round](#round) | Rounds a variant to the specified number of decimal places. |
 | [FormatNumber](#formatnumber) | Formats a DVARIANT containing numbers into a string form. |
-| [GetBooleanElem](#getbooleanrlem) | Extracts a single boolean element from a safe array of booleans. |
-| [GetDoubleElem](#getdoublerlem) | Extracts a single DOUBLE element from a safe array of doubles. |
-| [GetLongElem](#getlongelem) | Extracts a single LONG element from a safe array of longs. |
-| [GetLongIntElem](#getlongintrlem) | Extracts a single LONGINT element from a safe array of long integers. |
-| [GetShortElem](#getshortrlem) | Extracts a single SHORT element from a safe array of shorts. |
-| [GetStringElem](#getstringelem) | Extracts a single BSTR element from a safe array of unicode strings. |
-| [GetULongElem](#getulongelem) | Extracts a single ULONG element from a safe array of unsigned longs. |
-| [GetULongIntElem](#getulongintelem) | Extracts a single ULONGINT element from a safe array of unsigned long integers. |
-| [GetUShortElem](#getushortelem) | Extracts a single USHORT element from a safe array of unsigned shorts. |
-| [GetVariantElem](#getvariantelem) | Extracts a single Variant element from a safe array of variants. |
+| [GetBooleanElement](#getbooleanrlem) | Extracts a single boolean element from a safe array of booleans. |
+| [GetDoubleElement](#getdoublerlem) | Extracts a single DOUBLE element from a safe array of doubles. |
+| [GetLongElement](#getlongelem) | Extracts a single LONG element from a safe array of longs. |
+| [GetLongIntElement](#getlongintrlem) | Extracts a single LONGINT element from a safe array of long integers. |
+| [GetShortElement](#getshortrlem) | Extracts a single SHORT element from a safe array of shorts. |
+| [GetStringElement](#getstringelem) | Extracts a single BSTR element from a safe array of unicode strings. |
+| [GetULongElement](#getulongelem) | Extracts a single ULONG element from a safe array of unsigned longs. |
+| [GetULongIntElement](#getulongintelem) | Extracts a single ULONGINT element from a safe array of unsigned long integers. |
+| [GetUShortElement](#getushortelem) | Extracts a single USHORT element from a safe array of unsigned shorts. |
+| [GetVariantElement](#getvariantelem) | Extracts a single Variant element from a safe array of variants. |
 | [Put](#put) | Assigns values to a DVARIANT. |
 | [PutNull](#putnull) | Assigns a null value. |
 | [PutBool](#putbool) | Assigns a boolean value. |
@@ -74,7 +74,7 @@ The `DVARIANT` class implements a `VARIANT` data type. The variant data type is 
 | [PutStrRet](#putstrret) | Initializes DVARIANT with string stored in a STRRET structure. |
 | [PutSystemTime](#putsystemtime) | Initializes DVARIANT with the contents of a SYSTEMTIME structure. |
 | [PutUtf8](#pututf8) | Initializes DVARIANT with the contents of an UTF-8 string. |
-| [PutVariantArrayElem](#putvariantarrayelem) | Initializes DVARIANT with a value stored in another VARIANT structure. |
+| [PutVariantArrayElement](#putvariantarrayelem) | Initializes DVARIANT with a value stored in another VARIANT structure. |
 | [PutVbDate](#putvbdate) | Initializes DVARIANT with the contents of a DATE value. |
 | [ToBooleanArray](#tobooleanarray) | Extracts an array of boolean values from DVARIANT. |
 | [ToBooleanArrayAlloc](#tobooleanarrayalloc) | Extracts an array of boolean values from DVARIANT. |
@@ -626,7 +626,7 @@ This function uses the user's default locale while calling **VarTokenizeFormatSt
 
 ---
 
-## <a name="getbooleanelem"></a>GetBooleanElem
+## <a name="getbooleanelem"></a>GetBooleanElement
 
 Extracts a single boolean element from a safe array of booleans.
 
@@ -644,7 +644,7 @@ The retrieved value.
 
 ---
 
-## <a name="getdoubleelem"></a>GetDoubleElem
+## <a name="getdoubleelem"></a>GetDoubleElement
 
 Extracts a single DOUBLE element from a safe array of doubles.
 
@@ -662,7 +662,7 @@ The retrieved value.
 
 ---
 
-## <a name="getlongelem"></a>GetLongElem
+## <a name="getlongelem"></a>GetLongElement
 
 Extracts a single LONG element from a safe array of longs.
 
@@ -680,7 +680,7 @@ The retrieved value.
 
 ---
 
-## <a name="getlongintelem"></a>GetLongIntElem
+## <a name="getlongintelem"></a>GetLongIntElement
 
 Extracts a single LONGINT element from a safe array of long integers.
 
@@ -698,7 +698,7 @@ The retrieved value.
 
 ---
 
-## <a name="getshortelem"></a>GetShortElem
+## <a name="getshortelem"></a>GetShortElement
 
 Extracts a single SHORT element from a safe array of short integers.
 
@@ -716,7 +716,7 @@ The retrieved value.
 
 ---
 
-## <a name="getstringelem"></a>GetStringElem
+## <a name="getstringelem"></a>GetStringElement
 
 Extracts a single BSTR element from a safe array of unicode strings.
 
@@ -734,7 +734,7 @@ The retrieved value.
 
 ---
 
-## <a name="getulongelem"></a>GetULongElem
+## <a name="getulongelem"></a>GetULongElement
 
 Extracts a single ULONG element from a safe array of unsigned longs.
 
@@ -752,7 +752,7 @@ The retrieved value.
 
 ---
 
-## <a name="getulongintelem"></a>GetULongIntElem
+## <a name="getulongintelem"></a>GetULongIntElement
 
 Extracts a single ULONGINT element from a safe array of unsigned long integers.
 
@@ -770,7 +770,7 @@ The retrieved value.
 
 ---
 
-## <a name="getushortelem"></a>GetUShortElem
+## <a name="getushortelem"></a>GetUShortElement
 
 Extracts a single USHORT element from a safe array of unsigned shorts.
 
@@ -788,7 +788,7 @@ The retrieved value.
 
 ---
 
-## <a name="getvariantelem"></a>GetVariantElem
+## <a name="getvariantelem"></a>GetVariantElement
 
 Extracts a single Variant element from a safe array of variants.
 

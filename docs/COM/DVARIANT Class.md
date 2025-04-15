@@ -2382,7 +2382,7 @@ A DATE_ value (double).
 Extracts the contents of a DVARIANT to a DWSTRING.
 
 ```
-FUNCTION AfxDVarToStr OVERLOAD (BYREF dv AS DVARIANT) AS DWSTRING
+FUNCTION AfxDVarToStr (BYREF dv AS DVARIANT) AS DWSTRING
 ```
 ---
 
@@ -2391,7 +2391,8 @@ FUNCTION AfxDVarToStr OVERLOAD (BYREF dv AS DVARIANT) AS DWSTRING
 Extracts the contents of a DVARIANT to a DWSTRING.
 
 ```
-FUNCTION AfxDVarToStr OVERLOAD (BYVAL pdv AS DVARIANT PTR) AS DWSTRING
+FUNCTION AfxDVarToStr (BYVAL pdv AS DVARIANT PTR) AS DWSTRING
+#define DVAR_TOSTR(cv) AfxDVarToStr(cv)
 ```
 ---
 
@@ -2400,13 +2401,24 @@ FUNCTION AfxDVarToStr OVERLOAD (BYVAL pdv AS DVARIANT PTR) AS DWSTRING
 Extracts the contents of a variant that contains an array of bytes.
 
 ```
-FUNCTION AfxDVarToBuffer (BYREF cvIn AS DVARIANT, BYVAL pv AS LPVOID, BYVAL cb AS ULONG) AS ULONG
+FUNCTION AfxDVarToBuffer (BYREF cvIn AS DVARIANT, BYVAL pv AS LPVOID, BYVAL cb AS ULONG) AS HRESULT
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
+| *cvIn* | Reference to the source DVARIANT. |
 | *pv* | Pointer to a buffer of length *cb* bytes. When this function returns, contains the first *cb* bytes of the extracted buffer value. |
 | *cb* | The size of the *pv* buffer, in bytes. The buffer should be the same size as the data to be extracted, or smaller. |
+
+#### Return value
+
+Returns one of the following values:
+
+| HRESULT code | Description |
+| ---------- | ----------- |
+| **S_OK** | Data successfully extracted. |
+| **E_INVALIDARG** | The VARIANT was not of type VT_ARRRAY | VT_UI1. |
+| **E_FAIL** | The VARIANT buffer value had fewer than cb bytes. |
 
 ---
 
@@ -2416,6 +2428,7 @@ Returns a DVARIANT suitable to be used with optional parameters.
 
 ```
 FUNCTION AfxDVarOptPrm () AS DVARIANT
+#define DVAR_OPTPRM AfxDVarOptPrm
 ```
 
 #### Remarks

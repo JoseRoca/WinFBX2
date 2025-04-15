@@ -1646,7 +1646,7 @@ Creates a VT_BSTR variant.
 
 ---
 
-## <a name="putvariantarrayelem"></a>PutVariantArrayElem
+## <a name="putvariantarrayelem"></a>PutVariantArrayElement
 
 Initializes DVARIANT with a value stored in another VARIANT structure.
 

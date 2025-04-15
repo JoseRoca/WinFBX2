@@ -350,7 +350,7 @@ Foo4 @DVARIANT(12345, "LONG")
 
 I haven't added a cast to return a numeric value because with procedures like PRINT that can use both a number or a string the compiler will fail, not knowing which cast it should use. If you want to convert it to a number, use VAL(DVARIANT).
 
-### <a name="vType"></a>vType
+## <a name="vType"></a>vType
 
 Returns the VARIANT type.
 

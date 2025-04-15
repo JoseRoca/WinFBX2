@@ -1226,6 +1226,17 @@ If this function succeeds, it returns S_OK (0). Otherwise, it returns an HRESULT
 
 Creates a VT_ARRAY OR VT_UI1 variant.
 
+### Example
+```
+DIM dv AS DVARIANT
+DIM strIn AS STRING = "Test string"
+dv.PutBuffer(STRPTR(strIn), LEN(strIn))
+
+DIM nBytes AS LONG = dv.GetElementCount
+DIM strOut AS STRING = SPACE(nBytes)
+dv.ToBuffer(STRPTR(strOut), nBytes)
+PRINT strOut
+```
 ---
 
 ## <a name="putdatestring"></a>PutDateString
@@ -1807,6 +1818,17 @@ If the value has more than *cb* bytes, then function succeeds and truncates the 
 
 To retrieve the size of the array call **GetElementCount**.
 
+### Example
+```
+DIM dv AS DVARIANT
+DIM strIn AS STRING = "Test string"
+dv.PutBuffer(STRPTR(strIn), LEN(strIn))
+
+DIM nBytes AS LONG = dv.GetElementCount
+DIM strOut AS STRING = SPACE(nBytes)
+dv.ToBuffer(STRPTR(strOut), nBytes)
+PRINT strOut
+```
 ---
 
 ## <a name="tobufferstring"></a>ToBuffer (STRING)

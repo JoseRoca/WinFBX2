@@ -119,7 +119,7 @@ The `DVARIANT` class implements a `VARIANT` data type. The variant data type is 
 
 ---
 
-# <a name="Constructors"></a>Constructors
+# <a name="constructors"></a>Constructors
 
 Creates an instance of the DVARIANT class.
 
@@ -197,7 +197,7 @@ Foo DVARIANT(12345, "LONG")
 ```
 ---
 
-# <a name="Operators"></a>Operators
+# <a name="operators"></a>Operators
 
 Procedures that perform a certain function with their operands. They do the same actions that the native FreeBasic operators but with variants. For detailed descriptions see the FreeBasic documentation.
 
@@ -334,7 +334,7 @@ I haven't added a cast to return a numeric value because with procedures like PR
 
 ---
 
-## <a name="vType"></a>vType
+## <a name="vtype"></a>vType
 
 Returns the VARIANT type.
 
@@ -401,7 +401,7 @@ The following table shows the available data types and where these values can be
 
 ---
 
-## <a name="Attach"></a>Attach
+## <a name="attach"></a>Attach
 
 Attaches a variant to the class.
 
@@ -425,7 +425,7 @@ Returns S_OK (0) on success or an HRESULT error code on failure.
 
 ---
 
-## <a name="Detach"></a>Detach
+## <a name="detach"></a>Detach
 
 Detaches the variant data from this class and transfers ownership to the passed variant.
 
@@ -449,7 +449,7 @@ Returns S_OK (0) or an HRESULT error code.
 
 ---
 
-## <a name="ChangeType"></a>ChangeType
+## <a name="changetype"></a>ChangeType
 
 Converts the variant from one type to another.
 
@@ -468,7 +468,7 @@ Returns S_OK (0) or an HRESULT error code.
 
 ---
 
-## <a name="ChangeTypeEx"></a>ChangeTypeEx
+## <a name="changetypeex"></a>ChangeTypeEx
 
 Converts the variant from one type to another.
 
@@ -488,7 +488,7 @@ Returns S_OK (0) or an HRESULT error code.
 
 ---
 
-## <a name="GetDim"></a>GetDim
+## <a name="getdim"></a>GetDim
 
 Gets the number of dimensions in the array.
 
@@ -502,7 +502,7 @@ Returns the number of dimensions for variants of type VT_ARRAY; returns 0 otherw
 
 ---
 
-## <a name="GetLBound"></a>GetLBound
+## <a name="getlbound"></a>GetLBound
 
 Gets the lower bound for the specified dimension of the safe array.
 
@@ -520,7 +520,7 @@ Returns the lower bound for the specified dimension of the safe array for varian
 
 ---
 
-## <a name="GetUBound"></a>GetUBound
+## <a name="getubound"></a>GetUBound
 
 Gets the upper bound for the specified dimension of the safe array.
 
@@ -538,7 +538,7 @@ Returns the upper bound for the specified dimension of the safe array for varian
 
 ---
 
-## <a name="GetElementCount"></a>GetElementCount
+## <a name="getelementcount"></a>GetElementCount
 
 Gets the number of elements in the array.
 
@@ -552,7 +552,7 @@ Returns the number of elements for variants of type VT_ARRAY; returns 1 otherwis
 
 ---
 
-## <a name="DecToCY"></a>DecToCY
+## <a name="dectocy"></a>DecToCY
 
 Converts a DVARIANT of type decimal to a CY structure.
 
@@ -566,7 +566,7 @@ Returns the contents of a VT_DECIMAL variant as a CY structure.
 
 ---
 
-## <a name="DecToDouble"></a>DecToDouble
+## <a name="dectodouble"></a>DecToDouble
 
 Converts a DVARIANT of type decimal to a double.
 
@@ -580,7 +580,7 @@ Returns the contents of a VT_DECIMAL variant as a DOUBLE.
 
 ---
 
-## <a name="Round"></a>Round
+## <a name="round"></a>Round
 
 Rounds a variant to the specified number of decimal places.
 
@@ -599,7 +599,7 @@ A DVARIANT containing the rounded result.
 
 ---
 
-## <a name="FormatNumber"></a>FormatNumber
+## <a name="formatnumber"></a>FormatNumber
 
 Formats a DVARIANT containing numbers into a string form.
 
@@ -626,7 +626,7 @@ This function uses the user's default locale while calling **VarTokenizeFormatSt
 
 ---
 
-## <a name="GetBooleanElem"></a>GetBooleanElem
+## <a name="getbooleanelem"></a>GetBooleanElem
 
 Extracts a single boolean element from a safe array of booleans.
 
@@ -644,7 +644,7 @@ The retrieved value.
 
 ---
 
-## <a name="GetDoubleElem"></a>GetDoubleElem
+## <a name="getdoubleelem"></a>GetDoubleElem
 
 Extracts a single DOUBLE element from a safe array of doubles.
 
@@ -662,7 +662,7 @@ The retrieved value.
 
 ---
 
-## <a name="GetLongElem"></a>GetLongElem
+## <a name="getlongelem"></a>GetLongElem
 
 Extracts a single LONG element from a safe array of longs.
 
@@ -680,7 +680,7 @@ The retrieved value.
 
 ---
 
-## <a name="GetLongIntElem"></a>GetLongIntElem
+## <a name="getlongintelem"></a>GetLongIntElem
 
 Extracts a single LONGINT element from a safe array of long integers.
 
@@ -698,7 +698,7 @@ The retrieved value.
 
 ---
 
-## <a name="GetShortElem"></a>GetShortElem
+## <a name="getshortelem"></a>GetShortElem
 
 Extracts a single SHORT element from a safe array of short integers.
 
@@ -716,7 +716,7 @@ The retrieved value.
 
 ---
 
-## <a name="GetStringElem"></a>GetStringElem
+## <a name="getstringelem"></a>GetStringElem
 
 Extracts a single BSTR element from a safe array of unicode strings.
 
@@ -734,7 +734,7 @@ The retrieved value.
 
 ---
 
-## <a name="GetULongElem"></a>GetULongElem
+## <a name="getulongelem"></a>GetULongElem
 
 Extracts a single ULONG element from a safe array of unsigned longs.
 
@@ -752,7 +752,7 @@ The retrieved value.
 
 ---
 
-## <a name="GetULongIntElem"></a>GetULongIntElem
+## <a name="getulongintelem"></a>GetULongIntElem
 
 Extracts a single ULONGINT element from a safe array of unsigned long integers.
 
@@ -770,7 +770,7 @@ The retrieved value.
 
 ---
 
-## <a name="GetUShortElem"></a>GetUShortElem
+## <a name="getushortelem"></a>GetUShortElem
 
 Extracts a single USHORT element from a safe array of unsigned shorts.
 
@@ -788,7 +788,7 @@ The retrieved value.
 
 ---
 
-## <a name="GetVariantElem"></a>GetVariantElem
+## <a name="getvariantelem"></a>GetVariantElem
 
 Extracts a single Variant element from a safe array of variants.
 
@@ -806,7 +806,7 @@ The retrieved value.
 
 ---
 
-## <a name="Put"></a>Put
+## <a name="put"></a>Put
 
 Assigns values to a DVARIANT.
 
@@ -845,7 +845,7 @@ SUB Put (BYVAL _pv AS ANY PTR, BYREF strType AS STRING)
 
 ---
 
-## <a name="PutNull"></a>PutNull
+## <a name="putnull"></a>PutNull
 
 Assigns a null value to the DVARIANT.
 
@@ -854,7 +854,7 @@ SUB PutNull
 ```
 ---
 
-## <a name="PutBool"></a>PutBool
+## <a name="putbool"></a>PutBool
 
 Assigns a boolean value to the DVARIANT.
 
@@ -871,7 +871,7 @@ SUB PutBoolean (BYVAL _value AS BOOLEAN)
 ```
 ---
 
-## <a name="PutByte"></a>PutByte
+## <a name="putbyte"></a>PutByte
 
 Assigns a byte value to the DVARIANT.
 
@@ -880,7 +880,7 @@ SUB PutByte (BYVAL _value AS BYTE)
 ```
 ---
 
-## <a name="PutUByte"></a>PutUByte
+## <a name="putubyte"></a>PutUByte
 
 Assigns an unsigned ubyte value to the DVARIANT.
 
@@ -889,7 +889,7 @@ SUB PutUByte (BYVAL _value AS UBYTE)
 ```
 ---
 
-## <a name="PutShort"></a>PutShort
+## <a name="putshort"></a>PutShort
 
 Assigns a short integer value to the DVARIANT.
 
@@ -898,7 +898,7 @@ SUB PutShort (BYVAL _value AS SHORT)
 ```
 ---
 
-## <a name="PutUShort"></a>PutUShort
+## <a name="putushort"></a>PutUShort
 
 Assigns an unsigned short integer value to the DVARIANT.
 
@@ -907,7 +907,7 @@ SUB PutUShort (BYVAL _value AS USHORT)
 ```
 ---
 
-## <a name="PutInt"></a>PutInt
+## <a name="putint"></a>PutInt
 
 Assigns an INT_ (long) value to the DVARIANT.
 
@@ -921,7 +921,7 @@ Don't confuse an INT_ (LONG) with the Free Basic INTEGER data type.
 
 ---
 
-## <a name="PutUInt"></a>PutUInt
+## <a name="putuint"></a>PutUInt
 
 Assigns an UINT (unsigned long) value to the DVARIANT.
 
@@ -935,7 +935,7 @@ Don't confuse an UINT (ULONG) with the Free Basic UINTEGER data type.
 
 ---
 
-## <a name="PutLong"></a>PutLong
+## <a name="putlong"></a>PutLong
 
 Assigns a LONG value to the DVARIANT.
 
@@ -944,7 +944,7 @@ SUB PutLong (BYVAL _value AS LONG)
 ```
 ---
 
-## <a name="PutULong"></a>PutULong
+## <a name="putulong"></a>PutULong
 
 Assigns a ULONG value to the DVARIANT.
 
@@ -953,7 +953,7 @@ SUB PutULong (BYVAL _value AS ULONG)
 ```
 ---
 
-## <a name="PutLongInt"></a>PutLongInt
+## <a name="putlongint"></a>PutLongInt
 
 Assigns a LONGINT value to the DVARIANT.
 
@@ -962,7 +962,7 @@ SUB PutULong (BYVAL _value AS LONGINT)
 ```
 ---
 
-## <a name="PutULongInt"></a>PutULongInt
+## <a name="putulongint"></a>PutULongInt
 
 Assigns a ULONGINT value to the DVARIANT.
 
@@ -971,7 +971,7 @@ SUB PutULongInt (BYVAL _value AS ULONGINT)
 ```
 ---
 
-## <a name="PutSingle"></a>PutSingle
+## <a name="putsingle"></a>PutSingle
 
 Assigns a SINGLE value to the DVARIANT.
 
@@ -980,7 +980,7 @@ SUB PutSingle (BYVAL _value AS SINGLE)
 ```
 ---
 
-## <a name="PutFloat"></a>PutFloat
+## <a name="putfloat"></a>PutFloat
 
 Assigns a SINGLE value to the DVARIANT.
 
@@ -989,7 +989,7 @@ SUB PutFloat (BYVAL _value AS SINGLE)
 ```
 ---
 
-## <a name="PutDouble"></a>PutDouble
+## <a name="putdouble"></a>PutDouble
 
 Assigns a DOUBLE value to the DVARIANT.
 
@@ -998,7 +998,7 @@ SUB PutDouble (BYVAL _value AS DOUBLE)
 ```
 ---
 
-## <a name="PutBooleanArray"></a>PutBooleanArray
+## <a name="putbooleanarray"></a>PutBooleanArray
 
 Initializes DVARIANT from an array of Boolean values.
 
@@ -1021,7 +1021,7 @@ Creates a VT_ARRAY OR VT_BOOL variant.
 
 ---
 
-## <a name="PutShortArray"></a>PutShortArray
+## <a name="putshortarray"></a>PutShortArray
 
 Initializes DVARIANT from an array of signed 16-bit integer values.
 
@@ -1044,7 +1044,7 @@ Creates a VT_ARRAY OR VT_I2 variant.
 
 ---
 
-## <a name="PutUShortArray"></a>PutUshortArray
+## <a name="putushortarray"></a>PutUshortArray
 
 Initializes DVARIANT from an array of 16-bit unsigned integer values.
 
@@ -1067,7 +1067,7 @@ Creates a VT_ARRAY OR VT_UI2 variant.
 
 ---
 
-## <a name="PutLongArray"></a>PutLongArray
+## <a name="putlongarray"></a>PutLongArray
 
 Initializes DVARIANT from an array of signed 32-bit integer values.
 
@@ -1090,7 +1090,7 @@ Creates a VT_ARRAY OR VT_I4 variant.
 
 ---
 
-## <a name="PutULongArray"></a>PutULongArray
+## <a name="putulongarray"></a>PutULongArray
 
 Initializes DVARIANT from an array of 32-bit unsigned integer values.
 
@@ -1113,7 +1113,7 @@ Creates a VT_ARRAY OR VT_UI4 variant.
 
 ---
 
-## <a name="PutLongIntArray"></a>PutLongIntArray
+## <a name="putlongintarray"></a>PutLongIntArray
 
 Initializes DVARIANT from an array of signed 64-bit integer values.
 
@@ -1136,7 +1136,7 @@ Creates a VT_ARRAY OR VT_I8 variant.
 
 ---
 
-## <a name="PutULongIntArray"></a>PutULongIntArray
+## <a name="putulongintarray"></a>PutULongIntArray
 
 Initializes DVARIANT from an array of unsigned 64-bit integer values.
 
@@ -1159,7 +1159,7 @@ Creates a VT_ARRAY OR VT_UI8 variant.
 
 ---
 
-## <a name="PutDoubleArray"></a>PutDoubleArray
+## <a name="putdoublearray"></a>PutDoubleArray
 
 Initializes DVARIANT from an array of unsigned 64-bit integer values.
 
@@ -1182,7 +1182,7 @@ Creates a VT_ARRAY OR VT_R8 variant.
 
 ---
 
-## <a name="PutStringArray"></a>PutStringArray
+## <a name="putstringarray"></a>PutStringArray
 
 Initializes DVARIANT from an array of unicode strings.
 
@@ -1205,7 +1205,7 @@ Creates a VT_ARRAY OR VT_BSTR variant.
 
 ---
 
-## <a name="PutBuffer"></a>PutBuffer
+## <a name="putbuffer"></a>PutBuffer
 
 Initializes DVARIANT with the contents of a buffer.
 
@@ -1228,7 +1228,7 @@ Creates a VT_ARRAY OR VT_UI1 variant.
 
 ---
 
-## <a name="PutDateString"></a>PutDateString
+## <a name="putdatestring"></a>PutDateString
 
 Initializes DVARIANT VT_DATE from a string.
 
@@ -1253,7 +1253,7 @@ Creates a VT_DATE variant.
 
 ---
 
-## <a name="PutDec"></a>PutDec
+## <a name="putdec"></a>PutDec
 
 Initializes DVARIANT with the contents of a DECIMAL structure.
 
@@ -1275,7 +1275,7 @@ Creates a VT_DECIMAL OR VT_BYREF variant.
 
 ---
 
-## <a name="PutDecFromCY"></a>PutDecFromCY
+## <a name="putdecfromcy"></a>PutDecFromCY
 
 Converts a currency value to a variant of type VT_DECIMAL.
 
@@ -1304,7 +1304,7 @@ Creates a VT_DECIMAL variant.
 
 ---
 
-## <a name="PutDecFromDouble"></a>PutDecFromDouble
+## <a name="putdecfromdouble"></a>PutDecFromDouble
 
 Converts a double value to a variant of type VT_DECIMAL.
 
@@ -1333,7 +1333,7 @@ Creates a VT_DECIMAL variant.
 
 ---
 
-## <a name="PutDecFromStr"></a>PutDecFromStr
+## <a name="putdecfromstr"></a>PutDecFromStr
 
 Initializes DVARIANT as VT_DECIMAL from a string.
 
@@ -1365,7 +1365,7 @@ Creates a VT_DECIMAL variant.
 
 ---
 
-## <a name="PutFileTime"></a>PutFileTime
+## <a name="putfiletime"></a>PutFileTime
 
 Initializes DVARIANT with the contents of a FILETIME structure.
 
@@ -1387,7 +1387,7 @@ Creates a VT_DATE variant.
 
 ---
 
-## <a name="PutFileTimeArray"></a>PutFileTimeArray
+## <a name="putfiletimearray"></a>PutFileTimeArray
 
 Initializes DVARIANT with an array of FILETIME structures.
 
@@ -1410,7 +1410,7 @@ Creates a VT_ARRAY OR VT_DATE variant.
 
 ---
 
-## <a name="PutGuid"></a>PutGuid
+## <a name="putguid"></a>PutGuid
 
 Initializes DVARIANT from a GUID.
 
@@ -1432,7 +1432,7 @@ Creates a VT_ARRAY OR VT_UI1 variant.
 
 ---
 
-## <a name="PutPropVariant"></a>PutPropVariant
+## <a name="putpropvariant"></a>PutPropVariant
 
 Initializes DVARIANT from the contents of a PROPVARIANT structure.
 
@@ -1475,7 +1475,7 @@ VT_VECTOR OR VT_CF
 
 ---
 
-## <a name="PutRecord"></a>PutRecord
+## <a name="putrecord"></a>PutRecord
 
 Initializes DVARIANT with a reference to an UDT.
 
@@ -1498,7 +1498,7 @@ Creates a VT_RECORD variant.
 
 ---
 
-## <a name="PutRef"></a>PutRef
+## <a name="putref"></a>PutRef
 
 Assigns a value by reference (a pointer to a variable).
 
@@ -1523,7 +1523,7 @@ Creates a VT_BYREF variant of the sepecified type.
 
 ---
 
-## <a name="PutResource"></a>PutResource
+## <a name="putresource"></a>PutResource
 
 Initializes the DVARIANT based on a string resource imbedded in an executable file.
 
@@ -1546,7 +1546,7 @@ Creates a VT_BSTR variant. If the resource does not exist, this function initial
 
 ---
 
-## <a name="PutSafeArray"></a>PutSafeArray
+## <a name="putsafearray"></a>PutSafeArray
 
 Initializes DVARIANT from a safe array.
 
@@ -1568,7 +1568,7 @@ Creates a VT_ARRAY variant.
 
 ---
 
-## <a name="PutStrRet"></a>PutStrRet
+## <a name="putstrret"></a>PutStrRet
 
 Initializes DVARIANT with the string stored in a STRRET structure.
 
@@ -1591,7 +1591,7 @@ Creates a VT_BSTR variant. This function frees the resources used for the STRRET
 
 ---
 
-## <a name="PutSystemTime"></a>PutSystemTime
+## <a name="putsystemtime"></a>PutSystemTime
 
 Initializes DVARIANT with the contents of a SYSTEMTIME structure.
 
@@ -1613,7 +1613,7 @@ Creates a VT_DATE variant.
 
 ---
 
-## <a name="PutUtf8"></a>PutUtf8
+## <a name="pututf8"></a>PutUtf8
 
 Initializes DVARIANT with the contents of an UTF-8 string.
 
@@ -1635,7 +1635,7 @@ Creates a VT_BSTR variant.
 
 ---
 
-## <a name="PutVariantArrayElem"></a>PutVariantArrayElem
+## <a name="putvariantarrayelem"></a>PutVariantArrayElem
 
 Initializes DVARIANT with a value stored in another VARIANT structure.
 
@@ -1681,7 +1681,7 @@ You can use **GetElementCount** to obtain the number of elements in the array or
 
 ---
 
-## <a name="PutVbDate"></a>PutVbDate
+## <a name="putvbdate"></a>PutVbDate
 
 Initializes DVARIANT with the contents of a DATE value.
 
@@ -1703,7 +1703,7 @@ Creates a VT_DATE variant.
 
 ---
 
-## <a name="ToBooleanArray"></a>ToBooleanArray
+## <a name="tobooleanarray"></a>ToBooleanArray
 
 Extracts an array of boolean values from DVARIANT.
 
@@ -1728,7 +1728,7 @@ If the source VARIANT is of type VT_ARRAY OR VT_BOOL, this function extracts up 
 
 ---
 
-## <a name="ToBooleanArrayAlloc"></a>ToBooleanArrayAlloc
+## <a name="tobooleanarrayalloc"></a>ToBooleanArrayAlloc
 
 Extracts an array of boolean values from DVARIANT.
 
@@ -1752,7 +1752,7 @@ If DVARIANT is of type VT_ARRAY OR VT_BOOL, this function extracts an array of W
 
 ---
 
-## <a name="ToBstr"></a>ToBstr
+## <a name="tobstr"></a>ToBstr
 
 Extracts the content of the underlying variant and returns it as a BSTRING.
 
@@ -1772,7 +1772,7 @@ DIM bs AS BSTRING = dv.ToBstr
 ```
 ---
 
-## <a name="ToBuffer"></a>ToBuffer
+## <a name="tobuffer"></a>ToBuffer
 
 Extracts the contents of a DVARIANT of type VT_ARRRAY OR VT_UI1 to a buffer.
 
@@ -1809,7 +1809,7 @@ To retrieve the size of the array call **GetElementCount**.
 
 ---
 
-## <a name="ToBufferString"></a>ToBuffer (STRING)
+## <a name="tobufferstring"></a>ToBuffer (STRING)
 
 Extracts the contents of a DVARIANT of type VT_ARRRAY OR VT_UI1 to a string used as a buffer.
 
@@ -1823,7 +1823,7 @@ A string with the contents of the array.
 
 ---
 
-## <a name="ToDosDateTime"></a>ToDosDateTime
+## <a name="todosdatetime"></a>ToDosDateTime
 
 Extracts a date and time value in Microsoft MS-DOS format from a DVARIANT of type VT_DATE.
 
@@ -1850,7 +1850,7 @@ If DVARIANT is not of type VT_DATE, the function attempts to convert the value i
 
 ---
 
-## <a name="ToDoubleArray"></a>ToDoubleArray
+## <a name="todoublearray"></a>ToDoubleArray
 
 Extracts an array of DOUBLE values from DVARIANT.
 
@@ -1871,7 +1871,7 @@ If the source VARIANT is of type VT_ARRAY OR VT_R8, this function extracts up to
 
 ---
 
-## <a name="ToDoubleArrayAlloc"></a>ToDoubleArrayAlloc
+## <a name="todoublearrayalloc"></a>ToDoubleArrayAlloc
 
 Extracts an array of DOUBLE values from DVARIANT.
 
@@ -1895,7 +1895,7 @@ If DVARIANT is of type VT_ARRAY OR VT_R8, this function extracts an array of DOU
 
 ---
 
-## <a name="ToFileTime"></a>ToFileTime
+## <a name="tofiletime"></a>ToFileTime
 
 Returns the contents of a DVARIANT of type VT_DATE as a FILETIME structure.
 
@@ -1913,7 +1913,7 @@ A FILETIME structure.
 
 ---
 
-## <a name="ToGuid"></a>ToGuid
+## <a name="toguid"></a>ToGuid
 
 Returns the contents of a DVARIANT containing a GUID string as a GUID structure.
 
@@ -1927,7 +1927,7 @@ Returns the contents of a DVARIANT containing a GUID string as an unicode GUID s
 
 ---
 
-## <a name="ToGuidBStr"></a>ToGuidBStr
+## <a name="toguidbstr"></a>ToGuidBStr
 
 Returns the contents of a DVARIANT containing a GUID string as an unicode GUID string.
 
@@ -1941,7 +1941,7 @@ A GUID string.
 
 ---
 
-## <a name="ToGuidStr"></a>ToGuidStr
+## <a name="toguidstr"></a>ToGuidStr
 
 Returns the contents of a DVARIANT containing a GUID string as an unicode GUID string.
 
@@ -1955,7 +1955,7 @@ A GUID string.
 
 ---
 
-## <a name="ToGuidWStr"></a>ToGuidWStr
+## <a name="toguidwstr"></a>ToGuidWStr
 
 Returns the contents of a DVARIANT containing a GUID string as an unicode GUID string.
 
@@ -1969,7 +1969,7 @@ A GUID string.
 
 ---
 
-## <a name="ToLongArray"></a>ToLongArray
+## <a name="tolongarray"></a>ToLongArray
 
 Extracts an array of LONG values from DVARIANT.
 
@@ -1990,7 +1990,7 @@ If the source VARIANT is of type VT_ARRAY OR VT_I4, this function extracts up to
 
 ---
 
-## <a name="ToLongArrayAlloc"></a>ToLongArrayAlloc
+## <a name="tolongarrayalloc"></a>ToLongArrayAlloc
 
 Extracts an array of LONG values from DVARIANT.
 
@@ -2014,7 +2014,7 @@ If DVARIANT is of type VT_ARRAY OR VT_I4, this function extracts an array of LON
 
 ---
 
-## <a name="ToLongIntArray"></a>ToLongIntArray
+## <a name="tolongintarray"></a>ToLongIntArray
 
 Extracts an array of LONGINT values from DVARIANT.
 
@@ -2035,7 +2035,7 @@ If the source VARIANT is of type VT_ARRAY OR VT_UI4, this function extracts up t
 
 ---
 
-## <a name="ToLongIntArrayAlloc"></a>ToLongIntArrayAlloc
+## <a name="tolongintarrayalloc"></a>ToLongIntArrayAlloc
 
 Extracts an array of LONGINT values from DVARIANT.
 
@@ -2060,7 +2060,7 @@ If DVARIANT is of type VT_ARRAY OR VT_I8, this function extracts an array of LON
 
 ---
 
-## <a name="ToShortArray"></a>ToShortArray
+## <a name="toshortarray"></a>ToShortArray
 
 Extracts an array of Int16 values from DVARIANT.
 
@@ -2085,7 +2085,7 @@ If the source VARIANT is of type VT_ARRAY OR VT_I2, this function extracts up to
 
 ---
 
-## <a name="ToShortArrayAlloc"></a>ToShortArrayAlloc
+## <a name="toshortarrayalloc"></a>ToShortArrayAlloc
 
 Extracts an array of SHORT values from DVARIANT.
 
@@ -2109,7 +2109,7 @@ If DVARIANT is of type VT_ARRAY OR VT_I2, this function extracts an array of SHO
 
 ---
 
-## <a name="ToStr"></a>ToStr
+## <a name="tostr"></a>ToStr
 
 Extracts the content of the underlying variant and returns it as a DWSTRING.
 
@@ -2129,7 +2129,7 @@ DIM dws AS DWSTRING = dv.ToStr
 ```
 ---
 
-## <a name="ToStringArray"></a>ToStringArray
+## <a name="tostringarray"></a>ToStringArray
 
 Extracts data from a vector structure into a PWSTR array.
 
@@ -2152,7 +2152,7 @@ This helper function is used when the calling application expects a DVARIANT to 
 
 ---
 
-## <a name="ToStringArrayAlloc"></a>ToStringArrayAlloc
+## <a name="tostringarrayalloc"></a>ToStringArrayAlloc
 
 Extracts an array of PWSTR values from DVARIANT.
 
@@ -2176,7 +2176,7 @@ This function extracts an array of PWSTR values into a newly allocated array. Th
 
 ---
 
-## <a name="ToStrRet"></a>ToStrRet
+## <a name="tostrret"></a>ToStrRet
 
 Returns the contents of a DVARIANT of type VT_BSTR to a STRRET stucture.
 
@@ -2190,7 +2190,7 @@ A STRRET structure.
 
 ---
 
-## <a name="ToSystemTime"></a>ToSystemTime
+## <a name="tosystemtime"></a>ToSystemTime
 
 Returns the contents of DVARIANT of type VT_DATE as a FILETIME structure.
 
@@ -2204,7 +2204,7 @@ A SYSTEMTIME structure.
 
 ---
 
-## <a name="ToULongArray"></a>ToULongArray
+## <a name="toulongarray"></a>ToULongArray
 
 Extracts an array of ULONG values from DVARIANT.
 
@@ -2229,7 +2229,7 @@ If the source VARIANT is of type VT_ARRAY OR VT_UI4, this function extracts up t
 
 ---
 
-## <a name="ToULongArrayAlloc"></a>ToULongArrayAlloc
+## <a name="toulongarrayalloc"></a>ToULongArrayAlloc
 
 Extracts an array of ULONG values from DVARIANT.
 
@@ -2253,7 +2253,7 @@ If DVARIANT is of type VT_ARRAY OR VT_UI4, this function extracts an array of UL
 
 ---
 
-## <a name="ToULongIntArray"></a>ToULongIntArray
+## <a name="toulongintarray"></a>ToULongIntArray
 
 Extracts an array of ULONGINT values from DVARIANT.
 
@@ -2278,7 +2278,7 @@ If the source VARIANT is of type VT_ARRAY OR VT_UI8, this function extracts up t
 
 ---
 
-## <a name="ToULongIntArrayAlloc"></a>ToULongIntArrayAlloc
+## <a name="toulongintarrayalloc"></a>ToULongIntArrayAlloc
 
 Extracts an array of ULONGINT values from DVARIANT.
 
@@ -2302,7 +2302,7 @@ If DVARIANT is of type VT_ARRAY OR VT_UI8, this function extracts an array of UL
 
 ---
 
-## <a name="ToUShortArray"></a>ToUShortArray
+## <a name="toushortarray"></a>ToUShortArray
 
 Extracts an array of UInt16 values from DVARIANT.
 
@@ -2327,7 +2327,7 @@ If the source VARIANT is of type VT_ARRAY OR VT_I2, this function extracts up to
 
 ---
 
-## <a name="ToUShortArrayAlloc"></a>ToUShortArrayAlloc
+## <a name="toushortarrayalloc"></a>ToUShortArrayAlloc
 
 Extracts an array of USHORT values from DVARIANT.
 
@@ -2351,7 +2351,7 @@ If DVARIANT is of type VT_ARRAY OR VT_UI2, this function extracts an array of SH
 
 ---
 
-## <a name="ToUtf8"></a>ToUtf8
+## <a name="toutf8"></a>ToUtf8
 
 Returns the contents of a DVARIANT containing a BSTR as an UTF-8 encoded string.
 
@@ -2365,7 +2365,7 @@ The UTF-8 string.
 
 ---
 
-## <a name="ToVbDate"></a>ToVbDate
+## <a name="tovbdate"></a>ToVbDate
 
 Returns the contents of a DVARIANT of type VT_DATE as a DATE value.
 

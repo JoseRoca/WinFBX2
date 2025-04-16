@@ -58,20 +58,20 @@ print
 
 | Name       | Description |
 | ---------- | ----------- |
-| [Add](#Add) | Adds a key and item pair to the associative array. |
-| [Count](#Count) | Returns the number of items in the associative array. |
-| [DispObj](#DispObj) | Returns a counted reference of the underlying dispatch pointer. |
-| [DispPtr](#DispPtr) | Returns the underlying dispatch pointer. |
-| [Exists](#Exists) | Checks if a specified key exists in the associative array. |
-| [GetLastResult](#GetLastResult) | Returns the last result code. |
-| [HashVal](#HashVal) | Returns the hash value for a specified key in the associative array. |
-| [Item](#Item) | Sets or returns an item for a specified key in associative array. |
-| [Items](#Items) | Returns a safe array containing all the items in the associative array. |
-| [Key](#Key) | Sets or returns an item for a specified key in the associative array. |
-| [Keys](#Keys) | Returns an array containing all the keys in the associative array. |
-| [NewEnum](#NewEnum) | Returns a reference to the standard enumerator. |
-| [Remove](#Remove) | Removes a key, item pair from the associative array. |
-| [RemoveAll](#RemoveAll) | Removes all key, item pairs from the associative array. |
+| [Add](#add) | Adds a key and item pair to the associative array. |
+| [Count](#count) | Returns the number of items in the associative array. |
+| [DispObj](#dispObj) | Returns a counted reference of the underlying dispatch pointer. |
+| [DispPtr](#dispPtr) | Returns the underlying dispatch pointer. |
+| [Exists](#exists) | Checks if a specified key exists in the associative array. |
+| [GetLastResult](#getlastresult) | Returns the last result code. |
+| [HashVal](#hashval) | Returns the hash value for a specified key in the associative array. |
+| [Item](#item) | Sets or returns an item for a specified key in associative array. |
+| [Items](#items) | Returns a safe array containing all the items in the associative array. |
+| [Key](#key) | Sets or returns an item for a specified key in the associative array. |
+| [Keys](#keys) | Returns an array containing all the keys in the associative array. |
+| [NewEnum](#newenum) | Returns a reference to the standard enumerator. |
+| [Remove](#remove) | Removes a key, item pair from the associative array. |
+| [RemoveAll](#removeall) | Removes all key, item pairs from the associative array. |
 
 ## Error and result codes
 

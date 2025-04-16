@@ -795,6 +795,17 @@ FUNCTION Find (BYREF wszFind AS WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS 
 
 The index of the retrieved array element, or 0 on failure.
 
+#### Usage example
+```
+' // Create a one-dimensional array of strings
+DIM dsa AS DSAFEARRAY = DSAFEARRAY("BSTR", 2, 1)
+dsa.PutStr(1, "Test string 1")
+dsa.PutStr(2, "Test string 2")
+dsa.InsertStr(2, "12345.67")
+DIM nPos AS LONG = dsa.Find("Test string 2")
+PRINT nPos
+```
+
 ### <a name="get"></a>Get / GetStr / GetVar
 
 Retrieves a single element of the array.

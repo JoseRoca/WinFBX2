@@ -116,7 +116,7 @@ END FUNCTION
 
 ---
 
-# <a name="Add"></a>Add
+### <a name="Add"></a>Add
 
 Adds a key and item pair to the associtive array.
 
@@ -135,7 +135,7 @@ An error occurs if the key already exists.
 
 ---
 
-# <a name="Count"></a>Count
+### <a name="Count"></a>Count
 
 Returns the number of items in the associative array.
 
@@ -144,7 +144,7 @@ FUNCTION Count () AS LONG
 ```
 ---
 
-# <a name="DispObj"></a>DispObj
+### <a name="DispObj"></a>DispObj
 
 Returns a counted reference of the underlying dispatch pointer. You must call **IUnknown_Release** when no longer needs it.
 
@@ -153,7 +153,7 @@ FUNCTION DispObj () AS ANY PTR
 ```
 ---
 
-# <a name="DispPtr"></a>DispPtr
+### <a name="DispPtr"></a>DispPtr
 
 Returns the underlying dispatch pointer. As it is a raw pointer, don't call **IUnknown_Release** on it.
 
@@ -162,7 +162,7 @@ FUNCTION DispPtr () AS ANY PTR
 ```
 ---
 
-# <a name="Exists"></a>Exists
+### <a name="Exists"></a>Exists
 
 Checks if a specified key exists in the associative array.
 
@@ -176,7 +176,7 @@ Returns True is the key exists; False, otherwise.
 
 ---
 
-# <a name="HashVal"></a>HashVal
+### <a name="HashVal"></a>HashVal
 
 Returns the hash value for a specified key in the associative array.
 
@@ -185,7 +185,7 @@ FUNCTION HashVal (BYREF dvKey AS DVARIANT) AS DVARIANT
 ```
 ---
 
-# <a name="Item"></a>Item
+### <a name="Item"></a>Item
 
 Sets or returns an item for a specified key in associative array.
 
@@ -209,7 +209,7 @@ If key is not found when changing an item, a new key is created with the specifi
 
 ---
 
-# <a name="Items"></a>Items
+### <a name="Items"></a>Items
 
 Returns a safe array containing all the items in the associative array.
 
@@ -223,7 +223,7 @@ A DVARIANT containing all the items in a safe array.
 
 ---
 
-# <a name="Key"></a>Key
+### <a name="Key"></a>Key
 
 Sets or returns an item for a specified key in the associative array.
 
@@ -246,7 +246,7 @@ The item value.
 
 ---
 
-# <a name="Keys"></a>Keys
+### <a name="Keys"></a>Keys
 
 Returns an array containing all the keys in the associative array.
 
@@ -260,7 +260,7 @@ A DVARIANT containing all the keys in a safe array.
 
 ---
 
-# <a name="NewEnum"></a>NewEnum
+### <a name="NewEnum"></a>NewEnum
 
 Returns a reference to the standard enumerator.
 
@@ -278,7 +278,7 @@ IUnknown pointer that must be cast to an **IEnumVARIANT** interface.
 
 ---
 
-# <a name="Remove"></a>Remove
+### <a name="Remove"></a>Remove
 
 Removes a key, item pair from the associative array.
 
@@ -296,7 +296,7 @@ An error occurs if the specified key, item pair does not exist.
 
 ---
 
-# <a name="RemoveAll"></a>RemoveAll
+### <a name="RemoveAll"></a>RemoveAll
 
 Removes all key, item pairs from the associative array.
 

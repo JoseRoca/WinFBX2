@@ -1,6 +1,6 @@
 # CDicObj Class
 
-**CDicObj** is an associative array of variants. Each item is associated with a unique key. The key is used to retrieve an individual item.
+`CDicObj` is an associative array of variants. Each item is associated with a unique key. The key is used to retrieve an individual item.
 
 #### Example
 
@@ -96,8 +96,6 @@ PRIVATE FUNCTION GetErrorInfo (BYVAL nError AS LONG = -1) AS DWSTRING
 Returns the last result code
 ```
 FUNCTION GetLastResult () AS HRESULT
-   RETURN m_Result
-END FUNCTION
 ```
 ---
 
@@ -106,9 +104,6 @@ END FUNCTION
 Sets the last result code.
 ```
 FUNCTION SetResult (BYVAL Result AS HRESULT) AS HRESULT
-   m_Result = Result
-   RETURN m_Result
-END FUNCTION
 ```
 | Parameter | Description |
 | --------- | ----------- |
@@ -205,7 +200,7 @@ The item value.
 
 #### Remarks
 
-If key is not found when changing an item, a new key is created with the specified *cvNewvItem*. Contrary to the Dictionary object, if key is not found when attempting to return an existing item, it returns and empty variant and sets the last result code to E_INVALIDARG, instead of creating a new key with its corresponding item empty.
+If key is not found when changing an item, a new key is created with the specified *dvNewvItem*. Contrary to the Dictionary object, if key is not found when attempting to return an existing item, it returns and empty variant and sets the last result code to E_INVALIDARG, instead of creating a new key with its corresponding item empty.
 
 ---
 
@@ -270,7 +265,7 @@ FUNCTION NewEnum () AS IEnumVARIANT PTR
 
 #### Return value
 
-A pointer to the standard IEnumVARIANT interface.
+A pointer to the standard **IEnumVARIANT** interface.
 
 #### Return value
 

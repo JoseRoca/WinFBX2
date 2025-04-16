@@ -73,6 +73,48 @@ print
 | [Remove](#Remove) | Removes a key, item pair from the associative array. |
 | [RemoveAll](#RemoveAll) | Removes all key, item pairs from the associative array. |
 
+## Error and result codes
+
+| Name       | Description |
+| ---------- | ----------- |
+| [GetErrorInfo](#geterrorinfo) | Returns a localized description of the specified error code. |
+| [GetLastResult](#getlastresult) | Returns the last result code. |
+| [SetResult](#setresult) | Sets the last result code. |
+
+---
+
+### <a name="geterrorinfo"></a>GetErrorInfo
+
+Returns a localized description of the specified error code. If the error is omited, it will return the value returned by the Windows API function **GetLastError**.
+```
+PRIVATE FUNCTION GetErrorInfo (BYVAL nError AS LONG = -1) AS DWSTRING
+```
+
+### <a name="getlastresult"></a>GetLastResult
+
+Returns the last result code
+```
+FUNCTION GetLastResult () AS HRESULT
+   RETURN m_Result
+END FUNCTION
+```
+---
+
+### <a name="setresult"></a>SetResult
+
+Sets the last result code.
+```
+FUNCTION SetResult (BYVAL Result AS HRESULT) AS HRESULT
+   m_Result = Result
+   RETURN m_Result
+END FUNCTION
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *Result* | The **HRESULT** error code returned by the methods. |
+
+---
+
 # <a name="Add"></a>Add
 
 Adds a key and item pair to the associtive array.
@@ -90,6 +132,8 @@ FUNCTION Add (BYREF dvKey AS DVARIANT, BYREF dvItem AS DVARIANT) AS HRESULT
 
 An error occurs if the key already exists.
 
+---
+
 # <a name="Count"></a>Count
 
 Returns the number of items in the associative array.
@@ -97,6 +141,7 @@ Returns the number of items in the associative array.
 ```
 FUNCTION Count () AS LONG
 ```
+---
 
 # <a name="DispObj"></a>DispObj
 
@@ -105,6 +150,7 @@ Returns a counted reference of the underlying dispatch pointer. You must call **
 ```
 FUNCTION DispObj () AS ANY PTR
 ```
+---
 
 # <a name="DispPtr"></a>DispPtr
 
@@ -113,6 +159,7 @@ Returns the underlying dispatch pointer. As it is a raw pointer, don't call **IU
 ```
 FUNCTION DispPtr () AS ANY PTR
 ```
+---
 
 # <a name="Exists"></a>Exists
 
@@ -124,13 +171,9 @@ FUNCTION Exists (BYREF dvKey AS DVARIANT) AS BOOLEAN
 
 #### Return value
 
-# <a name="GetLastResult"></a>GetLastResult
+Returns True is the key exists; False, otherwise.
 
-Returns the last result code.
-
-```
-FUNCTION GetLastResult () AS HRESULT
-```
+---
 
 # <a name="HashVal"></a>HashVal
 
@@ -139,6 +182,7 @@ Returns the hash value for a specified key in the associative array.
 ```
 FUNCTION HashVal (BYREF dvKey AS DVARIANT) AS DVARIANT
 ```
+---
 
 # <a name="Item"></a>Item
 
@@ -162,6 +206,8 @@ The item value.
 
 If key is not found when changing an item, a new key is created with the specified *cvNewvItem*. Contrary to the Dictionary object, if key is not found when attempting to return an existing item, it returns and empty variant and sets the last result code to E_INVALIDARG, instead of creating a new key with its corresponding item empty.
 
+---
+
 # <a name="Items"></a>Items
 
 Returns a safe array containing all the items in the associative array.
@@ -173,6 +219,8 @@ FUNCTION Items () AS DVARIANT
 #### Return value
 
 A DVARIANT containing all the items in a safe array.
+
+---
 
 # <a name="Key"></a>Key
 
@@ -195,6 +243,8 @@ Contrarily to the Dictionary object, if key is not found when changing a key, th
 
 The item value.
 
+---
+
 # <a name="Keys"></a>Keys
 
 Returns an array containing all the keys in the associative array.
@@ -206,6 +256,8 @@ FUNCTION Keys () AS DVARIANT
 #### Return value
 
 A DVARIANT containing all the keys in a safe array.
+
+---
 
 # <a name="NewEnum"></a>NewEnum
 
@@ -223,6 +275,8 @@ A pointer to the standard IEnumVARIANT interface.
 
 IUnknown pointer that must be cast to an **IEnumVARIANT** interface.
 
+---
+
 # <a name="Remove"></a>Remove
 
 Removes a key, item pair from the associative array.
@@ -239,6 +293,8 @@ FUNCTION Remove (BYREF dvKey AS DVARIANT) AS HRESULT
 
 An error occurs if the specified key, item pair does not exist.
 
+---
+
 # <a name="RemoveAll"></a>RemoveAll
 
 Removes all key, item pairs from the associative array.
@@ -250,3 +306,5 @@ FUNCTION RemoveAll() AS HRESULT
 #### Return value
 
 Returns S_OK (0) or an HRESULT error code.
+
+---

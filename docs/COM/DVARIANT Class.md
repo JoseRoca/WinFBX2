@@ -127,13 +127,13 @@ Creates an instance of the DVARIANT class.
 CONSTRUCTOR
 CONSTRUCTOR (BYREF dv AS DVARIANT)
 CONSTRUCTOR (BYVAL v AS VARIANT)
-CONSTRUCTOR (BYREF wsz AS WSTRING)
+CONSTRUCTOR (BYVAL pwsz AS WSTRING PTR)
 CONSTRUCTOR (BYREF dws AS DWSTRING)
 CONSTRUCTOR (BYREF bs AS BSTRING)
 CONSTRUCTOR (BYVAL pvar AS VARIANT PTR)
 CONSTRUCTOR (BYVAL cy AS CURRENCY)
 CONSTRUCTOR (BYVAL dec AS DECIMAL)
-DECLARE CONSTRUCTOR (BYVAL b AS BOOLEAN)
+DECLARE CONSTRUCTOR (BYVAL _value AS LONG)
 CONSTRUCTOR (BYREF pDisp AS IDispatch PTR, BYVAL fAddRef AS BOOLEAN = FALSE)
 CONSTRUCTOR (BYREF pUnk AS IUnknown PTR, BYVAL fAddRef AS BOOLEAN = FALSE)
 CONSTRUCTOR (BYVAL _value AS LONGINT, BYVAL _vType AS WORD = VT_I4)
@@ -222,11 +222,12 @@ Assignment operators
 OPERATOR Let (BYREF dv AS DVARIANT)
 OPERATOR Let (BYVAL v AS VARIANT)
 OPERATOR Let (BYVAL pvar AS VARIANT PTR)
+OPERATOR LET (BYVAL pwszStr AS WSTRING PTR)
 OPERATOR Let (BYVAL cy AS CURRENCY)
 OPERATOR Let (BYVAL dec AS DECIMAL)
-OPERATOR Let (BYVAL b AS BOOLEAN)
-OPERATOR Let (BYREF cbs AS BSTRING)
-OPERATOR Let (BYREF cws AS DWSTRING)
+OPERATOR Let (BYREF bs AS BSTRING)
+OPERATOR Let (BYREF dws AS DWSTRING)
+DECLARE OPERATOR LET (BYVAL _value AS LONG)
 OPERATOR Let (BYREF pDisp AS IDispatch PTR)
 OPERATOR Let (BYREF pUnk AS IUnknown PTR)
 OPERATOR Let (BYVAL _value AS LONGINT)
@@ -417,7 +418,7 @@ FUNCTION Attach (BYREF v AS VARIANT) AS HRESULT
 
 #### Remark
 
-Marks the source variant as VT_EMPTY instead of clearing it with VariantClear because we aren't making a duplicate of the contents, but transferring ownership.
+Marks the source variant as VT_EMPTY instead of clearing it with **VariantClear** because we aren't making a duplicate of the contents, but transferring ownership.
 
 #### Return value
 

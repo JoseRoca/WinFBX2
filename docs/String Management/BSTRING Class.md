@@ -40,7 +40,124 @@ CONSTRUCTOR (BYVAL n AS DOUBLE)
 | *nCodePage* | The code page to be used for ansi to unicode conversions. |
 | *n* | A number. |
 
+1. Creates an empty Unicode string buffer with an initial null-terminated string.
+```
+Example: DIM bs AS BSTRING
+```
+2. Initializes a `BSTRING` instance from a wide string pointer.
+```
+DIM wsz AS WSTRING * 30 = "This is a test string"
+DIM bsText AS BSTRING = wsz
+```
+3. Initializes a `DWSTRING` from an ANSI or UTF-8 encoded string, with optional code page support.
+```
+Example: DIM s AS STRING = "Hello, world"
+         DIM bs AS BSTRING = s
+Example: DIM bs AS BSTRING = BSTRING("Hello, utf", CP_UTF8)
+```
 For a list of code pages see: [Code Page Identifiers](https://msdn.microsoft.com/en-us/library/windows/desktop/dd317756(v=vs.85).aspx)
+
+5. Creates a copy of an existing `BSTRING`.
+```
+Example: DIM bs1 AS BSTRING = "Test string"
+         DIM bs2 AS BSTRING = bs1
+```
+6. Creates a `BSTRING` with a fixed-length buffer, initialized with a fill character.
+```
+Example: DIM bs AS BSTRING = BSTRING(260, " ")
+```
+7. Initializes a `BSTRING` with a numeric value, allowing automatic conversion.
+```
+Example: DIM bsNum AS BSTRING = 12345
+Example: DIM bsFloat AS BSTRING = 3.1415
+```
+
+#### Remarks
+
+`BSTRING` works transparently with literals and FreeBasic native strings, e.g.
+```
+DIM bs AS BSTRING = "One"
+DIM s AS STRING = "Three"
+bs = bs & " Two " & s
+PRINT bs
+```
+It can be used with Windows API functions, e.g.
+```
+DIM nLen AS LONG = SendMessageW(hDlg, WM_GETTEXTLENGTH, 0, 0)
+DIM bsText AS BSTRING = WSPACE(nLen + 1)
+SendMessageW(hDlg, WM_GETTEXT, nLen + 1, cast(LPARAM, *bsText))
+bsText = LEFT(bsText, LEN(bsText) - 1)
+PRINT bsText
+```
+We can use arrays of `DWSTRING` strings transparently, e.g.
+```
+DIM rg(1 TO 10) AS BSTRING
+FOR i AS LONG = 1 TO 10
+   rg(i) = "string " & i
+NEXT
+FOR i AS LONG = 1 TO 10
+   PRINT rg(i)
+NEXT
+```
+A two-dimensional array
+```
+DIM rg2 (1 TO 2, 1 TO 2) AS BSTRING
+rg2(1, 1) = "string 1 1"
+rg2(1, 2) = "string 1 2"
+rg2(2, 1) = "string 2 1"
+rg2(2, 2) = "string 2 2"
+PRINT rg2(2, 1)
+```
+
+REDIM PRESERVE / ERASE
+```
+REDIM rg(0) AS BSTRING
+rg(0) = "string 0"
+REDIM PRESERVE rg(0 TO 2) AS BSTRING
+rg(1) = "string 1"
+rg(2) = "string 2"
+PRINT rg(0)
+PRINT rg(1)
+PRINT rg(2)
+ERASE rg
+```
+You can also use it with files:
+
+Using FreeBasic intrinsic statements:
+```
+DIM bs AS BSTRING = "Дмитрий Дмитриевич Шостакович"
+DIM f AS LONG = FREEFILE
+OPEN "Test.txt" FOR OUTPUT ENCODING "utf16" AS #f
+PRINT #f, bs
+CLOSE #f
+```
+Using the Windows API:
+```
+' // Writing to a file
+DIM bsFilename AS BSTRING = "тест.txt"
+DIM bsText AS BSTRING = "Дмитрий Дмитриевич Шостакович"
+DIM hFile AS HANDLE = CreateFileW(bsFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)
+IF hFile THEN
+   DIM dwBytesWritten AS DWORD
+   DIM bSuccess AS LONG = WriteFile(hFile, bsText, LEN(bsText) * 2, @dwBytesWritten, NULL)
+   CloseHandle(hFile)
+END IF
+```
+```
+' // Read the file
+hFile = CreateFileW(bsFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL)
+IF hFile THEN
+   DIM dwFileSize AS DWORD = GetFileSize(hFile, NULL)
+   IF dwFileSize THEN
+      DIM bsOut AS BSTRING = WSPACE(dwFileSize \ 2)
+      DIM bSuccess AS LONG = ReadFile(hFile, *bsOut, dwFileSize, NULL, NULL)
+      CloseHandle(hFile)
+      PRINT bsOut
+   END IF
+END IF
+```
+
+Notice that, contrarily to **CreateFileW**, FreeBasic's OPEN statement doesn't allow to use unicode for the file name.
 
 # Operators
 

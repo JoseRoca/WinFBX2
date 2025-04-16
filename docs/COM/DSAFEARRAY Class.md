@@ -239,18 +239,18 @@ CONSTRUCTOR (BYREF strType AS STRING, BYVAL cElements1 AS ULONG, BYVAL lLBound1 
 ' // 2D: elements = 5, lower bound = 1
 ' // 2D: elements = 3, lower bound = 1
 DIM rgsabounds(0 TO 1) AS SAFEARRAYBOUND = {(5, 1), (3, 1)}
-DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 2, @rgsabounds(0))
+DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 2, @rgsabounds(0))
 -or-
 ' // Two-dimensional array of BSTR
-DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 5, 1, 3, 1)
+DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 5, 1, 3, 1)
 
 ' // One-dimensional array of VT_VARIANT with 0 elements and a lower-bound of 0
-DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 0, 0)
+DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 0, 0)
 -or-
-DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT)
+DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT)
 
 ' // One-dimensional array of VT_BSTR with 5 elements and a lower-bound of 1
-DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 5, 1)
+DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 5, 1)
 ```
 
 ### <a name="constructor2"></a>Constructor (SAFEARRAYBOUND)
@@ -258,19 +258,19 @@ DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 5, 1)
 Creates a DSAFEARRAY from another DSAFEARRAY.
 
 ```
-CONSTRUCTOR DSAFEARRAY (BYREF csa AS DSAFEARRAY)
+CONSTRUCTOR DSAFEARRAY (BYREF dsa AS DSAFEARRAY)
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *csa* | A DSAFEARRAY object. |
+| *dsa* | A DSAFEARRAY object. |
 
 ### <a name="constructor3"></a>CConstructor (SAFEARRAY PTR)
 
 Creates a DSAFEARRAY from a safe array.
 ```
-CONSTRUCTOR DSAFEARRAY (BYVAL psa AS SafeArray PTR)
-CONSTRUCTOR DSAFEARRAY (BYVAL psa AS SafeArray PTR, BYVAL fAttach AS BOOLEAN)
+CONSTRUCTOR DSAFEARRAY (BYVAL psa AS SAFEARRAY PTR)
+CONSTRUCTOR DSAFEARRAY (BYVAL psa AS SAFEARRAY PTR, BYVAL fAttach AS BOOLEAN)
 ```
 
 | Parameter  | Description |
@@ -278,7 +278,7 @@ CONSTRUCTOR DSAFEARRAY (BYVAL psa AS SafeArray PTR, BYVAL fAttach AS BOOLEAN)
 | *psa* | Pointer to a safe array. |
 | *fAttach* | If TRUE, the safe array is attached, else a copy is made. |
 
-### <a name="constructor4"></a>CConstructor (VARIANT PTR)
+### <a name="constructor4"></a>Constructor (VARIANT PTR)
 
 Creates a DSAFEARRAY from a Variant of type VT_ARRAY.
 
@@ -309,14 +309,14 @@ Assigns a safe array to a DSAFEARRAY.<br>
 Assigns a variant of type VT_ARRAY to a DSAFEARRAY.
 
 ```
-OPERATOR Let (BYREF csa AS DSAFEARRAY)
-OPERATOR Let (BYVAL psa AS SAFEARRAY PTR)
-OPERATOR Let (BYVAL pvar AS VARIANT PTR)
+OPERATOR LET (BYREF dsa AS DSAFEARRAY)
+OPERATOR LET (BYVAL psa AS SAFEARRAY PTR)
+OPERATOR LET (BYVAL pvar AS VARIANT PTR)
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *csa* | An instance of the DSAFEARRAY class. |
+| *dsa* | An instance of the DSAFEARRAY class. |
 | *psa* | A safe array pointer. |
 | *pvar* | Pointer to a VARIANT. |
 
@@ -325,27 +325,27 @@ OPERATOR Let (BYVAL pvar AS VARIANT PTR)
 Returns a string consisting of all of the strings in an array, each separated by a delimiter. If the delimiter is a null (zero-length) string then no separators are inserted between the string sections. If the delimiter expression is the 3-byte value of "," which may be expressed in your source code as the string literal """,""" or as Chr(34,44,34) then a leading and trailing double-quote is added to each string section. This ensures that the returned string contains standard comma-delimited quoted fields that can be easily parsed.
 
 ```
-FUNCTION AfxStrJoin (BYREF cwsa AS DSAFEARRAY, BYREF wszDelimiter AS WSTRING = " ") AS CWSTR
+FUNCTION AfxStrJoin (BYREF dsa AS DSAFEARRAY, BYREF wszDelimiter AS WSTRING = " ") AS CWSTR
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
-| *cwsa* | The one-dimensional VT_BSTR DSAFEARRAY to join. |
+| *dsa* | The one-dimensional VT_BSTR DSAFEARRAY to join. |
 | *wszDelimiter* | The delimiter character. |
 
 #### Return value
 
-A CWSTR containing the joined string.
+A DWSTRING containing the joined string.
 
 #### Usage example
 
 ```
-DIM csa AS DSAFEARRAY = DSAFEARRAY("STRING", 3, 1)
-csa.PutStr(1, "One")
-csa.PutStr(2, "Two")
-csa.PutStr(3, "Three")
-DIM cws AS CWSTR = AfxStrJoin(csa, ",")
-PRINT cws   ' ouput: One,Two,Three
+DIM dsa AS DSAFEARRAY = DSAFEARRAY("STRING", 3, 1)
+dsa.PutStr(1, "One")
+dsa.PutStr(2, "Two")
+dsa.PutStr(3, "Three")
+DIM dws AS DWSTRING = AfxStrJoin(dsa, ",")
+PRINT dws   ' ouput: One,Two,Three
 ```
 
 ### <a name="afxstrsplit"></a>AfxStrSplit
@@ -368,10 +368,10 @@ A DSAFEARRAY containing a token in each element.
 #### Usage example
 
 ```
-DIM cws AS CWSTR = "- This, a sample string."
-DIM cwsa AS DSAFEARRAY = AfxStrSplit(cws, " ,.-")
-FOR i AS LONG = cwsa.LBound TO cwsa.UBound
-  PRINT cwsa.GetStr(i)
+DIM dws AS DWSTRING = "- This, a sample string."
+DIM dsa AS DSAFEARRAY = AfxStrSplit(dws, " ,.-")
+FOR i AS LONG = dsa.LBound TO dsa.UBound
+  PRINT dsa.GetStr(i)
 NEXT
 ```
 
@@ -393,8 +393,8 @@ Appends a value to the end of the one-dimensional safe array.
 
 ```
 FUNCTION Append (BYVAL pData AS ANY PTR) AS HRESULT
-FUNCTION Append (BYREF cbsData AS CBSTR) AS HRESULT
-FUNCTION Append (BYREF cvData AS CVAR) AS HRESULT
+FUNCTION Append (BYREF bsData AS BSTRING) AS HRESULT
+FUNCTION Append (BYREF dvData AS DVAEIANT) AS HRESULT
 FUNCTION Append (BYVAL vData AS VARIANT) AS HRESULT
 ```
 
@@ -407,48 +407,45 @@ FUNCTION AppendStr (BYVAL pwszData AS WSTRING PTR) AS HRESULT
 | Parameter  | Description |
 | ---------- | ----------- |
 | *pData* | Pointer to a variable of the appropriate data type. |
-| *cbsData* | The CBSTR to insert, if the safe array is of type VT_BSTR. |
-| *cvData* | The CVAR to insert, if the safe array is of type VT_VARIANT. |
+| *bsData* | The BSTRING to insert, if the safe array is of type VT_BSTR. |
+| *dvData* | The DVARIANT to insert, if the safe array is of type VT_VARIANT. |
 | *vData* | The VARIANT to insert, if the safe array is of type VT_VARIANT. |
 
 #### Usage examples
 
 ```
-' // Create a one-dimensional array of doubles
-'DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_R8, 2, 1)
-DIM csa AS DSAFEARRAY = DSAFEARRAY("DOUBLE", 2, 1)
+' // Creates a one-dimensional array of doubles
+'DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_R8, 2, 1)
+DIM dsa AS DSAFEARRAY = DSAFEARRAY("DOUBLE", 2, 1)
 
 DIM dblVal AS DOUBLE = 12345.12
-csa.Put(1, @dblVal)
+dsa.Put(1, @dblVal)
 dblVal = 74447.34
-csa.Put(2, @dblVal)
+dsa.Put(2, @dblVal)
 dblVal = 63535.567
-csa.Append(@dblVal)
+dsa.Append(@dblVal)
 
-csa.Get(1, @dblVal)
+dsa.Get(1, @dblVal)
 print dblVal
-csa.Get(2, @dblVal)
+dsa.Get(2, @dblVal)
 print dblVal
-csa.Get(3, @dblVal)
+dsa.Get(3, @dblVal)
 print dblVal
 ```
-
 ```
-' // Create a one-dimensional array of variants
-'DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 2, 1)
-DIM csa AS DSAFEARRAY = DSAFEARRAY("VARIANT", 2, 1)
+' // Creates a one-dimensional array of variants
+'DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 2, 1)
+DIM dsa AS DSAFEARRAY = DSAFEARRAY("VARIANT", 2, 1)
 
-csa.Put(1, CVAR("Test string"))
-csa.Put(2, CVAR(12345))
-csa.Append(CVAR("Test string appended"))
+dsa.PutVar(1, DVARIANT("Test string"))
+dsa.PutVar(2, DVARIANT(12345))
+dsa.Append(DVARIANT("Test string appended"))
 
-DIM cvOut AS CVAR
-csa.Get(1, cvOut)
-print cvOut
-csa.Get(2, cvOut)
-print cvOut
-csa.Get(3, cvOut)
-print cvOut
+DIM dvOut AS DVARIANT
+dvOut = dsa.GetVar(1)
+print dvOut
+dvOut = dsa.GetVar(2)
+print dvOut
 ```
 
 #### Return value
@@ -782,13 +779,13 @@ FUNCTION Features () AS USHORT
 Scans the array to search for the specified string.
 
 ```
-FUNCTION Find (BYREF wszFind AS WSTRING, BYVAL bNoCase AS BOOLEAN = FALSE) AS LONG
+FUNCTION Find (BYREF wszFind AS WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS LONG
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *wszFind* | The string to find. |
-| *bNoCase* | Optional. TRUE = Ignore case. |
+| *IgnoreCase* | Optional. TRUE = Ignore case. |
 
 #### Return value
 
@@ -802,44 +799,44 @@ Multidimensional array:
 
 ```
 FUNCTION Get (BYVAL prgIndices AS LONG PTR, BYVAL pData AS ANY PTR) AS HRESULT
-FUNCTION Get (BYVAL prgIndices AS LONG PTR, BYREF cbsData AS CBSTR) AS HRESULT
-FUNCTION Get (BYVAL prgIndices AS LONG PTR, BYREF cvData AS CVAR) AS HRESULT
-FUNCTION GetStr (BYVAL prgIndices AS LONG PTR) AS CBSTR
-FUNCTION GetVar (BYVAL prgIndices AS LONG PTR) AS CVAR
+FUNCTION Get (BYVAL prgIndices AS LONG PTR, BYREF bsData AS BSTRING) AS HRESULT
+FUNCTION Get (BYVAL prgIndices AS LONG PTR, BYREF dvData AS DVARIANT) AS HRESULT
+FUNCTION GetStr (BYVAL prgIndices AS LONG PTR) AS BSTRING
+FUNCTION GetVar (BYVAL prgIndices AS LONG PTR) AS DVARIANT
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *prgIndices* | Pointer to a vector of indexes for each dimension of the array. The right-most (least significant) dimension is rgIndices(0). The left-most dimension is stored at pgIndices(@psa.cDims – 1). |
 | *pData* | Pointer to the location to place the element of the array. |
-| *cbsData* | A CBSTR passed by reference that will receive the result. |
-| *cvData* | A CVAR passed by reference that will receive the result. |
+| *bsData* | A BSTRING passed by reference that will receive the result. |
+| *dvData* | A DVARIANT passed by reference that will receive the result. |
 
 One-dimensional array:
 
 ```
 FUNCTION Get (BYVAL idx AS LONG, BYVAL pData AS ANY PTR) AS HRESULT
-FUNCTION Get (BYVAL idx AS LONG, BYREF cbsData AS CBSTR) AS HRESULT
-FUNCTION Get (BYVAL idx AS LONG, BYREF cvData AS CVAR) AS HRESULT
-FUNCTION GetStr (BYVAL idx AS LONG) AS CBSTR
-FUNCTION GetVar (BYVAL idx AS LONG) AS CVAR
+FUNCTION Get (BYVAL idx AS LONG, BYREF bsData AS BSTRING) AS HRESULT
+FUNCTION Get (BYVAL idx AS LONG, BYREF dvData AS DVARIANT) AS HRESULT
+FUNCTION GetStr (BYVAL idx AS LONG) AS BSTRING
+FUNCTION GetVar (BYVAL idx AS LONG) AS DVARIANT
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *idx* | Index of the element. |
 | *pData* | Pointer to the location to place the element of the array. |
-| *cbsData* | A CBSTR passed by reference that will receive the result. |
-| *cvData* | A CVAR passed by reference that will receive the result. |
+| *bsData* | A BSTRING passed by reference that will receive the result. |
+| *dvData* | A DVARIANT passed by reference that will receive the result. |
 
 Two-dimensional array:
 
 ```
 FUNCTION Get (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYVAL pData AS ANY PTR) AS HRESULT
-FUNCTION Get (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYREF cbsData AS CBSTR) AS HRESULT
-FUNCTION Get (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYREF cvData AS CVAR) AS HRESULT
-FUNCTION GetStr (BYVAL cElem AS LONG, BYVAL cDim AS LONG) AS CVAR
-FUNCTION GetVar (BYVAL cElem AS LONG, BYVAL cDim AS LONG) AS CVAR
+FUNCTION Get (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYREF bsData AS BSTRING) AS HRESULT
+FUNCTION Get (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYREF dvData AS DVARIANT) AS HRESULT
+FUNCTION GetStr (BYVAL cElem AS LONG, BYVAL cDim AS LONG) AS DVARIANT
+FUNCTION GetVar (BYVAL cElem AS LONG, BYVAL cDim AS LONG) AS DVARIANT
 ```
 
 | Parameter  | Description |
@@ -847,8 +844,8 @@ FUNCTION GetVar (BYVAL cElem AS LONG, BYVAL cDim AS LONG) AS CVAR
 | *cElem* | Index of the element. |
 | *cDim* | Dimension of the array. |
 | *pData* | Pointer to the location where to place the element of the array. |
-| *cbsData* | A CBSTR passed by reference that will receive the result. |
-| *cvData* | A CVAR passed by reference that will receive the result. |
+| *bsData* | A BSTRING passed by reference that will receive the result. |
+| *dvData* | A DVARIANT passed by reference that will receive the result. |
 
 First element, then dimension, e.g. 2, 1 (element 2, first dimension), 1, 2 (element 1, 2nd dimension).
 
@@ -856,25 +853,25 @@ First element, then dimension, e.g. 2, 1 (element 2, first dimension), 1, 2 (ele
 
 ```
 ' // One-dimensional array of VT_BSTR
-DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 2, 1)
-csa.PutStr(1, "Test string 1")
-print csa.GetStr(1)
-csa.PutStr(2, "Test string 2")
-print csa.GetStr(2)
+DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 2, 1)
+dsa.PutStr(1, "Test string 1")
+print dsa.GetStr(1)
+dsa.PutStr(2, "Test string 2")
+print dsa.GetStr(2)
 ```
 
 ```
 ' // One-dimensional array of VT_VARIANT
-DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 5, 1)
-DIM cv1 AS CVAR = "Test variant 1"
-csa.Put(1, cv1)
-DIM cvOut AS CVAR
-csa.Get(1, cvOut)
-print cvOut
-DIM cv2 AS CVAR = "Test variant 2"
-csa.Put(1, cv2)
-csa.Get(1, cvOut)
-print cvOut
+DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 5, 1)
+DIM dv1 AS DVARIANT = "Test variant 1"
+dsa.Put(1, dv1)
+DIM dvOut AS DVARIANT
+dsa.Get(1, dvOut)
+print dvOut
+DIM dv2 AS DVARIANT = "Test variant 2"
+dsa.Put(1, dv2)
+dsa.Get(1, dvOut)
+print dvOut
 ```
 
 ```
@@ -886,39 +883,39 @@ DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 2, @rgsabounds(0))
 
 ' // array index: first element, first dimension
 DIM rgidx(0 TO 1) AS LONG = {1, 1}
-DIM cbs1 AS CBSTR = "Test string 1"
+DIM bs1 AS BSTRING = "Test string 1"
 ' // Put the value
-csa.Put(@rgidx(0), cbs1)
+dsa.Put(@rgidx(0), bs1)
 ' // Get the value
-DIM cbsOut AS CBSTR
-csa.Get(@rgidx(0), cbsOut)
-print cbsOut
+DIM bsOut AS BSTRING
+dsa.Get(@rgidx(0), bsOut)
+print bsOut
 ' // array index: second element, first dimension
 rgidx(0) = 2 : rgidx(1) = 1
 ' // Put the value
-DIM cbs2 AS CBSTR = "Test string 2"
-csa.Put(@rgidx(0), cbs2)
+DIM bs2 AS BSTRING = "Test string 2"
+dsa.Put(@rgidx(0), bs2)
 ' // Get the value
-csa.Get(@rgidx(0), cbsOut)
-print cbsOut
+dsa.Get(@rgidx(0), bsOut)
+print bsOut
 
 ' // array index: first element, second dimension
 rgidx(0) = 1 : rgidx(1) = 2
 ' // Put the value
-DIM cbs3 AS CBSTR = "Test string 3"
-csa.Put(@rgidx(0), cbs3)
+DIM bs3 AS BSTRING = "Test string 3"
+dsa.Put(@rgidx(0), bs3)
 ' // Get the value
-csa.Get(@rgidx(0), cbsOut)
-print cbsOut
+dsa.Get(@rgidx(0), bsOut)
+print bsOut
 
 ' // array index: second element, second dimension
 rgidx(0) = 2 : rgidx(1) = 2
 ' // Put the value
-DIM cbs4 AS CBSTR = "Test string 4"
-csa.Put(@rgidx(0), cbs4)
+DIM bs4 AS BSTRING = "Test string 4"
+dsa.Put(@rgidx(0), bs4)
 ' // Get the value
-csa.Get(@rgidx(0), cbsOut)
-print cbsOut
+dsa.Get(@rgidx(0), bsOut)
+print bsOut
 ```
 
 #### Return value (Get)
@@ -973,16 +970,16 @@ Inserts a value at the specified position of the safe array.
 
 ```
 FUNCTION Insert (BYVAL nPos AS LONG, BYVAL pData AS ANY PTR) AS HRESULT
-FUNCTION Insert (BYVAL nPos AS LONG, BYREF cbsData AS CBSTR) AS HRESULT
-FUNCTION Insert (BYVAL nPos AS LONG, BYREF cvData AS CVAR) AS HRESULT
+FUNCTION Insert (BYVAL nPos AS LONG, BYREF bsData AS BSTRING) AS HRESULT
+FUNCTION Insert (BYVAL nPos AS LONG, BYREF dvData AS DVARIANT) AS HRESULT
 FUNCTION Insert (BYVAL nPos AS LONG, BYVAL vData AS VARIANT) AS HRESULT
 ```
 Inserts a value at the beginning of the safe array.
 
 ```
 FUNCTION Insert (BYVAL pData AS ANY PTR) AS HRESULT
-FUNCTION Insert (BYREF cbsData AS CBSTR) AS HRESULT
-FUNCTION Insert (BYREF cvData AS CVAR) AS HRESULT
+FUNCTION Insert (BYREF bsData AS BSTRING) AS HRESULT
+FUNCTION Insert (BYREF dvData AS DVARIANT) AS HRESULT
 FUNCTION Insert (BYVAL vData AS VARIANT) AS HRESULT
 ```
 
@@ -997,8 +994,8 @@ FUNCTION InsertStr (BYVAL pwszData AS WSTRING PTR) AS HRESULT
 | ---------- | ----------- |
 | *nPos* | Optional. Index of the array in which the data will be inserted. If *nPos* is not specified, the item is inserted at the beginning of the array. If the array is empty, it is redimensioned to one element. |
 | *pData* | Pointer to a variable of the appropriate data type. |
-| *cbsData* | The CBSTR to insert, if the safe array is of type VT_BSTR. |
-| *cvData* | The CVAR to insert, if the safe array is of type VT_VARIANT. |
+| *bsData* | The BSTRING to insert, if the safe array is of type VT_BSTR. |
+| *dvData* | The DVARIANT to insert, if the safe array is of type VT_VARIANT. |
 | *vData* | The VARIANT to insert, if the safe array is of type VT_VARIANT. |
 
 #### Return value
@@ -1016,20 +1013,20 @@ S_OK (0) on success or an HRESULT code on failure.
 
 ```
 ' // Create a one-dimensional array of variants
-'DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 2, 1)
-DIM csa AS DSAFEARRAY = DSAFEARRAY("VARIANT", 2, 1)
+'DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 2, 1)
+DIM dsa AS DSAFEARRAY = DSAFEARRAY("VARIANT", 2, 1)
 
-csa.Put(1, CVAR("Test string 1"))
-csa.Put(2, CVAR("Test string 2"))
-csa.Insert(2, CVAR(12345.67, "DOUBLE"))
+dsa.PutVar(1, DVARIANT("Test string 1"))
+dsa.PutVar(2, DVARIANT("Test string 2"))
+dsa.Insert(2, DVARIANT(12345.67, "DOUBLE"))
 
-DIM cvOut AS CVAR
-csa.Get(1, cvOut)
-print cvOut
-csa.Get(2, cvOut)
-print cvOut
-csa.Get(3, cvOut)
-print cvOut
+DIM dvOut AS DVARIANT
+dsa.Get(1, dvOut)
+print dvOut
+dsa.Get(2, dvOut)
+print dvOut
+dsa.Get(3, dvOut)
+print dvOut
 ```
 
 ### <a name="isresizable"></a>IsResizable
@@ -1109,16 +1106,16 @@ FUNCTION MoveToVariant (BYVAL pvar AS VARIANT PTR) AS HRESULT
 ```
 ' // One-dimensional array of VT_BSTR
 DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 2, 1)
-csa.Put(1, CBSTR("Test string 1"))
-DIM cbsOut AS CBSTR
-csa.Get(1, cbsOut.vptr)
-print cbsOut
-csa.Put(2, CBSTR("Test string 2"))
-csa.Get(2, cbsOut)
-print cbsOut
+dsa.Put(1, BSTRING("Test string 1"))
+DIM bsOut AS BSTRING
+dsa.Get(1, bsOut.vptr)
+print bsOut
+dsa.Put(2, BSTRING("Test string 2"))
+dsa.Get(2, bsOut)
+print bsOut
 
 DIM v AS VARIANT
-csa.MoveToVariant(@v)
+dsa.MoveToVariant(@v)
 print AfxVarToStr(@v)
 VariantClear @v
 ```
@@ -1178,31 +1175,31 @@ Multidimensional array:
 
 ```
 FUNCTION Put (BYVAL prgIndices AS LONG PTR, BYVAL pData AS ANY PTR) AS HRESULT
-FUNCTION PutStr (BYVAL prgIndices AS LONG PTR, BYREF cbsData AS CBSTR) AS HRESULT
-FUNCTION PutVar (BYVAL prgIndices AS LONG PTR, BYREF cvData AS CVAR) AS HRESULT
+FUNCTION PutStr (BYVAL prgIndices AS LONG PTR, BYREF bsData AS BSTRING) AS HRESULT
+FUNCTION PutVar (BYVAL prgIndices AS LONG PTR, BYREF dvData AS DVARIANT) AS HRESULT
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *prgIndices* | Pointer to a vector of indexes for each dimension of the array. The right-most (least significant) dimension is rgIndices(0). The left-most dimension is stored at prgIndices(@psa.cDims – 1). |
 | *pData* | Pointer to the data to assign to the array. The variant types VT_DISPATCH, VT_UNKNOWN, and VT_BSTR are pointers, and do not require another level of indirection. |
-| *cbsData* | A CBSTR. |
-| *cbsData* | A CVAR. |
+| *bsData* | A BSTRING. |
+| *bsData* | A DVARIANT. |
 
 One-dimensional array:
 
 ```
 FUNCTION Put (BYVAL idx AS LONG, BYVAL pData AS ANY PTR) AS HRESULT
-FUNCTION PutStr (BYVAL idx AS LONG, BYREF cbsData AS CBSTR) AS HRESULT
-FUNCTION PutVar (BYVAL idx AS LONG, BYREF cvData AS CVAR) AS HRESULT
+FUNCTION PutStr (BYVAL idx AS LONG, BYREF bsData AS BSTRING) AS HRESULT
+FUNCTION PutVar (BYVAL idx AS LONG, BYREF dvData AS DVARIANT) AS HRESULT
 ```
 
 | Parameter  | Description |
 | ---------- | ----------- |
 | *idx* | Index of the element of the array. |
 | *pData* | Pointer to the data to assign to the array. The variant types VT_DISPATCH, VT_UNKNOWN, and VT_BSTR are pointers, and do not require another level of indirection. |
-| *cbsData* | A CBSTR. |
-| *cbsData* | A CVAR. |
+| *bsData* | A BSTRING. |
+| *bsData* | A DVARIANT. |
 
 | Parameter  | Description |
 | ---------- | ----------- |
@@ -1212,8 +1209,8 @@ Two-dimensional array:
 
 ```
 FUNCTION Put (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYVAL pData AS ANY PTR) AS HRESULT
-FUNCTION PutStr (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYREF cbsData AS CBSTR) AS HRESULT
-FUNCTION PutVar (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYREF cvData AS CVAR) AS HRESULT
+FUNCTION PutStr (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYREF bsData AS BSTRING) AS HRESULT
+FUNCTION PutVar (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYREF dvData AS DVARIANT) AS HRESULT
 ```
 
 | Parameter  | Description |
@@ -1221,8 +1218,8 @@ FUNCTION PutVar (BYVAL cElem AS LONG, BYVAL cDim AS LONG, BYREF cvData AS CVAR) 
 | *cElem* | Index of the element of the array. |
 | *cDim* | Dimension number of the array. |
 | *pData* | Pointer to the data to assign to the array. The variant types VT_DISPATCH, VT_UNKNOWN, and VT_BSTR are pointers, and do not require another level of indirection. |
-| *cbsData* | A CBSTR. |
-| *cbsData* | A CVAR. |
+| *bsData* | A BSTRING. |
+| *bsData* | A DVARIANT. |
 
 #### Return value
 
@@ -1285,25 +1282,25 @@ FUNCTION Redim (BYVAL cElements1 AS ULONG, BYVAL lLBound1 AS LONG, _
 ```
 ' // One-dimensional array of VT_VARIANT
 ' // Two elements, lower-bound 1
-'DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 2, 1)
-DIM csa AS DSAFEARRAY = DSAFEARRAY("VARIANT", 2, 1)
-DIM cv1 AS CVAR = "Test variant 1"
-csa.Put(1, cv1)
-DIM cvOut AS CVAR
-csa.Get(1, cvOut)
-print cvOut
+'DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 2, 1)
+DIM dsa AS DSAFEARRAY = DSAFEARRAY("VARIANT", 2, 1)
+DIM dv1 AS DVARIANT = "Test variant 1"
+dsa.PutVar(1, dv1)
+DIM dvOut AS DVARIANT
+dvOut = dsa.GetVar(1)
+print dvOut
 
-DIM cv2 AS CVAR = "Test variant 2"
-csa.Put(1, cv2)
-csa.Get(1, cvOut)
-print cvOut
+DIM dv2 AS DVARIANT = "Test variant 2"
+dsa.PutVar(1, dv2)
+dvOut = dsa.GetVar(1)
+print dvOut
 
 ' // Redim (preserve) the safe array
-csa.Redim(1, 3)
-DIM cv3 AS CVAR = "Test variant 3"
-csa.Put(3, cv3)
-csa.Get(3, cvOut)
-print cvOut
+dsa.Redim(1, 3)
+DIM dv3 AS DVARIANT = "Test variant 3"
+dsa.PutVar(3, dv3)
+dvOut = dsa.GetVar(3)
+print dvOut
 ```
 
 #### Return value
@@ -1407,29 +1404,21 @@ S_OK (0) on success or an HRESULT code on failure.
 
 ```
 ' // Create a one-dimensional array of BSTR
-DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 3, 1)
-
-DIM cbsVal AS CBSTR = "bcde"
-csa.Put(1, cbsVal)
-cbsVal = "abc"
-csa.Put(2, cbsVal)
-cbsVal = "abcfg"
-csa.Put(3, cbsVal)
+DIM bsVal AS BSTRING = "bcde"
+dsa.PutStr(1, bsVal)
+bsVal = "abc"
+dsa.PutStr(2, bsVal)
+bsVal = "abcfg"
+dsa.PutStr(3, bsVal)
 ' // Sort the safe array
-csa.Sort
+dsa.Sort
 
-csa.Get(1, cbsVal)
-print cbsVal
-csa.Get(2, cbsVal)
-print cbsVal
-csa.Get(3, cbsVal)
-print cbsVal
-
---- or ---
-
-print csa.GetStr(1)
-print csa.GetStr(2)
-print csa.GetStr(3)
+bsVal = dsa.GetStr(1)
+print bsVal
+bsVal = dsa.GetStr(2)
+print bsVal
+bsVal = dsa.GetStr(3)
+print bsVal
 ```
 
 ### <a name="unaccessdata"></a>UnaccessData

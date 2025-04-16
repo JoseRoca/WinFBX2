@@ -402,6 +402,7 @@ Appends a string to the end of the one-dimensional safe array.
 
 ```
 FUNCTION AppendStr (BYVAL pwszData AS WSTRING PTR) AS HRESULT
+FUNCTION AppendVar (BYREF dvData AS DVARIANT) AS HRESULT
 ```
 
 | Parameter  | Description |
@@ -437,14 +438,17 @@ print dblVal
 'DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 2, 1)
 DIM dsa AS DSAFEARRAY = DSAFEARRAY("VARIANT", 2, 1)
 
-dsa.PutVar(1, DVARIANT("Test string"))
-dsa.PutVar(2, DVARIANT(12345))
-dsa.Append(DVARIANT("Test string appended"))
+DIM dsa AS DSAFEARRAY = DSAFEARRAY("VARIANT", 2, 1)
+dsa.PutVar(1, "Test string")
+dsa.PutVar(2, 12345)
+dsa.AppendVar("Test string appended")
 
 DIM dvOut AS DVARIANT
 dvOut = dsa.GetVar(1)
 print dvOut
 dvOut = dsa.GetVar(2)
+print dvOut
+dvOut = dsa.GetVar(3)
 print dvOut
 ```
 
@@ -1105,13 +1109,13 @@ FUNCTION MoveToVariant (BYVAL pvar AS VARIANT PTR) AS HRESULT
 
 ```
 ' // One-dimensional array of VT_BSTR
-DIM csa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 2, 1)
-dsa.Put(1, BSTRING("Test string 1"))
+DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_BSTR, 2, 1)
+dsa.PutStr(1, BSTRING("Test string 1"))
 DIM bsOut AS BSTRING
-dsa.Get(1, bsOut.vptr)
+bsout = dsa.GetStr(1)
 print bsOut
-dsa.Put(2, BSTRING("Test string 2"))
-dsa.Get(2, bsOut)
+dsa.PutStr(2, BSTRING("Test string 2"))
+bsOut = dsa.GetStr(2)
 print bsOut
 
 DIM v AS VARIANT

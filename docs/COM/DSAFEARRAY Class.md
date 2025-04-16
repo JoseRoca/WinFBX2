@@ -994,6 +994,13 @@ FUNCTION InsertStr (BYVAL nPos AS LONG, BYVAL pwszData AS WSTRING PTR) AS HRESUL
 FUNCTION InsertStr (BYVAL pwszData AS WSTRING PTR) AS HRESULT
 ```
 
+Inserts a variant.
+
+```
+FUNCTION InsertVar (BYVAL nPos AS LONG, BYREF dvData AS DVARIANT) AS HRESULT
+FUNCTION InsertVar (BYREF dvData AS DVARIANT) AS HRESULT
+```
+
 | Parameter  | Description |
 | ---------- | ----------- |
 | *nPos* | Optional. Index of the array in which the data will be inserted. If *nPos* is not specified, the item is inserted at the beginning of the array. If the array is empty, it is redimensioned to one element. |
@@ -1020,9 +1027,9 @@ S_OK (0) on success or an HRESULT code on failure.
 'DIM dsa AS DSAFEARRAY = DSAFEARRAY(VT_VARIANT, 2, 1)
 DIM dsa AS DSAFEARRAY = DSAFEARRAY("VARIANT", 2, 1)
 
-dsa.PutVar(1, DVARIANT("Test string 1"))
-dsa.PutVar(2, DVARIANT("Test string 2"))
-dsa.Insert(2, DVARIANT(12345.67, "DOUBLE"))
+dsa.PutVar(1, "Test string 1")
+dsa.PutVar(2, "Test string 2")
+dsa.InsertVar(2, 12345.67)
 
 DIM dvOut AS DVARIANT
 dsa.Get(1, dvOut)

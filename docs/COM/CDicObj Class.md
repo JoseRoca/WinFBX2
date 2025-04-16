@@ -100,7 +100,7 @@ FUNCTION Count () AS LONG
 
 # <a name="DispObj"></a>DispObj
 
-Returns a counted reference of the underlying dispatch pointer. You must call **IUnknown_Release** when no longer need it.
+Returns a counted reference of the underlying dispatch pointer. You must call **IUnknown_Release** when no longer needs it.
 
 ```
 FUNCTION DispObj () AS ANY PTR

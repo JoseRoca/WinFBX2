@@ -299,7 +299,7 @@ NEXT
 
 Removes the first element of a dynamic one-dimensional array.
 ```
-RemoveFirstElementFromArray(rg, res)
+#macro RemoveFirstElementFromArray(rg, res)
 ```
 | Parameter  | Description |
 | ---------- | ----------- |
@@ -348,11 +348,11 @@ NEXT
 ```
 ---
 
-### <a name="removelastelementfromarray"></a>RemovelastElementFromArray
+### <a name="removelastelementfromarray"></a>RemoveLastElementFromArray
 
 Removes the last element of a dynamic one-dimensional array.
 ```
-RemoveLastElementFromArray(rg, res)
+#macro RemoveLastElementFromArray(rg, res)
 ```
 | Parameter  | Description |
 | ---------- | ----------- |
@@ -399,3 +399,40 @@ FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
    print rg(i)
 NEXT
 ```
+
+### <a name="Removeelementsfromarray"></a>RemoveElementsFromArray
+
+Removes the specified elements of a dynamic one-dimensional array.
+```
+#macro RemoveElementsFromArray(rg, rgElements, res)
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *rg* | The array. |
+| *rgElements* | Array of long values indicating the 0-based positions of the elements to remove. |
+| *res* | The result code. A boolean true of false value. |
+
+#### Remarks
+
+The array can be of any type.
+
+#### Usage example
+
+```
+DIM rg(ANY) AS LONG
+DIM res AS BOOLEAN
+' // Fill the array
+DIM nLong AS LONG = 1
+FOR i AS LONG = 1 TO 10
+   AppendElementToArray(rg, nLong, res)
+   nLong += 1
+NEXT
+' Fill the array of elements to delete
+DIM rgElements(0 TO 3) AS LONG => {2, 4, 6, 8}
+RemoveElementsFromArray(rg, rgElements, res)
+' // Display the array
+FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
+   print rg(i)
+NEXT
+```
+---

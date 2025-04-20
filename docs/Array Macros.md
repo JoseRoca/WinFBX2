@@ -346,3 +346,56 @@ FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
    print rg(i)
 NEXT
 ```
+---
+
+### <a name="removelastelementfromarray"></a>RemovelastElementFromArray
+
+Removes the last element of a dynamic one-dimensional array.
+```
+RemoveLastElementFromArray(rg, res)
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *rg* | The array. |
+| *res* | The result code. A boolean true of false value. |
+
+#### Remarks
+
+The array can be of any type.
+
+#### Usage examples
+
+```
+#define XSTRING DWSTRING ' // or STRING, BSTRING, etc.
+DIM rg(ANY) AS XSTRING
+DIM xStr AS XSTRING = "String - "
+DIM res AS BOOLEAN
+' // Fill the array
+FOR i AS LONG = 1 TO 10
+   AppendElementToArray(rg, xStr & WSTR(i), res)
+NEXT
+' // Remove the last element
+RemoveLastElementFromArray(rg, res)
+' // Display the array
+FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
+   print rg(i)
+NEXT
+```
+#### Can also be used with numbers:
+```
+DIM rg(ANY) AS LONG   ' // or DWORD, SINGLE, DOUBLE, etc.
+DIM res AS BOOLEAN
+' // Fill the array
+DIM nLong AS LONG = 12345
+FOR i AS LONG = 1 TO 10
+   REDIM PRESERVE rg(UBOUND(rg) + 1)
+   rg(i - 1) = nLong
+   nLong += 1
+NEXT
+' // Remove the last element
+RemoveLastElementFromArray(rg, res)
+' // Display the array
+FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
+   print rg(i)
+NEXT
+```

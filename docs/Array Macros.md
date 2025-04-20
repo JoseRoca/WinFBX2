@@ -135,41 +135,41 @@ The array and the array to append can be of any type, but they have to be of the
 #### Usage example
 
 ```
-'   #define XSTRING DWSTRING ' // or STRING, BSTRING, etc.
-'   DIM rg(ANY) AS XSTRING
-'   DIM xStr AS XSTRING = "String - "
-'   DIM res AS BOOLEAN
-'   ' // Fill the array
-'   FOR i AS LONG = 1 TO 10
-'      AppendElementToArray(rg, xStr & WSTR(i), res)
-'   NEXT
-'   InsertElementIntoArray(rg, 5, xStr & WSTR(11), res)
-'   ' // Display the array
-'   FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
-'      print rg(i)
-'   NEXT
+#define XSTRING DWSTRING ' // or STRING, BSTRING, etc.
+DIM rg(ANY) AS XSTRING
+DIM xStr AS XSTRING = "String - "
+DIM res AS BOOLEAN
+' // Fill the array
+FOR i AS LONG = 1 TO 10
+   AppendElementToArray(rg, xStr & WSTR(i), res)
+NEXT
+InsertElementIntoArray(rg, 5, xStr & WSTR(11), res)
+' // Display the array
+FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
+   print rg(i)
+NEXT
 ```
 #### Can also be used with numbers:
 ```
-'   DIM rg(ANY) AS LONG
-'   DIM rg2(ANY) AS LONG
-'   DIM res AS BOOLEAN
-'   ' // Fill the array
-'   DIM nLong AS LONG = 1
-'   FOR i AS LONG = 1 TO 10
-'      AppendElementToArray(rg, nLong, res)
-'      nLong += 1
-'   NEXT
-'   ' Fill the array to insert
-'   nLong = 12345
-'   FOR i AS LONG = 1 TO 5
-'      AppendElementToArray(rg2, nLong, res)
-'      nLong += 1
-'   NEXT
-'   InsertElementIntoArray(rg, 5, nLong, res)
-'   ' // Display the array
-'   FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
-'      print rg(i)
-'   NEXT
+DIM rg(ANY) AS LONG
+DIM rg2(ANY) AS LONG
+DIM res AS BOOLEAN
+' // Fill the array
+DIM nLong AS LONG = 1
+FOR i AS LONG = 1 TO 10
+   AppendElementToArray(rg, nLong, res)
+   nLong += 1
+NEXT
+' Fill the array to insert
+nLong = 12345
+FOR i AS LONG = 1 TO 5
+   AppendElementToArray(rg2, nLong, res)
+   nLong += 1
+NEXT
+InsertElementIntoArray(rg, 5, nLong, res)
+' // Display the array
+FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
+   print rg(i)
+NEXT
 ```
 ---

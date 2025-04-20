@@ -295,8 +295,6 @@ NEXT
 ```
 ---
 
-
-
 ### <a name="removefirstelementfromarray"></a>RemoveFirstElementFromArray
 
 Removes the first element of a dynamic one-dimensional array.
@@ -321,10 +319,10 @@ DIM xStr AS XSTRING = "String - "
 DIM res AS BOOLEAN
 ' // Fill the array
 FOR i AS LONG = 1 TO 10
-   AppendStringToStringArray(rg, xStr & WSTR(i), res)
+   AppendElementToArray(rg, xStr & WSTR(i), res)
 NEXT
-' // Remove the fifth element
-RemoveElementFromStringArray(rg, 5, res)
+' // Remove the frst element
+RemoveFirstElementFromArray(rg, res)
 ' // Display the array
 FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
    print rg(i)
@@ -335,14 +333,14 @@ NEXT
 DIM rg(ANY) AS LONG
 DIM res AS BOOLEAN
 ' // Fill the array
-DIM nLong AS LONG = 1
+DIM nLong AS LONG = 12345
 FOR i AS LONG = 1 TO 10
    REDIM PRESERVE rg(UBOUND(rg) + 1)
    rg(i - 1) = nLong
    nLong += 1
 NEXT
-' // Remove the last element
-RemoveElementFromArray(rg, 5, res)
+' // Remove the first element
+RemoveFirstElementFromArray(rg, res)
 ' // Display the array
 FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
    print rg(i)

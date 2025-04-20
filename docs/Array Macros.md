@@ -241,6 +241,62 @@ NEXT
 ```
 ---
 
+### <a name="removeelementfromarray"></a>RemoveElementFromArray
+
+Removes the specified element of a dynamic one-dimensional array.
+```
+#macro RemoveElementFromArray(rg, pos, res)
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *rg* | The array. |
+| *pos* | The position in the array of the element to remove. This position is relative to the lower bound of the array. |
+| *res* | The result code. A boolean true of false value. |
+
+#### Remarks
+
+The array can be of any type.
+
+#### Usage examples
+
+```
+#define XSTRING DWSTRING ' // or STRING, BSTRING, etc.
+DIM rg(ANY) AS XSTRING
+DIM xStr AS XSTRING = "String - "
+DIM res AS BOOLEAN
+' // Fill the array
+FOR i AS LONG = 1 TO 10
+   AppendElementToArray(rg, xStr & WSTR(i), res)
+NEXT
+' // Remove the fifth element
+RemoveElementFromArray(rg, 5, res)
+' // Display the array
+FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
+   print rg(i)
+NEXT
+```
+#### Can also be used with numbers:
+```
+DIM rg(ANY) AS LONG
+DIM res AS BOOLEAN
+' // Fill the array
+DIM nLong AS LONG = 1
+FOR i AS LONG = 1 TO 10
+   REDIM PRESERVE rg(UBOUND(rg) + 1)
+   rg(i - 1) = nLong
+   nLong += 1
+NEXT
+' // Remove the specified element
+RemoveElementFromArray(rg, 5, res)
+' // Display the array
+FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
+   print rg(i)
+NEXT
+```
+---
+
+
+
 ### <a name="removefirstelementfromarray"></a>RemoveFirstElementFromArray
 
 Removes the first element of a dynamic one-dimensional array.
@@ -292,57 +348,3 @@ FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
    print rg(i)
 NEXT
 ```
-
-### <a name="removeelementfromarray"></a>RemoveElementFromArray
-
-Removes the specified element of a dynamic one-dimensional array.
-```
-#macro RemoveElementFromArray(rg, pos, res)
-```
-| Parameter  | Description |
-| ---------- | ----------- |
-| *rg* | The array. |
-| *res* | The result code. A boolean true of false value. |
-
-#### Remarks
-
-The array can be of any type.
-
-#### Usage examples
-
-```
-#define XSTRING DWSTRING ' // or STRING, BSTRING, etc.
-DIM rg(ANY) AS XSTRING
-DIM xStr AS XSTRING = "String - "
-DIM res AS BOOLEAN
-' // Fill the array
-FOR i AS LONG = 1 TO 10
-   AppendStringToStringArray(rg, xStr & WSTR(i), res)
-NEXT
-' // Remove the frst element
-RemoveFirstElementFromStringArray(rg, res)
-' // Display the array
-FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
-   print rg(i)
-NEXT
-```
-#### Can also be used with numbers:
-```
-DIM rg(ANY) AS LONG
-DIM res AS BOOLEAN
-' // Fill the array
-DIM nLong AS LONG = 12345
-FOR i AS LONG = 1 TO 10
-   REDIM PRESERVE rg(UBOUND(rg) + 1)
-   rg(i - 1) = nLong
-   nLong += 1
-NEXT
-' // Remove the first element
-RemoveFirstElementFromArray(rg, res)
-' // Display the array
-FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
-   print rg(i)
-NEXT
-```
----
-

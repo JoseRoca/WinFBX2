@@ -3,18 +3,16 @@
 ' File: AfxWstrProcs2.inc
 ' Contents: Wide char string functions for FreeBasic
 ' Compiler: Free Basic 32 & 64 bit
-' Copyright (c) 2025 José Roca. Freeware. Use at your own risk.
+' Copyright (c) 2025 Jos� Roca. Freeware. Use at your own risk.
 ' THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
 ' EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
 ' MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
 ' ########################################################################################
 
 #pragma once
-#INCLUDE ONCE "windows.bi"
+#include once "windows.bi"
 #include once "win/shlwapi.bi"
-#include once "Afx2/DWSTRING.inc"
-#include once "Afx2/BSTRING.inc"
-#INCLUDE ONCE "Afx2/CRegExp2.inc"
+#include once "Afx2/CRegExp2.inc"
 USING Afx2
 
 ' ========================================================================================
@@ -142,11 +140,11 @@ END FUNCTION
 #endif
 
 ' ========================================================================================
-' * Translates ansi bytes to Unicode bytes.
+' * Translates ansi bytes to Unicode chars.
 ' Parameters:
 ' - ansiStr = An ansi or UTF8 string.
 ' - nCodePage = The code page used in the conversion, e.g. 1251 for Russian.
-'   If you specify CP_UTF8, the returned string will be UTF8 encoded.
+'   If you specify CP_UTF8, it is assumed that ansiStr contains an UTF8 encoded string.
 '   If you don't pass an Unicode page, the function will use CP_ACP (0), which is the
 '   system default Windows ANSI code page.
 ' Return value:
@@ -170,25 +168,10 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Escapes any potential regex syntax characters in a string and returns a new string
-' that can be safely used as a literal pattern.
-' ========================================================================================
-PRIVATE FUNCTION wstrEscape (BYREF wszStr AS CONST WSTRING) AS DWSTRING
-   IF INSTR(wszStr, ANY "\.^$*+?{}[]()|") = 0 THEN RETURN wszStr
-   DIM pRegExp AS CRegExp
-   pRegExp.Global = TRUE
-   pRegExp.IgnoreCase = TRUE
-   pRegExp.Pattern = $"([\\.\^\$\*\+\?\{\}\[\]\(\)\|])"
-   RETURN pRegExp.Replace(wszStr, $"\$1")
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' * Translates Unicode bytes to ansi bytes.
+' * Translates Unicode chars to ansi bytes.
 ' Parameters:
 ' - pwszStr = The Unicode string to convert
 ' - nCodePage = The code page used in the conversion, e.g. 1251 for Russian.
-'   If you specify CP_UTF8, it is assumed that ansiStr contains an UTF8 encoded string.
 '   If you don't pass an Unicode page, the function will use CP_ACP (0), which is the
 '   system default Windows ANSI code page.
 ' Return value:
@@ -213,13 +196,25 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' Escapes any potential regex syntax characters in a string and returns a new string
+' that can be safely used as a literal pattern.
+' ========================================================================================
+PRIVATE FUNCTION wstrEscape (BYREF wszStr AS CONST WSTRING) AS DWSTRING
+   IF INSTR(wszStr, ANY "\.^$*+?{}[]()|") = 0 THEN RETURN wszStr
+   DIM pRegExp AS CRegExp
+   pRegExp.Global = TRUE
+   pRegExp.IgnoreCase = TRUE
+   pRegExp.Pattern = $"([\\.\^\$\*\+\?\{\}\[\]\(\)\|])"
+   RETURN pRegExp.Replace(wszStr, $"\$1")
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' Replaces all occurrences of wszMatchString in wszSourceString with wszReplaceString
 ' The replacement can cause wszMainStr to grow or condense in size.
 ' Example: wstrReplace("Hello World", "World", "Earth")   ' Output: "Hello Earth"
 ' Example: wstrReplace("abacadabra", "bac", "***")        ' Output: "a***adabra"
 ' Example: wstrReplace("abacadabra", "[bac]", "*")        ' Output: "*****d**r*"
-' Note: If you need to use one of the symbols, "^$*+?{}[]()|", in wszMatchString, you need
-' to escape it with "\", e.g. "\?".
 ' ========================================================================================
 PRIVATE FUNCTION wstrReplace (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, _
    BYREF wszReplaceString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
@@ -319,13 +314,18 @@ END FUNCTION
 '    rightDelimiter The second delimiter
 ' Example:
 '    DIM dwsText AS DWSTRING = "blah blah (text between parentheses) blah blah"
-'    print wstrRemove(dwsText, "(", ")")   ' Returns "blah blah  blah blah"
+'    print wstrRemove(10, dwsText, "(", ")")   ' Returns "blah blah  blah blah"
 ' Example:
 '    DIM dwsText AS DWSTRING = "As Long var1(34), var2(  73 ), var3(any)"
 '    print WstrRemove(dwsText, "(", ")", TRUE)   ' Returns "As Long var1, var2, var3"
 ' ========================================================================================
 PRIVATE FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, BYREF leftDelimiter AS CONST WSTRING, BYREF rightDelimiter AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    IF wszSourceString = "" THEN RETURN ""
+   DIM nLen AS LONG = LEN(wszSourceString)
+   IF (nStart = 0) OR (nStart > nLen) THEN RETURN ""
+   IF nStart < 0 THEN nStart = nLen + nStart + 1
+   ' // Make a copy of wszSourceString from nStart to the end
+   DIM dwsSourceString AS DWSTRING = MID(wszSourceString, nStart)
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
@@ -334,7 +334,7 @@ PRIVATE FUNCTION wstrRemove OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceStrin
    dwsLeftDelimiter = wstrEscape(leftDelimiter)
    dwsRightDelimiter = wstrEscape(rightDelimiter)
    pRegExp.Pattern = dwsLeftDelimiter & ".+?" & dwsRightDelimiter
-   RETURN pRegExp.Replace(wszSourceString, "")
+   RETURN pRegExp.Replace(dwsSourceString, "")
 END FUNCTION
 ' ========================================================================================
 
@@ -377,7 +377,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * nStart is the optional starting position to begin extracting.  If nStart is not specified,
+' * nStart is the optional starting position to begin extracting. If nStart is not specified,
 ' it will start at position 1. If start is zero, or beyond the length of wszSourceString,
 ' a nul string is returned.  If start is negative, the starting position is counted from
 ' right to left: if -1, the search begins at the last character; if -2, the second to last,
@@ -487,8 +487,6 @@ END FUNCTION
 ' ========================================================================================
 ' * Returns a string containing only the characters contained in a specified match string.
 ' If wszMatchString is an empty string, strRetain returns an empty string.
-' Note: If you need to use one of the symbols, "^$*+?{}[]()|", in wszMatchString, you need
-' to escape it with "\", e.g. "\?".
 ' ========================================================================================
 ' Usage examples:
  ' DIM dws AS DWSTRING = "abacadabra"
@@ -506,7 +504,7 @@ END FUNCTION
 ' print dws
 ' Output: "12345678901234567890"
 ' ========================================================================================
-FUNCTION wstrRetain (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+PRIVATE FUNCTION wstrRetain OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    DIM pRegExp AS CRegExp
    pRegExp.Global = TRUE
    pRegExp.IgnoreCase = IgnoreCase
@@ -529,7 +527,7 @@ END FUNCTION
 ' print dws
 ' Output: " therefore I am"
 ' ========================================================================================
-FUNCTION wstrRemain OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+PRIVATE FUNCTION wstrRemain OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
@@ -561,7 +559,7 @@ END FUNCTION
 ' print dws
 ' Output: " therefore I am"
 ' ========================================================================================
-FUNCTION wstrRemain OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
+PRIVATE FUNCTION wstrRemain OVERLOAD (BYVAL nStart AS LONG, BYREF wszSourceString AS CONST WSTRING, BYREF wszMatchString AS CONST WSTRING, BYVAL IgnoreCase AS BOOLEAN = TRUE) AS DWSTRING
    DIM pRegExp AS CRegExp
    pRegExp.Global = FALSE
    pRegExp.IgnoreCase = IgnoreCase
@@ -650,11 +648,12 @@ END FUNCTION
 ' ========================================================================================
 ' * Returns a string with nCount characters removed from the left, right or mid side of the string.
 ' - wszSide: "LEFT", "MID" or "RIGHT".
+' - wszSourceString: The source string.
 ' - nCount: Number or characters to remove.
 ' - nStart: (only MID) Starting position.
 ' Example: DIM dws AS DWSTRING = wstrClip("LEFT", "1234567890", 3)     ' Output: "4567890"
 ' Example: DIM dws AS DWSTRING = wstrClip("RIGHT", "1234567890", 3)    ' Output: "1234567"
-' Example: DIM dws AS DWSTRING = wstrClip("MID", "1234567890", 3, 4)   ' Output: =1237890"
+' Example: DIM dws AS DWSTRING = wstrClip("MID", "1234567890", 3, 4)   ' Output: "1237890"
 ' ========================================================================================
 PRIVATE FUNCTION wstrClip (BYREF wszSide AS CONST WSTRING, BYREF wszSourceString AS CONST WSTRING, BYVAL nCount AS LONG, BYVAL nStart AS LONG = 0) AS DWSTRING
    DIM dws AS DWSTRING = wszSourceString
@@ -681,7 +680,7 @@ END FUNCTION
 
 ' ========================================================================================
 ' * Deletes a specified number of characters from a string expression.
-' Returns a string based on wszMainStr but with nCount characters deleted
+' Returns a string based on wszSourceString but with nCount characters deleted
 ' starting at position nStart. The first character in the string is position 1, etc.
 ' Usage example:
 ' DIM dws AS DWSTRING = wstrDelete("1234567890", 4, 3)   ' Output: 1237890
@@ -697,17 +696,17 @@ END FUNCTION
 ' * Retuns TRUE if the passed string is muneric.
 ' Example: PRINT wstrIsNumeric("1.2345678901234567e+029")   ' Output: true
 ' Explanation of the pattern used: "^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$"
-'  ^  Anchors the match to the start of the string.
-'  [\+\-]?  Matches an optional plus (+) or minus (-) sign at the beginning (for signed numbers).
-'  \d*  Matches zero or more digits before the decimal point (allows integers or leading zero suppression).
-'  \.?  Matches an optional decimal point (if present, allows floating-point numbers).
-'  \,?  Matches an optional decimal point (in Spain, a comma is used instead of a colon).
-'  \d+  Matches at least one digit after the decimal (ensuring valid numeric values).
-'  (?:[Ee][\+\-]?\d+)?  Handles scientific notation:
+'  ^ ? Anchors the match to the start of the string.
+'  [\+\-]? ? Matches an optional plus (+) or minus (-) sign at the beginning (for signed numbers).
+'  \d* ? Matches zero or more digits before the decimal point (allows integers or leading zero suppression).
+'  \.? ? Matches an optional decimal point (if present, allows floating-point numbers).
+'  \,? ? Matches an optional decimal point (in Spain, a comma is used instead of a colon).
+'  \d+ ? Matches at least one digit after the decimal (ensuring valid numeric values).
+'  (?:[Ee][\+\-]?\d+)? ? Handles scientific notation:
 '    E or e for exponent notation.
 '    [\+\-]? for optional sign after the exponent indicator.
 '    \d+ ensures at least one digit in the exponent.
-'  $  Anchors the match to the end of the string, ensuring a full numeric match.
+'  $ ? Anchors the match to the end of the string, ensuring a full numeric match.
 ' ========================================================================================
 PRIVATE FUNCTION wstrIsNumeric (BYREF wszSourcestring AS CONST WSTRING) AS BOOLEAN
    DIM pRegExp AS CRegExp
@@ -729,7 +728,7 @@ END FUNCTION
 ' characters are replaced with the first character of wszMask The new string returned consists
 ' of zero or more words, each separated by the character found in the first position of wszMask.
 ' Example:
-'    DIM dws AS DWSTRING = wstrShrink(",,, one , two     three, four,", " ,")
+' DIM dws AS DWSTRING = wstrShrink(",,, one , two     three, four,", " ,")
 ' Output: "one two three four".
 ' ========================================================================================
 PRIVATE FUNCTION wstrShrink(BYREF wszSourceString AS CONST WSTRING, BYREF wszMask AS CONST WSTRING = "", BYVAL IgnoreCase AS LONG = TRUE) AS DWSTRING
@@ -773,9 +772,9 @@ END FUNCTION
 ' ========================================================================================
 ' * Splits a string into tokens, which are sequences of contiguous characters separated by
 ' any of the characters that are part of delimiters. Each token is added to a DWSTRING
-' (my own dynamic Unicode string data type for Free Basic) and delimited by a carriage
+' (my own dynamic Unicode string data type for FreeBasic) and delimited by a carriage
 ' return and line feed. The returned string will be parsed later to get the individual tokens.
-' Instead of DWSTRING (which is not an intrinsic Free Basic data type) a buffer could be used.
+' Instead of DWSTRING (which is not an intrinsic FreeBasic data type) a buffer could be used.
 ' wcstok is a C function.
 ' Parameters:
 ' - wszStr: The string to split.
@@ -794,7 +793,7 @@ END FUNCTION
 ' Output: "This","a","sample","string"
 ' Passing " # " in wszSeparator:
 ' DIM dwsTokens AS DWSTRING = wstrSplit(wsz, " ,.-", " # ", -1)
-' Outpus This # a # sample # string
+' Output: This # a # sample # string
 ' ========================================================================================
 PRIVATE FUNCTION wstrSplit (BYREF wszStr AS WSTRING, BYREF wszDelimiters AS WSTRING = " ", BYREF wszSeparator AS WSTRING = CHR(34, 44, 34), BYVAL maxsplits AS LONG = -1) AS DWSTRING
    DIM dws AS DWSTRING = wszStr
@@ -874,13 +873,13 @@ END FUNCTION
 ' ========================================================================================
 ' * Returns a mixed case version of its string argument.
 ' Example:
-'    DIM dws AS DWSTRING = strMCASE("Cats aren't AL.WAYS good.")
+' DIM dws AS DWSTRING = strMCASE("Cats aren't AL.WAYS good.")
 ' Output: Cats Aren'T Al.Ways Good.
 ' Note: It mimincs the Power Basic's MCase$ function, but I find its rules absurd.
 ' ========================================================================================
 PRIVATE FUNCTION wstrMCase (BYREF wszSourceString AS WSTRING) AS DWSTRING
    DIM dwRes AS DWSTRING
-   Dim PunctSymbols AS DWSTRING = $" .,!?:;()[]{}\""-'"   ' // List of punctuation symbols
+   Dim PunctSymbols AS DWSTRING = $" .,!?:;()[]{}\""-'?"   ' // List of punctuation symbols
    DIM capitalizeNext AS BOOLEAN = TRUE ' // Flag to indicate when to capitalize
    FOR i AS LONG = 1 TO LEN(wszSourceString)
       DIM currentChar AS DWSTRING = MID(wszSourceString, i, 1)
@@ -946,15 +945,15 @@ END FUNCTION
 ' This function is very similar to STRING (which makes multiple copies of a single character).
 ' Example: DIM dws AS DWSTRING = wstrRepeat(5, "Paul")
 ' ========================================================================================
-PRIVATE FUNCTION wstrRepeat (BYVAL nCount AS LONG, BYREF wszSourceString AS CONST WSTRING) AS DWSTRING
+PRIVATE FUNCTION wstrRepeat (BYVAL nCount AS LONG, BYREF wszStr AS CONST WSTRING) AS DWSTRING
    DIM dws AS DWSTRING
    IF nCount <= 0 THEN RETURN dws
    ' // Create the final full buffer and insert the strings into it
    ' // in order to avoid nCount concatenations.
-   DIM nLen AS LONG = LEN(wszSourceString)
+   DIM nLen AS LONG = LEN(wszStr)
    dws = WSPACE(nCount * nLen)
    FOR i AS LONG = 0 TO nCount - 1
-      MID(dws, (i * nLen) + 1, nLen) = wszSourceString
+      MID(dws, (i * nLen) + 1, nLen) = wszStr
    NEXT
    RETURN dws
 END FUNCTION
@@ -977,7 +976,7 @@ END FUNCTION
 ' Left-aligns a string within the space of another string.
 ' If wszStr is empty, wstrLsetAbs leaves the padding positions unchanged from their original
 ' content, rather than replacing them with spaces as LSET does.
-' If wszStr is longer than result_var, wstrLSet truncates it from the right until it fits
+' If wszStr is longer than wszSourceString, wstrLSet truncates it from the right until it fits
 ' in the result string.
 ' Example:
 ' DIM dws AS DWSTRING = "NameBasic=SuperBasic"
@@ -1008,10 +1007,14 @@ PRIVATE FUNCTION wstrRSet (BYREF wszSourceString AS CONST WSTRING, BYVAL nString
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' * Returns a string containing a right-justified (padded) string.
+' * Right justify a string into the space of a string variable.
 ' If the optional parameter wszPadCharacter not specified, the function pads the string with
 ' space characters to the left. Otherwise, the function pads the string with the first
 ' character of wszPadCharacter.
+' If wszStr is empty, wstrRSetAbs leaves the padding positions unchanged from their original
+' content, rather than replacing them with spaces as RSET does.
+' If wszStr is longer than wszSourceString, wstrRSet truncates it from the right until it fits
+' in the result string.
 ' Example:
 ' DIM dws AS DWSTRING = "NameBasic=NameBasic"
 ' PRINT wstrRSetAbs(dws, "FreeBasic")  ' Output: "NameBasic=FreeBasic"
@@ -1064,7 +1067,7 @@ END FUNCTION
 '   DIM dwsSet AS DWSTRING = "1234567890"
 '   DIM n AS LONG = wstrSpn(dwsText, dwsSet)
 '   PRINT "The initial number has " & WSTR(n) & " digits"   ' Output: 3
-' The C++ wcsspn function can also be used.
+' The C wcsspn function can also be used.
 ' ========================================================================================
 PRIVATE FUNCTION wstrSpn (BYREF wszText AS CONST WSTRING, BYREF wszSet AS CONST WSTRING, BYVAL IgnoreCase AS LONG = TRUE) AS LONG
    IF IgnoreCase THEN
@@ -1080,7 +1083,7 @@ END FUNCTION
 ' value in bytes, kilobytes, megabytes, or gigabytes, depending on the size.
 ' ========================================================================================
 PRIVATE FUNCTION wstrFormatByteSize (BYVAL ull AS LONGLONG) AS DWSTRING
-   DIM wsz AS WSTRING * 260 = WSPACE(260)
+   DIM wsz AS WSTRING *  260 = WSPACE(260)
    StrFormatByteSizeW(ull, @wsz, 260)
    RETURN wsz
 END FUNCTION
@@ -1150,7 +1153,7 @@ END FUNCTION
 ' Example: DIM dws AS DWSTRING = wstrParse("one;two,three", 1, ";")   ' Output: one
 ' Example: DIM dws AS DWSTRING = wstrParse("1;2,3", 2, ",;")          ' Output: 2
 ' ========================================================================================
-PRIVATE FUNCTION wstrParse OVERLOAD (BYREF wszSourceString AS CONST WSTRING, BYVAL index AS LONG = 1, BYREF wszDelimiter AS CONST WSTRING = ",") AS DWSTRING
+PRIVATE FUNCTION wstrParse (BYREF wszSourceString AS CONST WSTRING, BYVAL index AS LONG = 1, BYREF wszDelimiter AS CONST WSTRING = ",") AS DWSTRING
 
    DIM dws AS DWSTRING
    IF LEN(wszSourceString) = 0 THEN RETURN dws
@@ -1447,9 +1450,9 @@ END FUNCTION
 '#define IS_SURROGATE_PAIR(hs, ls) (IS_HIGH_SURROGATE(hs) andalso IS_LOW_SURROGATE(ls))
 
 ' ========================================================================================
-' Checks if the passed string has surrogates.
+' Checks if the specified string has surrogates.
 ' ========================================================================================
-FUNCTION HasSurrogates (BYREF wszStr AS WSTRING) AS BOOLEAN
+PRIVATE FUNCTION wstrHasSurrogates (BYREF wszStr AS WSTRING) AS BOOLEAN
    FOR i AS LONG = 1 TO LEN(wszStr)
       IF ASC(wszStr, i) >= &hD800 AND ASC(wszStr, i) <= &hDBFF THEN RETURN TRUE
    NEXT
@@ -1460,16 +1463,16 @@ END FUNCTION
 ' ========================================================================================
 ' Checks whether a UTF-16 encoded string contains valid high-low surrogate pairs.
 ' ========================================================================================
-PRIVATE FUNCTION AfxIsValidSurrogatePair (BYVAL high AS USHORT, BYVAL low AS USHORT) AS BOOLEAN
+PRIVATE FUNCTION wstrIsValidSurrogatePair (BYVAL high AS USHORT, BYVAL low AS USHORT) AS BOOLEAN
    RETURN (high >= &hD800 AND high <= &hDBFF) AND (low >= &hDC00 AND low <= &hDFFF)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Converts surrogate pair to Unicode code point
+' Converts a surrogate pair to a Unicode code point.
 ' Extracts the actual Unicode code point from a valid surrogate pair.
 ' ========================================================================================
-PRIVATE FUNCTION AfxSurrogatePairToCodePoint (BYVAL high AS USHORT, BYVAL low AS USHORT) AS ULONG
+PRIVATE FUNCTION wstrSurrogatePairToCodePoint (BYVAL high AS USHORT, BYVAL low AS USHORT) AS ULONG
    IF IS_SURROGATE_PAIR(high, low) THEN
       RETURN ((high - &hD800) * &h400) + (low - &hDC00) + &h10000
   END IF
@@ -1478,10 +1481,10 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Encode Unicode code point as surrogate pair
+' Encode Unicode code point as surrogate pair.
 ' Converts a Unicode code point (above U+FFFF) back into its high and low surrogate pair.
 ' ========================================================================================
-PRIVATE SUB AfxCodePointToSurrogatePair (BYVAL codePoint AS ULONG, BYREF high AS USHORT, BYREF low AS USHORT)
+PRIVATE SUB wstrCodePointToSurrogatePair (BYVAL codePoint AS ULONG, BYREF high AS USHORT, BYREF low AS USHORT)
    IF codePoint >= &H10000 AND codePoint <= &h10FFFF THEN
       high = &hD800 + ((codePoint - &h10000) \ &h400)
       low = &hDC00 + ((codePoint - &h10000) MOD &h400)
@@ -1507,7 +1510,7 @@ END SUB
 '   This version avoids repeated casting by caching memAddr as a USHORT pointer 
 '   and uses bitmask comparisons instead of range comparisons.
 ' ========================================================================================
-PRIVATE FUNCTION AfxScanForSurrogates( _
+PRIVATE FUNCTION wstrScanForSurrogates( _
    BYVAL memAddr AS WSTRING PTR, _
    BYVAL nChars AS LONG, _
    BYVAL searchBrokenOnly AS BOOLEAN = TRUE) AS LONG
@@ -1562,7 +1565,7 @@ END FUNCTION
 ' Returns a wide-character string from a codepoint.
 ' The codepoint returned is the sum of a surrogate pair.
 ' =====================================================================================
-PRIVATE FUNCTION AfxChrW (BYVAL codepoint AS UInteger) AS DWSTRING
+PRIVATE FUNCTION wstrChrW (BYVAL codepoint AS UInteger) AS DWSTRING
    If codepoint <= &hFFFF Then RETURN WCHR(codepoint)
    ' Convert to UTF-16 surrogate pair for higher codepoints
    DIM AS USHORT highSurrogate = &hD800 OR ((codepoint - &h10000) SHR 10)
@@ -1572,5 +1575,4 @@ END FUNCTION
 ' =====================================================================================
 
 END NAMESPACE
-
 

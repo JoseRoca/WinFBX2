@@ -202,7 +202,7 @@ END SUB
 ' ========================================================================================
 ' Detaches the BSTR pointer from the BSTRING object.
 ' ========================================================================================
-PRIVATE FUNCTION BSTRING.Detach () AS BSTRING
+PRIVATE FUNCTION BSTRING.Detach () AS BSTR
    BSTRING_DP("handle: " & ..WSTR(m_bstr))
    DIM pbstr AS BSTR = m_bstr
    m_bstr = NULL

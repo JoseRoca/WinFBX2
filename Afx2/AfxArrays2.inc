@@ -26,6 +26,7 @@
 
 #pragma once
 #INCLUDE ONCE "/fbc-int/array.bi"
+USING FBC
 
 NAMESPACE Afx2
 

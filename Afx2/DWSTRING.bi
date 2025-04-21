@@ -24,6 +24,12 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
+#if not defined(UNICODE)
+   #define UNICODE
+#endif
+#if not defined(_WIN32_WINNT)
+   #define _WIN32_WINNT &h0602
+#endif
 ' // Include files
 #pragma once
 #INCLUDE ONCE "windows.bi"
@@ -31,6 +37,8 @@
 #INCLUDE ONCE "/crt/wchar.bi"
 #INCLUDE ONCE "utf_conv.bi"
 #INCLUDE ONCE "win/Ole2.bi"
+#INCLUDE ONCE "/fbc-int/array.bi"
+USING FBC
 
 ' ========================================================================================
 ' Macro for debug
@@ -198,9 +206,27 @@ END TYPE
 ' ========================================================================================
 
 ' ========================================================================================
+' Macro for debug
+' To allow debugging, define _DWSTRING_LIST_DEBUG_ 1 in your application before including this file.
+' ========================================================================================
+#ifndef _DWSTRING_LIST_DEBUG_
+   #define _DWSTRING_LIST_DEBUG_ 0
+#ENDIF
+#ifndef _DWSTRING_LIST_DP_
+   #define _DWSTRING_LIST_DP_ 1
+   #MACRO DWSTRING_LIST_DP(st)
+      #IF (_DWSTRING_LIST_DEBUG_ = 1)
+         OutputDebugStringW(__FUNCTION__ + ": " + st)
+      #ENDIF
+   #ENDMACRO
+#ENDIF
+' ========================================================================================
+
+' ========================================================================================
 ' Implementation of a double linked-list for the DWSTRING data type
 ' Usage example:
 ' Function to create and return a pointer to the List
+' ----------------------------------------------------------------------------------------
 ' FUNCTION ProcessData () AS DWSTRING_LIST PTR
 '    DIM myList AS DWSTRING_LIST PTR = NEW DWSTRING_LIST
 '    ' Simulating result generation
@@ -210,6 +236,7 @@ END TYPE
 '    ' Return the pointer to the list
 '    RETURN myList
 ' END FUNCTION
+' ----------------------------------------------------------------------------------------
 ' Get the results
 ' DIM myListPtr AS DWSTRING_LIST PTR
 ' myListPtr = ProcessData()
@@ -233,22 +260,6 @@ END TYPE
 '    Delete myListPtr
 ' END IF
 ' ========================================================================================
-' ========================================================================================
-' Macro for debug
-' To allow debugging, define _DWSTRING_LIST_DEBUG_ 1 in your application before including this file.
-' ========================================================================================
-#ifndef _DWSTRING_LIST_DEBUG_
-   #define _DWSTRING_LIST_DEBUG_ 0
-#ENDIF
-#ifndef _DWSTRING_LIST_DP_
-   #define _DWSTRING_LIST_DP_ 1
-   #MACRO DWSTRING_LIST_DP(st)
-      #IF (_DWSTRING_LIST_DEBUG_ = 1)
-         OutputDebugStringW(__FUNCTION__)
-      #ENDIF
-   #ENDMACRO
-#ENDIF
-' ========================================================================================
 
 TYPE DWSTRING_NODE
    dws AS DWSTRING
@@ -264,8 +275,8 @@ PRIVATE DESTRUCTOR DWSTRING_NODE
 END DESTRUCTOR
 
 TYPE DWSTRING_LIST
-   head As DWSTRING_NODE PTR
-   tail As DWSTRING_NODE PTR
+   head AS DWSTRING_NODE PTR
+   tail AS DWSTRING_NODE PTR
    DECLARE SUB AddNode (BYREF newString AS DWSTRING)
    ' Destructor: Automatically cleans up when deleted
    DECLARE DESTRUCTOR
@@ -301,6 +312,7 @@ END SUB
 ' Implementation of an indexed double linked-list for the DWSTRING data type
 ' Usage example:
 ' 'Function to Create and Return a Pointer to the List
+' ----------------------------------------------------------------------------------------
 ' FUNCTION ProcessData () AS DWSTRING_INDEXED_LIST PTR
 '    DIM myList AS DWSTRING_INDEXED_LIST PTR = NEW DWSTRING_INDEXED_LIST
 '    ' Simulating result generation
@@ -310,6 +322,7 @@ END SUB
 '    ' Return the pointer to the list
 '    RETURN myList
 ' END FUNCTION
+' ----------------------------------------------------------------------------------------
 ' ' Get the results
 ' DIM myListPtr AS DWSTRING_INDEXED_LIST PTR
 ' myListPtr = ProcessData()
@@ -345,8 +358,9 @@ TYPE DWSTRING_INDEXED_LIST
    DIM index(ANY) AS DWSTRING_INDEXED_NODE PTR ' Array for indexed access
    count AS LONG ' Number of nodes
    DECLARE SUB AddNode (BYREF newString AS DWSTRING)
-   DECLARE FUNCTION GetByIndex (BYVAL i AS LONG) AS DWSTRING_INDEXED_NODE PTR
    DECLARE FUNCTION GetCount () AS LONG
+   DECLARE FUNCTION GetByIndex (BYVAL i AS LONG) AS DWSTRING_INDEXED_NODE PTR
+   DECLARE FUNCTION RemoveByIndex (BYVAL index AS LONG) AS BOOLEAN
    ' Destructor: Automatically cleans up when deleted
    DECLARE DESTRUCTOR
 END TYPE
@@ -387,13 +401,38 @@ PRIVATE FUNCTION DWSTRING_INDEXED_LIST.GetCount () AS LONG
 END FUNCTION
 
 ' Get node by index
-PRIVATE FUNCTION DWSTRING_INDEXED_LIST.GetByIndex (BYVAL i AS LONG) AS DWSTRING_INDEXED_NODE PTR
-   IF i >= 0 AND i < count THEN
-      RETURN index(i)
+PRIVATE FUNCTION DWSTRING_INDEXED_LIST.GetByIndex (BYVAL idx AS LONG) AS DWSTRING_INDEXED_NODE PTR
+   IF idx >= 0 AND idx < count THEN
+      RETURN index(idx)
    ELSE
       RETURN NULL ' Out of bounds
    END IF
 END FUNCTION
-' ========================================================================================
+
+' Remove a node by index
+PRIVATE FUNCTION DWSTRING_INDEXED_LIST.RemoveByIndex (BYVAL idx AS LONG) AS BOOLEAN
+   IF idx < 0 OR idx >= count THEN RETURN FALSE ' Prevent out-of-bounds deletion
+   DIM current AS DWSTRING_INDEXED_NODE PTR = index(idx) ' Get node from index array
+   IF current = NULL THEN RETURN FALSE ' Invalid index
+   ' Adjust pointers for linked list integrity
+   IF current->pPrev <> NULL THEN
+      current->pPrev->pNext = current->pNext
+   ELSE
+      head = current->pNext ' Update head if first node is removed
+   END IF
+   IF current->pNext <> NULL THEN
+      current->pNext->pPrev = current->pPrev
+   ELSE
+      tail = current->pPrev ' Update tail if last node is removed
+   END IF
+   ' Remove from index array
+   FOR i AS INTEGER = idx TO count - 2
+      index(i) = index(i + 1) ' Shift elements down
+   NEXT
+   REDIM PRESERVE index(count - 2) ' Resize index array
+   count -= 1
+   DELETE current ' Free memory
+   RETURN TRUE
+END FUNCTION
 
 END NAMESPACE

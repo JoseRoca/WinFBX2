@@ -76,7 +76,7 @@ PRINT wszOut
 
 ### Surrogates
 
-Checking and fixing broken surrogates in is diabled by default for speed reasons. If you want to enable checking, use `"#define __AFX2_CHECKSURROGATES__"` at the beginning of your application, before including the files of this framework.
+Checking and fixing broken surrogates in is diabled by default for speed reasons. If you want to enable checking, use `"#define __AFX2_CHECKSURROGATES__"` (without the quotes) at the beginning of your application, before including the files of this framework.
 
 | Name       | Description |
 | ---------- | ----------- |

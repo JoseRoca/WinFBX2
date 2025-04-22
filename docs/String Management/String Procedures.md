@@ -50,7 +50,6 @@ PRINT wszOut
 | [wstrIsNumeric](#wstrisnumeric) | Returns True if the passed string is numeric. |
 | [wstrJoin](#wstrjoin) | Returns a string consisting of all of the strings in an array, each separated by a delimiter. |
 | [wstrLCase](#wstrlcase) | Returns a lowercased version of a string. |
-| [wstrLCode](#wstrlcode) | Translates Unicode bytes to ansi bytes. |
 | [wstrLSetAbs](#wstrlsetabs) | Left-aligns a string within the space of another string. |
 | [wstrMCase](#wstrmcase) | Returns a mixed case version of its string argument. |
 | [wstrParse](#wstrparse) | Returns a delimited field from a string expression. |

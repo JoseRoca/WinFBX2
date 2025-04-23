@@ -450,7 +450,7 @@ NEXT
 
 ### <a name="afxsortnumericarray"></a>AfxSortNumericArray
 
-Sorts one-dimensional numeric array of any type.
+Sorts one-dimensional numeric array of any type. The macro detects the type of array and calls the appropriate sorting procedures.
 ```
 #macro AfxSortNumericArray(rg, ascending)
 ```
@@ -496,7 +496,7 @@ NEXT
 
 ### <a name="afxsortstringarray"></a>AfxSortStringArray
 
-Sorts one-dimensional string array of any type.
+Sorts one-dimensional string array of any type. The macro detects the type of array and calls the appropriate sorting procedures.
 ```
 #macro AfxSortStringArray(rg, ascending)
 ```

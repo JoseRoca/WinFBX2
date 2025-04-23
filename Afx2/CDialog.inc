@@ -66,6 +66,7 @@ TYPE CDialog
       DECLARE CONSTRUCTOR (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, _
          BYVAL fontStyle AS BYTE = 0, BYVAL charset AS BYTE = DEFAULT_CHARSET) 
       DECLARE DESTRUCTOR 
+      DECLARE FUNCTION Gethwnd () AS HWND
       DECLARE FUNCTION DialogTemplate (BYREF Title AS WSTRING = "", BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, _
          BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS STRING
       DECLARE FUNCTION DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING = "", _
@@ -205,6 +206,14 @@ END CONSTRUCTOR
 PRIVATE DESTRUCTOR CDialog
    IF m_hRichEditLib THEN FreeLibrary m_hRichEditLib
 END DESTRUCTOR
+' ========================================================================================
+
+' ========================================================================================
+' Returns the dialog handle.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.Gethwnd () AS HWND
+   RETURN m_hDlg
+END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1324,8 +1333,8 @@ END FUNCTION
 PRIVATE FUNCTION CDialog.ControlGetText (BYVAL cId AS LONG) AS DWSTRING
    DIM hCtl AS HWND = GetDlgItem(m_hDlg, cID)
    DIM nLen AS LONG = SendMessageW(hCtl, WM_GETTEXTLENGTH, 0, 0)
-   DIM dwsText AS DWSTRING = SPACE(nLen + 1)
-   SendMessageW(hCtl, WM_GETTEXT, nLen + 1, cast(LPARAM, dwsText))
+   DIM dwsText AS DWSTRING = WSPACE(nLen + 1)
+   SendMessageW(hCtl, WM_GETTEXT, nLen + 1, cast(LPARAM, *dwsText))
    RETURN LEFT(dwsText, LEN(dwsText) - 1)
 END FUNCTION
 ' ========================================================================================

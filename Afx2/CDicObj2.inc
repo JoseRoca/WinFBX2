@@ -1,7 +1,7 @@
 ' ########################################################################################
 ' Platform: Microsoft Windows
-' Filename: DVARIANT.inc
-' Purpose:  Implements a VARIANT data type.
+' Filename: CDicObj2.inc
+' Purpose:  Wrapper class on top of the VBString Regular Expressions engine.
 ' Compiler: Free Basic 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '

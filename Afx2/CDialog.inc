@@ -66,7 +66,6 @@ TYPE CDialog
       DECLARE CONSTRUCTOR (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, _
          BYVAL fontStyle AS BYTE = 0, BYVAL charset AS BYTE = DEFAULT_CHARSET) 
       DECLARE DESTRUCTOR 
-      DECLARE FUNCTION Gethwnd () AS HWND
       DECLARE FUNCTION DialogTemplate (BYREF Title AS WSTRING = "", BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, _
          BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS STRING
       DECLARE FUNCTION DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING = "", _
@@ -206,14 +205,6 @@ END CONSTRUCTOR
 PRIVATE DESTRUCTOR CDialog
    IF m_hRichEditLib THEN FreeLibrary m_hRichEditLib
 END DESTRUCTOR
-' ========================================================================================
-
-' ========================================================================================
-' Returns the dialog handle.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.Gethwnd () AS HWND
-   RETURN m_hDlg
-END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================

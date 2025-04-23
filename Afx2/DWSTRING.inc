@@ -1,7 +1,7 @@
 ' ########################################################################################
 ' Platform: Microsoft Windows
 ' Filename: DWSTRING.inc
-' Purpose:  Implements a data type for dynamic null terminated unicode strings.
+' Purpose:  Implements a dynamic unicode data type
 ' Compiler: Free Basic 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
@@ -376,6 +376,11 @@ PRIVATE FUNCTION DWSTRING.AppendBuffer (BYVAL memAddr AS ANY PTR, BYVAL nChars A
    DIM localPtr AS USHORT PTR = CAST(USHORT PTR, memAddr)
    DIM localLen AS LONG = nChars
 
+   ' -------------------------------------------------------------------------------------------------
+   ' Conditionally, check for broken surrogates and fix them
+   ' -------------------------------------------------------------------------------------------------
+   #if defined(__AFX2_CHECKSURROGATES__)
+   OutputDebugStringW ("Cheking surrogates")
    ' // Get the first broken surrogate index in the new block (relative to localPtr).
    DIM brokenIndex AS LONG = ScanForSurrogates(localPtr, localLen)
    WHILE brokenIndex <> -1
@@ -408,6 +413,7 @@ PRIVATE FUNCTION DWSTRING.AppendBuffer (BYVAL memAddr AS ANY PTR, BYVAL nChars A
          brokenIndex = newStart + subBroken
       END IF
    WEND
+   #endif
 
    ' -------------------------------------------------------------------------------------------------
    ' Now that the input block is cleared of broken surrogates, proceed to append it to m_pBuffer.

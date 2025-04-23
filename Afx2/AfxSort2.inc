@@ -31,89 +31,18 @@ USING Afx2
 
 NAMESPACE Afx2
 
-' ========================================================================================
-' Sorts a one-dimensional DWSTRING array calling the C qsort function.
-' Digits in the strings are considered as numerical content rather than text. This test is
-' not case-sensitive.
-' Parameters:
-' - rgwstr : Start of target array.
-' - numElm : Number of elements in the array.
-' - bAscend: TRUE for sorting in ascending order; FALSE for sorting in descending order.
-' Example:
-' #INCLUDE ONCE "Afx/DWSTRING.inc"
-' USING Afx
-' DIM rg(1 TO 9) AS DWSTRING
-' rg(1) = "20string"
-' rg(2) = "2string"
-' rg(3) = "3string"
-' rg(4) = "st20ring"
-' rg(5) = "st2ring"
-' rg(6) = "st3ring"
-' rg(7) = "string2"
-' rg(8) = "string20"
-' rg(9) = "string3"
-' print "---- after sorting ----"
-' AfxDWSTRINGLogicalSort @rg(1), 9
-' FOR i AS LONG = 1 TO 9
-'   print rg(i)
-' NEXT
-' Output:
-' 2string
-' 3string
-' 20string
-' st2ring
-' st3ring
-' st20ring
-' string2
-' string3
-' string20
-' Note: &h00000008 is the value of the constant SORT_DIGITSASNUMBERS.
-' Remarks:
-' CompareStringW returns one of the following values if successful. To maintain the C runtime
-' convention of comparing strings, the value 2 can be subtracted from a nonzero return value.
-' Then, the meaning of <0, ==0, and >0 is consistent with the C runtime.
-' CSTR_LESS_THAN. The string indicated by a is less in lexical value than the string indicated by b.
-' CSTR_EQUAL. The string indicated by a is equivalent in lexical value to the string indicated by b.
-' The two strings are equivalent for sorting purposes, although not necessarily identical.
-' CSTR_GREATER_THAN. The string indicated by a is greater in lexical value than the string indicated by b.
-' The function returns 0 if it does not succeed. To get extended error information, the application
-' can call GetLastError, which can return one of the following error codes:
-' ERROR_INVALID_FLAGS. The values supplied for flags were invalid.
-' ERROR_INVALID_PARAMETER. Any of the parameter values was invalid.
-' ========================================================================================
-' st20ring
-' string2
-' string3
-' string20
-' Note: &h00000008 is the value of the constant SORT_DIGITSASNUMBERS.
-' Remarks:
-' CompareStringW returns one of the following values if successful. To maintain the C runtime
-' convention of comparing strings, the value 2 can be subtracted from a nonzero return value.
-' Then, the meaning of <0, ==0, and >0 is consistent with the C runtime.
-' CSTR_LESS_THAN. The string indicated by a is less in lexical value than the string indicated by b.
-' CSTR_EQUAL. The string indicated by a is equivalent in lexical value to the string indicated by b.
-' The two strings are equivalent for sorting purposes, although not necessarily identical.
-' CSTR_GREATER_THAN. The string indicated by a is greater in lexical value than the string indicated by b.
-' The function returns 0 if it does not succeed. To get extended error information, the application
-' can call GetLastError, which can return one of the following error codes:
-' ERROR_INVALID_FLAGS. The values supplied for flags were invalid.
-' ERROR_INVALID_PARAMETER. Any of the parameter values was invalid.
-' ========================================================================================
-
 ' ########################################################################################
 '                                     DWSTRING
 ' ########################################################################################
 
-' qsort DWSTRING logical comparison function
-PRIVATE FUNCTION DWStringArrayLogicalCompare CDECL (BYVAL a AS DWSTRING PTR, BYVAL b AS DWSTRING PTR) AS LONG
+FUNCTION Afx2_ArraySortDWStringCompare CDECL (BYVAL a AS DWSTRING PTR, BYVAL b AS DWSTRING PTR) AS LONG
    STATIC Flags AS DWORD = SORT_DIGITSASNUMBERS OR LINGUISTIC_IGNORECASE OR LINGUISTIC_IGNOREDIACRITIC OR NORM_IGNOREKANATYPE OR NORM_IGNOREWIDTH
    DIM r AS LONG = CompareStringEx(LOCALE_NAME_USER_DEFAULT, Flags, cast(WSTRING PTR, a->m_pBuffer), a->m_BufferLen, cast(WSTRING PTR, b->m_pBuffer), b->m_BufferLen, NULL, NULL, 0)
    IF r <> 0 THEN r = r -2
    RETURN r
 END FUNCTION
 
-' Reverse qsort logical DWSTRING comparison function
-PRIVATE FUNCTION DWStringArrayReverseLogicalCompare CDECL (BYVAL a AS DWSTRING PTR, BYVAL b AS DWSTRING PTR) AS LONG
+FUNCTION Afx2_ArraySortDWStringReverseCompare CDECL (BYVAL a AS DWSTRING PTR, BYVAL b AS DWSTRING PTR) AS LONG
    STATIC Flags AS DWORD = SORT_DIGITSASNUMBERS OR LINGUISTIC_IGNORECASE OR LINGUISTIC_IGNOREDIACRITIC OR NORM_IGNOREKANATYPE OR NORM_IGNOREWIDTH
    DIM r AS LONG = CompareStringEx(LOCALE_NAME_USER_DEFAULT, Flags, cast(WSTRING PTR, a->m_pBuffer), a->m_BufferLen, cast(WSTRING PTR, b->m_pBuffer), b->m_BufferLen, NULL, NULL, 0)
    IF r <> 0 THEN r = r -2
@@ -121,36 +50,32 @@ PRIVATE FUNCTION DWStringArrayReverseLogicalCompare CDECL (BYVAL a AS DWSTRING P
    RETURN r
 END FUNCTION
 
-' qsort DWSTRING logical sort function
-PRIVATE SUB DWStringArrayLogicalSort OVERLOAD (BYVAL rgdwstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortDWString OVERLOAD (BYVAL rgdwstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
    IF rgdwstr = NULL OR numElm < 2 THEN EXIT SUB
    IF bAscend THEN
-      qsort rgdwstr, numElm, SIZEOF(DWSTRING), CPTR(ANY PTR, @DWStringArrayLogicalCompare)
+      qsort rgdwstr, numElm, SIZEOF(DWSTRING), CPTR(ANY PTR, @Afx2_ArraySortDWStringCompare)
    ELSE
-      qsort rgdwstr, numElm, SIZEOF(DWSTRING) , CPTR(ANY PTR, @DWStringArrayReverseLogicalCompare)
+      qsort rgdwstr, numElm, SIZEOF(DWSTRING) , CPTR(ANY PTR, @Afx2_ArraySortDWStringReverseCompare)
    END IF
 END SUB
 
-' qsort DWSTRING logical sort function
-PRIVATE SUB DWStringArrayLogicalSort OVERLOAD (rgwstr() AS DWSTRING, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortDWString OVERLOAD (rgwstr() AS DWSTRING, BYVAL bAscend AS BOOLEAN = TRUE)
    DIM numElm AS LONG = UBOUND(rgwstr) - LBOUND(rgwstr) + 1
-   DWStringArrayLogicalSort @rgwstr(LBOUND(rgwstr)), numElm, bAscend
+   Afx2_ArraySortDWString @rgwstr(LBOUND(rgwstr)), numElm, bAscend
 END SUB
 
 ' ########################################################################################
 '                                      BSTRING
 ' ########################################################################################
 
-' qsort BSTRING logical comparison function
-PRIVATE FUNCTION BStringArrayLogicalCompare CDECL (BYVAL a AS BSTRING PTR, BYVAL b AS BSTRING PTR) AS LONG
+FUNCTION Afx2_ArraySortBStringCompare CDECL (BYVAL a AS BSTRING PTR, BYVAL b AS BSTRING PTR) AS LONG
    STATIC Flags AS DWORD = SORT_DIGITSASNUMBERS OR LINGUISTIC_IGNORECASE OR LINGUISTIC_IGNOREDIACRITIC OR NORM_IGNOREKANATYPE OR NORM_IGNOREWIDTH
    DIM r AS LONG = CompareStringEx(LOCALE_NAME_USER_DEFAULT, Flags, cast(WSTRING PTR, a->m_bstr), SysStringLen(a->m_bstr), cast(WSTRING PTR, b->m_bstr), SysStringLen(b->m_bstr), NULL, NULL, 0)
    IF r <> 0 THEN r = r -2
    RETURN r
 END FUNCTION
 
-' Reverse qsort logical BSTRING comparison function
-PRIVATE FUNCTION BStringArrayReverseLogicalCompare CDECL (BYVAL a AS BSTRING PTR, BYVAL b AS BSTRING PTR) AS LONG
+FUNCTION Afx2_ArraySortBStringReverseCompare CDECL (BYVAL a AS BSTRING PTR, BYVAL b AS BSTRING PTR) AS LONG
    STATIC Flags AS DWORD = SORT_DIGITSASNUMBERS OR LINGUISTIC_IGNORECASE OR LINGUISTIC_IGNOREDIACRITIC OR NORM_IGNOREKANATYPE OR NORM_IGNOREWIDTH
    DIM r AS LONG = CompareStringEx(LOCALE_NAME_USER_DEFAULT, Flags, cast(WSTRING PTR, a->m_bstr), SysStringLen(a->m_bstr), cast(WSTRING PTR, b->m_bstr), SysStringLen(b->m_bstr), NULL, NULL, 0)
    IF r <> 0 THEN r = r -2
@@ -158,36 +83,32 @@ PRIVATE FUNCTION BStringArrayReverseLogicalCompare CDECL (BYVAL a AS BSTRING PTR
    RETURN r
 END FUNCTION
 
-' qsort BSTRING logical sort function
-PRIVATE SUB BStringArrayLogicalSort OVERLOAD (BYVAL rgbstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortBString OVERLOAD (BYVAL rgbstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
    IF rgbstr = NULL OR numElm < 2 THEN EXIT SUB
    IF bAscend THEN
-      qsort rgbstr, numElm, SIZEOF(BSTRING), CPTR(ANY PTR, @BStringArrayLogicalCompare)
+      qsort rgbstr, numElm, SIZEOF(BSTRING), CPTR(ANY PTR, @Afx2_ArraySortBStringCompare)
    ELSE
-      qsort rgbstr, numElm, SIZEOF(BSTRING) , CPTR(ANY PTR, @BStringArrayReverseLogicalCompare)
+      qsort rgbstr, numElm, SIZEOF(BSTRING) , CPTR(ANY PTR, @Afx2_ArraySortBStringReverseCompare)
    END IF
 END SUB
 
-' qsort DWSTRING logical sort function
-PRIVATE SUB BStringArrayLogicalSort OVERLOAD (rgbstr() AS BSTRING, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortBString OVERLOAD (rgbstr() AS BSTRING, BYVAL bAscend AS BOOLEAN = TRUE)
    DIM numElm AS LONG = UBOUND(rgbstr) - LBOUND(rgbstr) + 1
-   BStringArrayLogicalSort @rgbstr(LBOUND(rgbstr)), numElm, bAscend
+   Afx2_ArraySortBString @rgbstr(LBOUND(rgbstr)), numElm, bAscend
 END SUB
 
 ' ########################################################################################
 '                                      STRING
 ' ########################################################################################
 
-' qsort STRING comparison function
-PRIVATE FUNCTION StringArrayCompare CDECL (BYVAL a AS STRING PTR, BYVAL b AS STRING PTR) AS LONG
+FUNCTION Afx2_AraySortStringCompare CDECL (BYVAL a AS STRING PTR, BYVAL b AS STRING PTR) AS LONG
    STATIC Flags AS DWORD = LINGUISTIC_IGNORECASE
    DIM r AS LONG = CompareStringA(LOCALE_USER_DEFAULT, Flags, STRPTR(*a), LEN(*a), STRPTR(*b), LEN(*b))
    IF r <> 0 THEN r = r - 2
    RETURN r
 END FUNCTION
 
-' Reverse qsort STRING comparison function
-PRIVATE FUNCTION StringArrayReverseCompare CDECL (BYVAL a AS STRING PTR, BYVAL b AS STRING PTR) AS LONG
+FUNCTION Afx2_ArraySortStringReverseCompare CDECL (BYVAL a AS STRING PTR, BYVAL b AS STRING PTR) AS LONG
    STATIC Flags AS DWORD = LINGUISTIC_IGNORECASE
    DIM r AS LONG = CompareStringA(LOCALE_USER_DEFAULT, Flags, STRPTR(*a), LEN(*a), STRPTR(*b), LEN(*b))
    IF r <> 0 THEN r = r -2
@@ -195,36 +116,32 @@ PRIVATE FUNCTION StringArrayReverseCompare CDECL (BYVAL a AS STRING PTR, BYVAL b
    RETURN r
 END FUNCTION
 
-' qsort STRING sort function
-PRIVATE SUB StringArraySort OVERLOAD (BYVAL rgstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortString OVERLOAD (BYVAL rgstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
    IF rgstr = NULL OR numElm < 2 THEN EXIT SUB
    IF bAscend THEN
-      qsort rgstr, numElm, SIZEOF(STRING), CPTR(ANY PTR, @StringArrayCompare)
+      qsort rgstr, numElm, SIZEOF(STRING), CPTR(ANY PTR, @Afx2_AraySortStringCompare)
    ELSE
-      qsort rgstr, numElm, SIZEOF(STRING) , CPTR(ANY PTR, @StringArrayReverseCompare)
+      qsort rgstr, numElm, SIZEOF(STRING) , CPTR(ANY PTR, @Afx2_ArraySortStringReverseCompare)
    END IF
 END SUB
 
-' qsort STRING sort function
-PRIVATE SUB StringArraySort OVERLOAD (rgstr() AS STRING, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortString OVERLOAD (rgstr() AS STRING, BYVAL bAscend AS BOOLEAN = TRUE)
    DIM numElm AS LONG = UBOUND(rgstr) - LBOUND(rgstr) + 1
-   StringArraySort @rgstr(LBOUND(rgstr)), numElm, bAscend
+   Afx2_ArraySortString @rgstr(LBOUND(rgstr)), numElm, bAscend
 END SUB
 
 ' ########################################################################################
 '                                      ZSTRING
 ' ########################################################################################
 
-' qsort ZSTRING comparison function
-PRIVATE FUNCTION ZStringArrayCompare CDECL (BYVAL a AS ZSTRING PTR, BYVAL b AS ZSTRING PTR) AS LONG
+FUNCTION Afx2_ArraySortZStringCompare CDECL (BYVAL a AS ZSTRING PTR, BYVAL b AS ZSTRING PTR) AS LONG
    STATIC Flags AS DWORD = LINGUISTIC_IGNORECASE
    DIM r AS LONG = CompareStringA(LOCALE_USER_DEFAULT, Flags, a, LEN(*a), b, LEN(*b))
    IF r <> 0 THEN r = r - 2
    RETURN r
 END FUNCTION
 
-' Reverse qsort ZSTRING comparison function
-PRIVATE FUNCTION ZStringArrayReverseCompare CDECL (BYVAL a AS ZSTRING PTR, BYVAL b AS ZSTRING PTR) AS LONG
+FUNCTION Afx2_ArraySortZStringReverseCompare CDECL (BYVAL a AS ZSTRING PTR, BYVAL b AS ZSTRING PTR) AS LONG
    STATIC Flags AS DWORD = LINGUISTIC_IGNORECASE
    DIM r AS LONG = CompareStringA(LOCALE_USER_DEFAULT, Flags, a, LEN(*a), b, LEN(*b))
    IF r <> 0 THEN r = r -2
@@ -232,12 +149,11 @@ PRIVATE FUNCTION ZStringArrayReverseCompare CDECL (BYVAL a AS ZSTRING PTR, BYVAL
    RETURN r
 END FUNCTION
 
-' qsort ZSTRING sort function
-PRIVATE SUB ZStringArraySort OVERLOAD (BYVAL rgzstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL sizeElem AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortZString OVERLOAD (BYVAL rgzstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL sizeElem AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
    IF bAscend THEN
-      qsort rgzstr, numElm, sizeElem, CPTR(ANY PTR, @ZStringArrayCompare)
+      qsort rgzstr, numElm, sizeElem, CPTR(ANY PTR, @Afx2_ArraySortZStringCompare)
    ELSE
-      qsort rgzstr, numElm, sizeElem, CPTR(ANY PTR, @ZStringArrayReverseCompare)
+      qsort rgzstr, numElm, sizeElem, CPTR(ANY PTR, @Afx2_ArraySortZStringReverseCompare)
    END IF
 END SUB
 
@@ -245,16 +161,14 @@ END SUB
 '                                      WSTRING
 ' ########################################################################################
 
-' qsort WSTRING comparison function
-PRIVATE FUNCTION WStringArrayCompare CDECL (BYVAL a AS WSTRING PTR, BYVAL b AS WSTRING PTR) AS LONG
+FUNCTION Afx2_ArraySortWStringCompare CDECL (BYVAL a AS WSTRING PTR, BYVAL b AS WSTRING PTR) AS LONG
    STATIC Flags AS DWORD = SORT_DIGITSASNUMBERS OR LINGUISTIC_IGNORECASE OR LINGUISTIC_IGNOREDIACRITIC OR NORM_IGNOREKANATYPE OR NORM_IGNOREWIDTH
    DIM r AS LONG = CompareStringEx(LOCALE_NAME_USER_DEFAULT, Flags, a, LEN(*a), b, LEN(*b), NULL, NULL, 0)
    IF r <> 0 THEN r = r -2
    RETURN r
 END FUNCTION
 
-' Reverse qsort WSTRING comparison function
-PRIVATE FUNCTION WStringArrayReverseCompare CDECL (BYVAL a AS WSTRING PTR, BYVAL b AS WSTRING PTR) AS LONG
+FUNCTION Afx2_ArraySortWStringArrayReverseCompare CDECL (BYVAL a AS WSTRING PTR, BYVAL b AS WSTRING PTR) AS LONG
    STATIC Flags AS DWORD = SORT_DIGITSASNUMBERS OR LINGUISTIC_IGNORECASE OR LINGUISTIC_IGNOREDIACRITIC OR NORM_IGNOREKANATYPE OR NORM_IGNOREWIDTH
    DIM r AS LONG = CompareStringEx(LOCALE_NAME_USER_DEFAULT, Flags, a, LEN(*a), b, LEN(*b), NULL, NULL, 0)
    IF r <> 0 THEN r = r -2
@@ -262,12 +176,11 @@ PRIVATE FUNCTION WStringArrayReverseCompare CDECL (BYVAL a AS WSTRING PTR, BYVAL
    RETURN r
 END FUNCTION
 
-' qsort WSTRING sort function
-PRIVATE SUB WStringArraySort OVERLOAD (BYVAL rgwstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL sizeElem AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortWString OVERLOAD (BYVAL rgwstr AS ANY PTR, BYVAL numElm AS LONG, BYVAL sizeElem AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
    IF bAscend THEN
-      qsort rgwstr, numElm, sizeElem, CPTR(ANY PTR, @WStringArrayCompare)
+      qsort rgwstr, numElm, sizeElem, CPTR(ANY PTR, @Afx2_ArraySortWStringCompare)
    ELSE
-      qsort rgwstr, numElm, sizeElem, CPTR(ANY PTR, @WStringArrayReverseCompare)
+      qsort rgwstr, numElm, sizeElem, CPTR(ANY PTR, @Afx2_ArraySortWStringArrayReverseCompare)
    END IF
 END SUB
 
@@ -275,129 +188,490 @@ END SUB
 '                                      BYTE
 ' ########################################################################################
 
-PRIVATE FUNCTION ByteArraySortCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+FUNCTION Afx2_ArraySortByteCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
    IF *CPTR(Byte PTR, a) > *CPTR(Byte PTR, b) THEN RETURN 1
    IF *CPTR(Byte PTR, a) < *CPTR(Byte PTR, b) THEN RETURN -1
    RETURN 0
 END FUNCTION
 
-PRIVATE FUNCTION ByteArraySortReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+FUNCTION Afx2_ArraySortByteReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
    IF *CPTR(Byte PTR, a) < *CPTR(Byte PTR, b) THEN RETURN 1
    IF *CPTR(Byte PTR, a) > *CPTR(Byte PTR, b) THEN RETURN -1
    RETURN 0
 END FUNCTION
 
 ' qsort function
-PRIVATE SUB ByteArraySort OVERLOAD (BYVAL rgbyte AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortByte OVERLOAD (BYVAL rgbyte AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
    IF rgbyte = NULL OR numElm < 2 THEN EXIT SUB
    IF bAscend THEN
-      qsort rgbyte, numElm, SIZEOF(BYTE), CPTR(ANY PTR, @ByteArraySortCompare)
+      qsort rgbyte, numElm, SIZEOF(BYTE), CPTR(ANY PTR, @Afx2_ArraySortByteCompare)
    ELSE
-      qsort rgbyte, numElm, SIZEOF(BYTE), CPTR(ANY PTR, @ByteArraySortReverseCompare)
+      qsort rgbyte, numElm, SIZEOF(BYTE), CPTR(ANY PTR, @Afx2_ArraySortByteReverseCompare)
    END IF
 END SUB
 
 ' qsort for numbers
-PRIVATE SUB ByteArraySort OVERLOAD (rgbyte () AS BYTE, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortByte OVERLOAD (rgbyte() AS BYTE, BYVAL bAscend AS BOOLEAN = TRUE)
    DIM numElm AS LONG = UBOUND(rgbyte) - LBOUND(rgbyte) + 1
-   ByteArraySort @rgbyte(LBOUND(rgbyte)), numElm, bAscend
+   Afx2_ArraySortByte @rgbyte(LBOUND(rgbyte)), numElm, bAscend
 END SUB
 
 ' ########################################################################################
 '                                      UBYTE
 ' ########################################################################################
 
-PRIVATE FUNCTION UByteArraySortCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+FUNCTION Afx2_ArraySortUByteCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
    IF *CPTR(UByte PTR, a) > *CPTR(UByte PTR, b) THEN RETURN 1
    IF *CPTR(UByte PTR, a) < *CPTR(UByte PTR, b) THEN RETURN -1
    RETURN 0
 END FUNCTION
 
-PRIVATE FUNCTION UByteArraySortReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+FUNCTION Afx2_ArraySortUByteReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
    IF *CPTR(UByte PTR, a) < *CPTR(UByte PTR, b) THEN RETURN 1
    IF *CPTR(UByte PTR, a) > *CPTR(UByte PTR, b) THEN RETURN -1
    RETURN 0
 END FUNCTION
 
 ' qsort function
-PRIVATE SUB UByteArraySort OVERLOAD (BYVAL rgubyte AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortUByte OVERLOAD (BYVAL rgubyte AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
    IF rgubyte = NULL OR numElm < 2 THEN EXIT SUB
    IF bAscend THEN
-      qsort rgubyte, numElm, SIZEOF(UBYTE), CPTR(ANY PTR, @UByteArraySortCompare)
+      qsort rgubyte, numElm, SIZEOF(UBYTE), CPTR(ANY PTR, @Afx2_ArraySortUByteCompare)
    ELSE
-      qsort rgubyte, numElm, SIZEOF(UBYTE), CPTR(ANY PTR, @UByteArraySortReverseCompare)
+      qsort rgubyte, numElm, SIZEOF(UBYTE), CPTR(ANY PTR, @Afx2_ArraySortUByteReverseCompare)
    END IF
 END SUB
 
 ' qsort for numbers
-PRIVATE SUB UByteArraySort OVERLOAD (rgubyte () AS UBYTE, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortUByte OVERLOAD (rgubyte() AS UBYTE, BYVAL bAscend AS BOOLEAN = TRUE)
    DIM numElm AS LONG = UBOUND(rgubyte) - LBOUND(rgubyte) + 1
-   UByteArraySort @rgubyte(LBOUND(rgubyte)), numElm, bAscend
+   Afx2_ArraySortUByte @rgubyte(LBOUND(rgubyte)), numElm, bAscend
 END SUB
 
 ' ########################################################################################
 '                                      SHORT
 ' ########################################################################################
 
-PRIVATE FUNCTION ShortArraySortCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+FUNCTION Afx2_ArraySortShortCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
    IF *CPTR(Short PTR, a) > *CPTR(Short PTR, b) THEN RETURN 1
    IF *CPTR(Short PTR, a) < *CPTR(Short PTR, b) THEN RETURN -1
    RETURN 0
 END FUNCTION
 
-PRIVATE FUNCTION ShortArraySortReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+FUNCTION Afx2_ArraySortUShortReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
    IF *CPTR(Short PTR, a) < *CPTR(Short PTR, b) THEN RETURN 1
    IF *CPTR(Short PTR, a) > *CPTR(Short PTR, b) THEN RETURN -1
    RETURN 0
 END FUNCTION
 
-' qsort function
-PRIVATE SUB ShortArraySort OVERLOAD (BYVAL rgshort AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortShort OVERLOAD (BYVAL rgshort AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
    IF rgshort = NULL OR numElm < 2 THEN EXIT SUB
    IF bAscend THEN
-      qsort rgshort, numElm, SIZEOF(SHORT), CPTR(ANY PTR, @ShortArraySortCompare)
+      qsort rgshort, numElm, SIZEOF(SHORT), CPTR(ANY PTR, @Afx2_ArraySortShortCompare)
    ELSE
-      qsort rgshort, numElm, SIZEOF(SHORT), CPTR(ANY PTR, @ShortArraySortReverseCompare)
+      qsort rgshort, numElm, SIZEOF(SHORT), CPTR(ANY PTR, @Afx2_ArraySortUShortReverseCompare)
    END IF
 END SUB
 
-' qsort for numbers
-PRIVATE SUB ShortArraySort OVERLOAD (rgshort () AS SHORT, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortShort OVERLOAD (rgshort() AS SHORT, BYVAL bAscend AS BOOLEAN = TRUE)
    DIM numElm AS LONG = UBOUND(rgshort) - LBOUND(rgshort) + 1
-   ShortArraySort @rgshort(LBOUND(rgshort)), numElm, bAscend
+   Afx2_ArraySortShort @rgshort(LBOUND(rgshort)), numElm, bAscend
 END SUB
 
 ' ########################################################################################
 '                                      USHORT
 ' ########################################################################################
 
-PRIVATE FUNCTION UShortArraySortCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+FUNCTION Afx2_ArraySortUShortCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
    IF *CPTR(UShort PTR, a) > *CPTR(UShort PTR, b) THEN RETURN 1
    IF *CPTR(UShort PTR, a) < *CPTR(UShort PTR, b) THEN RETURN -1
    RETURN 0
 END FUNCTION
 
-PRIVATE FUNCTION UShortArraySortReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+FUNCTION Afx2_ArraySorUShortReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
    IF *CPTR(UShort PTR, a) < *CPTR(UShort PTR, b) THEN RETURN 1
    IF *CPTR(UShort PTR, a) > *CPTR(UShort PTR, b) THEN RETURN -1
    RETURN 0
 END FUNCTION
 
-' qsort function
-PRIVATE SUB UShortArraySort OVERLOAD (BYVAL rgUShort AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+SUB Afx2_ArraySortUShort OVERLOAD (BYVAL rgUShort AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
    IF rgUShort = NULL OR numElm < 2 THEN EXIT SUB
    IF bAscend THEN
-      qsort rgUShort, numElm, SIZEOF(USHORT), CPTR(ANY PTR, @UShortArraySortCompare)
+      qsort rgUShort, numElm, SIZEOF(USHORT), CPTR(ANY PTR, @Afx2_ArraySortUShortCompare)
    ELSE
-      qsort rgUShort, numElm, SIZEOF(USHORT), CPTR(ANY PTR, @UShortArraySortReverseCompare)
+      qsort rgUShort, numElm, SIZEOF(USHORT), CPTR(ANY PTR, @Afx2_ArraySorUShortReverseCompare)
+   END IF
+END SUB
+
+SUB Afx2_ArraySortUShort OVERLOAD (rgUShort() AS UShort, BYVAL bAscend AS BOOLEAN = TRUE)
+   DIM numElm AS LONG = UBOUND(rgUShort) - LBOUND(rgUShort) + 1
+   Afx2_ArraySortUShort @rgUShort(LBOUND(rgUShort)), numElm, bAscend
+END SUB
+
+' ########################################################################################
+'                                      INTEGER
+' ########################################################################################
+
+FUNCTION Afx2_ArraySortIntegerCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+   IF *CPTR(Integer PTR, a) > *CPTR(Integer PTR, b) THEN RETURN 1
+   IF *CPTR(Integer PTR, a) < *CPTR(Integer PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+FUNCTION Afx2_ArraySortIntegerReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+   IF *CPTR(Integer PTR, a) < *CPTR(Integer PTR, b) THEN RETURN 1
+   IF *CPTR(Integer PTR, a) > *CPTR(Integer PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+SUB Afx2_ArraySortInteger OVERLOAD (BYVAL rgInteger AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+   IF rgInteger = NULL OR numElm < 2 THEN EXIT SUB
+   IF bAscend THEN
+      qsort rgInteger, numElm, SIZEOF(INTEGER), CPTR(ANY PTR, @Afx2_ArraySortIntegerCompare)
+   ELSE
+      qsort rgInteger, numElm, SIZEOF(INTEGER), CPTR(ANY PTR, @Afx2_ArraySortIntegerReverseCompare)
+   END IF
+END SUB
+
+SUB Afx2_ArraySortInteger OVERLOAD (rgInteger() AS Integer, BYVAL bAscend AS BOOLEAN = TRUE)
+   DIM numElm AS LONG = UBOUND(rgInteger) - LBOUND(rgInteger) + 1
+   Afx2_ArraySortInteger @rgInteger(LBOUND(rgInteger)), numElm, bAscend
+END SUB
+
+' ########################################################################################
+'                                      UINTEGER
+' ########################################################################################
+
+FUNCTION Afx2_ArraySortUIntegerCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+   IF *CPTR(UInteger PTR, a) > *CPTR(UInteger PTR, b) THEN RETURN 1
+   IF *CPTR(UInteger PTR, a) < *CPTR(UInteger PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+FUNCTION Afx2_ArraySortUIntegerReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+   IF *CPTR(UInteger PTR, a) < *CPTR(UInteger PTR, b) THEN RETURN 1
+   IF *CPTR(UInteger PTR, a) > *CPTR(UInteger PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+SUB Afx2_ArraySortUInteger OVERLOAD (BYVAL rgUInteger AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+   IF rgUInteger = NULL OR numElm < 2 THEN EXIT SUB
+   IF bAscend THEN
+      qsort rgUInteger, numElm, SIZEOF(UINTEGER), CPTR(ANY PTR, @Afx2_ArraySortUIntegerCompare)
+   ELSE
+      qsort rgUInteger, numElm, SIZEOF(UINTEGER), CPTR(ANY PTR, @Afx2_ArraySortUIntegerReverseCompare)
+   END IF
+END SUB
+
+SUB Afx2_ArraySortUInteger OVERLOAD (rgUInteger() AS UInteger, BYVAL bAscend AS BOOLEAN = TRUE)
+   DIM numElm AS LONG = UBOUND(rgUInteger) - LBOUND(rgUInteger) + 1
+   Afx2_ArraySortUInteger @rgUInteger(LBOUND(rgUInteger)), numElm, bAscend
+END SUB
+
+' ########################################################################################
+'                                      LONG
+' ########################################################################################
+
+FUNCTION Afx2_ArraySortLongCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+   IF *CPTR(LONG PTR, a) > *CPTR(LONG PTR, b) THEN RETURN 1
+   IF *CPTR(LONG PTR, a) < *CPTR(LONG PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+FUNCTION Afx2_ArraySortLongReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LONG
+   IF *CPTR(LONG PTR, a) < *CPTR(LONG PTR, b) THEN RETURN 1
+   IF *CPTR(LONG PTR, a) > *CPTR(LONG PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+SUB Afx2_ArraySortLong OVERLOAD (BYVAL rglong AS ANY PTR, BYVAL numElm AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+   IF rglong = NULL OR numElm < 2 THEN EXIT SUB
+   IF bAscend THEN
+      qsort rglong, numElm, SIZEOF(LONG), CPTR(ANY PTR, @Afx2_ArraySortLongCompare)
+   ELSE
+      qsort rglong, numElm, SIZEOF(LONG), CPTR(ANY PTR, @Afx2_ArraySortLongReverseCompare)
+   END IF
+END SUB
+
+SUB Afx2_ArraySortLong OVERLOAD (rglong() AS LONG, BYVAL bAscend AS BOOLEAN = TRUE)
+   DIM numElm AS LONG = UBOUND(rglong) - LBOUND(rglong) + 1
+   Afx2_ArraySortLong @rglong(LBOUND(rglong)), numElm, bAscend
+END SUB
+
+' ########################################################################################
+'                                      ULONG
+' ########################################################################################
+
+FUNCTION Afx2_ArraySortULongCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS ULong
+   IF *CPTR(ULong PTR, a) > *CPTR(ULong PTR, b) THEN RETURN 1
+   IF *CPTR(ULong PTR, a) < *CPTR(ULong PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+FUNCTION Afx2_ArraySortULongReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS ULong
+   IF *CPTR(ULong PTR, a) < *CPTR(ULong PTR, b) THEN RETURN 1
+   IF *CPTR(ULong PTR, a) > *CPTR(ULong PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+' qsort function
+SUB Afx2_ArraySortULong OVERLOAD (BYVAL rgULong AS ANY PTR, BYVAL numElm AS ULong, BYVAL bAscend AS BOOLEAN = TRUE)
+   IF rgULong = NULL OR numElm < 2 THEN EXIT SUB
+   IF bAscend THEN
+      qsort rgULong, numElm, SIZEOF(ULONG), CPTR(ANY PTR, @Afx2_ArraySortULongCompare)
+   ELSE
+      qsort rgULong, numElm, SIZEOF(ULONG), CPTR(ANY PTR, @Afx2_ArraySortULongReverseCompare)
    END IF
 END SUB
 
 ' qsort for numbers
-PRIVATE SUB UShortArraySort OVERLOAD (rgUShort () AS UShort, BYVAL bAscend AS BOOLEAN = TRUE)
-   DIM numElm AS LONG = UBOUND(rgUShort) - LBOUND(rgUShort) + 1
-   UShortArraySort @rgUShort(LBOUND(rgUShort)), numElm, bAscend
+SUB Afx2_ArraySortULong OVERLOAD (rgULong() AS ULong, BYVAL bAscend AS BOOLEAN = TRUE)
+   DIM numElm AS ULong = UBOUND(rgULong) - LBOUND(rgULong) + 1
+   Afx2_ArraySortULong @rgULong(LBOUND(rgUlong)), numElm, bAscend
 END SUB
 
-END NAMESPACE
+' ########################################################################################
+'                                      LONGINT
+' ########################################################################################
 
+FUNCTION Afx2_ArraySortLongIntCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LongInt
+   IF *CPTR(LongInt PTR, a) > *CPTR(LongInt PTR, b) THEN RETURN 1
+   IF *CPTR(LongInt PTR, a) < *CPTR(LongInt PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+FUNCTION Afx2_ArraySortLongIntReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS LongInt
+   IF *CPTR(LongInt PTR, a) < *CPTR(LongInt PTR, b) THEN RETURN 1
+   IF *CPTR(LongInt PTR, a) > *CPTR(LongInt PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+SUB Afx2_ArraySortLongInt OVERLOAD (BYVAL rgLongInt AS ANY PTR, BYVAL numElm AS LongInt, BYVAL bAscend AS BOOLEAN = TRUE)
+   IF rgLongInt = NULL OR numElm < 2 THEN EXIT SUB
+   IF bAscend THEN
+      qsort rgLongInt, numElm, SIZEOF(LONGINT), CPTR(ANY PTR, @Afx2_ArraySortLongIntCompare)
+   ELSE
+      qsort rgLongInt, numElm, SIZEOF(LONGINT), CPTR(ANY PTR, @Afx2_ArraySortLongIntReverseCompare)
+   END IF
+END SUB
+
+SUB Afx2_ArraySortLongInt OVERLOAD (rgLongInt() AS LongInt, BYVAL bAscend AS BOOLEAN = TRUE)
+   DIM numElm AS LongInt = UBOUND(rgLongInt) - LBOUND(rgLongInt) + 1
+   Afx2_ArraySortLongInt @rgLongInt(LBOUND(rgLongInt)), numElm, bAscend
+END SUB
+
+' ########################################################################################
+'                                      ULONGINT
+' ########################################################################################
+
+FUNCTION Afx2_ArraySortULongIntCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS ULongInt
+   IF *CPTR(ULongInt PTR, a) > *CPTR(ULongInt PTR, b) THEN RETURN 1
+   IF *CPTR(ULongInt PTR, a) < *CPTR(ULongInt PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+FUNCTION Afx2_ArraySortULongIntReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS ULongInt
+   IF *CPTR(ULongInt PTR, a) < *CPTR(ULongInt PTR, b) THEN RETURN 1
+   IF *CPTR(ULongInt PTR, a) > *CPTR(ULongInt PTR, b) THEN RETURN -1
+   RETURN 0
+END FUNCTION
+
+SUB Afx2_ArraySortULongInt OVERLOAD (BYVAL rgULongInt AS ANY PTR, BYVAL numElm AS ULongInt, BYVAL bAscend AS BOOLEAN = TRUE)
+   IF rgULongInt = NULL OR numElm < 2 THEN EXIT SUB
+   IF bAscend THEN
+      qsort rgULongInt, numElm, SIZEOF(ULONGINT), CPTR(ANY PTR, @Afx2_ArraySortULongIntCompare)
+   ELSE
+      qsort rgULongInt, numElm, SIZEOF(ULONGINT), CPTR(ANY PTR, @Afx2_ArraySortULongIntReverseCompare)
+   END IF
+END SUB
+
+SUB Afx2_ArraySortULongInt OVERLOAD (rgULongInt() AS ULongInt, BYVAL bAscend AS BOOLEAN = TRUE)
+   DIM numElm AS ULongInt = UBOUND(rgULongInt) - LBOUND(rgULongInt) + 1
+   Afx2_ArraySortULongInt @rgULongInt(LBOUND(rgULongInt)), numElm, bAscend
+END SUB
+
+' ########################################################################################
+'                                      SINGLE
+' ########################################################################################
+
+FUNCTION Afx2_ArraySortSingleCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS Integer
+   STATIC EPSILON AS Single = 1.0E-6 ' Small tolerance for floating-point precision errors
+   DIM valA AS SINGLE = *CPTR(SINGLE PTR, a)
+   DIM valB AS SINGLE = *CPTR(SINGLE PTR, b)
+   IF ABS(valA - valB) < EPSILON THEN RETURN 0 ' Treat very close values as equal
+   IF valA > valB THEN RETURN 1
+   RETURN -1
+END FUNCTION
+
+FUNCTION Afx2_ArraySortSingleReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS Integer
+   STATIC EPSILON AS Single = 1.0E-6
+   DIM valA AS SINGLE = *CPTR(SINGLE PTR, a)
+   DIM valB AS SINGLE = *CPTR(SINGLE PTR, b)
+   IF ABS(valA - valB) < EPSILON THEN RETURN 0
+   IF valA < valB THEN RETURN 1
+   RETURN -1
+END FUNCTION
+
+SUB Afx2_ArraySortSingle OVERLOAD (BYVAL rgSingle AS ANY PTR, BYVAL numElm AS Single, BYVAL bAscend AS BOOLEAN = TRUE)
+   IF rgSingle = NULL OR numElm < 2 THEN EXIT SUB
+   IF bAscend THEN
+      qsort rgSingle, numElm, SIZEOF(SINGLE), CPTR(ANY PTR, @Afx2_ArraySortSingleCompare)
+   ELSE
+      qsort rgSingle, numElm, SIZEOF(SINGLE), CPTR(ANY PTR, @Afx2_ArraySortSingleReverseCompare)
+   END IF
+END SUB
+
+SUB Afx2_ArraySortSingle OVERLOAD (rgSingle() AS Single, BYVAL bAscend AS BOOLEAN = TRUE)
+   DIM numElm AS Single = UBOUND(rgSingle) - LBOUND(rgSingle) + 1
+   Afx2_ArraySortSingle @rgSingle(LBOUND(rgSingle)), numElm, bAscend
+END SUB
+
+' ########################################################################################
+'                                      DOUBLE
+' ########################################################################################
+
+FUNCTION Afx2_ArraySortDoubleCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS Integer
+   STATIC EPSILON AS DOUBLE = 1.0E-12 ' Smaller tolerance for higher precision
+   DIM valA AS DOUBLE = *CPTR(DOUBLE PTR, a)
+   DIM valB AS DOUBLE = *CPTR(DOUBLE PTR, b)
+   IF ABS(valA - valB) < EPSILON THEN RETURN 0 ' Treat very close values as equal
+   IF valA > valB THEN RETURN 1
+   RETURN -1
+END FUNCTION
+
+FUNCTION Afx2_ArraySortDoubleReverseCompare CDECL (BYVAL a AS ANY PTR, BYVAL b AS ANY PTR) AS Integer
+   STATIC EPSILON AS DOUBLE = 1.0E-12
+   DIM valA AS DOUBLE = *CPTR(DOUBLE PTR, a)
+   DIM valB AS DOUBLE = *CPTR(DOUBLE PTR, b)
+   IF ABS(valA - valB) < EPSILON THEN RETURN 0
+   IF valA < valB THEN RETURN 1
+   RETURN -1
+END FUNCTION
+
+SUB Afx2_ArraySortDouble OVERLOAD (BYVAL rgDouble AS ANY PTR, BYVAL numElm AS Single, BYVAL bAscend AS BOOLEAN = TRUE)
+   IF rgDouble = NULL OR numElm < 2 THEN EXIT SUB
+   IF bAscend THEN
+      qsort rgDouble, numElm, SIZEOF(DOUBLE), CPTR(ANY PTR, @Afx2_ArraySortDoubleCompare)
+   ELSE
+      qsort rgDouble, numElm, SIZEOF(DOUBLE), CPTR(ANY PTR, @Afx2_ArraySortDoubleReverseCompare)
+   END IF
+END SUB
+
+SUB Afx2_ArraySortDouble OVERLOAD (rgDouble() AS DOUBLE, BYVAL bAscend AS BOOLEAN = TRUE)
+   DIM numElm AS DOUBLE = UBOUND(rgDouble) - LBOUND(rgDouble) + 1
+   Afx2_ArraySortDouble @rgDouble(LBOUND(rgDouble)), numElm, bAscend
+END SUB
+
+' ########################################################################################
+' Macros to identify the type of aaray and call the appropriate sorting procedures.
+' Works with one-dimensional arrays.
+' ########################################################################################
+
+#macro AfxSortStringArray(rg, ascending)
+#if TypeOf(rg) = TypeOf(DWSTRING)
+   Afx2_ArraySortDWString(rg(), ascending)
+'   Afx2_ArraySortDWString(@rg(0), UBOUND(rg) - LBOUND(rg) + 1, ascending)
+#elseif TypeOf(rg) = TypeOf(BSTRING)
+   Afx2_ArraySortBString(rg(), ascending)
+'   Afx2_ArraySortBString(@rg(0), UBOUND(rg) - LBOUND(rg) + 1, ascending)
+#elseif TypeOf(rg) = TypeOf(STRING)
+   Afx2_ArraySortString(rg(), ascending)
+'   Afx2_ArraySortString(@rg(0), UBOUND(rg) - LBOUND(rg) + 1, ascending)
+#elseif TypeOf(rg) = TypeOf(STRING * SIZEOF(TypeOf((rg(0)))) -1)
+' The length stored in the descritor of a fixed-length string includes the terminating null.
+' We can sort them as if they were ZStringss by substratic one from the value returned by SIZEOF,
+   Afx2_ArraySortZString(@rg(0), UBOUND(rg) - LBOUND(rg) + 1, SIZEOF(rg(LBOUND(rg))), ascending)
+#elseif TypeOf(rg) = TypeOf(ZSTRING * SIZEOF(TypeOf((rg(0)))))
+   Afx2_ArraySortZString(@rg(0), UBOUND(rg) - LBOUND(rg) + 1, SIZEOF(rg(LBOUND(rg))), ascending)
+#elseif TypeOf(rg) = TypeOf(WSTRING * SIZEOF(TypeOf((rg(0)))) \ 2)
+   Afx2_ArraySortWString(@rg(0), UBOUND(rg) - LBOUND(rg) + 1, SIZEOF(rg(LBOUND(rg))), ascending)
+#endif
+#endmacro
+
+' Usage example:
+'#define XSTRING DWSTRING ' // or STRING, BSTRING, etc.
+'DIM rgstr(ANY) AS XSTRING
+'DIM rgstr2(ANY) AS XSTRING
+'DIM xStr AS XSTRING = "String - "
+'DIM res AS BOOLEAN
+'' // Fill the array
+'FOR i AS LONG = 1 TO 10
+'   AppendElementToArray(rgstr, xStr & WSTR(i), res)
+'NEXT
+'' Fill the array to append
+'xStr = "String 2 - "
+'FOR i AS LONG = 1 TO 5
+'   AppendElementToArray(rgstr2, xStr & WSTR(i), res)
+'NEXT
+'' // Append the array to the first array
+'AppendArrayToArray(rgstr, rgstr2, res)
+'' // Display the array
+'FOR i AS LONG = LBOUND(rgstr) TO UBOUND(rgstr)
+'   print rgstr(i)
+'NEXT
+' // Sort the array
+'AfxSortStringArray(rgstr, true)
+' // Display the sorted array
+'FOR i AS LONG = LBOUND(rgstr) TO UBOUND(rgstr)
+'   print rgstr(i)
+'NEXT
+
+#macro AfxSortNumericArray(rg, ascending)
+#if TypeOf(rg) = BYTE
+   Afx2_ArraySortByte(rg(), ascending)
+#elseif TypeOf(rg) = UBYTE
+   Afx2_ArraySortUByte(rg(), ascending)
+#elseif TypeOf(rg) = SHORT
+   Afx2_ArraySortShort(rg(), ascending)
+#elseif TypeOf(rg) = USHORT
+   Afx2_ArraySortUShort(rg(), ascending)
+#elseif TypeOf(rg) = INTEGER
+   Afx2_ArraySortInteger(rg(), ascending)
+#elseif TypeOf(rg) = UINTEGER
+   Afx2_ArraySortUInteger(rg(), ascending)
+#elseif TypeOf(rg) = LONG
+   Afx2_ArraySortLong(rg(), ascending)
+#elseif TypeOf(rg) = ULONG
+   Afx2_ArraySortULong(rg(), ascending)
+#elseif TypeOf(rg) = LONGINT
+   Afx2_ArraySortLongInt(rg(), ascending)
+#elseif TypeOf(rg) = ULONGINT
+   Afx2_ArraySortULongInt(rg(), ascending)
+#elseif TypeOf(rg) = SINGLE
+   Afx2_ArraySortSingle(rg(), ascending)
+#elseif TypeOf(rg) = DOUBLE
+   Afx2_ArraySortDouble(rg(), ascending)
+#endif
+#endmacro
+
+'Usage example:
+'#define XNUMBER DOUBLE ' // or SHORT, INTEGER, LONG, LONGINT, etc.
+'DIM rgNum(ANY) AS XNUMBER
+'DIM rgNum2(ANY) AS XNUMBER
+'DIM bNumRes AS BOOLEAN
+'DIM xNum AS XNUMBER = 1234567.89
+'' // Fill the array
+'FOR i AS LONG = 1 TO 10
+'   xNum += 0.01
+'   AppendElementToArray(rgNum, xNum, bNumRes)
+'NEXT
+'' Fill the array to insert
+'xNum = 111.01
+'FOR i AS LONG = 1 TO 5
+'   xNum += 1
+'   AppendElementToArray(rgNum, xNum, bNumRes)
+'NEXT
+'' // Insert the array to the first array
+'InsertArrayIntoArray(rgNum, 5, rgNum2, bNumRes)
+'' // Display the array
+'FOR i AS LONG = LBOUND(rgNum) TO UBOUND(rgNum)
+'   print rgNum(i)
+'NEXT
+' // Sort the numeric array
+'AfxSortNumericArray(rgNum, true)
+'' // Display the sorted array
+'FOR i AS LONG = LBOUND(rgNum) TO UBOUND(rgNum)
+'   print rgNum(i)
+'NEXT
+
+END NAMESPACE

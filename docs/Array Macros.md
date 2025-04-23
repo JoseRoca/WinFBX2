@@ -17,7 +17,7 @@ Macros to manipulate one-dimensional dynamic arrays.
 
 ---
 
-# Macros to sort one-dimensional arrays
+# Sorting Macros
 
 **Include file**: AfxSort2.inc.
 

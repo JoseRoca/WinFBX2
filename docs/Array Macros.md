@@ -17,6 +17,17 @@ Macros to manipulate one-dimensional dynamic arrays.
 
 ---
 
+# Macros to sort one-dimensional arrays
+
+**Include file**: AfxSort2.inc.
+
+| Name       | Description |
+| ---------- | ----------- |
+| [AfxSortNumericArray](#afxsortnumericarray) | Sorts one-dimensional numeric arrays of any type. |
+| [AfxSortStringArray](#afxsortstringarray) | Sorts one-dimensional string arrays of any type. |
+
+---
+
 ### <a name="appendelementtoarray"></a>AppendElementToArray
 
 Appends a new element to a dynamic one-dimensional array.
@@ -435,4 +446,97 @@ FOR i AS LONG = LBOUND(rg) TO UBOUND(rg)
    print rg(i)
 NEXT
 ```
+---
+
+### <a name="afxsortnumericarray"></a>AfxSortNumericArray
+
+Sorts one-dimensional numeric array of any type.
+```
+#macro AfxSortNumericArray(rg, ascending)
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *rg* | The array to sort. |
+| *ascending* | If true, sorts the array in ascending order. I false, sorts the array in descending order. |
+
+#### Return code
+
+It does not return a result.
+
+#### Usage example
+
+#define XSTRING DWSTRING ' // or STRING, BSTRING, etc.
+DIM rgstr(ANY) AS XSTRING
+DIM rgstr2(ANY) AS XSTRING
+DIM xStr AS XSTRING = "String - "
+DIM res AS BOOLEAN
+' // Fill the array
+FOR i AS LONG = 1 TO 10
+   AppendElementToArray(rgstr, xStr & WSTR(i), res)
+NEXT
+' Fill the array to append
+xStr = "String 2 - "
+FOR i AS LONG = 1 TO 5
+   AppendElementToArray(rgstr2, xStr & WSTR(i), res)
+NEXT
+' // Append the array to the first array
+AppendArrayToArray(rgstr, rgstr2, res)
+' // Display the array
+FOR i AS LONG = LBOUND(rgstr) TO UBOUND(rgstr)
+   print rgstr(i)
+NEXT
+' // Sort the array
+AfxSortStringArray(rgstr, true)
+' // Display the sorted array
+FOR i AS LONG = LBOUND(rgstr) TO UBOUND(rgstr)
+   print rgstr(i)
+NEXT
+
+---
+
+### <a name="afxsortstringarray"></a>AfxSortStringArray
+
+Sorts one-dimensional string array of any type.
+```
+#macro AfxSortStringArray(rg, ascending)
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *rg* | The array to sort. |
+| *ascending* | If true, sorts the array in ascending order. I false, sorts the array in descending order. |
+
+#### Return code
+
+It does not return a result.
+
+Usage example:
+#define XNUMBER DOUBLE ' // or SHORT, INTEGER, LONG, LONGINT, etc.
+DIM rgNum(ANY) AS XNUMBER
+DIM rgNum2(ANY) AS XNUMBER
+DIM bNumRes AS BOOLEAN
+DIM xNum AS XNUMBER = 1234567.89
+' // Fill the array
+FOR i AS LONG = 1 TO 10
+   xNum += 0.01
+   AppendElementToArray(rgNum, xNum, bNumRes)
+NEXT
+' Fill the array to insert
+xNum = 111.01
+FOR i AS LONG = 1 TO 5
+   xNum += 1
+   AppendElementToArray(rgNum, xNum, bNumRes)
+NEXT
+' // Insert the array to the first array
+InsertArrayIntoArray(rgNum, 5, rgNum2, bNumRes)
+' // Display the array
+FOR i AS LONG = LBOUND(rgNum) TO UBOUND(rgNum)
+   print rgNum(i)
+NEXT
+' // Sort the numeric array
+AfxSortNumericArray(rgNum, true)
+' // Display the sorted array
+FOR i AS LONG = LBOUND(rgNum) TO UBOUND(rgNum)
+   print rgNum(i)
+NEXT
+
 ---

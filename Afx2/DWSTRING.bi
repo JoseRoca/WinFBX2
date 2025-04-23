@@ -1,7 +1,7 @@
 ' ########################################################################################
 ' Platform: Microsoft Windows
 ' Filename: DWSTRING.bi
-' Purpose:  Implements a data type for dynamic null terminated unicode strings.
+' Purpose:  Implements a dynamic unicode ring data type
 ' Compiler: Free Basic 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '

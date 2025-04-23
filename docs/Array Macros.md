@@ -464,7 +464,7 @@ Sorts one-dimensional numeric array of any type.
 It does not return a result.
 
 #### Usage example
-
+```
 #define XSTRING DWSTRING ' // or STRING, BSTRING, etc.
 DIM rgstr(ANY) AS XSTRING
 DIM rgstr2(ANY) AS XSTRING
@@ -491,7 +491,7 @@ AfxSortStringArray(rgstr, true)
 FOR i AS LONG = LBOUND(rgstr) TO UBOUND(rgstr)
    print rgstr(i)
 NEXT
-
+```
 ---
 
 ### <a name="afxsortstringarray"></a>AfxSortStringArray
@@ -509,7 +509,8 @@ Sorts one-dimensional string array of any type.
 
 It does not return a result.
 
-Usage example:
+#### Usage example
+```
 #define XNUMBER DOUBLE ' // or SHORT, INTEGER, LONG, LONGINT, etc.
 DIM rgNum(ANY) AS XNUMBER
 DIM rgNum2(ANY) AS XNUMBER
@@ -538,5 +539,5 @@ AfxSortNumericArray(rgNum, true)
 FOR i AS LONG = LBOUND(rgNum) TO UBOUND(rgNum)
    print rgNum(i)
 NEXT
-
+```
 ---

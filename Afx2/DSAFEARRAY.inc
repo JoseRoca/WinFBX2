@@ -1,7 +1,7 @@
 ' ########################################################################################
 ' Platform: Microsoft Windows
-' Filename: BSTRING.inc
-' Purpose:  Implementation of the BSTR (COM unicode strings) data type.
+' Filename: DSAFEARRAY.inc
+' Purpose:  Implementation of the safe array data type.
 ' Compiler: Free Basic 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '

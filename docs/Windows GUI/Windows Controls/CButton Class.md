@@ -442,6 +442,7 @@ Sets the button state to grayed, indicating an indeterminate state. Use this val
 ```
 SUB Gray ()
 ```
+---
 
 ## <a name="isdlgbuttonchecked"></a>IsDlgButtonChecked
 
@@ -468,3 +469,82 @@ The return value from a button created with the **BS_AUTOCHECKBOX**, **BS_AUTORA
 
 The **IsDlgButtonChecked** method sends a **BM_GETCHECK** message to the specified button control.
 
+---
+
+## <a name="setbitmap"></a>SetBitmap
+
+Associates a new bitmap with the button.
+
+```
+FUNCTION SetBitmap (BYVAL hbmp AS HBITMAP) AS HBITMAP
+```
+
+#### Return value
+
+The return value is a handle to the bitmap previously associated with the button, if any; otherwise, it is NULL.
+
+---
+
+## <a name="seticon"></a>SetIcon
+
+Associates a new icon with the button.
+
+```
+FUNCTION SetIcon (BYVAL hIcon AS HICON) AS HICON
+```
+
+#### Return value
+
+The return value is a handle to the icon previously associated with the button, if any; otherwise, it is NULL.
+
+---
+
+## <a name="setimage"></a>SetImage
+
+Associates a new image (icon or bitmap) with the button. The return value is a handle to the image previously associated with the button, if any; otherwise, it is NULL.
+
+```
+FUNCTION SetImage (BYVAL ImageType AS DWORD, BYVAL hImage AS HANDLE) AS HANDLE
+```
+
+#### Return value
+
+The return value is a handle to the image (icon or bitmap) previously associated with the button, if any; otherwise, it is NULL.
+
+---
+
+## <a name="setimagelist"></a>SetImageList
+
+Assigns an image list to a button control.
+
+```
+FUNCTION SetImageList (BYVAL pbuttonImagelist AS BUTTON_IMAGELIST PTR) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pbuttonImagelist* | A pointer to a **BUTTON_IMAGELIST** structure that contains image list information. |
+
+#### Return value
+
+If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
+
+#### Remarks
+
+To use this message, you must provide a manifest specifying Comclt32.dll version 6.0. For more information on manifests, see Enabling Visual Styles.
+
+The image list referred to in the himl member of the **BUTTON_IMAGELIST** structure should contain either a single image to be used for all states or individual images for each state. The following states are defined in vssym32.h.
+```
+enum PUSHBUTTONSTATES {
+    PBS_NORMAL = 1,
+    PBS_HOT = 2,
+    PBS_PRESSED = 3,
+    PBS_DISABLED = 4,
+    PBS_DEFAULTED = 5,
+    PBS_STYLUSHOT = 6,
+};
+```
+Note that **PBS_STYLUSHOT** is used only on tablet computers.
+
+Each value is an index to the appropriate image in the image list. If only one image is present, it is used for all states. If the image list contains more than one image, each index corresponds to one state of the button. If an image is not provided for each state, nothing is drawn for those states without images.
+
+---

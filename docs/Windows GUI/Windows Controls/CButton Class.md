@@ -4,14 +4,14 @@ Wrapper class on top of all the Windows `Button` messages and functions.
 
 A button control is a small, rectangular child window that can be clicked on and off. Buttons can be used alone or in groups and can either be labeled or appear without text. A button typically changes appearance when the user clicks it.
 
-Typical buttons are the check box, radio button, and pushbutton. A `CButton` object can become any of these, according to the button style specified at its initialization by the **AddControl** method of the `CDialog`class.
+Typical buttons are the check box, radio button, and pushbutton. A `CButton` object can become any of these, based on the button style specified at its initialization by the **AddControl** method of the `CDialog`class.
 
 **Include file**: CButton.inc.
 
 | Name       | Description |
 | ---------- | ----------- |
 | [Constructors](#constructors) | Create instances of the `CButton` class. |
-| [Check](#check) | Sets the button state to checked. |
+| [Check](#check) | Changes the button's state to checked. |
 | [CheckDlgButton](#checkdlgbutton) | Changes the check state of a button control. |
 | [CheckRadioButton](#checkradiobutton) | Adds a check mark to (checks) a specified radio button in a group and removes a check mark from (clears) all other radio buttons in the group. |
 | [Click](#click) | Simulates the user clicking a button. |
@@ -76,7 +76,7 @@ CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
 
 ## <a name="check"></a>Check
 
-Sets the button state to checked.
+Changes the button's state to checked.
 
 ```
 SUB Check ()

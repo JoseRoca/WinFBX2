@@ -79,6 +79,7 @@ Sets the button state to checked.
 ```
 SUB Check ()
 ```
+---
 
 ## <a name="checkdlgbutton"></a>CheckDlgButton
 
@@ -97,3 +98,37 @@ FUNCTION CheckDlgButton (BYVAL cIDButton AS LONG, BYVAL uCheck AS UINT) AS BOOLE
 | **BST_CHECKED** | Sets the button state to checked. |
 | **BST_INDETERMINATE** | Sets the button state to grayed, indicating an indeterminate state. Use this value only if the button has the BS_3STATE or BS_AUTO3STATE style. |
 | **BST_UNCHECKED** | Sets the button state to cleared |
+
+#### Return value
+
+If the function succeeds, the return value is true. If the function fails, the return value is false.
+
+#### Remarks
+
+The **CheckDlgButton** function sends a BM_SETCHECK message to the specified button control in the specified dialog box.
+
+---
+
+## <a name="checkradiobutton"></a>CheckRadioButton
+
+Adds a check mark to (checks) a specified radio button in a group and removes a check mark from (clears) all other radio buttons in the group.
+
+```
+FUNCTION CheckRadioButton (BYVAL cIDFirstButton AS LONG, BYVAL cIDLastButton AS LONG, _
+   BYVAL cIDCheckButton AS LONG) AS BOOLEAN
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *cIDFirstButton* | The identifier of the first radio button in the group. |
+| *cIDLastButton* | The identifier of the last radio button in the group. |
+| *cIDCheckButton* | The identifier of the radio button to select. |
+
+#### Return value
+
+If the function succeeds, the return value is true.
+If the function fails, the return value is false. 
+
+#### Remarks
+The **CheckRadioButton** function sends a **BM_SETCHECK** message to each of the radio buttons in the indicated group.
+
+The *cIDFirstButton* and *cIDLastButton* parameters specify a range of button identifiers (normally the resource IDs of the buttons). The position of buttons in the tab order is irrelevant; if a button forms part of a group, but has an ID outside the specified range, it is not affected by this call.

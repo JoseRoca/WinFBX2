@@ -1,6 +1,6 @@
 # CButton Class
 
-
+Wrapper class on top of all the Windows `Button` messages. A *button* is a control the user can click to provide input to an application.
 
 **Include file**: CButton.inc.
 
@@ -8,6 +8,8 @@
 | ---------- | ----------- |
 | [Constructors](#constructors) | Create instances of the `CButton` class. |
 | [Check](#check) | Sets the button state to checked. |
+| [CheckDlgButton](#checkdlgbutton) | Changes the check state of a button control. |
+| [CheckRadioButton](#checkradiobutton) | Adds a check mark to (checks) a specified radio button in a group and removes a check mark from (clears) all other radio buttons in the group. |
 | [Click](#click) | Simulates the user clicking a button. |
 | [DeleteBitmap](#deletebitmap) | Deletes a bitmap associated with a button. |
 | [DeleteIcon](#deleteicon) | Deletes an icon associated with a button. |
@@ -27,6 +29,7 @@
 | [GetTextLength](#gettextlength) | Retrieves the length of the text in a button control. |
 | [GetTextMargin](#gettextmargin) | Retrieves the margins used to draw text in a button control. |
 | [Gray](#gray) | Sets the button state to grayed, indicating an indeterminate state. |
+| [IsDlgButtonChecked](#isdlgbuttonchecked) | Dtermines whether a button control is checked or whether a three-state button control is checked, unchecked, or indeterminate. |
 | [SetBitmap](#setbitmap) | Associates a new bitmap with a button. |
 | [SetCheck](#setcheck) | Sets the check state of a radio button or check box. |
 | [SetDontClick](#setdontclick) | Sets a flag on a radio button that controls the generation of BN_CLICKED messages when the button receives focus. |
@@ -44,3 +47,21 @@
 | [Uncheck](#uncheck) | Sets the button state to cleared. |
 
 ---
+
+# <a name="constructors"></a>Constructors
+
+Creates instances of the `CButton` class.
+
+```
+CONSTRUCTOR (BYVAL hCtl AS HWND)
+CONSTRUCTOR (BYVAL hParent AS HWND, BYVAL hCtl AS HWND)
+CONSTRUCTOR (BYVAL hParent AS HWND, BYVAL cID AS LONG)
+CONSTRUCTOR (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
+CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *hCtl* | Handle of the button control. |
+| *hParent* | Handle of the parent window of the button control. |
+| *cID* | Control identifier of the button control. |
+| *CDialog* | Pointer to an instance of the `CDialog` class. |

@@ -459,7 +459,7 @@ FUNCTION IsDlgButtonChecked (BYVAL cIDButton AS LONG) AS UINT
 
 The return value from a button created with the **BS_AUTOCHECKBOX**, **BS_AUTORADIOBUTTON**, **BS_AUTO3STATE**, **BS_CHECKBOX**, **BS_RADIOBUTTON**, or **BS_3STATE** styles can be one of the values in the following table. If the button has any other style, the return value is zero.
 
-| Returm code | Description |
+| Return code | Description |
 | ----------- | ----------- |
 | **BST_CHECKED** | The button is checked. |
 | **BST_INDETERMINATE** | The button is in an indeterminate state (applies only if the button has the **BS_3STATE** or **BS_AUTO3STATE** style). |
@@ -524,6 +524,31 @@ FUNCTION SetImageList (BYVAL pbuttonImagelist AS BUTTON_IMAGELIST PTR) AS BOOLEA
 | --------- | ----------- |
 | *pbuttonImagelist* | A pointer to a **BUTTON_IMAGELIST** structure that contains image list information. |
 
+```
+FUNCTION SetImageList (BYVAL pbuttonImagelist AS BUTTON_IMAGELIST PTR) AS BOOLEAN
+FUNCTION SetImageList (BYVAL himl AS HIMAGELIST, BYVAL nLeft AS LONG, BYVAL nTop AS LONG, _
+   BYVAL nRight AS LONG, BYVAL nBottom AS LONG, BYVAL uALign AS DWORD = 0) AS BOOLEAN
+```
+
+| Parameter | Description |
+| --------- | ----------- |
+| *hImageList* | The handle to the image list. |
+| *nLeft* | The x-coordinate of the upper-left corner of the rectangle for the image. |
+| *nTop* | The y-coordinate of the upper-left corner of the rectangle for the image. |
+| *nRight* | The x-coordinate of the lower-right corner of the rectangle for the image. |
+| *nBottom* | The y-coordinate of the lower-right corner of the rectangle for the image. |
+| *uAlign* | The alignment to use. This parameter can be one of the following values: |
+
+| Value  | Meaning |
+| ------ | ------- |
+| **BUTTON_IMAGELIST_ALIGN_LEFT** | Align the image with the left margin. |
+| **BUTTON_IMAGELIST_ALIGN_RIGHT** | Align the image with the right margin. |
+| **BUTTON_IMAGELIST_ALIGN_TOP** | Align the image with the top margin. |
+| **BUTTON_IMAGELIST_ALIGN_BOTTOM** | Align the image with the bottom margin. |
+| **BUTTON_IMAGELIST_ALIGN_CENTER** |  Center the image. |
+
+The default value is **BUTTON_IMAGELIST_ALIGN_LEFT**.
+
 #### Return value
 
 If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
@@ -548,3 +573,86 @@ Note that **PBS_STYLUSHOT** is used only on tablet computers.
 Each value is an index to the appropriate image in the image list. If only one image is present, it is used for all states. If the image list contains more than one image, each index corresponds to one state of the button. If an image is not provided for each state, nothing is drawn for those states without images.
 
 ---
+
+## <a name="setcheck"></a>SetCheck
+
+Sets the check state of a radio button or check box.
+
+```
+SUB SetCheck (BYVAL checkState AS LONG)
+```
+| Value | Meaning |
+| ----- | ----------- |
+| *checkState* | The check state. This parameter can be one of the following values. |
+
+| Parameter | Description |
+| --------- | ----------- |
+| **BST_CHECKED** | Sets the button state to checked. |
+| **BST_INDETERMINATE** | Sets the button state to grayed, indicating an indeterminate state. Use this value only if the button has the **BS_3STATE** or **BS_AUTO3STATE** style. |
+| **BST_UNCHECKED** | Sets the button state to cleared. |
+
+#### Return value
+
+This message always returns zero.
+
+#### Remarks
+
+The **BM_SETCHECK** message has no effect on push buttons.
+
+---
+
+## <a name="setdontclick"></a>SetDontClick
+
+Sets a flag on a radio button that controls the generation of BN_CLICKED messages when the button receives focus.
+
+```
+SUB SetDontClick (BYVAL bState AS BOOLEAN)
+```
+
+| Parameter | Description |
+| --------- | ----------- |
+| *bState* | A BOOLEAN that specifies the state. TRUE to set the flag, otherwise FALSE. |
+
+#### Return value
+
+No return value.
+
+---
+
+## <a name="setdropdownstate"></a>SetDropdownState
+
+Sets the drop down state for a button with style **TBSTYLE_DROPDOWN**.
+```
+FUNCTION SetDropDownState (BYVAL bDropDown AS BOOLEAN) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *bDropDown* | A BOOLEAN that is TRUE for state of **BST_DROPDOWNPUSHED**, or FALSE otherwise. |
+
+#### Return value
+
+Returns TRUE if successful, or FALSE otherwise.
+
+## <a name="setnote"></a>SetNote
+
+Sets the text of the note associated with a specified command link button.
+
+```
+FUNCTION SetNote (BYREF pwsz AS WSTRING) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pwsz* | The handle to the image list. |
+
+#### Return value
+
+Returns TRUE if successful, or FALSE otherwise.
+
+#### Remarks
+
+Beginning with comctl32 DLL version 6.01, command link buttons may have a note.
+
+The **BCM_SETNOTE** message works only with the **BS_COMMANDLINK** and **BS_DEFCOMMANDLINK** button styles.
+
+---
+

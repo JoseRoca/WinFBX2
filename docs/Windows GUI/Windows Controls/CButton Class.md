@@ -419,7 +419,7 @@ The return value is the length of the text in characters, not including the term
 Retrieves the margins used to draw text in a button control.
 
 ```
-GetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
+FUNCTION GetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
 ```
 | Parameter | Description |
 | --------- | ----------- |
@@ -434,3 +434,37 @@ If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
 To use this message, you must provide a manifest specifying Comclt32.dll version 6.0. For more information on manifests, see Enabling Visual Styles.
 
 ---
+
+## <a name="gray"></a>Gray
+
+Sets the button state to grayed, indicating an indeterminate state. Use this value only if the button has the **BS_3STATE** or **BS_AUTO3STATE** style.
+
+```
+SUB Gray ()
+```
+
+## <a name="isdlgbuttonchecked"></a>IsDlgButtonChecked
+
+Determines whether a button control is checked or whether a three-state button control is checked, unchecked, or indeterminate.
+
+```
+FUNCTION IsDlgButtonChecked (BYVAL cIDButton AS LONG) AS UINT
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *cIDButton* | The identifier of the button control. |
+
+#### Return value
+
+The return value from a button created with the **BS_AUTOCHECKBOX**, **BS_AUTORADIOBUTTON**, **BS_AUTO3STATE**, **BS_CHECKBOX**, **BS_RADIOBUTTON**, or **BS_3STATE** styles can be one of the values in the following table. If the button has any other style, the return value is zero.
+
+| Returm code | Description |
+| ----------- | ----------- |
+| **BST_CHECKED** | The button is checked. |
+| **BST_INDETERMINATE** | The button is in an indeterminate state (applies only if the button has the **BS_3STATE** or **BS_AUTO3STATE** style). |
+| **BST_UNCHECKED** | The button is not checked. |
+
+#### Remarks
+
+The **IsDlgButtonChecked** method sends a **BM_GETCHECK** message to the specified button control.
+

@@ -700,3 +700,96 @@ The **BCM_SETNOTE** message works only with the **BS_COMMANDLINK** and **BS_DEFC
 
 ---
 
+
+## <a name="setnote"></a>SetNote
+
+Sets the text of the note associated with a specified command link button.
+
+```
+FUNCTION SetNote (BYREF pwsz AS WSTRING) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pwsz* | The handle to the image list. |
+
+#### Return value
+
+Returns TRUE if successful, or FALSE otherwise.
+
+#### Remarks
+
+Beginning with comctl32 DLL version 6.01, command link buttons may have a note.
+
+The **BCM_SETNOTE** message works only with the **BS_COMMANDLINK** and **BS_DEFCOMMANDLINK** button styles.
+
+---
+
+## <a name="setnote"></a>SetNote
+
+Sets the text of the note associated with a specified command link button.
+
+```
+FUNCTION SetNote (BYREF pwsz AS WSTRING) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pwsz* | The handle to the image list. |
+
+#### Return value
+
+Returns TRUE if successful, or FALSE otherwise.
+
+#### Remarks
+
+Beginning with comctl32 DLL version 6.01, command link buttons may have a note.
+
+The **BCM_SETNOTE** message works only with the **BS_COMMANDLINK** and **BS_DEFCOMMANDLINK** button styles.
+
+---
+
+## <a name="Setsplitinfo"></a>SetSplitInfo
+
+Sets information for a specified split button control.
+
+```
+FUNCTION SetSplitInfo (BYREF pInfo AS BUTTON_SPLITINFO) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pInfo* | A pointer to a **BUTTON_SPLITINFO** structure containing information about the split button. |
+
+#### Return value
+
+Returns TRUE if successful, or FALSE otherwise.
+
+#### Remarks
+
+Remarks
+
+Use this message only with the ++BS_SPLITBUTTON** and **BS_DEFSPLITBUTTON** button styles.
+
+---
+
+## <a name="Setstate"></a>SetState
+
+Sets the highlight state of a button. The highlight state indicates whether the button is highlighted as if the user had pushed it. 
+
+```
+SUB SetState (BYVAL bstate AS BOOLEAN)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *bstate* | A BOOLEAN that specifies whether the button is highlighted. A value of TRUE highlights the button. A value of FALSE removes any highlighting. |
+
+#### Return value
+
+This message always returns zero.
+
+####Remarks
+
+Highlighting affects only the appearance of a button. It has no effect on the check state of a radio button or check box.
+
+A button is automatically highlighted when the user positions the cursor over it and presses and holds the left mouse button. The highlighting is removed when the user releases the mouse button.
+
+---
+

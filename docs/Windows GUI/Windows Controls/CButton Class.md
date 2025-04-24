@@ -485,6 +485,65 @@ The return value is a handle to the bitmap previously associated with the button
 
 ---
 
+## <a name="setcheck"></a>SetCheck
+
+Sets the check state of a radio button or check box.
+
+```
+SUB SetCheck (BYVAL checkState AS LONG)
+```
+| Value | Meaning |
+| ----- | ----------- |
+| *checkState* | The check state. This parameter can be one of the following values. |
+
+| Parameter | Description |
+| --------- | ----------- |
+| **BST_CHECKED** | Sets the button state to checked. |
+| **BST_INDETERMINATE** | Sets the button state to grayed, indicating an indeterminate state. Use this value only if the button has the **BS_3STATE** or **BS_AUTO3STATE** style. |
+| **BST_UNCHECKED** | Sets the button state to cleared. |
+
+#### Return value
+
+This message always returns zero.
+
+#### Remarks
+
+The **BM_SETCHECK** message has no effect on push buttons.
+
+---
+
+## <a name="setdontclick"></a>SetDontClick
+
+Sets a flag on a radio button that controls the generation of BN_CLICKED messages when the button receives focus.
+
+```
+SUB SetDontClick (BYVAL bState AS BOOLEAN)
+```
+
+| Parameter | Description |
+| --------- | ----------- |
+| *bState* | A BOOLEAN that specifies the state. TRUE to set the flag, otherwise FALSE. |
+
+#### Return value
+
+No return value.
+
+---
+
+## <a name="setdropdownstate"></a>SetDropdownState
+
+Sets the drop down state for a button with style **TBSTYLE_DROPDOWN**.
+```
+FUNCTION SetDropDownState (BYVAL bDropDown AS BOOLEAN) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *bDropDown* | A BOOLEAN that is TRUE for state of **BST_DROPDOWNPUSHED**, or FALSE otherwise. |
+
+#### Return value
+
+Returns TRUE if successful, or FALSE otherwise.
+
 ## <a name="seticon"></a>SetIcon
 
 Associates a new icon with the button.
@@ -574,64 +633,26 @@ Each value is an index to the appropriate image in the image list. If only one i
 
 ---
 
-## <a name="setcheck"></a>SetCheck
+## <a name="setelevationrequiredstate"></a>SetElevationRequiredState
 
-Sets the check state of a radio button or check box.
+Sets the elevation required state for a specified button or command link to display an elevated icon.
 
 ```
-SUB SetCheck (BYVAL checkState AS LONG)
+FUNCTION SetElevationRequiredState (BYVAL bRequired AS BOOLEAN) AS LONG
 ```
-| Value | Meaning |
-| ----- | ----------- |
-| *checkState* | The check state. This parameter can be one of the following values. |
-
 | Parameter | Description |
 | --------- | ----------- |
-| **BST_CHECKED** | Sets the button state to checked. |
-| **BST_INDETERMINATE** | Sets the button state to grayed, indicating an indeterminate state. Use this value only if the button has the **BS_3STATE** or **BS_AUTO3STATE** style. |
-| **BST_UNCHECKED** | Sets the button state to cleared. |
+| *bRequired* | A BOOL that is TRUE to draw an elevated icon, or FALSE otherwise. |
 
 #### Return value
 
-This message always returns zero.
+Returns 1 if successful, or an error code otherwise.
 
 #### Remarks
 
-The **BM_SETCHECK** message has no effect on push buttons.
+An application must be manifested to use comctl32.dll version 6 to gain this functionality.
 
 ---
-
-## <a name="setdontclick"></a>SetDontClick
-
-Sets a flag on a radio button that controls the generation of BN_CLICKED messages when the button receives focus.
-
-```
-SUB SetDontClick (BYVAL bState AS BOOLEAN)
-```
-
-| Parameter | Description |
-| --------- | ----------- |
-| *bState* | A BOOLEAN that specifies the state. TRUE to set the flag, otherwise FALSE. |
-
-#### Return value
-
-No return value.
-
----
-
-## <a name="setdropdownstate"></a>SetDropdownState
-
-Sets the drop down state for a button with style **TBSTYLE_DROPDOWN**.
-```
-FUNCTION SetDropDownState (BYVAL bDropDown AS BOOLEAN) AS BOOLEAN
-```
-| Parameter | Description |
-| --------- | ----------- |
-| *bDropDown* | A BOOLEAN that is TRUE for state of **BST_DROPDOWNPUSHED**, or FALSE otherwise. |
-
-#### Return value
-
-Returns TRUE if successful, or FALSE otherwise.
 
 ## <a name="setnote"></a>SetNote
 
@@ -653,27 +674,6 @@ Returns TRUE if successful, or FALSE otherwise.
 Beginning with comctl32 DLL version 6.01, command link buttons may have a note.
 
 The **BCM_SETNOTE** message works only with the **BS_COMMANDLINK** and **BS_DEFCOMMANDLINK** button styles.
-
----
-
-## <a name="setelevationrequiredstate"></a>SetElevationRequiredState
-
-Sets the elevation required state for a specified button or command link to display an elevated icon.
-
-```
-FUNCTION SetElevationRequiredState (BYVAL bRequired AS BOOLEAN) AS LONG
-```
-| Parameter | Description |
-| --------- | ----------- |
-| *bRequired* | A BOOL that is TRUE to draw an elevated icon, or FALSE otherwise. |
-
-#### Return value
-
-Returns 1 if successful, or an error code otherwise.
-
-#### Remarks
-
-An application must be manifested to use comctl32.dll version 6 to gain this functionality.
 
 ---
 

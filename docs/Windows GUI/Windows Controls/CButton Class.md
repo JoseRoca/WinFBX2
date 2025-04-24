@@ -24,6 +24,7 @@ Typical buttons are the check box, radio button, and pushbutton. A `CButton` obj
 | [GetIdealSize](#getidealsize) | Gets the size of the button that best fits its text and image, if an image list is present. |
 | [GetBitmap](#getbitmap) | Retrieves a handle to the bitmap associated with the button. |
 | [GetIcon](#geticon) | Retrieves a handle to the icon associated with the button. |
+| [GetImage](#getimage) | Retrieves a handle to the image (icon or bitmap) associated with the button. |
 | [GetImageList](#getimagelist) | Gets the BUTTON_IMAGELIST structure that describes the image list assigned to a button control.  |
 | [GetNote](#getnote) | Gets the text of the note associated with the Command Link button. |
 | [GetNoteLength](#getnotelength) | Gets the length of the note text that may be displayed in the description for a command link. |
@@ -286,5 +287,150 @@ FUNCTION GetImage (BYVAL imageType aS LONG) AS HANDLE
 #### Return value
 
 The return value is a handle to the image, if any; otherwise, it is NULL.
+
+---
+
+## <a name="getimagelist"></a>GetImageList
+
+Gets the **BUTTON_IMAGELIST** structure that describes the image list assigned to a button control. 
+
+```
+FUNCTION GetImageList () AS BUTTON_IMAGELIST PTR
+```
+
+#### Return value
+
+A pointer to a **BUTTON_IMAGELIST** structure that contains image list information.
+
+---
+
+## <a name="getnote"></a>GetNote
+
+Gets the text of the note associated with the Command Link button.
+
+```
+FUNCTION GetNote () AS DWSTRING
+```
+
+#### Remarks
+
+The **BCM_GETNOTE** message works only with buttons that have the **BS_COMMANDLINK** or **BS_DEFCOMMANDLINK** button style.
+
+**GetLastResul** will contain:
+
+**ERROR_NOT_SUPPORTED**, if the button does not have the **BS_DEFCOMMANDLINK** or **BS_COMMANDLINK** style.
+
+---
+
+## <a name="getnotelength"></a>GetNoteLength
+
+Gets the length of the note text that may be displayed in the description for a command link.
+
+```
+FUNCTION GetNoteLength () AS LONG
+```
+
+#### Return value
+
+Returns the length of the note text in Unicode characters, not including any terminating NULL, or zero if there is no note text.
+
+---
+
+## <a name="getsplitindo"></a>GetSplitInfo
+
+Gets information for a split button control. 
+
+```
+FUNCTION GetSplitInfo (BYREF pInfo AS BUTTON_SPLITINFO) AS BOOLEAN
+```
+
+| Parameter | Description |
+| --------- | ----------- |
+| *pInfo* | A pointer to a **BUTTON_SPLITINFO** structure to receive information on the button. The caller is responsible for allocating the memory for the structure. Set the **mask** member of this structure to determine what information to receive. |
+
+#### Return value
+
+Returns TRUE if successful, or FALSE otherwise.
+
+#### Remarks
+
+Use this message only with the **BS_SPLITBUTTON** and **BS_DEFSPLITBUTTON** button styles.
+
+---
+
+## <a name="getstate"></a>GetState
+
+Retrieves the state of a button or check box. 
+
+```
+FUNCTION GetState () AS DWORD
+```
+
+#### Return value
+
+The return value specifies the current state of the button. It is a combination of the following values.
+
+| Return code  | Description |
+| ------------ | ----------- |
+| **BST_CHECKED** | The button is checked. |
+| **BST_DROPDOWNPUSHED** | The button is in the drop-down state. Applies only if the button has the **TBSTYLE_DROPDOWN** style. |
+| **BST_FOCUS** | The button has the keyboard focus. |
+| **BST_HOT** | The button is hot; that is, the mouse is hovering over it. |
+| **BST_INDETERMINATE** | The state of the button is indeterminate. Applies only if the button has the **BS_3STATE** or **BS_AUTO3STATE** style. |
+| **BST_PUSHED** | The button is being shown in the pushed state. |
+| **BST_UNCHECKED** | No special state. Equivalent to zero. |
+
+---
+
+## <a name="getstyle"></a>GetStyle
+
+Retrieves the style of button.
+
+```
+FUNCTION GetStyle () AS DWORD
+```
+---
+
+## <a name="gettext"></a>GetText
+
+Retrieves the text in a button control.
+
+```
+FUNCTION GetText () AS DWSTRING
+```
+---
+
+## <a name="gettextlength"></a>GetTextLength
+
+Determines the length, in characters, of the text associated with a button.
+
+```
+FUNCTION GetTextLength () AS LONG
+```
+
+#### Return value
+
+The return value is the length of the text in characters, not including the terminating null character.
+
+---
+
+## <a name="gettextmargin"></a>GetTextMargin
+
+Retrieves the margins used to draw text in a button control.
+
+```
+GetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *tMargin* | A pointer to a **RECT** structure that contains the margins to use for drawing text. |
+
+#### Return value
+
+If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
+
+#### Remarks
+
+To use this message, you must provide a manifest specifying Comclt32.dll version 6.0. For more information on manifests, see Enabling Visual Styles.
 
 ---

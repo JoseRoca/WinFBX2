@@ -656,3 +656,47 @@ The **BCM_SETNOTE** message works only with the **BS_COMMANDLINK** and **BS_DEFC
 
 ---
 
+## <a name="setelevationrequiredstate"></a>SetElevationRequiredState
+
+Sets the elevation required state for a specified button or command link to display an elevated icon.
+
+```
+FUNCTION SetElevationRequiredState (BYVAL bRequired AS BOOLEAN) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *bRequired* | A BOOL that is TRUE to draw an elevated icon, or FALSE otherwise. |
+
+#### Return value
+
+Returns 1 if successful, or an error code otherwise.
+
+#### Remarks
+
+An application must be manifested to use comctl32.dll version 6 to gain this functionality.
+
+---
+
+## <a name="setnote"></a>SetNote
+
+Sets the text of the note associated with a specified command link button.
+
+```
+FUNCTION SetNote (BYREF pwsz AS WSTRING) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pwsz* | The handle to the image list. |
+
+#### Return value
+
+Returns TRUE if successful, or FALSE otherwise.
+
+#### Remarks
+
+Beginning with comctl32 DLL version 6.01, command link buttons may have a note.
+
+The **BCM_SETNOTE** message works only with the **BS_COMMANDLINK** and **BS_DEFCOMMANDLINK** button styles.
+
+---
+

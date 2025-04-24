@@ -198,3 +198,22 @@ FUNCTION Enable () AS BOOLEAN
 ```
 ---
 
+## <a name="getcheck"></a>GetCheck
+
+Gets the check state of a radio button or check box. 
+
+```
+FUNCTION GetCheck () AS DWORD
+```
+#### Return value
+
+The return value from a button created with the **BS_AUTOCHECKBOX**, **BS_AUTORADIOBUTTON**, **BS_AUTO3STATE**, **BS_CHECKBOX**, **BS_RADIOBUTTON**, or **BS_3STATE** style can be one of the following.
+
+| Return code  | Description |
+| ------------ | ----------- |
+| **BST_CHECKED** | Button is checked. |
+| **BST_INDETERMINATE** | Button is grayed, indicating an indeterminate state (applies only if the button has the **BS_3STATE** or **BS_AUTO3STATE** style). |
+| **BST_UNCHECKED** | Button is cleared. |
+
+---
+

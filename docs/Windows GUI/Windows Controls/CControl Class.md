@@ -16,6 +16,7 @@ Returns a localized description of the specified error code. If the error is omi
 ```
 PRIVATE FUNCTION GetErrorInfo (BYVAL nError AS LONG = -1) AS DWSTRING
 ```
+---
 
 ### <a name="getlastresult"></a>GetLastResult
 

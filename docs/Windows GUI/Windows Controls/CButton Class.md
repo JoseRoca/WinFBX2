@@ -22,7 +22,8 @@ Typical buttons are the check box, radio button, and pushbutton. A `CButton` obj
 | [Enable](#enable) | Enables a button. |
 | [GetCheck](#getcheck) | Gets the check state of a radio button or check box.  |
 | [GetIdealSize](#getidealsize) | Gets the size of the button that best fits its text and image, if an image list is present. |
-| [GetImage](#getimage) | Retrieves a handle to the image (icon or bitmap) associated with the button. |
+| [GetBitmap](#getbitmap) | Retrieves a handle to the bitmap associated with the button. |
+| [GetIcon](#geticon) | Retrieves a handle to the icon associated with the button. |
 | [GetImageList](#getimagelist) | Gets the BUTTON_IMAGELIST structure that describes the image list assigned to a button control.  |
 | [GetNote](#getnote) | Gets the text of the note associated with the Command Link button. |
 | [GetNoteLength](#getnotelength) | Gets the length of the note text that may be displayed in the description for a command link. |
@@ -217,3 +218,73 @@ The return value from a button created with the **BS_AUTOCHECKBOX**, **BS_AUTORA
 
 ---
 
+## <a name="getidealsize"></a>GetIdealSize
+
+Gets the size of the button that best fits its text and image, if an image list is present.
+
+```
+FUNCTION GetIdealSize (BYREF tSize AS SIZE) AS BOOLEAN
+```
+
+| Parameter  | Description |
+| ---------- | ----------- |
+| *tsize* | A pointer to a **SIZE** structure that receives the desired size of the button, including text and image list, if present. The calling application is responsible for allocating this structure. Set the **cx** and **cy** members to zero to have the ideal height and width returned in the **SIZE** structure. To specify a button width, set the **cx** member to the desired button width. The system will calculate the ideal height for this width and return it in the **cy** member. |
+
+#### Return value
+
+If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
+
+#### Remarks
+
+If no special button width is desired, then you must set both members of **SIZE** to zero to calculate and return the ideal height and width. If the value of the **cx** member is greater than zero, then this value is considered the desired button width, and the ideal height for this width is calculated and returned in the **cy** member.
+
+This message is most applicable to PushButtons. When sent to a PushButton, the message retrieves the bounding rectangle required to display the button's text. Additionally, if the PushButton has an image list, the bounding rectangle is also sized to include the button's image.
+
+When sent to a button of any other type, the size of the control's window rectangle is retrieved.
+
+To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.
+
+---
+
+## <a name="getbitmap"></a>GetBitmap
+
+Retrieves a handle to the bitmap associated with the button.
+
+#### Return value
+
+The return value is a handle to the bitmap, if any; otherwise, it is NULL.
+
+---
+
+## <a name="geticon"></a>GetIcon
+
+Retrieves a handle to the icon associated with the button.
+
+#### Return value
+
+The return value is a handle to the icon, if any; otherwise, it is NULL.
+
+---
+
+## <a name="getimage"></a>GetImage
+
+Retrieves a handle to the image (icon or bitmap) associated with the button.
+
+```
+FUNCTION GetImage (BYVAL imageType aS LONG) AS HANDLE
+```
+
+| Parameter | Description |
+| --------- | ----------- |
+| *nType* | The type of image to associate with the button. This parameter can be one of the following values. |
+
+| Value | Meaning |
+| ------------ | ----------- |
+| **IMAGE_BITMAP** | A bitmap. |
+| **IMAGE_ICON** | An icon. |
+
+#### Return value
+
+The return value is a handle to the image, if any; otherwise, it is NULL.
+
+---

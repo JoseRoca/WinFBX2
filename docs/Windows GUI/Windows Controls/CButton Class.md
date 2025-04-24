@@ -1,6 +1,10 @@
 # CButton Class
 
-Wrapper class on top of all the Windows `Button` messages. A *button* is a control the user can click to provide input to an application.
+Wrapper class on top of all the Windows `Button` messages and functions.
+
+A button control is a small, rectangular child window that can be clicked on and off. Buttons can be used alone or in groups and can either be labeled or appear without text. A button typically changes appearance when the user clicks it.
+
+Typical buttons are the check box, radio button, and pushbutton. A `CButton` object can become any of these, according to the button style specified at its initialization by the **AddControl** method of the `CDialog`class.
 
 **Include file**: CButton.inc.
 

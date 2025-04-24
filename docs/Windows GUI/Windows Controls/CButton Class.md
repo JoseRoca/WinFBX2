@@ -6,7 +6,7 @@
 
 | Name       | Description |
 | ---------- | ----------- |
-| [Constructors](#constructors) |  |
+| [Constructors](#constructors) | Create instances of the `CButton` class. |
 | [Check](#check) | Sets the button state to checked. |
 | [Click](#click) | Simulates the user clicking a button. |
 | [DeleteBitmap](#deletebitmap) | Deletes a bitmap associated with a button. |

@@ -96,7 +96,7 @@ FUNCTION CheckDlgButton (BYVAL cIDButton AS LONG, BYVAL uCheck AS UINT) AS BOOLE
 | Value  | Meaning |
 | ------ | ------- |
 | **BST_CHECKED** | Sets the button state to checked. |
-| **BST_INDETERMINATE** | Sets the button state to grayed, indicating an indeterminate state. Use this value only if the button has the BS_3STATE or BS_AUTO3STATE style. |
+| **BST_INDETERMINATE** | Sets the button state to grayed, indicating an indeterminate state. Use this value only if the button has the **BS_3STATE** or **BS_AUTO3STATE** style. |
 | **BST_UNCHECKED** | Sets the button state to cleared |
 
 #### Return value
@@ -105,7 +105,7 @@ If the function succeeds, the return value is true. If the function fails, the r
 
 #### Remarks
 
-The **CheckDlgButton** function sends a BM_SETCHECK message to the specified button control in the specified dialog box.
+The **CheckDlgButton** function sends a **BM_SETCHECK** message to the specified button control in the specified dialog box.
 
 ---
 
@@ -132,3 +132,23 @@ If the function fails, the return value is false.
 The **CheckRadioButton** function sends a **BM_SETCHECK** message to each of the radio buttons in the indicated group.
 
 The *cIDFirstButton* and *cIDLastButton* parameters specify a range of button identifiers (normally the resource IDs of the buttons). The position of buttons in the tab order is irrelevant; if a button forms part of a group, but has an ID outside the specified range, it is not affected by this call.
+
+---
+
+## <a name="click"></a>Click
+
+Simulates the user clicking a button. This message causes the button to receive the **WM_LBUTTONDOWN** and **WM_LBUTTONUP** messages, and the button's parent window to receive a **BN_CLICKED** notification code.
+
+```
+SUb Click ()
+```
+
+#### Return value
+
+This message does not return a value.
+
+#### Remarks
+
+If the button is in a dialog box and the dialog box is not active, the **BM_CLICK** message might fail. To ensure success in this situation, call the **SetActiveWindow** function to activate the dialog box before sending the BM_CLICK message to the button.
+
+---

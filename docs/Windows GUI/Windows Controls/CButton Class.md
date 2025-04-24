@@ -152,3 +152,49 @@ This message does not return a value.
 If the button is in a dialog box and the dialog box is not active, the **BM_CLICK** message might fail. To ensure success in this situation, call the **SetActiveWindow** function to activate the dialog box before sending the BM_CLICK message to the button.
 
 ---
+
+## <a name="deletebitmap"></a>DeleteBitmap
+
+Deletes a bitmap associated with a button. Returns TRUE or FALSE.
+
+```
+FUNCTION DeleteBitmap () AS BOOLEAN
+```
+---
+
+## <a name="deleteicon"></a>DeleteIcon
+
+Deletes a icon associated with a button. Returns TRUE or FALSE.
+
+```
+FUNCTION DeleteIcon () AS BOOLEAN
+```
+---
+
+## <a name="deleteimage"></a>DeleteImage
+
+Deletes an image (icon or bitmap) associated a button. Returns TRUE or FALSE.
+
+```
+FUNCTION DeleteImage () AS BOOLEAN
+```
+---
+
+## <a name="disable"></a>Disable
+
+Disables a button. Returns FALSE if the windows was previous disabled; otherwise TRUE.
+
+```
+FUNCTION Disable () AS BOOLEAN
+```
+---
+
+## <a name="enable"></a>Enable
+
+Enables a button. Returns FALSE if the windows was previous enabled; otherwise TRUE.
+
+```
+FUNCTION Enable () AS BOOLEAN
+```
+---
+

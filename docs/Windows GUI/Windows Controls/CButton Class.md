@@ -770,7 +770,7 @@ Use this message only with the ++BS_SPLITBUTTON** and **BS_DEFSPLITBUTTON** butt
 
 ---
 
-## <a name="Setstate"></a>SetState
+## <a name="setstate"></a>SetState
 
 Sets the highlight state of a button. The highlight state indicates whether the button is highlighted as if the user had pushed it. 
 
@@ -793,3 +793,17 @@ A button is automatically highlighted when the user positions the cursor over it
 
 ---
 
+## <a name="setstyle"></a>SetStyle
+
+Sets the style of a button.
+
+```
+SUB SetSyle (BYVAL dwStyle AS DWORD, BYVAL bRedraw AS BOOLEAN)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *dwStyle* | The button style. This parameter can be a combination of button styles.  |
+
+For a table of button styles, see [Button Styles](https://learn.microsoft.com/en-us/windows/win32/controls/button-styles).
+
+A BOOLEAN that specifies whether the button is to be redrawn. A value of TRUE redraws the button; a value of FALSE does not redraw the button.

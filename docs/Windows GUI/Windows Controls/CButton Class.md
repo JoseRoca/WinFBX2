@@ -802,8 +802,47 @@ SUB SetSyle (BYVAL dwStyle AS DWORD, BYVAL bRedraw AS BOOLEAN)
 ```
 | Parameter | Description |
 | --------- | ----------- |
-| *dwStyle* | The button style. This parameter can be a combination of button styles.  |
+| *dwStyle* | The button style. This parameter can be a combination of button styles. |
+| *bRedraw* | A BOOLEAN that specifies whether the button is to be redrawn. A value of TRUE redraws the button; a value of FALSE does not redraw the button. |
 
 For a table of button styles, see [Button Styles](https://learn.microsoft.com/en-us/windows/win32/controls/button-styles).
 
-A BOOLEAN that specifies whether the button is to be redrawn. A value of TRUE redraws the button; a value of FALSE does not redraw the button.
+---
+
+## <a name="setstext"></a>SetText
+
+Sets the text of a button.
+
+```
+FUNCTION SetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pwszText* | The new text. |
+
+#### Return value
+
+If the function succeeds, the return value is nonzero. If the function fails, the return value is zero.
+
+---
+
+## <a name="settextmargin"></a>SetTextMargin
+
+Sets the margins used to draw text in a button control.
+
+```
+FUNCTION SetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *tMargin* | A pointer to a **RECT** structure that specifies the margins to use for drawing text. |
+
+#### Return value
+
+If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
+
+#### Remarks
+
+To use this message, you must provide a manifest specifying Comclt32.dll version 6.0. For more information on manifests, see Enabling Visual Styles.
+
+---

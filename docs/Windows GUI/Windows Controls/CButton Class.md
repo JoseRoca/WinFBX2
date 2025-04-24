@@ -17,7 +17,7 @@ Typical buttons are the check box, radio button, and pushbutton. A `CButton` obj
 | [Click](#click) | Simulates the user clicking a button. |
 | [DeleteBitmap](#deletebitmap) | Deletes a bitmap associated with a button. |
 | [DeleteIcon](#deleteicon) | Deletes an icon associated with a button. |
-| [DeleteImage](#deleteimage) | Deletes an image (icon or bitmap) associated a button. |
+| [DeleteImage](#deleteimage) | Deletes an image (icon or bitmap) associated with a button. |
 | [Disable](#disable) | Disables a button. |
 | [Enable](#enable) | Enables a button. |
 | [GetCheck](#getcheck) | Gets the check state of a radio button or check box.  |
@@ -35,7 +35,7 @@ Typical buttons are the check box, radio button, and pushbutton. A `CButton` obj
 | [GetTextLength](#gettextlength) | Retrieves the length of the text in a button control. |
 | [GetTextMargin](#gettextmargin) | Retrieves the margins used to draw text in a button control. |
 | [Gray](#gray) | Sets the button state to grayed, indicating an indeterminate state. |
-| [IsDlgButtonChecked](#isdlgbuttonchecked) | Dtermines whether a button control is checked or whether a three-state button control is checked, unchecked, or indeterminate. |
+| [IsDlgButtonChecked](#isdlgbuttonchecked) | Determines whether a button control is checked or whether a three-state button control is checked, unchecked, or indeterminate. |
 | [SetBitmap](#setbitmap) | Associates a new bitmap with a button. |
 | [SetCheck](#setcheck) | Sets the check state of a radio button or check box. |
 | [SetDontClick](#setdontclick) | Sets a flag on a radio button that controls the generation of BN_CLICKED messages when the button receives focus. |
@@ -166,7 +166,7 @@ FUNCTION DeleteBitmap () AS BOOLEAN
 
 ## <a name="deleteicon"></a>DeleteIcon
 
-Deletes a icon associated with a button. Returns TRUE or FALSE.
+Deletes an icon associated with a button. Returns TRUE or FALSE.
 
 ```
 FUNCTION DeleteIcon () AS BOOLEAN
@@ -175,7 +175,7 @@ FUNCTION DeleteIcon () AS BOOLEAN
 
 ## <a name="deleteimage"></a>DeleteImage
 
-Deletes an image (icon or bitmap) associated a button. Returns TRUE or FALSE.
+Deletes an image (icon or bitmap) associated with a button. Returns TRUE or FALSE.
 
 ```
 FUNCTION DeleteImage () AS BOOLEAN
@@ -184,7 +184,7 @@ FUNCTION DeleteImage () AS BOOLEAN
 
 ## <a name="disable"></a>Disable
 
-Disables a button. Returns FALSE if the windows was previous disabled; otherwise TRUE.
+Disables a button. Returns FALSE if the windows was previously disabled; otherwise TRUE.
 
 ```
 FUNCTION Disable () AS BOOLEAN
@@ -193,7 +193,7 @@ FUNCTION Disable () AS BOOLEAN
 
 ## <a name="enable"></a>Enable
 
-Enables a button. Returns FALSE if the windows was previous enabled; otherwise TRUE.
+Enables a button. Returns FALSE if the windows was previously enabled; otherwise TRUE.
 
 ```
 FUNCTION Enable () AS BOOLEAN
@@ -764,9 +764,7 @@ Returns TRUE if successful, or FALSE otherwise.
 
 #### Remarks
 
-Remarks
-
-Use this message only with the ++BS_SPLITBUTTON** and **BS_DEFSPLITBUTTON** button styles.
+Use this message only with the **BS_SPLITBUTTON** and **BS_DEFSPLITBUTTON** button styles.
 
 ---
 
@@ -798,7 +796,7 @@ A button is automatically highlighted when the user positions the cursor over it
 Sets the style of a button.
 
 ```
-SUB SetSyle (BYVAL dwStyle AS DWORD, BYVAL bRedraw AS BOOLEAN)
+SUB SetStyle (BYVAL dwStyle AS DWORD, BYVAL bRedraw AS BOOLEAN)
 ```
 | Parameter | Description |
 | --------- | ----------- |

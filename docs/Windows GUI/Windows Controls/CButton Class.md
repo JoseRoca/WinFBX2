@@ -69,3 +69,31 @@ CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
 | *hParent* | Handle of the parent window of the button control. |
 | *cID* | Control identifier of the button control. |
 | *pDlg* | Pointer to an instance of the `CDialog` class. |
+
+---
+
+## <a name="check"></a>Check
+
+Sets the button state to checked.
+
+```
+SUB Check ()
+```
+
+## <a name="checkdlgbutton"></a>CheckDlgButton
+
+Changes the check state of a button control.
+
+```
+FUNCTION CheckDlgButton (BYVAL cIDButton AS LONG, BYVAL uCheck AS UINT) AS BOOLEAN
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *cIDButton* | The identifier of the button to modify. |
+| *uCheck* | The check state of the button. This parameter can be one of the following values. |
+
+| Value  | Meaning |
+| ------ | ------- |
+| **BST_CHECKED** | Sets the button state to checked. |
+| **BST_INDETERMINATE** | Sets the button state to grayed, indicating an indeterminate state. Use this value only if the button has the BS_3STATE or BS_AUTO3STATE style. |
+| **BST_UNCHECKED** | Sets the button state to cleared |

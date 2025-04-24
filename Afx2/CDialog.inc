@@ -1,7 +1,7 @@
 ' ########################################################################################
 ' Microsoft Windows
 ' File: CDialog.inc
-' Contents: Dialog box
+' Contents: Dialog box class
 ' Compiler: FreeBasic 32 & 64-bit
 ' Copyright (c) 2025 José Roca. Freeware. Use at your own risk.
 ' THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
@@ -636,6 +636,7 @@ PRIVATE PROPERTY CDialog.hDialog (BYVAL hDlg AS HWND)
    IF IsWindow(hDlg) THEN m_hDlg = hDlg
 END PROPERTY
 ' ========================================================================================
+
 ' ========================================================================================
 ' Returns true if the dialog is modal
 ' ========================================================================================

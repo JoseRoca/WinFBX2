@@ -2,6 +2,8 @@
 
 `CControl` is a base class for all the other classes that deal with Windows controls. It has methods to set and get the last result code. It has been implemented because the Windows API functions **GetLastError** and **SetLastError** can't be used reliably with wrapper classes or procedures that return another class (the construction of the returned class may also use these functions and wipe the error code).
 
+**Include file**: CControl.inc.
+
 | Name       | Description |
 | ---------- | ----------- |
 | [GetErrorInfo](#geterrorinfo) | Returns a localized description of the specified error code. |

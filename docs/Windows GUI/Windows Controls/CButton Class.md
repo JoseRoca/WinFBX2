@@ -846,3 +846,13 @@ If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
 To use this message, you must provide a manifest specifying Comclt32.dll version 6.0. For more information on manifests, see Enabling Visual Styles.
 
 ---
+
+## <a name="uncheck"></a>Uncheck
+
+Sets the button state to cleared.
+
+```
+SUB CButton.Uncheck ()
+```
+---
+

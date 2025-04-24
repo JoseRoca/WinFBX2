@@ -64,4 +64,4 @@ CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
 | *hCtl* | Handle of the button control. |
 | *hParent* | Handle of the parent window of the button control. |
 | *cID* | Control identifier of the button control. |
-| *CDialog* | Pointer to an instance of the `CDialog` class. |
+| *pDlg* | Pointer to an instance of the `CDialog` class. |

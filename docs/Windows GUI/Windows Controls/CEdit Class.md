@@ -426,10 +426,6 @@ Gets a set of status flags that indicate how the edit control interacts with the
 ```
 FUNCTION GetLimitText () AS DWORD
 ```
-| Parameter | Description |
-| --------- | ----------- |
-| *nStatusType* | The type of status to retrieve. This parameter can be the following value:<br>**EMSIS_COMPOSITIONSTRING**: Sets behavior for handling the composition string. |
-
 #### Return value
 
 The return value is the text limit.

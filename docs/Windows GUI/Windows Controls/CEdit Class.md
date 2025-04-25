@@ -214,3 +214,68 @@ pEdit.Cut
 CEdit(pDlg, 103).Cut
 ```
 ---
+
+### <a name="disable"></a>Disable
+
+Disables mouse and keyboard input to the specified window or control. When input is disabled, the window does not receive input such as mouse clicks and key presses.
+```
+SUB Disable ()
+```
+#### Return value
+
+Returns FALSE if the control was previously disabled; otherwise TRUE.
+
+#### Usage examples
+
+Note: 103 is the identifier of the edit control. Change it to the real one.
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.Disable
+```
+```
+CEdit(pDlg, 103).Disable
+```
+#### Remarks
+
+If the window is being disabled, the system sends a **WM_CANCELMODE** message. If the enabled state of a window is changing, the system sends a **WM_ENABLE** message after the **WM_CANCELMODE** message. If a window is already disabled, its child windows are implicitly disabled, although they are not sent a **WM_ENABLE** message.
+
+A window must be enabled before it can be activated. For example, if an application is displaying a modeless dialog box and has disabled its main window, the application must enable the main window before destroying the dialog box. Otherwise, another window will receive the keyboard focus and be activated. If a child window is disabled, it is ignored when the system tries to determine which window should receive mouse messages.
+
+By default, a window is enabled when it is created. To create a window that is initially disabled, an application can specify the **WS_DISABLED** style in the **CreateWindow** or **CreateWindowEx** function. After a window has been created, an application can use **EnableWindow** API function to enable or disable the window.
+
+An application can use this function to disable a control in a dialog box. A disabled control cannot receive the keyboard focus, nor can a user gain access to it.
+
+---
+
+### <a name="enable"></a>Enable
+
+Enables mouse and keyboard input to the specified window or control. When input is enabled, the window receives all input.
+```
+SUB Enable ()
+```
+#### Return value
+
+Returns FALSE if the control was previously enabled; otherwise TRUE.
+
+#### Usage examples
+
+Note: 103 is the identifier of the edit control. Change it to the real one.
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.Enable
+```
+```
+CEdit(pDlg, 103).Enable
+```
+
+#### Remarks
+
+If the window is being disabled, the system sends a **WM_CANCELMODE** message. If the enabled state of a window is changing, the system sends a **WM_ENABLE** message after the **WM_CANCELMODE** message. If a window is already disabled, its child windows are implicitly disabled, although they are not sent a **WM_ENABLE** message.
+
+A window must be enabled before it can be activated. For example, if an application is displaying a modeless dialog box and has disabled its main window, the application must enable the main window before destroying the dialog box. Otherwise, another window will receive the keyboard focus and be activated. If a child window is disabled, it is ignored when the system tries to determine which window should receive mouse messages.
+
+By default, a window is enabled when it is created. To create a window that is initially disabled, an application can specify the **WS_DISABLED** style in the **CreateWindow** or **CreateWindowEx** function. After a window has been created, an application can use the **EnableWindow** API function to enable or disable the window.
+
+An application can use this method to enable a control in a dialog box.
+
+---

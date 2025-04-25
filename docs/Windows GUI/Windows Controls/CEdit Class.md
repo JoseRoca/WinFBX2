@@ -355,11 +355,11 @@ FUNCTION GetCueBannerText (BYVAL pwszText AS WSTRING PTR, BYVAL cchText AS LONG)
 
 Returns TRUE if successful or FALSE otherwise.
 
----
-
 #### Remarks
 
 To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.
+
+---
 
 ### <a name="getfirstvisibleline"></a>GetFirstVisibleLine
 
@@ -374,8 +374,26 @@ The return value is the zero-based index of the uppermost visible line in a mult
 
 For single-line edit controls, the return value is the zero-based index of the first visible character.
 
----
-
 #### Remarks
 
 The number of lines and the length of the lines in an edit control depend on the width of the control and the current Wordwrap setting.
+
+---
+
+### <a name="gethandle"></a>GetHandle
+
+Gets a handle of the memory currently allocated for a multiline edit control's text.
+```
+FUNCTION GetHandle () AS HLOCAL
+```
+#### Return value
+
+The return value is a memory handle identifying the buffer that holds the content of the edit control. If an error occurs, such as sending the message to a single-line edit control, the return value is zero.
+
+#### Remarks
+
+If the function succeeds, the application can access the contents of the edit control by casting the return value to **HLOCAL** and passing it to **LocalLock**. **LocalLock** returns a pointer to a buffer that is a null-terminated array of characters. For example, The application may not change the contents of the buffer. To unlock the buffer, the application calls **LocalUnlock** before allowing the edit control to receive new messages.
+
+If your application cannot abide by the restrictions imposed by **EM_GETHANDLE**, use the **GetWindowTextLength** and **GetWindowText** functions to copy the contents of the edit control into an application-provided buffer.
+
+---

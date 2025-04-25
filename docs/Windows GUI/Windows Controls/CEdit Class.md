@@ -116,7 +116,7 @@ FUNCTION CanUndo () AS BOOLEAN
 
 If there are actions in the control's undo queue, the return value is true. If the undo queue is empty, the return value is false.
 
-#### Udage examples
+#### Usage examples
 
 Note: 103 is the identifier of the edit control. Change it to the real one.
 ```
@@ -126,4 +126,25 @@ DIM b AS BOOLEAN = pEdit.CanUndo
 ```
 CEdit(pDlg, 103).CanUndo
 ```
+---
+
+### <a name="charfrompos"></a>CharFromPos
+
+Gets information about the character closest to a specified point in the client area of an edit control.
+```
+FUNCTION CharFromPos (BYVAL x AS SHORT, BYVAL y AS SHORT) AS DWORD
+```
+| Parameter | Description |
+| --------- | ----------- |
+| x | The x-coordinate of a point in the control's client area. |
+| y | The y-coordinate of a point in the control's client area. |
+
+#### Remarks
+
+The coordinates are in screen units and are relative to the upper-left corner of the control's client area.
+ 
+#### Return value
+
+The **LOWORD** specifies the zero-based index of the character nearest the specified point. This index is relative to the beginning of the control, not the beginning of the line. If the specified point is beyond the last character in the edit control, the return value indicates the last character in the control. The **HIWORD** specifies the zero-based index of the line that contains the character. For single-line edit controls, this value is zero. The index indicates the line delimiter if the specified point is beyond the last visible character in a line.
+
 ---

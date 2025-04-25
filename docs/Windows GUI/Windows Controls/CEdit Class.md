@@ -279,3 +279,28 @@ By default, a window is enabled when it is created. To create a window that is i
 An application can use this method to enable a control in a dialog box.
 
 ---
+
+### <a name="emptyundobuffer"></a>EmptyUndoBuffer
+
+Resets the undo flag of an edit control. The undo flag is set whenever an operation within the edit control can be undone. 
+```
+SUB EmptyUndoBuffer ()
+```
+#### Return value
+
+This method does not return a value.
+
+#### Remarks
+
+This method empties all undo and redo buffers. The undo flag is automatically reset whenever the edit control receives a **WM_SETTEXT** or **EM_SETHANDLE** message.
+
+#### Usage examples
+
+Note: 103 is the identifier of the edit control. Change it to the real one.
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.EmptyUndoBuffer
+```
+```
+CEdit(pDlg, 103).EmptyUndoBuffer
+```

@@ -1,11 +1,12 @@
 # CEdit Class
 
-`CEdit` is a class on top of the Edit control. An *edit control* is a rectangular control window typically used in a dialog box to permit the user to enter and edit text by typing on the keyboard.
+`CEdit` is a class on top of the Edit control. An *edit control* is a rectangular control window typically used in a dialog box to permit the user to enter and edit text by typing on the keyboard. The system automatically processes all user-initiated text operations and notifies the application when the operations are completed.
 
 **Include file**: CEdit.inc.
 
 | Name       | Description |
 | ---------- | ----------- |
+| [Constructors](#constructors) | Create instances of the `CEdit` class. |
 | [CanUndo](#canundo) | Determines whether there are any actions in an edit control's undo queue. |
 | [CharFromPos](#charfrompos) | Gets information about the character closest to a specified point in the client area of an edit control. |
 | [Clear](#clear) | Deletes (clears) the current selection, if any, from the edit control. |
@@ -64,6 +65,26 @@
 | [SetWordBreakProc](#setwordbreakproc) | ' Replaces an edit control's default Wordwrap function with an application-defined Wordwrap function. |
 | [ShowBalloonTip](#showballoontip) | Displays a balloon tip associated with an edit control. |
 | [Undo](#undo) | Undoes the last edit control operation in the control's undo queue. |
+
+---
+
+# <a name="constructors"></a>Constructors
+
+Creates instances of the `CEdit` class.
+
+```
+CONSTRUCTOR (BYVAL hCtl AS HWND)
+CONSTRUCTOR (BYVAL hParent AS HWND, BYVAL hCtl AS HWND)
+CONSTRUCTOR (BYVAL hParent AS HWND, BYVAL cID AS LONG)
+CONSTRUCTOR (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
+CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
+```
+| Parameter  | Description |
+| ---------- | ----------- |
+| *hCtl* | Handle of the button control. |
+| *hParent* | Handle of the parent window of the button control. |
+| *cID* | Control identifier of the button control. |
+| *pDlg* | Pointer to an instance of the `CDialog` class. |
 
 ---
 

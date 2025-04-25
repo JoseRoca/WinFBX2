@@ -304,3 +304,36 @@ pEdit.EmptyUndoBuffer
 ```
 CEdit(pDlg, 103).EmptyUndoBuffer
 ```
+
+### <a name="fmtlines"></a>FmtLines
+
+Sets a flag that determines whether a multiline edit control includes soft line-break characters. A soft line break consists of two carriage returns and a line feed and is inserted at the end of a line that is broken because of wordwrapping.
+```
+SUB FmtLines (BYVAL AddEolFlag AS BOOLEAN) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *AddEolFlag* | A value of TRUE inserts the characters; a value of FALSE removes them. |
+
+#### Return value
+
+The return value is identical to the *AddEolFlag* parameter.
+
+#### Remarks
+
+This message affects only the buffer returned by the **EM_GETHANDLE** message and the text returned by the **WM_GETTEXT** message. It has no effect on the display of the text within the edit control.
+
+The **EM_FMTLINES** message does not affect a line that ends with a hard line break. A hard line break consists of one carriage return and a line feed.
+
+The size of the text changes when this message is processed.
+
+#### Usage examples
+
+Note: 103 is the identifier of the edit control. Change it to the real one.
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.FmtLines(TRUE)
+```
+```
+CEdit(pDlg, 103).FmtLines(TRUE)
+```

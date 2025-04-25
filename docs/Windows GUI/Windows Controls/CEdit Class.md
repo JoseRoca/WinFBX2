@@ -304,6 +304,7 @@ pEdit.EmptyUndoBuffer
 ```
 CEdit(pDlg, 103).EmptyUndoBuffer
 ```
+---
 
 ### <a name="fmtlines"></a>FmtLines
 
@@ -337,22 +338,44 @@ pEdit.FmtLines(TRUE)
 ```
 CEdit(pDlg, 103).FmtLines(TRUE)
 ```
+---
 
 ### <a name="getcuebannertext"></a>GetCueBannerText
 
 Gets the text that is displayed as the textual cue, or tip, in an edit control.
 ```
-GetCueBannerText (BYVAL pwszText AS WSTRING PTR, BYVAL cchText AS LONG) AS BOOLEAN
+FUNCTION GetCueBannerText (BYVAL pwszText AS WSTRING PTR, BYVAL cchText AS LONG) AS BOOLEAN
 ```
 | Parameter | Description |
 | --------- | ----------- |
 | *pwszText* | A pointer to a Unicode buffer that receives the text set as the textual cue. The caller is responsible for allocating the buffer. |
 | *cchText* | The size of the buffer pointed to by *pwszText* in characters, including the terminating NULL. |
 
-#### eturn value
+#### Return value
 
 Returns TRUE if successful or FALSE otherwise.
+
+---
 
 #### Remarks
 
 To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.
+
+### <a name="getfirstvisibleline"></a>GetFirstVisibleLine
+
+Gets the zero-based index of the uppermost visible line in a multiline edit control. You can send this message to either an edit control or a rich edit control.
+```
+FUNCTION GetFirstVisibleLine () AS LONG
+```
+
+#### Return value
+
+The return value is the zero-based index of the uppermost visible line in a multiline edit control.
+
+For single-line edit controls, the return value is the zero-based index of the first visible character.
+
+---
+
+#### Remarks
+
+The number of lines and the length of the lines in an edit control depend on the width of the control and the current Wordwrap setting.

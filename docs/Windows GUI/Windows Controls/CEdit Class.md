@@ -487,10 +487,30 @@ FUNCTION GetMargins () AS DWORD
 
 Returns the width of the left margin in the LOWORD, and the width of the right margin in the HIWORD.
 
-#### Remarks
+---
 
-Retrieves the total number of text lines, not just the number of lines that are currently visible.
+### <a name="getleftmargin"></a>GetLeftMargin
 
-If the Wordwrap feature is enabled, the number of lines can change when the dimensions of the editing window change.
+Gets the width of the left margin for an edit control.
+```
+FUNCTION GetLeftMargin () AS WORD
+```
+
+#### Return value
+
+Returns the width of the left margin.
+
+---
+
+### <a name="getrightmargin"></a>GetRigthMargin
+
+Gets the width of the right margin for an edit control.
+```
+FUNCTION GetRightMargin () AS WORD
+```
+
+#### Return value
+
+Returns the width of the right margin.
 
 ---

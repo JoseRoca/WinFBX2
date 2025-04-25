@@ -397,3 +397,25 @@ If the function succeeds, the application can access the contents of the edit co
 If your application cannot abide by the restrictions imposed by **EM_GETHANDLE**, use the **GetWindowTextLength** and **GetWindowText** functions to copy the contents of the edit control into an application-provided buffer.
 
 ---
+
+### <a name="getimestatus"></a>GetIMEStatus
+
+Gets a set of status flags that indicate how the edit control interacts with the Input Method Editor (IME).
+```
+FUNCTION GetIMEStatus (BYVAL nStatusType AS LONG) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *nStatusType* | The type of status to retrieve. This parameter can be the following value:<br>**EMSIS_COMPOSITIONSTRING**: Sets behavior for handling the composition string. |
+
+#### Return value
+
+Data specific to the type of status to retrieve. With the **EMSIS_COMPOSITIONSTRING** value for *nStatusType*, this return value is one or more of the following values.
+
+| Return code | Description |
+| ----------- | ----------- |
+| **EIMES_GETCOMPSTRATONCE** | If this flag is set, the edit control hooks the **WM_IME_COMPOSITION** message with fFlags set to **GCS_RESULTSTR** and returns the result string immediately. If this flag is not set, the edit control passes the **WM_IME_COMPOSITION** message to the default window procedure and processes the result string from the **WM_CHAR** message; this is the default behavior of the edit control. |
+| **EIMES_CANCELCOMPSTRINFOCUS** | If this flag is set, the edit control cancels the composition string when it receives the **WM_SETFOCUS** message. If this flag is not set, the edit control does not cancel the composition string; this is the default behavior of the edit control. |
+| **EIMES_COMPLETECOMPSTRKILLFOCUS** | If this flag is set, the edit control completes the composition string upon receiving the **WM_KILLFOCUS** message. If this flag is not set, the edit control does not complete the composition string; this is the default behavior of the edit control. |
+
+---

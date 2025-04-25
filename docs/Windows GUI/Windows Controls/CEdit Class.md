@@ -419,3 +419,23 @@ Data specific to the type of status to retrieve. With the **EMSIS_COMPOSITIONSTR
 | **EIMES_COMPLETECOMPSTRKILLFOCUS** | If this flag is set, the edit control completes the composition string upon receiving the **WM_KILLFOCUS** message. If this flag is not set, the edit control does not complete the composition string; this is the default behavior of the edit control. |
 
 ---
+
+### <a name="getlimittext"></a>GetLimitText
+
+Gets a set of status flags that indicate how the edit control interacts with the Input Method Editor (IME).
+```
+FUNCTION GetLimitText () AS DWORD
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *nStatusType* | The type of status to retrieve. This parameter can be the following value:<br>**EMSIS_COMPOSITIONSTRING**: Sets behavior for handling the composition string. |
+
+#### Return value
+
+The return value is the text limit.
+
+#### Remarks
+
+The text limit is the maximum amount of text, in characters, that the control can contain.
+
+---

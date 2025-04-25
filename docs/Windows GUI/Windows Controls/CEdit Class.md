@@ -81,9 +81,9 @@ CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
 ```
 | Parameter  | Description |
 | ---------- | ----------- |
-| *hCtl* | Handle of the button control. |
-| *hParent* | Handle of the parent window of the button control. |
-| *cID* | Control identifier of the button control. |
+| *hCtl* | Handle of the edit control. |
+| *hParent* | Handle of the parent window of the edit control. |
+| *cID* | Control identifier of the edit control. |
 | *pDlg* | Pointer to an instance of the `CDialog` class. |
 
 ---

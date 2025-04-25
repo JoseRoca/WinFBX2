@@ -456,3 +456,22 @@ The return value is the number of characters copied. The return value is zero if
 The copied line does not contain a terminating null character.
 
 ---
+
+### <a name="getlinecount"></a>GetLineCount
+
+Gets the number of lines in a multiline edit control.
+```
+FUNCTION GetLineCount () AS LONG
+```
+
+#### Return value
+
+The return value is an integer specifying the total number of text lines in the multiline edit control or rich edit control. If the control has no text, the return value is 1. The return value will never be less than 1.
+
+#### Remarks
+
+Retrieves the total number of text lines, not just the number of lines that are currently visible.
+
+If the Wordwrap feature is enabled, the number of lines can change when the dimensions of the editing window change.
+
+---

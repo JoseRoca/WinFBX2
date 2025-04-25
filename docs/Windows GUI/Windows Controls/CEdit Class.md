@@ -74,7 +74,6 @@ Creates instances of the `CEdit` class.
 
 ```
 CONSTRUCTOR (BYVAL hCtl AS HWND)
-CONSTRUCTOR (BYVAL hParent AS HWND, BYVAL hCtl AS HWND)
 CONSTRUCTOR (BYVAL hParent AS HWND, BYVAL cID AS LONG)
 CONSTRUCTOR (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
 CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
@@ -86,6 +85,24 @@ CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
 | *cID* | Control identifier of the edit control. |
 | *pDlg* | Pointer to an instance of the `CDialog` class. |
 
+#### Usage examples
+
+```
+DIM hCtl AS HWND = pDlg->ControlHandle(103)
+DIM pEdit AS CEdit = hCtl
+pEdit.SetText "Text string"
+```
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.SetText "Text string"
+```
+```
+DIM hCtl AS HWND = pDlg->ControlHandle(103)
+Cedit(hCtl).SetText("Text string")
+```
+```
+Cedit(pDlg, 103).SetText("Text string")
+```
 ---
 
 ### <a name="canundo"></a>CanUndo

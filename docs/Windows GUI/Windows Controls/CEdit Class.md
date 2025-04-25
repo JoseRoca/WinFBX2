@@ -192,3 +192,25 @@ pEdit.Copy
 CEdit(pDlg, 103).Copy
 ```
 ---
+
+### <a name="cut"></a>Cut
+
+Sends a **WM_CUT** message to an edit control to delete (cut) the current selection, if any, in the edit control and copy the deleted text to the clipboard in CF_TEXT format.
+```
+SUB Cut ()
+```
+#### Return value
+
+This message does not return a value.
+
+#### Usage examples
+
+Note: 103 is the identifier of the edit control. Change it to the real one.
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.Cut
+```
+```
+CEdit(pDlg, 103).Cut
+```
+---

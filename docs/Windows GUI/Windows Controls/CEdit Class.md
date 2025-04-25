@@ -87,6 +87,7 @@ CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
 
 #### Usage examples
 
+Note: 103 is the identifier of the edit control. Change it to the real one.
 ```
 DIM hCtl AS HWND = pDlg->ControlHandle(103)
 DIM pEdit AS CEdit = hCtl
@@ -115,4 +116,14 @@ FUNCTION CanUndo () AS BOOLEAN
 
 If there are actions in the control's undo queue, the return value is true. If the undo queue is empty, the return value is false.
 
+#### Udage examples
+
+Note: 103 is the identifier of the edit control. Change it to the real one.
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+DIM b AS BOOLEAN = pEdit.CanUndo
+```
+```
+CEdit(pDlg, 103).CanUndo
+```
 ---

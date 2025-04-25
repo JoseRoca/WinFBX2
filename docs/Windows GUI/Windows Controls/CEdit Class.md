@@ -170,3 +170,25 @@ pEdit.Clear
 CEdit(pDlg, 103).Clear
 ```
 ---
+
+### <a name="copy"></a>Copy
+
+Sends the **WM_COPY** message to an edit control to copy the current selection to the clipboard in CF_TEXT format.
+```
+SUB Copy ()
+```
+#### Return value
+
+This message does not return a value.
+
+#### Usage examples
+
+Note: 103 is the identifier of the edit control. Change it to the real one.
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.Copy
+```
+```
+CEdit(pDlg, 103).Copy
+```
+---

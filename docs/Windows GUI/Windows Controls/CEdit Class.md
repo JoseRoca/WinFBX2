@@ -337,3 +337,22 @@ pEdit.FmtLines(TRUE)
 ```
 CEdit(pDlg, 103).FmtLines(TRUE)
 ```
+
+### <a name="getcuebannertext"></a>GetCueBannerText
+
+Gets the text that is displayed as the textual cue, or tip, in an edit control.
+```
+GetCueBannerText (BYVAL pwszText AS WSTRING PTR, BYVAL cchText AS LONG) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pwszText* | A pointer to a Unicode buffer that receives the text set as the textual cue. The caller is responsible for allocating the buffer. |
+| *cchText* | The size of the buffer pointed to by *pwszText* in characters, including the terminating NULL. |
+
+#### eturn value
+
+Returns TRUE if successful or FALSE otherwise.
+
+#### Remarks
+
+To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.

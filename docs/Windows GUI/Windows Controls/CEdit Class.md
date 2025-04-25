@@ -435,3 +435,24 @@ The return value is the text limit.
 The text limit is the maximum amount of text, in characters, that the control can contain.
 
 ---
+
+
+### <a name="getline"></a>GetLine
+
+Copies a line of text from an edit control and places it in a specified buffer. You can send this message to either an edit control or a rich edit control.
+```
+FUNCTION GetLine (BYVAL which AS DWORD) AS DWSTRING
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *which* | The zero-based index of the line to retrieve from a multiline edit control. A value of zero specifies the topmost line. This parameter is ignored by a single-line edit control. |
+
+#### Return value
+
+The return value is the number of characters copied. The return value is zero if the line number specified by the *which* parameter is greater than the number of lines in the edit control.
+
+#### Remarks
+
+The copied line does not contain a terminating null character.
+
+---

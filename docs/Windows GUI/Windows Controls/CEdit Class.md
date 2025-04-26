@@ -854,3 +854,30 @@ Use the **ReplaceSel** mrthod to replace only a portion of the text in an edit c
 If there is no selection, the replacement text is inserted at the caret.
 
 ---
+
+### <a name="scroll"></a>Scroll
+
+Scrolls the text vertically in a multiline edit control. This message is equivalent to sending a **WM_VSCROLL** message to the edit control.
+```
+FUNCTION Scroll (BYVAL nAction AS LONG) AS DWORD
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *nAction* | The action the scroll bar is to take. This parameter can be one of the following values. |
+
+| Value | Meaning |
+| ----- | ------- |
+| SB_LINEDOWN | Scrolls down one line. |
+| SB_LINEUP | Scrolls up one line. |
+| SB_PAGEDOWN | Scrolls down one page. |
+| SB_PAGEUP | Scrolls up one page. |
+
+#### Return value
+
+If the message is successful, the HIWORD of the return value is TRUE, and the LOWORD is the number of lines that the command scrolls. The number returned may not be the same as the actual number of lines scrolled if the scrolling moves to the beginning or the end of the text. If the wParam parameter specifies an invalid value, the return value is FALSE.
+
+#### Remarks
+
+To scroll to a specific line or character position, use the **LineScroll** method. To scroll the caret into view, use the **ScrollCaret** method.
+
+---

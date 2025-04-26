@@ -616,7 +616,7 @@ FUNCTION GetText () AS DWSTRING
 
 The retrieved text.
 
-#### Usage example
+#### Usage examples
 
 ```
 DIM pEdit AS CEdit = CEdit(pDlg, 103)
@@ -637,13 +637,34 @@ FUNCTION GetTextLength () AS DWSTRING
 
 The length of the text in a edit control.
 
-#### Usage example
+#### Usage examples
 
 ```
 DIM pEdit AS CEdit = CEdit(pDlg, 103)
-DIM nLen AS LONG = pEdit.GettextLength
+DIM nLen AS LONG = pEdit.GetTextLength
 ```
 ```
-DIM nLen AS LNG = CEdit(pDlg, 103).GetTextLength
+DIM nLen AS LONG = CEdit(pDlg, 103).GetTextLength
+```
+---
+
+### <a name="getthumb"></a>GetThumb
+
+Gets the position of the scroll box (thumb) in the vertical scroll bar of a multiline edit control.
+```
+FUNCTION GetThumb () AS LONG
+```
+#### Return value
+
+The position of the scroll box.
+
+#### Usage examples
+
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+DIM nPos AS LONG = pEdit.GetThumb
+```
+```
+DIM nPos AS LONG = CEdit(pDlg, 103).GetThumb
 ```
 ---

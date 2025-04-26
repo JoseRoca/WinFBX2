@@ -787,3 +787,24 @@ The control does not scroll vertically past the last line of text in the edit co
 The **EM_LINESCROLL** message scrolls the text vertically or horizontally in a multiline edit control. The **EM_LINESCROLL** message can be used to scroll horizontally past the last character of any line.
 
 ---
+### <a name="paste"></a>Paste
+
+Copies the current content of the clipboard to the edit control at the current caret position. Data is inserted only if the clipboard contains data in CF_TEXT format.
+```
+SUB Paste ()
+```
+#### Return value
+
+This message does not return a value.
+
+#### Usage examples
+
+Note: 103 is the identifier of the edit control. Change it to the real one.
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.Paste
+```
+```
+CEdit(pDlg, 103).Paste
+```
+---

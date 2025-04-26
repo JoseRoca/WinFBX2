@@ -1142,3 +1142,26 @@ If the start is 0 and the end is -1, all the text in the edit control is selecte
 The control displays a flashing caret at the end position regardless of the relative values of start and end.
 
 ---
+
+### <a name="settabpos"></a>SetTabPos
+
+Sets the tab stops in a multiline edit control. When text is copied to the control, any tab character in the text causes space to be generated up to the next tab stop. This message is processed only by multiline edit controls.
+```
+FUNCTION SetTabStops (BYVAL cTabs AS LONG, BYVAL prgTabStops AS LONG) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *cTabs* | The number of tab stops contained in the array. If this parameter is zero, the *prgTabStops* parameter is ignored and default tab stops are set at every 32 dialog template units. If this parameter is 1, tab stops are set at every n dialog template units, where n is the distance pointed to by the *prgTabStops* parameter. If this parameter is greater than 1, *prgTabStops* is a pointer to an array of tab stops. |
+| *prgTabStops* | A pointer to an array of unsigned integers specifying the tab stops, in dialog template units. If the *cTabs* parameter is 1, this parameter is a pointer to an unsigned integer containing the distance between all tab stops, in dialog template units. |
+
+#### Return value
+
+This method does not return a value.
+
+#### Remarks
+
+This method does not automatically redraw the edit control window. If the application is changing the tab stops for text already in the edit control, it should call the **InvalidateRect** function to redraw the edit control window.
+
+The values specified in the array are in dialog template units, which are the device-independent units used in dialog box templates. To convert measurements from dialog template units to screen units (pixels), use the **MapDialogRect** function.
+
+---

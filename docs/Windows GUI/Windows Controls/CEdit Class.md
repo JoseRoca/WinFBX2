@@ -589,13 +589,13 @@ The starting character position of the current selection in an edit control.
 If there is no selection, the starting and ending values are both the position of the caret.
 
 ---
+
 ### <a name="getselend"></a>GetSelEnd
 
 Gets the ending character position of the current selection in an edit control.
 ```
 FUNCTION GetSelEnd () AS DWORD
 ```
-
 #### Return value
 
 The ending character position of the current selection in an edit control.
@@ -604,4 +604,46 @@ The ending character position of the current selection in an edit control.
 
 If there is no selection, the starting and ending values are both the position of the caret.
 
+---
+
+### <a name="gettext"></a>GetText
+
+Retrieves the text in a edit control.
+```
+FUNCTION GetText () AS DWSTRING
+```
+#### Return value
+
+The retrieved text.
+
+#### Usage example
+
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.Gettext
+```
+```
+CEdit(pDlg, 103).GetText
+```
+---
+
+### <a name="gettextlength"></a>GetTextLength
+
+Retrieves the length of the text in a edit control.
+```
+FUNCTION GetTextLength () AS DWSTRING
+```
+#### Return value
+
+The length of the text in a edit control.
+
+#### Usage example
+
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+DIM nLen AS LONG = pEdit.GettextLength
+```
+```
+DIM nLen AS LNG = CEdit(pDlg, 103).GetTextLength
+```
 ---

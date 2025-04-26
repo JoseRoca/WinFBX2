@@ -763,3 +763,27 @@ FUNCTION LineLength (BYVAL index AS LONG) AS LONG
 The length, in characters, of a line in an edit control.
 
 ---
+
+### <a name="linescroll"></a>LineScroll
+
+Scrolls the text in a multiline edit control.
+```
+FUNCTION LineScroll (BYVAL x AS LONG, BYVAL y AS LONG) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *x* | The number of characters to scroll horizontally. |
+| *y* | The number of characters to scroll vertically. |
+
+#### Return value
+
+If the message is sent to a multiline edit control, the return value is TRUE.
+
+If the message is sent to a single-line edit control, the return value is FALSE.
+
+#### Remarks
+The control does not scroll vertically past the last line of text in the edit control. If the current line plus the number of lines specified by the lParam parameter exceeds the total number of lines in the edit control, the value is adjusted so that the last line of the edit control is scrolled to the top of the edit-control window.
+
+The **EM_LINESCROLL** message scrolls the text vertically or horizontally in a multiline edit control. The **EM_LINESCROLL** message can be used to scroll horizontally past the last character of any line.
+
+---

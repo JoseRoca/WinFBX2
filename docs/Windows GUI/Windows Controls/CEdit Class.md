@@ -533,3 +533,22 @@ If an edit control is created with the **ES_PASSWORD** style, the default passwo
 Multiline edit controls do not support the password style or messages.
 
 ---
+
+### <a name="getrect"></a>GetRect
+
+Gets the password character that an edit control displays when the user enters text. 
+```
+SUB GetRect (BYREF rc AS RECT)
+FUNCTION GetRect () AS RECT
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *rc* | A pointer to a **RECT** structure that receives the formatting rectangle. |
+
+#### Return value
+
+Gets the formatting rectangle of an edit control. The formatting rectangle is the limiting rectangle into which the control draws the text. The limiting rectangle is independent of the size of the edit-control window.
+
+---
+
+

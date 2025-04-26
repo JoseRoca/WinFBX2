@@ -1165,3 +1165,23 @@ This method does not automatically redraw the edit control window. If the applic
 The values specified in the array are in dialog template units, which are the device-independent units used in dialog box templates. To convert measurements from dialog template units to screen units (pixels), use the **MapDialogRect** function.
 
 ---
+
+### <a name="settext"></a>SetText
+
+Changes the text of the edit control.
+```
+FUNCTION SetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pwszText* | The new text. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
+
+#### Remarks
+
+The **SetText** method does not expand tab characters (ASCII code 0x09). Tab characters are displayed as vertical bar (|) characters.
+
+---

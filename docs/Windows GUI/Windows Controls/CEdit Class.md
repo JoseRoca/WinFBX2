@@ -910,3 +910,26 @@ SUB ScrollCaret ()
 If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
 
 ---
+
+### <a name="sethandle"></a>SetHandle
+
+Sets the handle of the memory that will be used by a multiline edit control.
+```
+SUB SetHandle (BYVAL hLocal AS ..HLOCAL)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hLocal* | A handle to the memory buffer the edit control uses to store the currently displayed text instead of allocating its own memory. If necessary, the control reallocates this memory. |
+
+#### Return value
+
+This method does not return a value.
+
+#### Remarks
+Before an application sets a new memory handle, it should call the **GetHandle** method to retrieve the handle of the current memory buffer and should free that memory.
+
+An edit control automatically reallocates the given buffer whenever it needs additional space for text, or it removes enough text so that additional space is no longer needed.
+
+Calling **SetHandle** clears the undo buffer (the **Undo** method returns zero) and the internal modification flag (**GetModify** returns zero). The edit control window is redrawn.
+
+---

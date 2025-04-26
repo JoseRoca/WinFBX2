@@ -831,3 +831,26 @@ A returned coordinate can be a negative value if the specified character is not 
 If the character is a line delimiter, the returned coordinates indicate a point just beyond the last visible character in the line. If the specified index is greater than the index of the last character in the control, the control returns -1.
 
 ---
+
+### <a name="replacesel"></a>ReplaceSel
+
+Replaces the selected text in an edit control or a rich edit control with the specified text.
+```
+SUB ReplaceSel (BYVAL bCanBeUndone AS BOOLEAN, BYVAL pwszText AS WSTRING PTR)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *bCanBeUndone* | Specifies whether the replacement operation can be undone. If this is TRUE, the operation can be undone. If this is FALSE, the operation cannot be undone. |
+| *pwszText* | A pointer to a null-terminated string containing the replacement text. |
+
+#### Return value
+
+This message does not return a value.
+
+#### Remarks
+
+Use the **ReplaceSel** mrthod to replace only a portion of the text in an edit control. To replace all of the text, use the **SetText** method.
+
+If there is no selection, the replacement text is inserted at the caret.
+
+---

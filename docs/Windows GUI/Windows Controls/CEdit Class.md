@@ -90,8 +90,8 @@ CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
 
 Note: 103 is the identifier of the edit control. Change it to the real one.
 ```
-DIM hCtl AS HWND = pDlg->ControlHandle(103)
-DIM pEdit AS CEdit = hCtl
+DIM hEdit AS HWND = pDlg->ControlHandle(103)
+DIM pEdit AS CEdit = hEdit
 pEdit.SetText "Text string"
 ```
 ```
@@ -99,8 +99,8 @@ DIM pEdit AS CEdit = CEdit(pDlg, 103)
 pEdit.SetText "Text string"
 ```
 ```
-DIM hCtl AS HWND = pDlg->ControlHandle(103)
-Cedit(hCtl).SetText("Text string")
+DIM hEdit AS HWND = pDlg->ControlHandle(103)
+Cedit(hEdit).SetText("Text string")
 ```
 ```
 Cedit(pDlg, 103).SetText("Text string")

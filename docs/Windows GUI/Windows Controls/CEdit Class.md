@@ -787,6 +787,7 @@ The control does not scroll vertically past the last line of text in the edit co
 The **EM_LINESCROLL** message scrolls the text vertically or horizontally in a multiline edit control. The **EM_LINESCROLL** message can be used to scroll horizontally past the last character of any line.
 
 ---
+
 ### <a name="paste"></a>Paste
 
 Copies the current content of the clipboard to the edit control at the current caret position. Data is inserted only if the clipboard contains data in CF_TEXT format.
@@ -807,4 +808,26 @@ pEdit.Paste
 ```
 CEdit(pDlg, 103).Paste
 ```
+---
+
+### <a name="posfromchar"></a>PosFromChar
+
+Retrieves the client area coordinates of a specified character in an edit control.
+```
+FUNCTION PosFromChar (BYVAL index AS LONG) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *index* | The zero-based index of the character. |
+
+#### Return value
+
+The return value contains the client area coordinates of the character. The LOWORD contains the horizontal coordinate and the HIWORD contains the vertical coordinate.
+
+#### Remarks
+
+A returned coordinate can be a negative value if the specified character is not displayed in the edit control's client area. The coordinates are truncated to integer values.
+
+If the character is a line delimiter, the returned coordinates indicate a point just beyond the last visible character in the line. If the specified index is greater than the index of the last character in the control, the control returns -1.
+
 ---

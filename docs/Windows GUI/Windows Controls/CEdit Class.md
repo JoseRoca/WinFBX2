@@ -933,3 +933,26 @@ An edit control automatically reallocates the given buffer whenever it needs add
 Calling **SetHandle** clears the undo buffer (the **Undo** method returns zero) and the internal modification flag (**GetModify** returns zero). The edit control window is redrawn.
 
 ---
+
+### <a name="setimestatus"></a>SetIMEStatus
+
+Sets the status flags that determine how an edit control interacts with the Input Method Editor (IME).
+```
+SUB SetHandle (BYVAL hLocal AS ..HLOCAL)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *nStatusType* | The type of status to set. This parameter can be **EMSIS_COMPOSITIONSTRING**. |
+| *flags* | Data specific to the status type. If *nStatusType* is **EMSIS_COMPOSITIONSTRING**, this parameter can be one or more of the following values. |
+
+| Value | Meaning |
+| ----- | ------- |
+| **EIMES_GETCOMPSTRATONCE** | If this flag is set, the edit control hooks the **WM_IME_COMPOSITION** message with fFlags set to **GCS_RESULTSTR** and returns the result string immediately. If this flag is not set, the edit control passes the **WM_IME_COMPOSITION** message to the default window procedure and processes the result string from the **WM_CHAR** message; this is the default behavior of the edit control. |
+| **EIMES_CANCELCOMPSTRINFOCUS** | If this flag is set, the edit control cancels the composition string when it receives the **WM_SETFOCUS** message. If this flag is not set, the edit control does not cancel the composition string; this is the default behavior of the edit control. |
+| **EIMES_COMPLETECOMPSTRKILLFOCUS** | If this flag is set, the edit control completes the composition string upon receiving the **WM_KILLFOCUS** message. If this flag is not set, the edit control does not complete the composition string; this is the default behavior of the edit control. |
+
+#### Return value
+
+Returns the previous value of the *flags* parameter.
+
+---

@@ -730,3 +730,19 @@ FUNCTION LineFromChar (BYVAL index AS LONG) AS LONG
 The return value is the zero-based line number of the line containing the character index specified by *index*.
 
 ---
+
+### <a name="linelength"></a>LineLength
+
+Retrieves the length, in characters, of a line in an edit control.
+```
+FUNCTION LineLength (BYVAL index AS LONG) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *index* | The character index of a character in the line whose length is to be retrieved. If this parameter is greater than the number of characters in the control, the return value is zero.This parameter can be -1. In this case, the message returns the number of unselected characters on lines containing selected characters. For example, if the selection extended from the fourth character of one line through the eighth character from the end of the next line, the return value would be 10 (three characters on the first line and seven on the next). |
+
+#### Return value
+
+The length, in characters, of a line in an edit control.
+
+---

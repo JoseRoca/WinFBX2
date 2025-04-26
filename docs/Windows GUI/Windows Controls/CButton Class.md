@@ -225,6 +225,13 @@ Disables a button. Returns FALSE if the windows was previously disabled; otherwi
 ```
 FUNCTION Disable () AS BOOLEAN
 ```
+```
+DIM pButton AS CButton = CButton(pDlg, 105)
+pButton.Disable
+```
+```
+CButton(pDlg, 105).Disable
+```
 ---
 
 ## <a name="enable"></a>Enable
@@ -233,6 +240,13 @@ Enables a button. Returns FALSE if the windows was previously enabled; otherwise
 
 ```
 FUNCTION Enable () AS BOOLEAN
+```
+```
+DIM pButton AS CButton = CButton(pDlg, 105)
+pButton.Enable
+```
+```
+CButton(pDlg, 105).Enable
 ```
 ---
 

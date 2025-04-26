@@ -714,3 +714,19 @@ pEdit.LimitText(50)
 CEdit(pDlg, 103).LimitText(50)
 ```
 ---
+
+### <a name="linefromchar"></a>LineFromChar
+
+Gets the index of the line that contains the specified character index in a multiline edit control. A character index is the zero-based index of the character from the beginning of the edit control. 
+```
+FUNCTION LineFromChar (BYVAL index AS LONG) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *index* | The character index of the character contained in the line whose number is to be retrieved. If this parameter is -1, it retrieves either the line number of the current line (the line containing the caret) or, if there is a selection, the line number of the line containing the beginning of the selection. |
+
+#### Return value
+
+The return value is the zero-based line number of the line containing the character index specified by *index*.
+
+---

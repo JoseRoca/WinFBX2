@@ -39,7 +39,7 @@
 | [HideBalloonTip](#hideballoontip) | Hides any balloon tip associated with an edit control. |
 | [LimitText](#limittext) | Sets the text limit of an edit control. |
 | [LineFromChar](#linefromchar) | Gets the index of the line that contains the specified character index in a multiline edit control. |
-| [LineIKndex](#lineindex) | Gets the character index of the first character of a specified line in a multiline edit control. |
+| [LineIndex](#lineindex) | Gets the character index of the first character of a specified line in a multiline edit control. |
 | [LineLength](#linelength) | Retrieves the length, in characters, of a line in an edit control. |
 | [LineScroll](#linescoll) | Scrolls the text in a multiline edit control. |
 | [Paste](#paste) | Copies the current content of the clipboard to the edit control at the current caretposition. Data is inserted only if the clipboard contains data in CF_TEXT format. |

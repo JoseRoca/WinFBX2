@@ -102,6 +102,14 @@ Changes the button's state to checked.
 ```
 SUB Check ()
 ```
+#### Usage examples
+```
+DIM pButton AS CButton = CButton(pDlg, 105)
+pButton.Check
+```
+```
+CButton(pDlg, 105).Check
+```
 ---
 
 ## <a name="checkdlgbutton"></a>CheckDlgButton

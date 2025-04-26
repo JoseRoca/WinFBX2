@@ -551,4 +551,24 @@ Gets the formatting rectangle of an edit control. The formatting rectangle is th
 
 ---
 
+### <a name="GetSel"></a>GetSel
 
+Gets the starting and ending character positions (in characters) of the current selection in an edit control.
+```
+FUNCTION GetSel (BYREF dwStartPos AS DWORD, BYREF dwEndPos AS DWORD) AS LONG
+FUNCTION GetSel () AS POINTL
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *dwStartPos* | A pointer to a DWORD value that receives the starting position of the selection. This parameter can be NULL. |
+| *dwEndPos* | A pointer to a DWORD value that receives the position of the first unselected character after the end of the selection. This parameter can be NULL. |
+
+#### Return value
+
+The starting and ending character positions (in characters) of the current selection in an edit control.
+
+#### Remarks
+
+If there is no selection, the starting and ending values are both the position of the caret.
+
+---

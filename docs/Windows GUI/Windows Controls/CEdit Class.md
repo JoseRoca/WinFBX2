@@ -694,3 +694,23 @@ If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
 To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.
 
 ---
+
+### <a name="limittext"></a>LimitText
+
+Sets the text limit of an edit control. The text limit is the maximum amount of text, in characters, that the user can type into the edit control.
+```
+SUB LimitText (BYVAL chMax AS DWORD)
+```
+#### Return value
+
+This method does not return a value.
+
+#### Usage examples
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.LimitText(50)
+```
+```
+CEdit(pDlg, 103).LimitText(50)
+```
+---

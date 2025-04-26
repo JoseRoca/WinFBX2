@@ -39,6 +39,7 @@
 | [HideBalloonTip](#hideballoontip) | Hides any balloon tip associated with an edit control. |
 | [LimitText](#limittext) | Sets the text limit of an edit control. |
 | [LineFromChar](#linefromchar) | Gets the index of the line that contains the specified character index in a multiline edit control. |
+| [LineIKndex](#lineindex) | Gets the character index of the first character of a specified line in a multiline edit control. |
 | [LineLength](#linelength) | Retrieves the length, in characters, of a line in an edit control. |
 | [LineScroll](#linescoll) | Scrolls the text in a multiline edit control. |
 | [Paste](#paste) | Copies the current content of the clipboard to the edit control at the current caretposition. Data is inserted only if the clipboard contains data in CF_TEXT format. |
@@ -728,6 +729,22 @@ FUNCTION LineFromChar (BYVAL index AS LONG) AS LONG
 #### Return value
 
 The return value is the zero-based line number of the line containing the character index specified by *index*.
+
+---
+
+### <a name="lineindex"></a>LineIndex
+
+Gets the character index of the first character of a specified line in a multiline edit control. A character index is the zero-based index of the character from the beginning of the edit control.
+```
+FUNCTION LineIndex (BYVAL nLine AS LONG) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *nLine* | The zero-based line number. A value of -1 specifies the current line number (the line that contains the caret). |
+
+#### Return value
+
+The return value is the character index of the line specified in the *nLine* parameter, or it is -1 if the specified line number is greater than the number of lines in the edit control.
 
 ---
 

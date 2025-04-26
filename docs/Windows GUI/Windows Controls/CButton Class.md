@@ -77,8 +77,8 @@ CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
 Note: 105 is the identifier of the edit control. Change it to the real one.
 
 ```
-DIM hCtl AS HWND = pDlg->ControlHandle(105)
-DIM pButton AS CButton = hCtl
+DIM hButton AS HWND = pDlg->ControlHandle(105)
+DIM pButton AS CButton = hButton
 pButton.SetText("Button")
 ```
 ```
@@ -86,8 +86,8 @@ DIM pButton AS CButton = CButton(pDlg, 105)
 pButton.SetText("Button")
 ```
 ```
-DIM hCtl AS HWND = pDlg->ControlHandle(105)
-Cedit(hCtl).SetText("Button")
+DIM hButton AS HWND = pDlg->ControlHandle(105)
+Cedit(hButton).SetText("Button")
 ```
 ```
 CButton(pDlg, 105).SetText("Button")
@@ -165,7 +165,6 @@ Simulates the user clicking a button. This message causes the button to receive 
 ```
 SUb Click ()
 ```
-
 #### Return value
 
 This message does not return a value.
@@ -174,6 +173,14 @@ This message does not return a value.
 
 If the button is in a dialog box and the dialog box is not active, the **BM_CLICK** message might fail. To ensure success in this situation, call the **SetActiveWindow** function to activate the dialog box before sending the BM_CLICK message to the button.
 
+#### Usage examples
+```
+DIM pButton AS CButton = CButton(pDlg, 105)
+pButton.Click
+```
+```
+CButton(pDlg, 105).Click
+```
 ---
 
 ## <a name="deletebitmap"></a>DeleteBitmap

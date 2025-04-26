@@ -92,6 +92,13 @@ Cedit(hButton).SetText("Button")
 ```
 CButton(pDlg, 105).SetText("Button")
 ```
+```
+DIM pButton AS CButton = GetDlgItem(hDlg, 105)
+pButton.SetText("Button")
+```
+```
+CButton(pDlg, 105).Disable
+```
 
 ---
 

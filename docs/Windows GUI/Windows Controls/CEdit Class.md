@@ -1225,3 +1225,34 @@ If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
 #### Remarks
 
 To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.
+
+---
+
+### <a name="undo"></a>Undo
+
+Undoes the last edit control operation in the control's undo queue.
+```
+SUB Undo ()
+```
+#### Return value
+
+For a single-line edit control, the return value is always TRUE.
+
+For a multiline edit control, the return value is TRUE if the undo operation is successful, or FALSE if the undo operation fails.
+
+#### Usage examples
+
+Note: 103 is the identifier of the edit control. Change it to the real one.
+```
+DIM pEdit AS CEdit = CEdit(pDlg, 103)
+pEdit.Undo
+```
+```
+CEdit(pDlg, 103).Undo
+```
+#### Remarks
+
+An undo operation can also be undone. For example, you can restore deleted text with the first **Undo** message, and remove the text again with a second **Undo** message as long as there is no intervening edit operation.
+
+---
+

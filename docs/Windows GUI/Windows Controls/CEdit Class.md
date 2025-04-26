@@ -51,7 +51,7 @@
 | [SetCueBannerTextFocused](#setcuebannertextfocused) | Sets the text that is displayed as the textual cue, or tip, for an edit control. |
 | [SetHandle](#sethandle) | Sets the handle of the memory that will be used by a multiline edit control. |
 | [SetIMEStatus](#setimestatus) | Sets the status flags that determine how an edit control interacts with the Input Method Editor (IME). |
-| [SetLimitText](#setlimittext) | Sets the text limit of an edit control. |
+| [SetLimitText](#limittext) | Sets the text limit of an edit control. |
 | [SetMargins](#setmargins) | Sets the widths of the left and right margins for an edit control. |
 | [SetLeftMargin](#setleftmargin) | Sets the width of the left margin for an edit control. |
 | [SetRightMargin](#setrightmargin) | Sets the width of the left margin for an edit control. |
@@ -696,7 +696,7 @@ To use this method, you must provide a manifest specifying Comclt32.dll version 
 
 ---
 
-### <a name="limittext"></a>LimitText
+### <a name="limittext"></a>LimitText / SetLimitText
 
 Sets the text limit of an edit control. The text limit is the maximum amount of text, in characters, that the user can type into the edit control.
 ```
@@ -956,3 +956,21 @@ SUB SetHandle (BYVAL hLocal AS ..HLOCAL)
 Returns the previous value of the *flags* parameter.
 
 ---
+
+### <a name="SetMargins"></a>SetMargins
+
+Sets the widths of the left and right margins for an edit control. The message redraws the control to reflect the new margins.
+```
+SUB SetMargins (BYVAL nMargins AS LONG, BYVAL nWidth AS LONG)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *nMargins* | One or more of the following values:<br>**EC_LEFTMARGIN**: Sets the left margin.<br>**EC_RIGHTMARGIN**: Sets the right margin. |
+| *nWidth* | The low-order word specifies the new width of the left margin, in pixels. The high-order word specifies the new width of the right margin, in pixels. |
+
+#### Return value
+
+This method does not return a value.
+
+---
+

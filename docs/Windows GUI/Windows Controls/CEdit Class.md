@@ -668,3 +668,29 @@ DIM nPos AS LONG = pEdit.GetThumb
 DIM nPos AS LONG = CEdit(pDlg, 103).GetThumb
 ```
 ---
+
+### <a name="getwordbreakproc"></a>GetWordBreakProc
+
+Gets the address of the current Wordwrap function.
+```
+FUNCTION GetWordBreakProc () AS LONG_PTR
+```
+#### Return value
+
+The address of the current Wordwrap function.
+
+---
+
+### <a name="hideballoontip"></a>HideBalloonTip
+
+Hides any balloon tip associated with an edit control.
+```
+FUNCTION HideBalloonTip () AS BOOLEAN
+```
+#### Return value
+
+If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
+
+To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.
+
+---

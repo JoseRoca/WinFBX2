@@ -1115,3 +1115,30 @@ SUB SetRectNoPaint (BYREF rc AS RECT)
 This method does not return a value.
 
 ---
+
+### <a name="setsel"></a>SetSel
+
+Selects a range of characters in an edit control. 
+```
+SUB SetSel (BYVAL nStart AS LONG, BYVAL nEnd AS LONG)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *nStart* | The starting character position of the selection. |
+| *nEnd* | The ending character position of the selection. |
+
+#### Return value
+
+This method does not return a value.
+
+#### Remarks
+
+The start value can be greater than the end value. The lower of the two values specifies the character position of the first character in the selection. The higher value specifies the position of the first character beyond the selection.
+
+The start value is the anchor point of the selection, and the end value is the active end. If the user uses the SHIFT key to adjust the size of the selection, the active end can move but the anchor point remains the same.
+
+If the start is 0 and the end is -1, all the text in the edit control is selected. If the start is -1, any current selection is deselected.
+
+The control displays a flashing caret at the end position regardless of the relative values of start and end.
+
+---

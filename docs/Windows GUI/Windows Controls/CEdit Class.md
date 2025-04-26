@@ -514,3 +514,22 @@ FUNCTION GetRightMargin () AS WORD
 Returns the width of the right margin.
 
 ---
+
+### <a name="getpasswordchar"></a>GetPasswordChar
+
+Gets the password character that an edit control displays when the user enters text. 
+```
+FUNCTION GetPasswordChar () AS LONG
+```
+
+#### Return value
+
+The return value specifies the character to be displayed in place of any characters typed by the user. If the return value is NULL, there is no password character, and the control displays the characters typed by the user.
+
+####Remarks
+
+If an edit control is created with the **ES_PASSWORD** style, the default password character is set to an asterisk (*). If an edit control is created without the **ES_PASSWORD** style, there is no password character. To change the password character, send the **EM_SETPASSWORDCHAR** message.
+
+Multiline edit controls do not support the password style or messages.
+
+---

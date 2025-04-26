@@ -1185,3 +1185,25 @@ If the function succeeds, the return value is TRUE. If the function fails, the r
 The **SetText** method does not expand tab characters (ASCII code 0x09). Tab characters are displayed as vertical bar (|) characters.
 
 ---
+
+### <a name="setwordbreakproc"></a>SetWordBreakProc
+
+Replaces an edit control's default Wordwrap function with an application-defined Wordwrap function. You can send this message to either an edit control or a rich edit control.
+```
+SUB SetWordBreakProc (BYVAL pfn AS LONG_PTR)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pfn* | The address of the application-defined Wordwrap function. For more information about breaking lines, see the description of the [EditWordBreakProc](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-editwordbreakprocw) callback function. |
+
+#### Return value
+
+This method does not return a value.
+
+#### Remarks
+
+A Wordwrap function scans a text buffer that contains text to be sent to the screen, looking for the first word that does not fit on the current screen line. The Wordwrap function places this word at the beginning of the next line on the screen.
+
+A Wordwrap function defines the point at which the system should break a line of text for multiline edit controls, usually at a space character that separates two words. Either a multiline or a single-line edit control might call this function when the user presses arrow keys in combination with the CTRL key to move the caret to the next word or previous word. The default Wordwrap function breaks a line of text at a space character. The application-defined function may define the Wordwrap to occur at a hyphen or a character other than the space character.
+
+---

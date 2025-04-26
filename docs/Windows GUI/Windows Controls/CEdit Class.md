@@ -152,13 +152,13 @@ The **LOWORD** specifies the zero-based index of the character nearest the speci
 
 ### <a name="clear"></a>Clear
 
-Sends a **WM_CLEAR** message to an edit control to delete (clear) the current selection, if any, from the edit control.
+Sends a message to an edit control to delete (clear) the current selection, if any, from the edit control.
 ```
 SUB Clear ()
 ```
 #### Return value
 
-This message does not return a value.
+This method does not return a value.
 
 #### Usage examples
 
@@ -174,13 +174,13 @@ CEdit(pDlg, 103).Clear
 
 ### <a name="copy"></a>Copy
 
-Sends the **WM_COPY** message to an edit control to copy the current selection to the clipboard in CF_TEXT format.
+Sends a message to an edit control to copy the current selection to the clipboard in CF_TEXT format.
 ```
 SUB Copy ()
 ```
 #### Return value
 
-This message does not return a value.
+This method does not return a value.
 
 #### Usage examples
 
@@ -196,13 +196,13 @@ CEdit(pDlg, 103).Copy
 
 ### <a name="cut"></a>Cut
 
-Sends a **WM_CUT** message to an edit control to delete (cut) the current selection, if any, in the edit control and copy the deleted text to the clipboard in CF_TEXT format.
+Sends a message to an edit control to delete (cut) the current selection, if any, in the edit control and copy the deleted text to the clipboard in CF_TEXT format.
 ```
 SUB Cut ()
 ```
 #### Return value
 
-This message does not return a value.
+This method does not return a value.
 
 #### Usage examples
 
@@ -323,7 +323,7 @@ The return value is identical to the *AddEolFlag* parameter.
 
 #### Remarks
 
-This message affects only the buffer returned by the **EM_GETHANDLE** message and the text returned by the **WM_GETTEXT** message. It has no effect on the display of the text within the edit control.
+This message affects only the buffer returned by the **GetHandle** method and the text returned by the **WM_GETTEXT** message. It has no effect on the display of the text within the edit control.
 
 The **EM_FMTLINES** message does not affect a line that ends with a hard line break. A hard line break consists of one carriage return and a line feed.
 
@@ -358,13 +358,13 @@ Returns TRUE if successful or FALSE otherwise.
 
 #### Remarks
 
-To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.
+To use this method, you must provide a manifest specifying Comclt32.dll version 6.0.
 
 ---
 
 ### <a name="getfirstvisibleline"></a>GetFirstVisibleLine
 
-Gets the zero-based index of the uppermost visible line in a multiline edit control. You can send this message to either an edit control or a rich edit control.
+Gets the zero-based index of the uppermost visible line in a multiline edit control.
 ```
 FUNCTION GetFirstVisibleLine () AS LONG
 ```
@@ -529,7 +529,7 @@ The return value specifies the character to be displayed in place of any charact
 
 ####Remarks
 
-If an edit control is created with the **ES_PASSWORD** style, the default password character is set to an asterisk (*). If an edit control is created without the **ES_PASSWORD** style, there is no password character. To change the password character, send the **EM_SETPASSWORDCHAR** message.
+If an edit control is created with the **ES_PASSWORD** style, the default password character is set to an asterisk (*). If an edit control is created without the **ES_PASSWORD** style, there is no password character. To change the password character, send the **SetPasswordChar** method.
 
 Multiline edit controls do not support the password style or messages.
 
@@ -690,9 +690,9 @@ FUNCTION HideBalloonTip () AS BOOLEAN
 ```
 #### Return value
 
-If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
+If the method succeeds, it returns TRUE. Otherwise it returns FALSE.
 
-To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.
+To use this method, you must provide a manifest specifying Comclt32.dll version 6.0.
 
 ---
 
@@ -756,7 +756,7 @@ FUNCTION LineLength (BYVAL index AS LONG) AS LONG
 ```
 | Parameter | Description |
 | --------- | ----------- |
-| *index* | The character index of a character in the line whose length is to be retrieved. If this parameter is greater than the number of characters in the control, the return value is zero.This parameter can be -1. In this case, the message returns the number of unselected characters on lines containing selected characters. For example, if the selection extended from the fourth character of one line through the eighth character from the end of the next line, the return value would be 10 (three characters on the first line and seven on the next). |
+| *index* | The character index of a character in the line whose length is to be retrieved. If this parameter is greater than the number of characters in the control, the return value is zero.This parameter can be -1. In this case, the method returns the number of unselected characters on lines containing selected characters. For example, if the selection extended from the fourth character of one line through the eighth character from the end of the next line, the return value would be 10 (three characters on the first line and seven on the next). |
 
 #### Return value
 
@@ -784,7 +784,7 @@ If the message is sent to a single-line edit control, the return value is FALSE.
 #### Remarks
 The control does not scroll vertically past the last line of text in the edit control. If the current line plus the number of lines specified by the lParam parameter exceeds the total number of lines in the edit control, the value is adjusted so that the last line of the edit control is scrolled to the top of the edit-control window.
 
-The **EM_LINESCROLL** message scrolls the text vertically or horizontally in a multiline edit control. The **EM_LINESCROLL** message can be used to scroll horizontally past the last character of any line.
+The **LineScroll** method scrolls the text vertically or horizontally in a multiline edit control. It can be used to scroll horizontally past the last character of any line.
 
 ---
 
@@ -796,7 +796,7 @@ SUB Paste ()
 ```
 #### Return value
 
-This message does not return a value.
+This method does not return a value.
 
 #### Usage examples
 
@@ -845,7 +845,7 @@ SUB ReplaceSel (BYVAL bCanBeUndone AS BOOLEAN, BYVAL pwszText AS WSTRING PTR)
 
 #### Return value
 
-This message does not return a value.
+This method does not return a value.
 
 #### Remarks
 
@@ -874,10 +874,22 @@ FUNCTION Scroll (BYVAL nAction AS LONG) AS DWORD
 
 #### Return value
 
-If the message is successful, the HIWORD of the return value is TRUE, and the LOWORD is the number of lines that the command scrolls. The number returned may not be the same as the actual number of lines scrolled if the scrolling moves to the beginning or the end of the text. If the wParam parameter specifies an invalid value, the return value is FALSE.
+If the method is successful, the HIWORD of the return value is TRUE, and the LOWORD is the number of lines that the command scrolls. The number returned may not be the same as the actual number of lines scrolled if the scrolling moves to the beginning or the end of the text. If the wParam parameter specifies an invalid value, the return value is FALSE.
 
 #### Remarks
 
 To scroll to a specific line or character position, use the **LineScroll** method. To scroll the caret into view, use the **ScrollCaret** method.
+
+---
+
+### <a name="scrollcaret"></a>ScrollCaret
+
+Scrolls the caret into view in an edit control.
+```
+SUB ScrollCaret ()
+```
+#### Return value
+
+This method does notreturn a value.
 
 ---

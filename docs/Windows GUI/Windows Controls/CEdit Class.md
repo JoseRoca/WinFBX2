@@ -1067,6 +1067,7 @@ When an edit control has the **ES_READONLY** style, the user cannot change the t
 To determine whether an edit control has the **ES_READONLY** style, use the **GetWindowLong** function with the **GWL_STYLE** flag.
 
 ---
+
 ### <a name="setrect"></a>SetRect
 
 Sets the formatting rectangle of a multiline edit control. The formatting rectangle is the limiting rectangle into which the control draws the text. The limiting rectangle is independent of the size of the edit control window. This message is processed only by multiline edit controls.
@@ -1092,5 +1093,25 @@ When an edit control is first created, the formatting rectangle is set to a defa
 If the edit control does not have a horizontal scroll bar, and the formatting rectangle is set to be larger than the edit control window, lines of text exceeding the width of the edit control window (but smaller than the width of the formatting rectangle) are clipped instead of wrapped.
 
 If the edit control contains a border, the formatting rectangle is reduced by the size of the border. If you are adjusting the rectangle returned by an **GetRect** method, you must remove the size of the border before using the rectangle with the **SetRect** method.
+
+---
+
+### <a name="setrectnopaint"></a>SetRectNoPaint
+
+Sets the formatting rectangle of a multiline edit control. The **SetRectNoPain** method is identical to the **SetRect** message, except that **SetRectNoPaint** does not redraw the edit control window.
+
+The formatting rectangle is the limiting rectangle into which the control draws the text. The limiting rectangle is independent of the size of the edit control window.
+
+This message is processed only by multiline edit controls.
+```
+SUB SetRectNoPaint (BYREF rc AS RECT)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *rc* | A pointer to a **RECT** structure that specifies the new dimensions of the rectangle. If this parameter is NULL, the formatting rectangle is set to its default values. |
+
+#### Return value
+
+This method does not return a value.
 
 ---

@@ -978,7 +978,7 @@ This method does not return a value.
 
 Sets the width of the left margin for an edit control. The message redraws the control to reflect the new margins.
 ```
-SetLeftMargin (BYVAL nWidth AS WORD)
+SUB SetLeftMargin (BYVAL nWidth AS WORD)
 ```
 | Parameter | Description |
 | --------- | ----------- |
@@ -994,11 +994,27 @@ This method does not return a value.
 
 Sets the width of the right margin for an edit control. The message redraws the control to reflect the new margins.
 ```
-SetRightMargin (BYVAL nWidth AS WORD)
+SUB SetRightMargin (BYVAL nWidth AS WORD)
 ```
 | Parameter | Description |
 | --------- | ----------- |
 | *nWidth* | The new width of the right margin, in pixels. |
+
+#### Return value
+
+This method does not return a value.
+
+---
+
+### <a name="setmodify"></a>SetModify
+
+Sets or clears the modification flag for an edit control. The modification flag indicates whether the text within the edit control has been modified
+```
+SUB SetModify (BYVAL bModify AS BOOLEAN)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *bModify* | The new value for the modification flag. A value of TRUE indicates the text has been modified, and a value of FALSE indicates it has not been modified. |
 
 #### Return value
 

@@ -974,3 +974,34 @@ This method does not return a value.
 
 ---
 
+### <a name="setleftmargin"></a>SetLeftMargin
+
+Sets the width of the left margin for an edit control. The message redraws the control to reflect the new margins.
+```
+SetLeftMargin (BYVAL nWidth AS WORD)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *nWidth* | The new width of the left margin, in pixels. |
+
+#### Return value
+
+This method does not return a value.
+
+---
+
+### <a name="setrightmargin"></a>SetRightMargin
+
+Sets the width of the right margin for an edit control. The message redraws the control to reflect the new margins.
+```
+SetRightMargin (BYVAL nWidth AS WORD)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *nWidth* | The new width of the right margin, in pixels. |
+
+#### Return value
+
+This method does not return a value.
+
+---

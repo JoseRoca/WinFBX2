@@ -1008,7 +1008,7 @@ This method does not return a value.
 
 ### <a name="setmodify"></a>SetModify
 
-Sets or clears the modification flag for an edit control. The modification flag indicates whether the text within the edit control has been modified
+Sets or clears the modification flag for an edit control. The modification flag indicates whether the text within the edit control has been modified.
 ```
 SUB SetModify (BYVAL bModify AS BOOLEAN)
 ```
@@ -1019,5 +1019,29 @@ SUB SetModify (BYVAL bModify AS BOOLEAN)
 #### Return value
 
 This method does not return a value.
+
+---
+
+### <a name="setpasswordchar"></a>SetPasswordChar
+
+Sets or removes the password character for an edit control. When a password character is set, that character is displayed in place of the characters typed by the user.
+```
+SUB SetPasswordChar (BYVAL dwchar AS DWORD)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *dwchar* | The character to be displayed in place of the characters typed by the user. If this parameter is zero, the control removes the current password character and displays the characters typed by the user. |
+
+#### Return value
+
+This method does not return a value.
+
+#### Remarks
+
+When an edit control receives the **EM_SETPASSWORDCHAR** message, the control redraws all visible characters using the character specified by the *dwchar* parameter. If *dwchar* is zero, the control redraws all visible characters using the characters typed by the user.
+
+If an edit control is created with the **ES_PASSWORD** style, the default password character is set to an asterisk (*). If an edit control is created without the **ES_PASSWORD** style, there is no password character. The **ES_PASSWORD** style is removed if the **SetPasswordChar** method is called with the *dwchar* parameter set to zero.
+
+Multiline edit controls do not support the password style or messages.
 
 ---

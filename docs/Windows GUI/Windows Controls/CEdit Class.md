@@ -551,7 +551,7 @@ Gets the formatting rectangle of an edit control. The formatting rectangle is th
 
 ---
 
-### <a name="GetSel"></a>GetSel
+### <a name="getsel"></a>GetSel
 
 Gets the starting and ending character positions (in characters) of the current selection in an edit control.
 ```
@@ -566,6 +566,39 @@ FUNCTION GetSel () AS POINTL
 #### Return value
 
 The starting and ending character positions (in characters) of the current selection in an edit control.
+
+#### Remarks
+
+If there is no selection, the starting and ending values are both the position of the caret.
+
+---
+
+### <a name="getselstart"></a>GetSelStart
+
+Gets the starting character position of the current selection in an edit control.
+```
+FUNCTION GetSelStart () AS DWORD
+```
+
+#### Return value
+
+The starting character position of the current selection in an edit control.
+
+#### Remarks
+
+If there is no selection, the starting and ending values are both the position of the caret.
+
+---
+### <a name="getselend"></a>GetSelEnd
+
+Gets the ending character position of the current selection in an edit control.
+```
+FUNCTION GetSelEnd () AS DWORD
+```
+
+#### Return value
+
+The ending character position of the current selection in an edit control.
 
 #### Remarks
 

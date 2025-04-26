@@ -1045,3 +1045,23 @@ If an edit control is created with the **ES_PASSWORD** style, the default passwo
 Multiline edit controls do not support the password style or messages.
 
 ---
+
+### <a name="setreadonly"></a>SetReadOnly
+
+Sets or removes the read-only style (**ES_READONLY**) of an edit control.
+```
+FUNCTION SetReadOnly (BYVAL bReadOnly AS BOOLEAN) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *bReadOnly* | Specifies whether to set or remove the **ES_READONLY** style. A value of TRUE sets the **ES_READONLY** style; a value of FALSE removes the **ES_READONLY** style. |
+
+#### Return value
+
+If the operation succeeds, the return value is TRUE. If the operation fails, the return value is FALSE.
+
+#### Remarks
+
+When an edit control has the **ES_READONLY** style, the user cannot change the text within the edit control.
+
+To determine whether an edit control has the **ES_READONLY** style, use the **GetWindowLong** function with the **GWL_STYLE** flag.

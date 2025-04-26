@@ -1207,3 +1207,21 @@ A Wordwrap function scans a text buffer that contains text to be sent to the scr
 A Wordwrap function defines the point at which the system should break a line of text for multiline edit controls, usually at a space character that separates two words. Either a multiline or a single-line edit control might call this function when the user presses arrow keys in combination with the CTRL key to move the caret to the next word or previous word. The default Wordwrap function breaks a line of text at a space character. The application-defined function may define the Wordwrap to occur at a hyphen or a character other than the space character.
 
 ---
+
+### <a name="showballoontip"></a>ShowBalloonTip
+
+Displays a balloon tip associated with an edit control.
+```
+FUNCTION ShowBalloonTip (BYREF peditballoontip AS EDITBALLOONTIP) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *peditballoontip* | A pointer to an **EDITBALLOONTIP** structure that contains information about the balloon tip to display. |
+
+#### Return value
+
+If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
+
+#### Remarks
+
+To use this message, you must provide a manifest specifying Comclt32.dll version 6.0.

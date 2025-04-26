@@ -100,10 +100,17 @@ pEdit.SetText "Text string"
 ```
 ```
 DIM hEdit AS HWND = pDlg->ControlHandle(103)
-Cedit(hEdit).SetText("Text string")
+CEdit(hEdit).SetText("Text string")
 ```
 ```
-Cedit(pDlg, 103).SetText("Text string")
+CEdit(pDlg, 103).SetText("Text string")
+```
+```
+DIM pEdit AS CEdit = GetDlgItem(hDlg, 103)
+pEdit.SetText("New string")
+```
+```
+CEdit(GetDlgItem(hDlg, 103)).SetText("Test string")
 ```
 ---
 

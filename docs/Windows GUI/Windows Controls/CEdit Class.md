@@ -890,6 +890,23 @@ SUB ScrollCaret ()
 ```
 #### Return value
 
-This method does notreturn a value.
+This method does not return a value.
+
+---
+
+### <a name="setcuebannertext"></a>SetCueBannerText
+
+Sets the text that is displayed as the textual cue, or tip, for an edit control.
+```
+SUB ScrollCaret ()
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pwszText* | A pointer to a Unicode string that contains the text to display as the textual cue. |
+| *bDrawFocused* | TRUE if the cue banner should show even when the edit control has focus; otherwise, FALSE. FALSE is the default behavior—the cue banner disappears when the user clicks in the control. |
+
+#### Return value
+
+If the message succeeds, it returns TRUE. Otherwise it returns FALSE.
 
 ---

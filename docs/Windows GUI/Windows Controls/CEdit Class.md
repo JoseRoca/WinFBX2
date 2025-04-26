@@ -1065,3 +1065,32 @@ If the operation succeeds, the return value is TRUE. If the operation fails, the
 When an edit control has the **ES_READONLY** style, the user cannot change the text within the edit control.
 
 To determine whether an edit control has the **ES_READONLY** style, use the **GetWindowLong** function with the **GWL_STYLE** flag.
+
+---
+### <a name="setrect"></a>SetRect
+
+Sets the formatting rectangle of a multiline edit control. The formatting rectangle is the limiting rectangle into which the control draws the text. The limiting rectangle is independent of the size of the edit control window. This message is processed only by multiline edit controls.
+```
+SUB SetRect (BYREF rc AS RECT)
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *rc* | A pointer to a **RECT** structure that specifies the new dimensions of the rectangle. If this parameter is NULL, the formatting rectangle is set to its default values. |
+
+#### Return value
+
+This method does not return a value.
+
+#### Remarks
+
+Setting *rc* to NULL has no effect if a touch device is installed, or if **SetRect** is called from a thread that has a hook installed (see **SetWindowsHookEx**). In these cases, *rc* should contain a valid pointer to a **RECT** structure.
+
+The **SetRect** method causes the text of the edit control to be redrawn. To change the size of the formatting rectangle without redrawing the text, use the **SetRectNoPaint** method.
+
+When an edit control is first created, the formatting rectangle is set to a default size. You can use the **SetRect** method to make the formatting rectangle larger or smaller than the edit control window.
+
+If the edit control does not have a horizontal scroll bar, and the formatting rectangle is set to be larger than the edit control window, lines of text exceeding the width of the edit control window (but smaller than the width of the formatting rectangle) are clipped instead of wrapped.
+
+If the edit control contains a border, the formatting rectangle is reduced by the size of the border. If you are adjusting the rectangle returned by an **GetRect** method, you must remove the size of the border before using the rectangle with the **SetRect** method.
+
+---

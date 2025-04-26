@@ -72,6 +72,27 @@ CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
 | *cID* | Control identifier of the button control. |
 | *pDlg* | Pointer to an instance of the `CDialog` class. |
 
+#### Usage examples
+
+Note: 105 is the identifier of the edit control. Change it to the real one.
+
+```
+DIM hCtl AS HWND = pDlg->ControlHandle(105)
+DIM pButton AS CButton = hCtl
+pButton.SetText("Button")
+```
+```
+DIM pButton AS CButton = CButton(pDlg, 105)
+pButton.SetText("Button")
+```
+```
+DIM hCtl AS HWND = pDlg->ControlHandle(105)
+Cedit(hCtl).SetText("Button")
+```
+```
+CButton(pDlg, 105).SetText("Button")
+```
+
 ---
 
 ## <a name="check"></a>Check

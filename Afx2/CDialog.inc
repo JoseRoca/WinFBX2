@@ -131,12 +131,6 @@ TYPE CDialog
       ' DialogStabilize: Disabling the close menu and processing the SC_CLOSE message in the
       ' WM_SYSCOMMAND message has the same effect.
 
-      DECLARE FUNCTION MenuAttach (BYVAL hMenu AS HMENU) AS BOOLEAN
-      DECLARE FUNCTION MenuDestroy () AS BOOLEAN
-      DECLARE FUNCTION SysMenuRemoveCloseOption () AS BOOLEAN
-      DECLARE FUNCTION SysMenuRestoreCloseOption () AS BOOLEAN
-      ' To do: Add more menu methods
-
       ' // Control methods
       DECLARE FUNCTION ControlDisable (BYVAL cId AS LONG) AS BOOLEAN
       DECLARE FUNCTION ControlEnable (BYVAL cId AS LONG) AS BOOLEAN
@@ -165,7 +159,6 @@ TYPE CDialog
       DECLARE FUNCTION ControlGetFontFaceName (BYVAL cId AS LONG) AS DWSTRING
       DECLARE FUNCTION ControlGetFontPointSize (BYVAL cId AS LONG) AS LONG
       DECLARE SUB ControlSetFont (BYVAL cId AS LONG, BYVAL hFont AS HFONT, BYVAL fRedraw AS BOOLEAN = TRUE)
-
       DECLARE SUB ControlCenterHoriz (BYVAL cId AS LONG)
       DECLARE SUB ControlCenterVert (BYVAL cId AS LONG)
 
@@ -256,7 +249,7 @@ END FUNCTION
 ' Adds a control to the dialog.
 ' Note: Although the control identifier is a LONG, we must declare it here as a LONG_PTR
 ' because we have to cast it in CreateWindowEx to the member HMENU, which is an handle
-' (4 bytes in 32-bit, 8 bytes in 54-bit).
+' (4 bytes in 32-bit, 8 bytes in 64-bit).
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlAdd ( _
    BYREF wszClassName AS WSTRING, _                       ' // Class name
@@ -905,7 +898,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Converts the specied screen units (pixels) to dialog box units.
+' * Converts the specified screen units (pixels) to dialog box units.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.PixelsToDialogUnits (BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
    IF VARPTR(pixelX) = 0 OR VARPTR(pixelY) = 0 THEN RETURN FALSE
@@ -1135,34 +1128,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Attaches a menu to the dialog.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.MenuAttach (BYVAL hMenu AS HMENU) AS BOOLEAN
-   RETURN SetMenu(m_hDlg, hMenu)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' * Destroys the main menu from the dialog.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.MenuDestroy () AS BOOLEAN
-   ' // Get the menu
-   DIM hMenu AS HMENU = GetMenu(m_hDlg)
-   IF hMenu = NULL THEN RETURN FALSE
-   ' // Detach the menu
-   SetMenu(m_hDlg, NULL)
-   ' // Destroy the menu
-   IF DestroyMenu(hMenu) THEN
-      ' // Redraw the menu
-      DrawMenuBar m_hDlg
-      RETURN TRUE
-   ELSE
-      RETURN FALSE
-   END IF
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' * Retrieves the text in a dialog or window caption.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogGetText () AS DWSTRING
@@ -1234,36 +1199,6 @@ PRIVATE SUB CDialog.DialogSetIconEx (BYVAL hIconBig AS HICON, BYVAL hIconSmall A
    SendMessageW(m_hDlg, WM_SETICON, ICON_BIG, cast(LPARAM, hIconBig))
    SendMessageW(m_hDlg, WM_SETICON, ICON_SMALL, cast(LPARAM, hIconSmall))
 END SUB
-' =====================================================================================
-
-' =====================================================================================
-' * Removes the system menu close option and disables Alt+F4 and the X button.
-' =====================================================================================
-PRIVATE FUNCTION CDialog.SysMenuRemoveCloseOption () AS BOOLEAN
-   ' // Get the system menu handle
-   DIM hMenu AS HMENU = GetSystemMenu(m_hDlg, FALSE)
-   IF hMenu = NULL THEN RETURN FALSE
-   ' // Get the number of menu items
-   DIM cbItems AS LONG = GetMenuItemCount(hMenu)
-   IF cbItems = 0 THEN RETURN FALSE
-   ' // Remove the close menu item
-   IF RemoveMenu(hMenu, cbItems - 1, MF_REMOVE OR MF_BYPOSITION) = 0 THEN RETURN FALSE
-   ' // Remove the separator line
-   IF RemoveMenu(hMenu, cbItems - 2, MF_REMOVE OR MF_BYPOSITION) = 0 THEN RETURN FALSE
-   ' // Redraw the menu (this refreshes the caption bar, dimming the X button)
-   DrawMenuBar(m_hDlg)
-   RETURN TRUE
-END FUNCTION
-' =====================================================================================
-
-' =====================================================================================
-' * Restores the system menu close option and enables Alt+F4 and the X button.
-' =====================================================================================
-PRIVATE FUNCTION CDialog.SysMenuRestoreCloseOption () AS BOOLEAN
-   IF GetSystemMenu(m_hDlg, TRUE) <> NULL THEN RETURN FALSE
-   DrawMenuBar(m_hDlg)
-   RETURN TRUE
-END FUNCTION
 ' =====================================================================================
 
 ' ========================================================================================

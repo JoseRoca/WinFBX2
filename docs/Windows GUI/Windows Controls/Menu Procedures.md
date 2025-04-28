@@ -82,10 +82,6 @@ If the function fails, the return value is NULL. To get extended error informati
 Resources associated with a menu that is assigned to a window are freed automatically. If the menu is not assigned to a window, an application must free system resources associated with the menu before closing. An application frees menu resources by calling the **MenuDestroy** function.
 
 #### Usage example
-
-```
-
-#### Example
 ```
 ' ** First create a top-level menu:
 DIM hMenu AS HMENU = MenuNewBar

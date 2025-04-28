@@ -331,3 +331,27 @@ The application must call the **MenuDrawBar** function whenever a menu changes, 
 
 ---
 
+### <a name="menudestroy"></a>MenuDestroy
+
+Destroys the specified menu and frees any memory that the menu occupies.
+```
+FUNCTION MenuDestroy (BYVAL hMenu AS HMENU) AS BOOLEAN
+FUNCTION MenuDestroy (BYVAL hwnd AS HWND) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu to be destroyed. |
+| *hwnd* | A handle to the window or dialog to which the menu is attached. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+#### Remarks
+
+Before closing, an application must use the **MenuDestroy** function to destroy a menu not assigned to a window. A menu that is assigned to a window is automatically destroyed when the application closes.
+
+**MenuDestroy** is recursive, that is, it will destroy the menu and all its submenus.
+
+---
+

@@ -408,7 +408,6 @@ If the function succeeds, the return value is the retrieved text. If the functio
 
 ---
 
-
 ### <a name="menusettext"></a>MenuSetText
 
 Sets the text of the specified menu item.
@@ -427,6 +426,38 @@ FUNCTION MenuSetText (BYVAL hMenu AS HMENU, BYVAL item AS UINT, BYREF wszText AS
 #### Return value
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menugetstate"></a>MenuGetState
+
+Retrieves the state of the specified menu item.
+
+```
+FUNCTION MenuGetState (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS UINT
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to get information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+Zero on failure or one or more of the following values:
+
+| Value | Meaning |
+| ----- | ------- |
+| **MFS_CHECKED** | The item is checked. |
+| **MFS_DEFAULT** | The item is the default. |
+| **MFS_DISABLED** | The item is disabled. |
+| **MFS_ENABLED** | The item is enabled. |
+| **MFS_GRAYED** | The item is grayed. |
+| **MFS_HILITE** | The item is highlighted. |
+| **MFS_UNCHECKED** | The item is unchecked. |
+| **MFS_UNHILITE** | The item is not highlighted. |
+
+Note: To get extended error information, use the **GetLastError** function.
 
 ---
 

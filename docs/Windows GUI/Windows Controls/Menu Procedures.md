@@ -355,3 +355,16 @@ Before closing, an application must use the **MenuDestroy** function to destroy 
 
 ---
 
+### <a name="menudrawbar"></a>MenuDrawBar
+
+Redraws the menu bar of the specified window. If the menu bar changes after the system has created the window, this function must be called to draw the changed menu bar.
+```
+FUNCTION MenuDrawBar (BYVAL hwnd AS HWND) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | A handle to the window whose menu bar is to be redrawn. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.

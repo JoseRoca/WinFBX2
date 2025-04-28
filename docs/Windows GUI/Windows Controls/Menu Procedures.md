@@ -118,3 +118,52 @@ MenuAddString hPopup1, "&About", ID_ABOUT, MF_ENABLED
 MenuAttach hMenu, hDlg
 ```
 ---
+
+### <a name="menugethandle"></a>MenuGetHandle
+
+Retrieves a handle to the menu assigned to the specified window.
+```
+FUNCTION MenuGetHandle (BYVAL hwnd AS HWND) AS HMENU
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | A handle to the window whose menu handle is to be retrieved. |
+
+#### Return value
+
+The return value is a handle to the menu. If the specified window has no menu, the return value is NULL. If the window is a child window, the return value is undefined.
+
+#### Remarks
+
+**MenuGetHandle** does not work on floating menu bars. Floating menu bars are custom controls that mimic standard menus; they are not menus. To get the handle on a floating menu bar, use the [Active Accessibility APIs](https://learn.microsoft.com/en-us/previous-versions/ms971350(v=msdn.10)).
+
+---
+
+### <a name="menugetsystemmenuhandle"></a>MenuGetSytemMenuHandle
+
+Enables the application to access the window menu (also known as the system menu or the control menu) for copying and modifying.
+```
+FUNCTION MenuGetSytemMenuHandle (BYVAL hwnd AS HWND, BYVAL bRevert AS BOOLEAN = FALSE) AS HMENU
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | A handle to the window that will own a copy of the window menu. |
+| *bRevert* | The action to be taken. If this parameter is FALSE, **MenuGetSytemMenuHandle** returns a handle to the copy of the window menu currently in use. The copy is initially identical to the window menu, but it can be modified. If this parameter is TRUE, **MenuGetSytemMenuHandle** resets the window menu back to the default state. The previous window menu, if any, is destroyed. |
+
+#### Return value
+
+If the *bRevert* parameter is FALSE, the return value is a handle to a copy of the window menu. If the *bRevert* parameter is TRUE, the return value is NULL.
+
+#### Remarks
+
+Any window that does not use the **MenuGetSytemMenuHandle** function to make its own copy of the window menu receives the standard window menu.
+
+The window menu initially contains items with various identifier values, such as **SC_CLOSE**, **SC_MOVE**, and **SC_SIZE**.
+
+Menu items on the window menu send **WM_SYSCOMMAND** messages.
+
+All predefined window menu items have identifier numbers greater than &hF000. If an application adds commands to the window menu, it should use identifier numbers less than &hF000.
+
+The system automatically grays items on the standard window menu, depending on the situation. The application can perform its own checking or graying by responding to the **WM_INITMENU** message that is sent before any menu is displayed.
+
+---

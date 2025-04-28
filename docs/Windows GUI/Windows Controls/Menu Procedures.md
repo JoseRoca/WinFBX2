@@ -266,9 +266,7 @@ FUNCTION MenuAddPopUp (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL hPo
 
 #### Return value
 
-If the function succeeds, the return value is nonzero.
-
-If the function fails, the return value is zero.
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
 
 ---
 

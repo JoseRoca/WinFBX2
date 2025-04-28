@@ -461,3 +461,20 @@ Note: To get extended error information, use the **GetLastError** function.
 
 ---
 
+### <a name="menuitemtogglecheckstate"></a>MenuItemToggleCheckState
+
+Toggles the checked state of a menu item.
+
+```
+FUNCTION MenuItemToggleCheckState (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
+   BYVAL fByPosition AS BOOLEAN = FALSE) AS UINT
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to get information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.

@@ -176,7 +176,7 @@ FUNCTION MenuGetSubMenu (BYVAL hMenu AS HMENU, BYVAL nPos AS LONG) AS HMENU
 ```
 | Parameter | Description |
 | --------- | ----------- |
-| *hwnd* | A handle to the menu. |
+| *hMenu* | A handle to the menu. |
 | *nPos* | The one-based relative position in the specified menu of an item that activates a drop-down menu or submenu. |
 
 #### Return value
@@ -193,9 +193,44 @@ FUNCTION MenuGetSubmenusCount (BYVAL hMenu AS HMENU) AS LONG
 ```
 | Parameter | Description |
 | --------- | ----------- |
-| *hwnd* | A handle to the menu. |
+| *hMenu* | A handle to the menu. |
 
 #### Return value
 
 If the function succeeds, the return value is the numbers of submenus of a menu. If the menu item does not have submenus, the return value is zero.
+
+---
+
+### <a name="menugetitemid"></a>MenuGetItemID
+
+Retrieves the menu item identifier of a menu item located at the specified position in a menu.
+```
+FUNCTION MenuGetItemID (BYVAL hMenu AS HMENU, BYVAL nPos AS LONG) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the item whose identifier is to be retrieved. |
+| *nPos* | The one-based relative position of the menu item whose identifier is to be retrieved. |
+
+#### Return value
+
+The return value is the identifier of the specified menu item. If the menu item identifier is NULL or if the specified item opens a submenu, the return value is -1.
+
+---
+
+### <a name="menugetwindowowner"></a>MenuGetWindowOwner
+
+Retrieves the window owner of the menu.
+```
+FUNCTION MenuGetWindowOwner (BYVAL hMenu AS HMENU) AS HWND
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu. |
+
+#### Return value
+
+The handle of the window that owns the menu.
+
+---
 

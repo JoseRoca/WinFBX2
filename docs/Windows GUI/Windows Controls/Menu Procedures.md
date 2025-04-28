@@ -248,3 +248,28 @@ If the function fails, the return value is NULL. To get extended error informati
 
 ---
 
+### <a name="menuaddpopup"></a>MenuAddPopUp
+
+Adds a popup child menu to an existing menu.A popup menu is a small window that "pops up" when a menu item is highlighted. This allows nesting, and gives the user an opportunity to choose from "sub-menu" items.
+```
+FUNCTION MenuAddPopUp (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL hPopUp AS HMENU, _
+   BYVAL fState AS UINT, BYVAL item AS LONG = 0, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu in which the new menu item is inserted. |
+| *wszText* | Text displayed in the parent menu. An ampersand (&) may be used in the string to make the following letter into a control accelerator (hot-key). The letter appears underscored to signify that it is an accelerator. |
+| *hPopUp* | Handle of the child popup menu to be added. |
+| *fState* | The initial state of the menu item. It can be one of the following:<br>MFS_DISABLED: Disable the item so that it cannot be selected.<br>MFS_ENABLED: Enable the item so that it can be selected. |
+| *item* | The identifier or position of the menu item before which to insert the new item. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | Controls the meaning of item. If this parameter is FALSE, *item* is a menu item identifier and the popup menu is inserted prior to it; Otherwise, the popup menu is inserted at the physical position within the parent menu, where position = 1 for the first position, position = 2 for the second, and so on. If position is not specified then the popup menu is appended to the end of the menu. |
+
+#### Return value
+
+If the function succeeds, the return value is nonzero.
+
+If the function fails, the return value is zero.
+
+---
+
+

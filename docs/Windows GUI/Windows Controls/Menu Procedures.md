@@ -168,7 +168,6 @@ The system automatically grays items on the standard window menu, depending on t
 
 ---
 
-
 ### <a name="menugetsubmenu"></a>MenuGetSubMenu
 
 Retrieves a handle to the drop-down menu or submenu activated by the specified menu item.
@@ -183,3 +182,20 @@ FUNCTION MenuGetSubMenu (BYVAL hMenu AS HMENU, BYVAL nPos AS LONG) AS HMENU
 #### Return value
 
 If the function succeeds, the return value is a handle to the drop-down menu or submenu activated by the menu item. If the menu item does not activate a drop-down menu or submenu, the return value is NULL.
+
+---
+
+### <a name="Menugetsubmenuscount"></a>MenuGetSubmenusCount
+
+Retrieves the number of submenus of a menu.
+```
+FUNCTION MenuGetSubmenusCount (BYVAL hMenu AS HMENU) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | A handle to the menu. |
+
+#### Return value
+
+If the function succeeds, the return value is the numbers of submenus of a menu. If the menu item does not have submenus, the return value is zero.
+

@@ -262,7 +262,7 @@ FUNCTION MenuAddPopUp (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL hPo
 | *hPopUp* | Handle of the child popup menu to be added. |
 | *fState* | The initial state of the menu item. It can be one of the following:<br>MFS_DISABLED: Disable the item so that it cannot be selected.<br>MFS_ENABLED: Enable the item so that it can be selected. |
 | *item* | The identifier or position of the menu item before which to insert the new item. The meaning of this parameter depends on the value of *fByPosition*. |
-| *fByPosition* | Controls the meaning of item. If this parameter is FALSE, *item* is a menu item identifier and the popup menu is inserted prior to it; Otherwise, the popup menu is inserted at the physical position within the parent menu, where position = 1 for the first position, position = 2 for the second, and so on. If position is not specified then the popup menu is appended to the end of the menu. |
+| *fByPosition* | Controls the meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier and the popup menu is inserted prior to it. Otherwise, the popup menu is inserted at the physical position within the parent menu, where position = 1 for the first position, position = 2 for the second, and so on. If position is not specified then the popup menu is appended to the end of the menu. |
 
 #### Return value
 
@@ -270,4 +270,24 @@ If the function succeeds, the return value is TRUE. If the function fails, the r
 
 ---
 
+### <a name="menuaddstring"></a>MenuAddString
 
+Adds a string or separator to an existing menu.
+```
+FUNCTION MenuAddString (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL id AS LONG, _
+   BYVAL fState AS UINT, BYVAL position AS LONG = 0, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu in which the string is added. |
+| *wszText* | Text to display in the parent menu. An ampersand (&) may be used in the string to make the following letter into a command accelerator (hot-key). The letter is underscored to signify that it is an accelerator. To create a horizontal separator instead of a text string, set wszText = "-", id = 0, fstate = 0. To include a keyboard accelerator description in a menu string, separate it from the menu item text with a TAB {CHR(9)} character |
+| *id* | The unique numeric identifier for the menu item. |
+| *fState* | The initial state of the menu item. It can be one or more of the following, combined together with the OR operator to form a bitmask:<br>MFS_CHECKED: Place a checkmark next to the item.<br>MFS_DEFAULT: The default menu item, displayed in bold.  Only one item may be the default.<br>MFS_DISABLED: Disable the menu item so that it cannot be selected.<br>MFS_ENABLED:Enable the menu item so that it can be selected.<br>MFS_GRAYED: Disable the menu item so that it cannot be selected, and draw it in a "grayed" state to indicate this.<br>MFS_HILITE: Highlight the menu item.<br>MFS_UNCHECKED:Do not place a checkmark next to the item.<br>MFS_UNHILITE: Item is not highlighted.<br>A state value of zero (0) provides MFS_ENABLED OR MFS_UNCHECKED OR MFS_UNHILITE. |
+| *position* | Optional position in the parent menu, where the menu item should be inserted. If the *fByPosition" parameter is FALSE, the menu item is inserted prior to the menu item ID specified by *position*. Otherwise, the menu item is inserted at the physical *position* within the parent menu, where position = 1 for the first position, position = 2 for the second, and so on. If *position* is not specified then the popup menu is appended to the end of the menu. |
+| *fByPosition* | Controls the meaning of *position". If this parameter is FALSE, *position* is a menu item identifier; otherwise, it is a physical position within the parent menu. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
+
+---

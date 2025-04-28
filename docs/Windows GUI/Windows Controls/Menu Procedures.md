@@ -389,7 +389,7 @@ If the function succeeds, the return value is TRUE. If the function fails, the r
 
 ---
 
-### <a name="menugettextlen"></a>MenuGetTextLen
+### <a name="menugettext"></a>MenuGetText
 
 Retrieves the text of the specified menu item.
 ```
@@ -405,6 +405,28 @@ FUNCTION MenuGetText (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
 #### Return value
 
 If the function succeeds, the return value is the retrieved text. If the function fails, the return value is an empty string.
+
+---
+
+
+### <a name="menusettext"></a>MenuSetText
+
+Sets the text of the specified menu item.
+
+```
+FUNCTION MenuSetText (BYVAL hMenu AS HMENU, BYVAL item AS UINT, BYREF wszText AS WSTRING, _
+   BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to get information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *wszText* | The text to set. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
 
 ---
 

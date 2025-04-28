@@ -369,6 +369,7 @@ FUNCTION MenuDrawBar (BYVAL hwnd AS HWND) AS BOOLEAN
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
 
+---
 
 ### <a name="menugettextlen"></a>MenuGetTextLen
 
@@ -385,3 +386,25 @@ FUNCTION MenuGetTextLen (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosi
 #### Return value
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menugettextlen"></a>MenuGetTextLen
+
+Retrieves the text of the specified menu item.
+```
+FUNCTION MenuGetText (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
+   BYVAL fByPosition AS BOOLEAN = FALSE) AS DWSTRING
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to get information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is the retrieved text. If the function fails, the return value is an empty string.
+
+---
+

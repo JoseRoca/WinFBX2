@@ -291,3 +291,19 @@ FUNCTION MenuAddString (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL id
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
 
 ---
+
+### <a name="menuattach"></a>MenuAttach
+
+Attaches a menu to a window or dialog.
+```
+FUNCTION MenuAttach (BYVAL hMenu AS HMENU, BYVAL hwnd AS HWND) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the new menu. If this parameter is NULL, the window's current menu is removed. |
+| *hwnd* | A handle to the window to which the menu is to be assigned. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+

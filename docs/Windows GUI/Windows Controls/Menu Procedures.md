@@ -167,3 +167,19 @@ All predefined window menu items have identifier numbers greater than &hF000. If
 The system automatically grays items on the standard window menu, depending on the situation. The application can perform its own checking or graying by responding to the **WM_INITMENU** message that is sent before any menu is displayed.
 
 ---
+
+
+### <a name="menugetsubmenu"></a>MenuGetSubMenu
+
+Retrieves a handle to the drop-down menu or submenu activated by the specified menu item.
+```
+FUNCTION MenuGetSubMenu (BYVAL hMenu AS HMENU, BYVAL nPos AS LONG) AS HMENU
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | A handle to the menu. |
+| *nPos* | The one-based relative position in the specified menu of an item that activates a drop-down menu or submenu. |
+
+#### Return value
+
+If the function succeeds, the return value is a handle to the drop-down menu or submenu activated by the menu item. If the menu item does not activate a drop-down menu or submenu, the return value is NULL.

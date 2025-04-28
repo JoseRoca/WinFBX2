@@ -250,7 +250,7 @@ If the function fails, the return value is NULL. To get extended error informati
 
 ### <a name="menuaddpopup"></a>MenuAddPopUp
 
-Adds a popup child menu to an existing menu.A popup menu is a small window that "pops up" when a menu item is highlighted. This allows nesting, and gives the user an opportunity to choose from "sub-menu" items.
+Adds a popup child menu to an existing menu. A popup menu is a small window that "pops up" when a menu item is highlighted. This allows nesting, and gives the user an opportunity to choose from "sub-menu" items.
 ```
 FUNCTION MenuAddPopUp (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL hPopUp AS HMENU, _
    BYVAL fState AS UINT, BYVAL item AS LONG = 0, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
@@ -283,7 +283,7 @@ FUNCTION MenuAddString (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL id
 | *wszText* | Text to display in the parent menu. An ampersand (&) may be used in the string to make the following letter into a command accelerator (hot-key). The letter is underscored to signify that it is an accelerator. To create a horizontal separator instead of a text string, set wszText = "-", id = 0, fstate = 0. To include a keyboard accelerator description in a menu string, separate it from the menu item text with a TAB {CHR(9)} character |
 | *id* | The unique numeric identifier for the menu item. |
 | *fState* | The initial state of the menu item. It can be one or more of the following, combined together with the OR operator to form a bitmask:<br>MFS_CHECKED: Place a checkmark next to the item.<br>MFS_DEFAULT: The default menu item, displayed in bold.  Only one item may be the default.<br>MFS_DISABLED: Disable the menu item so that it cannot be selected.<br>MFS_ENABLED:Enable the menu item so that it can be selected.<br>MFS_GRAYED: Disable the menu item so that it cannot be selected, and draw it in a "grayed" state to indicate this.<br>MFS_HILITE: Highlight the menu item.<br>MFS_UNCHECKED:Do not place a checkmark next to the item.<br>MFS_UNHILITE: Item is not highlighted.<br>A state value of zero (0) provides MFS_ENABLED OR MFS_UNCHECKED OR MFS_UNHILITE. |
-| *position* | Optional position in the parent menu, where the menu item should be inserted. If the *fByPosition" parameter is FALSE, the menu item is inserted prior to the menu item ID specified by *position*. Otherwise, the menu item is inserted at the physical *position* within the parent menu, where position = 1 for the first position, position = 2 for the second, and so on. If *position* is not specified then the popup menu is appended to the end of the menu. |
+| *position* | Optional position in the parent menu, where the menu item should be inserted. If the *fByPosition* parameter is FALSE, the menu item is inserted prior to the menu item ID specified by *position*. Otherwise, the menu item is inserted at the physical *position* within the parent menu, where position = 1 for the first position, position = 2 for the second, and so on. If *position* is not specified then the popup menu is appended to the end of the menu. |
 | *fByPosition* | Controls the meaning of *position". If this parameter is FALSE, *position* is a menu item identifier; otherwise, it is a physical position within the parent menu. |
 
 #### Return value

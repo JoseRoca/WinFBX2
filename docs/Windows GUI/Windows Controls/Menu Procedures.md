@@ -234,3 +234,17 @@ The handle of the window that owns the menu.
 
 ---
 
+### <a name="menunewpopup"></a>MenuNewPopUp
+
+Creates a drop-down menu, submenu, or shortcut menu. The menu is initially empty. You can insert or append menu items by using the InsertMenuItem function. You can also use the **MenuAddString** function to append menu items.
+```
+FUNCTION MenuNewPopUp () AS HMENU
+```
+#### Return value
+
+If the function succeeds, the return value is a handle to the newly created menu.
+
+If the function fails, the return value is NULL. To get extended error information, call GetLastError.
+
+---
+

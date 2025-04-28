@@ -86,7 +86,6 @@ Resources associated with a menu that is assigned to a window are freed automati
 ```
 
 #### Example
-
 ```
 ' ** First create a top-level menu:
 DIM hMenu AS HMENU = MenuNewBar
@@ -122,6 +121,4 @@ MenuAddString hPopup1, "&About", ID_ABOUT, MF_ENABLED
 ' Attach the menu to the dialog
 MenuAttach hMenu, hDlg
 ```
-```
 ---
-

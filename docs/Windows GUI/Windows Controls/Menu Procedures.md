@@ -18,44 +18,6 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 
 **Include file**: AfxMenuProcs2.inc.
 
-#### Example
-
-```
-' ** First create a top-level menu:
-DIM hMenu AS HMENU = MenuNewBar
-
-' ** Add a top-level menu item with a popup menu:
-DIM hPopup1 AS HMENU = MenuNewPopup
-MenuAddPopup hMenu, "&File", hPopup1, MF_ENABLED
-MenuAddString hPopup1, "&Open", ID_OPEN, MF_ENABLED
-MenuAddString hPopup1, "&Exit", ID_EXIT, MF_ENABLED
-MenuAddString hPopup1, "-", 0, 0
-
-' ** Now we can add another item to the menu that will bring up a sub-menu. 
-' First we obtain a new popup menu handle to distinguish it from the first 
-' popup menu:
-DIM hPopup2 AS HMENU = MenuNewPopup
-
-' ** Now add a new menu item to the first menu. 
-' This item will bring up the sub-menu when selected:
-MenuAddPopup hPopup1, "&More Options", hPopup2, MF_ENABLED
-
-' ** Now we will define the sub menu:
-MenuAddString hPopup2, "Option &1", ID_OPTION1, MF_ENABLED
-MenuAddString hPopup2, "Option &2", ID_OPTION2, MF_ENABLED
-
-' ** Finally, we'll add a second top-level menu and popup.
-' For this popup, we can reuse the first popup variable:
-hPopup1 = MenuNewPopup
-MenuAddPopup hMenu, "&Help", hPopup1, MF_ENABLED
-MenuAddString hPopup1, "&Help", ID_HELP, MF_ENABLED
-MenuAddString hPopup1, "-", 0, 0
-MenuAddString hPopup1, "&About", ID_ABOUT, MF_ENABLED
-   
-' Attach the menu to the dialog
-MenuAttach hMenu, hDlg
-```
-
 | Name       | Description |
 | ---------- | ----------- |
 | [IsMenuItemChecked](#ismenuitemchecked) | Returns TRUE if the specified menu item is checked; FALSE otherwise. |
@@ -105,23 +67,61 @@ MenuAttach hMenu, hDlg
 
 ### <a name="menunewbar"></a>MenuNewBar
 
-Creates a new menu bar.
+Creates a menu bar. The menu is initially empty, but it can be filled with menu items by using the **MenuAddPopUp** and **MenuAddString** functions.
 ```
 FUNCTION MenuNewBar () AS HMENU
 ```
 #### Return value
 
-If there are actions in the control's undo queue, the return value is true. If the undo queue is empty, the return value is false.
+If the function succeeds, the return value is a handle to the newly created menu.
 
-#### Usage examples
+If the function fails, the return value is NULL. To get extended error information, call GetLastError.
 
-Note: 103 is the identifier of the edit control. Change it to the real one.
+#### Remarks
+
+Resources associated with a menu that is assigned to a window are freed automatically. If the menu is not assigned to a window, an application must free system resources associated with the menu before closing. An application frees menu resources by calling the **MenuDestroy** function.
+
+#### Usage example
+
 ```
-DIM pEdit AS CEdit = CEdit(pDlg, 103)
-DIM b AS BOOLEAN = pEdit.CanUndo
+
+#### Example
+
 ```
+' ** First create a top-level menu:
+DIM hMenu AS HMENU = MenuNewBar
+
+' ** Add a top-level menu item with a popup menu:
+DIM hPopup1 AS HMENU = MenuNewPopup
+MenuAddPopup hMenu, "&File", hPopup1, MF_ENABLED
+MenuAddString hPopup1, "&Open", ID_OPEN, MF_ENABLED
+MenuAddString hPopup1, "&Exit", ID_EXIT, MF_ENABLED
+MenuAddString hPopup1, "-", 0, 0
+
+' ** Now we can add another item to the menu that will bring up a sub-menu. 
+' First we obtain a new popup menu handle to distinguish it from the first 
+' popup menu:
+DIM hPopup2 AS HMENU = MenuNewPopup
+
+' ** Now add a new menu item to the first menu. 
+' This item will bring up the sub-menu when selected:
+MenuAddPopup hPopup1, "&More Options", hPopup2, MF_ENABLED
+
+' ** Now we will define the sub menu:
+MenuAddString hPopup2, "Option &1", ID_OPTION1, MF_ENABLED
+MenuAddString hPopup2, "Option &2", ID_OPTION2, MF_ENABLED
+
+' ** Finally, we'll add a second top-level menu and popup.
+' For this popup, we can reuse the first popup variable:
+hPopup1 = MenuNewPopup
+MenuAddPopup hMenu, "&Help", hPopup1, MF_ENABLED
+MenuAddString hPopup1, "&Help", ID_HELP, MF_ENABLED
+MenuAddString hPopup1, "-", 0, 0
+MenuAddString hPopup1, "&About", ID_ABOUT, MF_ENABLED
+   
+' Attach the menu to the dialog
+MenuAttach hMenu, hDlg
 ```
-CEdit(pDlg, 103).CanUndo
 ```
 ---
 

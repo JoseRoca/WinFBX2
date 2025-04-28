@@ -284,7 +284,7 @@ FUNCTION MenuAddString (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL id
 | *id* | The unique numeric identifier for the menu item. |
 | *fState* | The initial state of the menu item. It can be one or more of the following, combined together with the OR operator to form a bitmask:<br>MFS_CHECKED: Place a checkmark next to the item.<br>MFS_DEFAULT: The default menu item, displayed in bold.  Only one item may be the default.<br>MFS_DISABLED: Disable the menu item so that it cannot be selected.<br>MFS_ENABLED:Enable the menu item so that it can be selected.<br>MFS_GRAYED: Disable the menu item so that it cannot be selected, and draw it in a "grayed" state to indicate this.<br>MFS_HILITE: Highlight the menu item.<br>MFS_UNCHECKED:Do not place a checkmark next to the item.<br>MFS_UNHILITE: Item is not highlighted.<br>A state value of zero (0) provides MFS_ENABLED OR MFS_UNCHECKED OR MFS_UNHILITE. |
 | *position* | Optional position in the parent menu, where the menu item should be inserted. If the *fByPosition* parameter is FALSE, the menu item is inserted prior to the menu item ID specified by *position*. Otherwise, the menu item is inserted at the physical *position* within the parent menu, where position = 1 for the first position, position = 2 for the second, and so on. If *position* is not specified then the popup menu is appended to the end of the menu. |
-| *fByPosition* | Controls the meaning of *position". If this parameter is FALSE, *position* is a menu item identifier; otherwise, it is a physical position within the parent menu. |
+| *fByPosition* | Controls the meaning of *position*. If this parameter is FALSE, *position* is a menu item identifier; otherwise, it is a physical position within the parent menu. |
 
 #### Return value
 
@@ -306,4 +306,28 @@ FUNCTION MenuAttach (BYVAL hMenu AS HMENU, BYVAL hwnd AS HWND) AS BOOLEAN
 #### Return value
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menudelete"></a>MenuDelete
+
+Deletes a menu item or detaches a submenu from the specified menu. If the menu item opens a drop-down menu or submenu, **MenuDelete** does not destroy the menu or its handle, allowing the menu to be reused. Before this function is called, the **MenuGetSubMenu** function should retrieve a handle to the drop-down menu or submenu.
+```
+FUNCTION MenuDelete (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu to be changed. |
+| *item* | The menu item to be deleted, as determined by the *fByPosition* parameter. |
+| *fByPosition* | Controls the meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, *item* is the position of the menu item, where position = 1 for the first position, position = 2 for the second, and so on.  |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+#### Remarks
+
+The application must call the **MenuDrawBar** function whenever a menu changes, whether the menu is in a displayed window.
+
+---
 

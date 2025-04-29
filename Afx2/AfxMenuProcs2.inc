@@ -123,9 +123,7 @@ BYVAL fState AS UINT, BYVAL item AS LONG = 0, BYVAL fByPosition AS BOOLEAN = FAL
    mii.hSubMenu = hPopUp
    mii.dwTypeData = @wszText
    IF fByPosition = FALSE THEN mii.wID = item   '// it is not a position but an identifier
-   IF fByPosition = TRUE THEN
-      item -= 1 : IF item < 0 THEN item = 0
-   END IF
+   IF fByPosition = TRUE THEN item -= 1
    IF InsertMenuItemW(hMenu, item, fByPosition, @mii) = FALSE THEN RETURN FALSE
    mii.fMask = MIIM_STATE
    mii.fState = fState
@@ -134,13 +132,19 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-FUNCTION MenuFindItemPosition (BYVAL hMenu AS HMENU, BYVAL itemID AS UINT, BYREF itemPos AS LONG) AS BOOLEAN
+' Finds the position of the specified menu item.
+' Example:
+'   DIM nPos AS LONG
+'   MenuFindItemPosition(hMenu, ID_EXIT, nPos)
+'Return value: TRUE or FALSE.
+' ========================================================================================
+PRIVATE FUNCTION MenuFindItemPosition OVERLOAD (BYVAL hMenu AS HMENU, BYVAL itemID AS UINT, BYREF itemPos AS LONG) AS BOOLEAN
    DIM itemCount AS LONG = GetMenuItemCount(hMenu)
    FOR i AS LONG = 0 TO itemCount - 1
       DIM currentID AS UINT = GetMenuItemID(hMenu, i)
       ' If the item matches, return its absolute position
       IF currentID = itemID THEN
-         itemPos = i + 1
+         itemPos = i
          RETURN TRUE
       END IF
       ' Check if the item is a submenu
@@ -156,6 +160,17 @@ FUNCTION MenuFindItemPosition (BYVAL hMenu AS HMENU, BYVAL itemID AS UINT, BYREF
    RETURN FALSE ' Item not found
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+' Example:
+'   DIM nPos AS LONG = MenuFindItemPosition(hMenu, ID_EXIT)
+'Return value: TRUE or FALSE.
+' ========================================================================================
+PRIVATE FUNCTION MenuFindItemPosition OVERLOAD (BYVAL hMenu AS HMENU, BYVAL itemID AS UINT) AS LONG
+   DIM itemPos AS LONG
+   MenuFindItemPosition(hMenu, itemID, itemPos)
+   RETURN itemPos
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' * Adds a string or separator to an existing menu.
@@ -166,41 +181,37 @@ END FUNCTION
 ' MenuAddString hPopup1, "&Exit", ID_EXIT, MF_ENABLED, ID_OPEN, FALSE   ' insert by identifier
 ' ========================================================================================
 PRIVATE FUNCTION MenuAddString OVERLOAD (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL id AS LONG, _
-BYVAL fState AS UINT, BYVAL position AS LONG = 0, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+BYVAL fState AS UINT, BYVAL item AS LONG = 0, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    IF wszText = "-" THEN RETURN AppendMenuW(hMenu, MF_SEPARATOR, 0, "")
-
-   ' // If fByPosition = FALSE and position > 0, it is a menu identifier
-   IF fByPosition = FALSE AND position > 0 THEN
+   ' // If fByPosition = FALSE and item > 0, it is a menu identifier
+   IF fByPosition = FALSE AND item > 0 THEN
       ' // Find the item position
       DIM itemPos AS LONG
-      IF MenuFindItemPosition (hMenu, position, itemPos) THEN
+      IF MenuFindItemPosition (hMenu, item, itemPos) THEN
          ' // If found, insert the item before that position
          IF itemPos THEN
-            position = itemPos
+            item = itemPos
             fByPosition = TRUE
          END IF
       END IF
    END IF
-
    IF fByPosition THEN
       ' // If the position is <=0, append the item into the menu
-      IF position <= 0 THEN RETURN AppendMenuW(hMenu, fState, id, @wszText)
+      IF item <= 0 THEN RETURN AppendMenuW(hMenu, fState, id, @wszText)
       ' // else adjust the position from 0-based to one-based
-      position -= 1 : IF position < 0 THEN position = 0
+      item -= 1
    END IF
-
    ' // Insert the item into the menu
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_STRING
    mii.dwTypeData = @wszText
-   IF InsertMenuItemW(hMenu, position, fByPosition, @mii) = FALSE THEN RETURN FALSE
+   IF InsertMenuItemW(hMenu, item, fByPosition, @mii) = FALSE THEN RETURN FALSE
    mii.fMask = MIIM_STATE
    mii.fState = fState
    mii.fMask = MIIM_ID
    mii.wID = id
-   RETURN SetMenuItemInfoW(hMenu, position, fByPosition, @mii)
-
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
 
@@ -216,10 +227,10 @@ END FUNCTION
 ' * Deletes a menu item from an existing menu.
 ' If it returns TRUE, call DrawMenuBar(hwnd).
 ' ========================================================================================
-PRIVATE FUNCTION MenuDelete (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION MenuDelete (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM uFlags AS UINT
    IF fByPosition = TRUE THEN uFlags = MF_BYPOSITION ELSE uFlags = MF_BYCOMMAND
-   FUNCTION = RemoveMenu(hMenu, uItem, uFlags)
+   FUNCTION = RemoveMenu(hMenu, item, uFlags)
 END FUNCTION
 ' ========================================================================================
 
@@ -275,9 +286,7 @@ PRIVATE FUNCTION MenuGetTextLen (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL
    mii.fMask = MIIM_STRING
    mii.dwTypeData = NULL
    ' // Get the needed size of the buffer
-   IF fByPosition = TRUE THEN
-      item -= 1 : IF item < 0 THEN item = 0
-   END IF
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
    IF GetMenuItemInfoW(hMenu, item, fByPosition, @mii) = 0 THEN RETURN 0
    RETURN mii.cch
 END FUNCTION
@@ -286,32 +295,21 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the text of the specified menu item.
 ' - hMenu = Handle to the menu that contains the menu item.
-' - uItem = The identifier or position of the menu item to get information about.
+' - item = The identifier or position of the menu item to get information about.
 '           The meaning of this parameter depends on the value of fByPosition.
-' - fByPosition = The meaning of uItem. If this parameter is FALSE, uItem is a menu item
+' - fByPosition = The meaning of item. If this parameter is FALSE, item is a menu item
 '           identifier. Otherwise, it is a menu item position.
-' - pwszText: A pointer to a buffer to receive the retrieved text.
-' - cchTextMax : Maximum number of characters to return. Both this value and the size of the
-'      buffer pointed by pwszText must be one character bigger that the wanted length of the text
-'      to return to make room for the null character terminator.
-' Return value: TRUE or FALSE.
-' Usage example:
-' DIM wsz AS WSTRING * 260
-' MenuGetText(hSubMenu, 1, TRUE, @wsz, 260)
-' AfxMsg wsz
+' Return value: The retrieved text.
 ' ========================================================================================
-PRIVATE FUNCTION MenuGetText OVERLOAD (BYVAL hMenu AS HMENU, BYVAL uItem AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS DWSTRING
+PRIVATE FUNCTION MenuGetText (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS DWSTRING
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_STRING
-   mii.dwTypeData = NULL
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
    DIM wszText AS WSTRING * 260
    mii.dwTypeData = @wszText
    mii.cch = 260
-   IF GetMenuItemInfoW(hMenu, uItem, fByPosition, @mii) THEN
+   IF GetMenuItemInfoW(hMenu, item, fByPosition, @mii) THEN
       RETURN wszText
    END IF
    RETURN ""
@@ -321,31 +319,29 @@ END FUNCTION
 ' ========================================================================================
 ' * Sets the text of the specified menu item.
 ' - hMenu = A handle to the menu that contains the menu item.
-' - uItem = The identifier or position of the menu item to get information about.
+' - item = The identifier or position of the menu item to get information about.
 '           The meaning of this parameter depends on the value of fByPosition.
 ' - wszText = Text to set.
-' - fByPosition = The meaning of uItem. If this parameter is FALSE, uItem is a menu item
+' - fByPosition = The meaning of item. If this parameter is FALSE, item is a menu item
 '           identifier. Otherwise, it is a menu item position.
 ' Return value: TRUE or FALSE.
 ' ========================================================================================
-PRIVATE FUNCTION MenuSetText (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYREF wszText AS WSTRING, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION MenuSetText (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYREF wszText AS WSTRING, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_STRING
    mii.dwTypeData = @wszText
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   RETURN SetMenuItemInfoW(hMenu, uItem, fByPosition, @mii)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
 ' * Retrieves the state of the specified menu item.
 ' - hMenu = A handle to the menu that contains the menu item.
-' - uItem = The identifier or position of the menu item to get information about.
-'           The meaning of this parameter depends on the value of fByPosition.
-' - fByPosition = The meaning of uItem. If this parameter is FALSE, uItem is a menu item
+' - item = The identifier or position of the menu item to get information about.
+'          The meaning of this parameter depends on the value of fByPosition.
+' - fByPosition = The meaning of item. If this parameter is FALSE, item is a menu item
 '           identifier. Otherwise, it is a menu item position.
 ' Return Value: 0 on failure or one or more of the following values:
 ' - MFS_CHECKED   The item is checked
@@ -355,137 +351,132 @@ END FUNCTION
 ' - MFS_GRAYED    The item is grayed.
 ' - MFS_HILITE    The item is highlighted
 ' - MFS_UNCHECKED The item is unchecked.
-' - MFS_UNHILITE  The item is not highlighed.
+' - MFS_UNHILITE  The item is not highlighted.
 ' Note: To get extended error information, use the GetLastError function.
 ' ========================================================================================
-PRIVATE FUNCTION MenuGetState (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS UINT
+PRIVATE FUNCTION MenuGetState (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS UINT
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_STATE
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   IF GetMenuItemInfoW(hMenu, uItem, fByPosition, @mii) = 0 THEN RETURN 0
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   IF GetMenuItemInfoW(hMenu, item, fByPosition, @mii) = 0 THEN RETURN 0
    RETURN mii.fState
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Toggles the checked state of a menu item.
 ' ========================================================================================
-PRIVATE FUNCTION MenuItemToggleCheckState (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS UINT
+PRIVATE FUNCTION MenuItemToggleCheckState (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
-   IF GetMenuState(hMenu, uItem, dwFlags) AND MF_CHECKED = MF_CHECKED THEN
+   IF GetMenuState(hMenu, item, dwFlags) AND MF_CHECKED = MF_CHECKED THEN
       dwFlags = dwFlags OR MF_UNCHECKED
    ELSE
       dwFlags = dwFlags OR MF_CHECKED
    END IF
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   RETURN CheckMenuItem(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   ' Microsoft advises to use SetMenuItemInfoW
+'   RETURN CheckMenuItem(hMenu, item, dwFlags)
+   DIM mii AS MENUITEMINFOW
+   mii.cbSize = SIZEOF(mii)
+   mii.fMask = MIIM_STATE
+   mii.fState = dwFlags
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
+
+' ========================================================================================
+' * Determines whether a handle is a menu handle.
+' ========================================================================================
+PRIVATE FUNCTION IsMenuHandle (BYVAL hMenu AS HMENU) AS BOOLEAN
+   RETURN IsMenu(hMenu)
+END FUNCTION
+' ========================================================================================
+
 ' ========================================================================================
 ' * Returns TRUE if the specified menu item is checked; FALSE otherwise.
 ' ========================================================================================
-PRIVATE FUNCTION IsMenuItemChecked (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION IsMenuItemChecked (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   IF GetMenuState(hMenu, uItem, dwFlags) AND MF_CHECKED = MF_CHECKED THEN RETURN TRUE
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   IF GetMenuState(hMenu, item, dwFlags) AND MF_CHECKED = MF_CHECKED THEN RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Returns TRUE if the specified menu item is enabled; FALSE otherwise.
 ' ========================================================================================
-PRIVATE FUNCTION IsMenuItemEnabled (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION IsMenuItemEnabled (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   DIM dwRes AS DWORD = GetMenuState(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   DIM dwRes AS DWORD = GetMenuState(hMenu, item, dwFlags)
    IF ((dwRes AND MF_DISABLED) <> MF_DISABLED) AND ((dwRes AND MF_GRAYED) <> MF_GRAYED) THEN RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Returns TRUE if the specified menu item is disabled; FALSE otherwise.
 ' ========================================================================================
-PRIVATE FUNCTION IsMenuItemDisabled (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION IsMenuItemDisabled (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   DIM dwRes AS DWORD = GetMenuState(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   DIM dwRes AS DWORD = GetMenuState(hMenu, item, dwFlags)
    IF ((dwRes AND MF_DISABLED) = MF_DISABLED) THEN RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Returns TRUE if the specified menu item is grayed; FALSE otherwise.
 ' ========================================================================================
-PRIVATE FUNCTION IsMenuItemGrayed (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION IsMenuItemGrayed (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   DIM dwRes AS DWORD = GetMenuState(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   DIM dwRes AS DWORD = GetMenuState(hMenu, item, dwFlags)
    IF ((dwRes AND MF_GRAYED) = MF_GRAYED) THEN RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Returns TRUE if the specified menu item is highlighted; FALSE otherwise.
 ' ========================================================================================
-PRIVATE FUNCTION IsMenuItemHighlighted (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION IsMenuItemHighlighted (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   DIM dwRes AS DWORD = GetMenuState(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   DIM dwRes AS DWORD = GetMenuState(hMenu, item, dwFlags)
    IF ((dwRes AND MF_HILITE) = MF_HILITE) THEN RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Returns TRUE if the specified menu item is a separator; FALSE otherwise.
 ' ========================================================================================
-PRIVATE FUNCTION IsMenuItemSeparator (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION IsMenuItemSeparator (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   DIM dwRes AS DWORD = GetMenuState(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   DIM dwRes AS DWORD = GetMenuState(hMenu, item, dwFlags)
    IF ((dwRes AND MF_SEPARATOR) = MF_SEPARATOR) THEN RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Returns TRUE if the specified menu item is a submenu; FALSE otherwise.
 ' ========================================================================================
-PRIVATE FUNCTION IsMenuItemPopup (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION IsMenuItemPopup (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   DIM dwRes AS DWORD = GetMenuState(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1
+   DIM dwRes AS DWORD = GetMenuState(hMenu, item, dwFlags)
    IF ((dwRes AND MF_POPUP) = MF_POPUP) THEN RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Returns TRUE if the specified menu item is ownerdraw; FALSE otherwise.
 ' ========================================================================================
-PRIVATE FUNCTION IsMenuItemOwnerDraw (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION IsMenuItemOwnerDraw (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   DIM dwRes AS DWORD = GetMenuState(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   DIM dwRes AS DWORD = GetMenuState(hMenu, item, dwFlags)
    IF ((dwRes AND MF_OWNERDRAW) = MF_OWNERDRAW) THEN RETURN TRUE
 END FUNCTION
 ' ========================================================================================
@@ -493,8 +484,8 @@ END FUNCTION
 ' ========================================================================================
 ' * Sets the state of the specified menu item.
 ' - hMenu = A handle to the menu that contains the menu item.
-' - uItem = The identifier or position of the menu item to get information about.
-'           The meaning of this parameter depends on the value of fByPosition.
+' - item = The identifier or position of the menu item to get information about.
+'          The meaning of this parameter depends on the value of fByPosition.
 ' - fState = The menu item state. It can be one or more of these values:
 ' - MFS_CHECKED   Checks the menu item.
 ' - MFS_DEFAULT   Specifies that the menu item is the default.
@@ -504,74 +495,85 @@ END FUNCTION
 ' - MFS_HILITE    Highlights the menu item.
 ' - MFS_UNCHECKED Unchecks the menu item.
 ' - MFS_UNHILITE  Removes the highlight from the menu item. This is the default state.
-' - fByPosition = The meaning of uItem. If this parameter is FALSE, uItem is a menu item
+' - fByPosition = The meaning of item. If this parameter is FALSE, item is a menu item
 '                 identifier. Otherwise, it is a menu item position.
 ' Return Value: TRUE or FALSE. To get extended error information, use the GetLastError function.
 ' Note: The application must call the DrawMenuBar function whenever a menu changes,
 ' whether or not the menu is in a displayed window.
 ' ========================================================================================
-PRIVATE FUNCTION MenuSetState (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fState AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION MenuSetState (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fState AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_STATE
    mii.fState = fState
-   IF fByPosition = TRUE THEN
-      uItem -= 1 : IF uItem < 0 THEN uItem = 0
-   END IF
-   RETURN SetMenuItemInfoW(hMenu, uItem, fByPosition, @mii)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Checks a menu item.
 ' - hMenu = A handle to the menu that contains the menu item.
-' - uItem = The identifier or position of the menu item to get information about.
-'           The meaning of this parameter depends on the value of fByPosition.
-' - fByPosition = The meaning of uItem. If this parameter is FALSE, uItem is a menu item
+' - item = The identifier or position of the menu item to set information about.
+'          The meaning of this parameter depends on the value of fByPosition.
+' - fByPosition = The meaning of item. If this parameter is FALSE, item is a menu item
 '           identifier. Otherwise, it is a menu item position.
-' Return Value: The return value specifies the previous state of the menu item (either
-' MF_CHECKED or MF_UNCHECKED). If the menu item does not exist, the return value is -1.
+' Return Value: TRUE or FALSE.
 ' ========================================================================================
-PRIVATE FUNCTION MenuCheckItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS LONG
+PRIVATE FUNCTION MenuCheckItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
    dwFlags = dwFlags OR MF_CHECKED
-   RETURN CheckMenuItem(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   ' Microsoft advises to use SetMenuItemInfoW
+'   RETURN CheckMenuItem(hMenu, item, dwFlags)
+   DIM mii AS MENUITEMINFOW
+   mii.cbSize = SIZEOF(mii)
+   mii.fMask = MIIM_STATE
+   mii.fState = dwFlags
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Unchecks a menu item.
 ' - hMenu = A handle to the menu that contains the menu item.
-' - uItem = The identifier or position of the menu item to get information about.
-'           The meaning of this parameter depends on the value of fByPosition.
-' - fByPosition = The meaning of uItem. If this parameter is FALSE, uItem is a menu item
+' - item = The identifier or position of the menu item to get information about.
+'          The meaning of this parameter depends on the value of fByPosition.
+' - fByPosition = The meaning of item. If this parameter is FALSE, uItem is a menu item
 '           identifier. Otherwise, it is a menu item position.
-' Return Value: The return value specifies the previous state of the menu item (either
-' MF_CHECKED or MF_UNCHECKED). If the menu item does not exist, the return value is -1.
+' Return Value: TRUE or FALSE.
 ' ========================================================================================
-PRIVATE FUNCTION MenuUnCheckItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS LONG
+PRIVATE FUNCTION MenuUnCheckItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM dwFlags AS DWORD
    IF fByPosition THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
    dwFlags = dwFlags OR MF_UNCHECKED
-   RETURN CheckMenuItem(hMenu, uItem, dwFlags)
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   ' Microsoft advises to use SetMenuItemInfoW
+'   RETURN CheckMenuItem(hMenu, item, dwFlags)
+   DIM mii AS MENUITEMINFOW
+   mii.cbSize = SIZEOF(mii)
+   mii.fMask = MIIM_STATE
+   mii.fState = dwFlags
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Enables the specified menu item.
 ' - hMenu = A handle to the menu that contains the menu item.
-' - uItem = The identifier or position of the menu item to get information about.
-'           The meaning of this parameter depends on the value of fByPosition.
+' - item = The identifier or position of the menu item to get information about.
+'          The meaning of this parameter depends on the value of fByPosition.
 ' - fByPosition = The meaning of uItem. If this parameter is FALSE, uItem is a menu item
 '                 identifier. Otherwise, it is a menu item position.
 ' Return Value: TRUE or FALSE. To get extended error information, use the GetLastError function.
 ' Note: The application must call the DrawMenuBar function whenever a menu changes,
 ' whether or not the menu is in a displayed window.
 ' ========================================================================================
-PRIVATE FUNCTION MenuEnableItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION MenuEnableItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_STATE
    mii.fState = MFS_ENABLED
-   RETURN SetMenuItemInfoW(hMenu, uItem, fByPosition, @mii)
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -585,12 +587,13 @@ END FUNCTION
 ' Note: The application must call the DrawMenuBar function whenever a menu changes,
 ' whether or not the menu is in a displayed window.
 ' ========================================================================================
-PRIVATE FUNCTION MenuDisableItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION MenuDisableItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_STATE
    mii.fState = MFS_DISABLED
-   RETURN SetMenuItemInfoW(hMenu, uItem, fByPosition, @mii)
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -604,12 +607,13 @@ END FUNCTION
 ' Note: The application must call the DrawMenuBar function whenever a menu changes,
 ' whether or not the menu is in a displayed window.
 ' ========================================================================================
-PRIVATE FUNCTION MenuGrayItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION MenuGrayItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_STATE
    mii.fState = MFS_GRAYED
-   RETURN SetMenuItemInfoW(hMenu, uItem, fByPosition, @mii)
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -623,30 +627,33 @@ END FUNCTION
 ' Note: The application must call the DrawMenuBar function whenever a menu changes,
 ' whether or not the menu is in a displayed window.
 ' ========================================================================================
-PRIVATE FUNCTION MenuHiliteItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+PRIVATE FUNCTION MenuHiliteItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_STATE
    mii.fState = MFS_HILITE
-   RETURN SetMenuItemInfoW(hMenu, uItem, fByPosition, @mii)
+   RETURN SetMenuItemInfoW(hMenu, item, fByPosition, @mii)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Changes the text of a menu item to bold.
 ' - hwnd  = [in] A handle to the menu that contains the menu item.
-' - uItem = [in] The zero-based position of the menu item to change.
-' Return value: TRUE or FALSE.
+' - fByPosition = The meaning of item. If this parameter is FALSE, uItem is a menu item
+'                 identifier. Otherwise, it is a menu item position.
+' Return Value: TRUE or FALSE. To get extended error information, use the GetLastError function.
 ' ========================================================================================
-PRIVATE FUNCTION MenuSetItemBold (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT) AS BOOLEAN
+PRIVATE FUNCTION MenuBoldItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM mii AS MENUITEMINFOW, buffer AS WSTRING * MAX_PATH + 1
    mii.cbSize = SIZEOF(MENUITEMINFOW)
    mii.dwTypeData = @buffer
    mii.cch = MAX_PATH
    mii.fType = MF_STRING
    mii.fMask = MIIM_ID OR MIIM_DATA OR MIIM_TYPE OR MIIM_SUBMENU OR MIIM_STATE
-   IF GetMenuItemInfoW(hMenu, uItem, FALSE, @mii) THEN
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   IF GetMenuItemInfoW(hMenu, item, FALSE, @mii) THEN
       mii.fState = mii.fState OR &H1000
-      RETURN SetMenuItemInfoW(hMenu, uItem, FALSE, @mii)
+      RETURN SetMenuItemInfoW(hMenu, item, FALSE, @mii)
    END IF
 END FUNCTION
 ' ========================================================================================
@@ -657,9 +664,9 @@ END FUNCTION
 ' - hwnd  = [in] A handle to the menu that contains the menu item.
 ' - uItem = [in] The zero-based position of the menu item to change.
 ' Return value: TRUE or FALSE.
-' Usage example: MenuRightJustifyItem(hMenu, 1)
+' Usage example: MenuRightJustifyItem(hMenu, ID_EXIT)
 ' ========================================================================================
-PRIVATE FUNCTION MenuRightJustifyItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT) AS BOOLEAN
+PRIVATE FUNCTION MenuRightJustifyItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
    DIM mii AS MENUITEMINFOW, buffer AS WSTRING * MAX_PATH + 1
    mii.cbSize = SIZEOF(MENUITEMINFOW)
    mii.dwTypeData = @buffer
@@ -667,9 +674,10 @@ PRIVATE FUNCTION MenuRightJustifyItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT
    mii.fType = MF_STRING
    mii.fState = MFS_DEFAULT
    mii.fMask = MIIM_ID OR MIIM_DATA OR MIIM_TYPE OR MIIM_SUBMENU
-   IF GetMenuItemInfoW(hMenu, uItem, CTRUE, @mii) THEN
+   IF fByPosition = TRUE THEN item -= 1   ' // adjust for zero-based
+   IF GetMenuItemInfoW(hMenu, item, CTRUE, @mii) THEN
       mii.fType = mii.fType OR MF_HELP
-      RETURN SetMenuItemInfoW(hMenu, uItem, CTRUE, @mii)
+      RETURN SetMenuItemInfoW(hMenu, item, CTRUE, @mii)
    END IF
 END FUNCTION
 ' ========================================================================================
@@ -766,6 +774,166 @@ PRIVATE FUNCTION MenuRestoreCloseOption (BYVAL hwnd AS HWND) AS BOOLEAN
    IF GetSystemMenu(hwnd, TRUE) <> NULL THEN RETURN FALSE
    DrawMenuBar(hwnd)
    RETURN TRUE
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' Retrieves information about the specified menu bar.
+' Parameters:
+' - hwnd = A handle to the window (menu bar) whose information is to be retrieved.
+' - idObject = The menu object. This parameter can be one of the following values:
+'     - OBJID_CLIENT: &hFFFFFFFC - The popup menu associated with the window.
+'     - OBJID_MENU: &hFFFFFFFD - The menu bar associated with the window
+'     - OBJID_SYSMENU: &hFFFFFFFF - The system menu associated with the window
+' - idItem = The item for which to retrieve information. If this parameter is zero,
+'     the function retrieves information about the menu itself. If this parameter is 1,
+'     the function retrieves information about the first item on the menu, and so on.
+' Return value: A MENUBARINFO structure.
+' Result code:
+'   If the function succeeds, the return value is TRUE.
+'   If the function fails, the return value is FALSE.
+'   To get extended error information, call GetLastError.
+' =====================================================================================
+PRIVATE FUNCTION MenuGetBarInfo (BYVAL hwnd AS HWND, BYVAL idObject AS LONG, BYVAL idItem AS LONG) AS MENUBARINFO
+   DIM mbi AS MENUBARINFO : mbi.cbSize = SIZEOF(MENUBARINFO)
+   DIM bRes AS BOOLEAN = GetMenuBarInfo(hwnd, idObject, idItem, @mbi)
+   RETURN mbi
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' Checks a specified menu item and makes it a radio item. At the same time, the function
+' clears all other menu items in the associated group and clears the radio-item type flag
+' for those items.
+' - hMenu: A handle to the menu that contains the group of menu items.
+' - first: The identifier or position of the first menu item in the group.
+' - last: The identifier or position of the last menu item in the group.
+' - check: The identifier or position of the menu item to check.
+' - fByPosition: The meaning of check. If this parameter is FALSE, check is a menu item
+'                identifier. Otherwise, it is a menu item position.
+' Usage example:
+'   MenuCheckRadioButton(hMenu, ID_OPEN, ID_EXIT, ID_EXIT)      ' By item identifier
+'   MenuCheckRadioButton(GetSubMenu(hMenu, 0), 1, 2, 2, TRUE)   ' By position
+' =====================================================================================
+PRIVATE FUNCTION MenuCheckRadioButton (BYVAL hMenu AS HMENU, BYVAL first AS LONG, BYVAL last AS LONG, BYVAL check AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+   IF fByPosition = TRUE THEN
+      first -= 1 : IF first < 0 THEN first = 0
+      last -= 1 : IF last < 0 THEN last = 0
+      check -= 1 : IF check < 0 THEN check = 0
+   END IF
+   DIM dwFlags AS DWORD
+   IF fByPosition = TRUE THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
+   DIM bRes AS BOOLEAN = CheckMenuRadioItem(hMenu, first, last, check, dwFlags)
+   ' Redraw the menu bar to reflect the changes
+   IF bRes THEN MenuDrawBar(MenuGetWindowOwner(hMenu))
+   RETURN bRes
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' * Retrieves the dimensions of the default check-mark bitmap. The system displays this
+' bitmap next to selected menu items. Before calling the MenuSetItemBitmaps function to
+' replace the default check-mark bitmap for a menu item, an application must determine
+' the correct bitmap size by calling MenuGetCheckMarkWidth and MenuGetCheckMarkHeight.
+' =====================================================================================
+' =====================================================================================
+PRIVATE FUNCTION MenuGetCheckMarkWidth () AS LONG
+   RETURN GetSystemMetrics(SM_CYMENUCHECK)
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+PRIVATE FUNCTION MenuGetCheckMarkHeight () AS LONG
+   RETURN GetSystemMetrics(SM_CXMENUCHECK)
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' Sets the default menu item for the specified menu.
+' Parameters:
+' - hMenu = A handle to the menu to set the default item for.
+' - item = The identifier or position of the new default menu item or -1 for no default item.
+'          The meaning of this parameter depends on the value of fByPos.
+' - fByPosition = The meaning of item. If this parameter is FALSE, item is a menu item identifier.
+'                 Otherwise, it is a menu item position.
+' Return value: TRUE or FALSE. To get extended error information, use the GetLastError function.
+' Usage example:
+' MenuSetDefaultItem(hMenu, 1)
+' =====================================================================================
+PRIVATE FUNCTION MenuSetDefaultItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = TRUE) AS BOOLEAN
+   IF fByPosition = TRUE AND item <> -1 THEN item -= 1   ' Position is zero-based
+   RETURN SetMenuDefaultItem(hMenu, item, fByPosition)
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' * Determines the default menu item on the specified menu.
+' Parameters:
+' - hMenu = A handle to the menu for which to retrieve the default menu item.
+' - gmdiFlags = Indicates how the function should search for menu items. This parameter
+'   can be zero or more of the following values.
+'   Value	Meaning
+'   GMDI_GOINTOPOPUPS &H0002 : If the default item is one that opens a submenu, the function
+'      is to search recursively in the corresponding submenu. If the submenu has no default
+'      item, the return value identifies the item that opens the submenu. By default, the
+'      function returns the first default item on the specified menu, regardless of whether
+'      it is an item that opens a submenu.
+'  GMDI_USEDISABLED &h0001: The function is to return a default item, even if it is disabled.
+'      By default, the function skips disabled or grayed items.
+' - fByPosition = Indicates whether to retrieve the menu item's identifier or its position.
+'      If this parameter is FALSE, the identifier is returned. Otherwise, the position is returned.
+' Return value: If the function succeeds, the return value is the identifier or position of the menu item.
+' If the function fails, the return value is -1. To get extended error information, call GetLastError.
+' Usage example: MenuGetDefaultItem(hMenu, 1)
+' =====================================================================================
+PRIVATE FUNCTION MenuGetDefaultItem (BYVAL hMenu AS HMENU, BYVAL gmdiFlags AS UINT = 0, BYVAL fByPosition AS BOOLEAN = TRUE) AS LONG
+   IF gmdiFlags = 0 THEN gmdiFlags = GMDI_GOINTOPOPUPS
+   RETURN GetMenuDefaultItem(hMenu, gmdiFlags, fByPosition) + 1
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' Determines the number of items in the specified menu.
+' =====================================================================================
+PRIVATE FUNCTION MenuGetItemCount (BYVAL hMenu AS HMENU) AS LONG
+   RETURN GetMenuItemCount(hMenu)
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' Associates the specified bitmap with a menu item. Whether the menu item is selected or
+' clear, the system displays the appropriate bitmap next to the menu item.
+' Usage example:
+' MenuCheckItem(hMenu, ID_OPEN)
+' MenuSetItemBitmaps(hMenu, ID_OPEN, NULL, NULL)
+' =====================================================================================
+PRIVATE FUNCTION MenuSetItemBitmaps (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL hBitmapUnchecked AS HBITMAP, _
+BYVAL hBitmapChecked AS HBITMAP, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+   DIM dwFlags AS UINT
+   IF fByPosition = TRUE THEN dwFlags = MF_BYPOSITION ELSE dwFlags = MF_BYCOMMAND
+   IF fByPosition = TRUE THEN item -= 1   ' Position is zero-based
+   RETURN SetMenuItemBitmaps(hMenu, item, dwFlags, hBitmapUnchecked, hBitmapChecked)
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' Determines which menu item, if any, is at the specified location.
+' =====================================================================================
+PRIVATE FUNCTION MenuGetItemFromPoint (BYVAL hwnd AS HWND, BYVAL hmenu AS HMENU, BYVAL ptScreen AS POINT) AS LONG
+   RETURN MenuItemFromPoint(hwnd, hMenu, ptScreen)
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' Associates a Help context identifier with a menu.
+' =====================================================================================
+PRIVATE FUNCTION MenuSetContextHelpId (BYVAL hMenu AS HMENU, BYVAL helpID AS DWORD) AS BOOLEAN
+   RETURN SetMenuContextHelpId(hMenu, helpID)
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Retrieves the Help context identifier associated with the specified menu.
+' =====================================================================================
+PRIVATE FUNCTION MenuGetContextHelpId (BYVAL hMenu AS HMENU) AS BOOLEAN
+   RETURN GetMenuContextHelpId(hMenu)
 END FUNCTION
 ' =====================================================================================
 
@@ -899,8 +1067,8 @@ END FUNCTION
 ' - cxRow     = The width, in pixels, of the buffer bitmap.
 '               This value is not necessarily equal to the buffer width. It may be larger.
 ' Return value: TRUE or FALSE.
-' ========================================================================================
-PRIVATE FUNCTION _AfxHasAlpha (BYVAL pargb AS DWORD PTR, BYVAL sizeImage AS SIZE, BYVAL cxRow AS LONG) AS BOOLEAN
+' ===============================_HasAlpha=========================================================
+PRIVATE FUNCTION _HasAlpha (BYVAL pargb AS DWORD PTR, BYVAL sizeImage AS SIZE, BYVAL cxRow AS LONG) AS BOOLEAN
    IF pargb = NULL THEN RETURN FALSE
    DIM cxDelta AS ULONG = cxRow - sizeImage.cx
    DIM x AS LONG, y AS LONG
@@ -930,7 +1098,7 @@ PRIVATE FUNCTION _ConvertBufferToPARGB32 (BYVAL hPaintBuffer AS HPAINTBUFFER, BY
    hr = GetBufferedPaintBits(hPaintBuffer, @prgbQuad, @cxRow)
    IF SUCCEEDED(hr) THEN
       DIM pargb AS DWORD PTR = CAST(DWORD PTR, prgbQuad)
-      IF NOT _AfxHasAlpha(pargb, sizeIcon, cxRow) THEN
+      IF NOT _HasAlpha(pargb, sizeIcon, cxRow) THEN
          DIM info AS ICONINFO
          IF GetIconInfo(hicon, @info) THEN
             IF info.hbmMask THEN
@@ -949,40 +1117,43 @@ END FUNCTION
 ' Adds a bitmap to the menu item.
 ' Parameters:
 ' - hMenu       = A handle to the menu that contains the menu item.
-' - nMenuItem   = The identifier or position of the menu item to change.
+' - item        = The identifier or position of the menu item to change.
 '                 The meaning of this parameter depends on the value of fByPosition.
-' - fByPosition = The meaning of nMenuItem. If this parameter is FALSE, nMenuItem is a
+' - fByPosition = The meaning of item. If this parameter is FALSE, nMenuItem is a
 '                 menu item identifier. Otherwise, it is a menu item position.
 ' - hbmp        = Bitmap handle.
 ' Return value: TRUE or FALSE.
 ' ========================================================================================
-PRIVATE FUNCTION MenuAddBitmapToItem (BYVAL hMenu AS HMENU, BYVAL nMenuItem AS LONG, BYVAL fByPosition AS BOOLEAN, BYVAL hbmp AS HBITMAP) AS BOOLEAN
+PRIVATE FUNCTION MenuAddBitmapToItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN, BYVAL hbmp AS HBITMAP) AS BOOLEAN
    DIM mii AS MENUITEMINFOW
    mii.cbSize = SIZEOF(mii)
    mii.fMask = MIIM_BITMAP
    mii.hbmpItem = hbmp
-   IF SetMenuItemInfoW(hMenu, nMenuItem, fByPosition, @mii) = 0 THEN RETURN FALSE
+   IF fByPosition = TRUE THEN
+      item -= 1 : IF item < 0 THEN item = 0
+   END IF
+   IF SetMenuItemInfoW(hMenu, item, fByPosition, @mii) = 0 THEN RETURN FALSE
    RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Converts a hIcon to a bitmap and adds it to the specified hbmpItem field of HMENU item.
+' Converts an icon to a bitmap and adds it to the specified hbmpItem field of HMENU item.
 ' The caller is responsible for destroying the bitmap generated. The icon will be destroyed
 ' if fAutoDestroy is set to true. The hbmpItem field of the menu item can be used to keep
 ' track of the bitmap by passing NULL to phbmp.
 ' Parameters:
 ' - hMenu        = Menu handle that contains the item to which an icon will be added.
-' - uItem        = The identifier or position of the menu item to change.
+' - item         = The identifier or position of the menu item to change.
 '                  The meaning of this parameter depends on the value of fByPosition.
-' - fByPosition  = The meaning of nMenuItem. If this parameter is FALSE, nMenuItem is a
+' - fByPosition  = The meaning of item. If this parameter is FALSE, item is a
 '                  menu item identifier. Otherwise, it is a menu item position.
 ' - hIcon        = Handle of the icon to add to the menu.
 ' - fAutoDestroy = TRUE (the default) or FALSE.
 '                  If TRUE, MenuAddIconToItem destroys the icon before returning.
 ' - phbmp        = Location where the bitmap representation of the icon is stored. Can be NULL.
 ' ========================================================================================
-PRIVATE FUNCTION MenuAddIconToItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, BYVAL fByPosition AS BOOLEAN, BYVAL hIcon AS HICON, BYVAL fAutoDestroy AS BOOLEAN = TRUE, BYVAL phbmp AS HBITMAP PTR = NULL) AS BOOLEAN
+PRIVATE FUNCTION MenuAddIconToItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN, BYVAL hIcon AS HICON, BYVAL fAutoDestroy AS BOOLEAN = TRUE, BYVAL phbmp AS HBITMAP PTR = NULL) AS BOOLEAN
    IF hMenu = NULL OR hIcon = NULL THEN RETURN FALSE
    DIM hbmp AS HBITMAP, sizIcon AS SIZE, rcIcon AS RECT
    sizIcon.cx = GetSystemMetrics(SM_CXSMICON)
@@ -1013,7 +1184,7 @@ PRIVATE FUNCTION MenuAddIconToItem (BYVAL hMenu AS HMENU, BYVAL uItem AS UINT, B
       END IF
    END IF
    DeleteDC(hdcDest)
-   IF hr THEN hr = MenuAddBitmapToItem(hMenu, uItem, fByPosition, hbmp)
+   IF hr THEN hr = MenuAddBitmapToItem(hMenu, item, fByPosition, hbmp)
    IF hr = FALSE THEN DeleteObject(hbmp): hbmp = NULL
    IF fAutoDestroy THEN DestroyIcon(hIcon)
    IF phbmp THEN *phbmp = hbmp

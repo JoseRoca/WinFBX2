@@ -67,7 +67,8 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuRestoreCloseOption](#menurestorecloseoption) | Restores the system menu close option and enables Alt+F4 and the X button. |
 | [MenuRightJustifyItem](#menurightjustifyitem) | Right justifies a top level menu item. |
 | [MenuSetDefaultItem](#menusetdefaultitem) | Sets the default menu item for the specified menu. |
-| [MenuSetText](#menusettext) | Sets the text of the specified menu item. |
+| [MenuSetDefaultItem](#menusetdefaultitem) | Sets the default menu item for the specified menu. |
+| [MenuSetItemBitmaps](#menusetitembitmaps) | Associates the specified bitmap with a menu item. Whether the menu item is selected or clear, the system displays the appropriate bitmap next to the menu item. |
 | [MenuSetState](#menusetstate) | Sets the state of the specified menu item. |
 | [MenuUnCheckItem](#menuuncheckitem) | Unchecks a menu item. |
 
@@ -824,7 +825,7 @@ MenuSetDefaultItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition 
 | Parameter | Description |
 | --------- | ----------- |
 | *hMenu* | A handle to the menu for which to set the default menu item. |
-| *item* | The identifier or position of the new default menu item or -1 for no default item. The meaning of this parameter depends on the value of fByPos. |
+| *item* | The identifier or position of the new default menu item or -1 for no default item. The meaning of this parameter depends on the value of *fByPosition*. |
 | *fByPosition* | The meaning of item. If this parameter is FALSE, item is a menu item identifier. Otherwise, it is a menu item position. |
 
 #### Return value
@@ -835,6 +836,40 @@ TRUE or FALSE. To get extended error information, use the **GetLastError** funct
 ```
 MenuSetDefaultItem(hMenu, 1)
 ```
+---
+### <a name="menusetitembitmaps"></a>MenuSetItemBitmaps
+
+Associates the specified bitmap with a menu item. Whether the menu item is selected or clear, the system displays the appropriate bitmap next to the menu item.
+```
+FUNCTION MenuSetItemBitmaps (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL hBitmapUnchecked AS HBITMAP, _
+   BYVAL hBitmapChecked AS HBITMAP, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu containing the item to receive new check-mark bitmaps. |
+| *item* | The menu item to be changed, as determined by the *fByPosition* parameter. |
+| *fByPosition* | The meaning of item. If this parameter is FALSE, item is a menu item identifier. Otherwise, it is a menu item position. |
+| *hBitmapUnchecked* | A handle to the bitmap displayed when the menu item is not selected. |
+| *hBitmapChecked* | A handle to the bitmap displayed when the menu item is selected. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+#### Remarks
+
+If either the *hBitmapUnchecked* or *hBitmapChecked* parameter is NULL, the system displays nothing next to the menu item for the corresponding check state. If both parameters are NULL, the system displays the default check-mark bitmap when the item is selected, and removes the bitmap when the item is not selected.
+
+When the menu is destroyed, these bitmaps are not destroyed; it is up to the application to destroy them.
+
+The selected and clear bitmaps should be monochrome. The system uses the Boolean AND operator to combine bitmaps with the menu so that the white part becomes transparent and the black part becomes the menu-item color. If you use color bitmaps, the results may be undesirable.
+
+Use the **GetSystemMetrics** function with the **SM_CXMENUCHECK** and **SM_CYMENUCHECK** values to retrieve the bitmap dimensions.
+
+#### Usage example:
+MenuCheckItem(hMenu, ID_OPEN)
+MenuSetItemBitmaps(hMenu, ID_OPEN, NULL, NULL)
+
 ---
 
 ### <a name="menusetstate"></a>MenuSetState

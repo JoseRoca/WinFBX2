@@ -873,7 +873,7 @@ Second overloades function: Returns a **RECT** structure.
 
 ---
 
-### <a name="menuremovecloseoptiom"></a>MenuRemoveCloseOptiom
+### <a name="menuremovecloseoption"></a>MenuRemoveCloseOptiom
 
 Removes the system menu close option and disables the X button.
 ```

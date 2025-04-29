@@ -895,4 +895,6 @@ If the function succeeds, the return value is TRUE. If the function fails, the r
 
 The function calls **MenuDrawBar** to reflect the changes.
 
+To remove the system menu close option and disable Alt+F4 and the X button call **MenuRemoveCloseOptiom**.
+
 ---

@@ -866,10 +866,11 @@ The selected and clear bitmaps should be monochrome. The system uses the Boolean
 
 Use the **GetSystemMetrics** function with the **SM_CXMENUCHECK** and **SM_CYMENUCHECK** values to retrieve the bitmap dimensions.
 
-#### Usage example:
+#### Usage example
+```
 MenuCheckItem(hMenu, ID_OPEN)
 MenuSetItemBitmaps(hMenu, ID_OPEN, NULL, NULL)
-
+```
 ---
 
 ### <a name="menusetstate"></a>MenuSetState

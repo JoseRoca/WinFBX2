@@ -276,6 +276,7 @@ If the function succeeds, the return value is TRUE. If the function fails, the r
 Finds the position of the specified menu item.
 ```
 FUNCTION MenuFindItemPosition (BYVAL hMenu AS HMENU, BYVAL itemID AS UINT, BYREF itemPos AS LONG) AS BOOLEAN
+FUNCTION MenuFindItemPosition OVERLOAD (BYVAL hMenu AS HMENU, BYVAL itemID AS UINT) AS LONG
 ```
 | Parameter | Description |
 | --------- | ----------- |
@@ -285,8 +286,18 @@ FUNCTION MenuFindItemPosition (BYVAL hMenu AS HMENU, BYVAL itemID AS UINT, BYREF
 
 #### Return value
 
-If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
+First overloaded function: If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
 
+Second overloaded function: If the function succeeds, the return value is the one-based position of the item identifier. If the function fails, it returns 0.
+
+#### Usage examples
+```
+DIM nPos AS LONG
+MenuFindItemPosition(hMenu, ID_EXIT, nPos)
+```
+```
+DIM nPos AS LONG = MenuFindItemPosition(hMenu, ID_EXIT)
+```
 ---
 
 ### <a name="menuaddstring"></a>MenuAddString

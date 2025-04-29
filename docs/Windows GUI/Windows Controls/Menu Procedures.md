@@ -39,6 +39,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuDrawBar](#menudrawbar) | Redraws the menu bar of the specified window or dialog. |
 | [MenuEnableItem](#menuenableitem) | Enables the specified menu item. |
 | [MenuFindItemPosition](#menufinditemposition) | Finds the position of the specified menu item. |
+| [MenuGetBarInfo](#menugetbarinfo) | Retrieves information about the specified menu bar. |
 | [MenuGetFont](#menugetfont) | Retrieves information about the font used in menu bars. |
 | [MenuGetFontPointSize](#menugetfontpointsize) | Retrieves the point size of the font used in menu bars. |
 | [MenuGetHandle](#menugethandle) | Retrieves a handle to the menu assigned to the specified window or dialog. |
@@ -384,6 +385,28 @@ FUNCTION MenuDrawBar (BYVAL hwnd AS HWND) AS BOOLEAN
 | *hwnd* | A handle to the window whose menu bar is to be redrawn. |
 
 #### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menugetbarinfo"></a>MenuGetBarInfo
+
+Retrieves information about the specified menu bar.
+```
+FUNCTION MenuGetBarInfo (BYVAL hwnd AS HWND, BYVAL idObject AS LONG, BYVAL idItem AS LONG) AS MENUBARINFO
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | A handle to the window or dialog whose information is to be retrieved. |
+| *idObject* | The menu object. This parameter can be one of the following values:<br>OBJID_CLIENT: &hFFFFFFFC - The popup menu associated with the window.<br>OBJID_MENU: &hFFFFFFFD - The menu bar associated with the window<br>OBJID_SYSMENU: &hFFFFFFFF - The system menu associated with the window |
+| *idItem* | The item for which to retrieve information. If this parameter is zero, the function retrieves information about the menu itself. If this parameter is 1, the function retrieves information about the first item on the menu, and so on. |
+
+#### Return value
+
+A **MENUBARINFO** structure.
+
+#### Result code
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
 

@@ -48,6 +48,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuGetFont](#menugetfont) | Retrieves information about the font used in menu bars. |
 | [MenuGetFontPointSize](#menugetfontpointsize) | Retrieves the point size of the font used in menu bars. |
 | [MenuGetHandle](#menugethandle) | Retrieves a handle to the menu assigned to the specified window or dialog. |
+| [MenuGetItemCount](#menugetitemcount) | Determines the number of items in the specified menu. |
 | [MenuGetItemID](#menugetitemid) | Retrieves the menu item ID of a menu item located at the specified position in a menu. |
 | [MenuGetRect](#menugetrect) | Calculates the size of a menu bar or a drop-down menu. |
 | [MenuGetState](#menugetstate) | Retrieves the state of the specified menu item. |
@@ -490,7 +491,7 @@ If the function succeeds, the return value is TRUE. If the function fails, the r
 
 ---
 
-### <a name="Menugetcheckmarkheight"></a>MenuGetCheckMarkHeight
+### <a name="menugetcheckmarkheight"></a>MenuGetCheckMarkHeight
 
 Retrieves the height of the default check-mark bitmap.
 ```
@@ -503,7 +504,7 @@ The system displays this bitmap next to selected menu items. Before calling the 
 
 ---
 
-### <a name="Menugetcheckmarkwidth"></a>MenuGetCheckMarkWidth
+### <a name="menugetcheckmarkwidth"></a>MenuGetCheckMarkWidth
 
 Retrieves the width of the default check-mark bitmap.
 ```
@@ -513,6 +514,24 @@ FUNCTION FUNCTION MenuGetCheckMarkWidth () AS LONG
 #### Remarks
 
 The system displays this bitmap next to selected menu items. Before calling the **MenuSetItemBitmaps** function to replace the default check-mark bitmap for a menu item, an application must determine the correct bitmap size by calling **MenuGetCheckMarkWidth** and **MenuGetCheckMarkHeight**.
+
+---
+
+### <a name="menugetitemcount"></a>MenuGetItemCount
+
+Determines the number of items in the specified menu.
+```
+FUNCTION MenuGetItemCount (BYVAL hMenu AS HMENU) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu to be examined. |
+
+#### Return value
+
+If the function succeeds, the return value specifies the number of items in the menu.
+
+If the function fails, the return value is -1. To get extended error information, call **GetLastError**.
 
 ---
 

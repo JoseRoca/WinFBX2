@@ -270,6 +270,24 @@ If the function succeeds, the return value is TRUE. If the function fails, the r
 
 ---
 
+### <a name="menufinditemposition"></a>MenuFindItemPosition
+
+Finds the position of the specified menu item.
+```
+FUNCTION MenuFindItemPosition (BYVAL hMenu AS HMENU, BYVAL itemID AS UINT, BYREF itemPos AS LONG) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu. |
+| *itemID* | The item identifier. |
+| *itemPos* | A long variable where the item position will be returned. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
+
+---
+
 ### <a name="menuaddstring"></a>MenuAddString
 
 Adds a string or separator to an existing menu.
@@ -285,8 +303,6 @@ FUNCTION MenuAddString (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL id
 | *fState* | The initial state of the menu item. It can be one or more of the following, combined together with the OR operator to form a bitmask:<br>MFS_CHECKED: Place a checkmark next to the item.<br>MFS_DEFAULT: The default menu item, displayed in bold.  Only one item may be the default.<br>MFS_DISABLED: Disable the menu item so that it cannot be selected.<br>MFS_ENABLED:Enable the menu item so that it can be selected.<br>MFS_GRAYED: Disable the menu item so that it cannot be selected, and draw it in a "grayed" state to indicate this.<br>MFS_HILITE: Highlight the menu item.<br>MFS_UNCHECKED:Do not place a checkmark next to the item.<br>MFS_UNHILITE: Item is not highlighted.<br>A state value of zero (0) provides MFS_ENABLED OR MFS_UNCHECKED OR MFS_UNHILITE. |
 | *item* | The menu item to be added, as determined by the *fByPosition* parameter. If the *fByPosition* parameter is FALSE, the menu item is inserted prior to the menu item ID specified by *item*. Otherwise, the menu item is inserted at the physical position within the parent menu, where position = 1 for the first position, position = 2 for the second, and so on. If *item* is not specified then the menu item appended to the end of the menu. |
 | *fByPosition* | Controls the meaning of *position*. If this parameter is FALSE, *position* is a menu item identifier; otherwise, it is a physical position within the parent menu. |
-
-+++++++++++++++
 
 #### Return value
 

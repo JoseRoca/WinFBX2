@@ -580,7 +580,7 @@ Returns TRUE if the specified menu item is highlighted; FALSE otherwise.
 
 Checks if a menu item state is a separator.
 ```
-FUNCTION IsMenuItemHighlighted (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
+FUNCTION IsMenuItemSeparator (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
    BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
 ```
 | Parameter | Description |
@@ -599,7 +599,7 @@ Returns TRUE if the specified menu item is a separator; FALSE otherwise.
 
 Checks if a menu item state is a popup.
 ```
-FUNCTION IsMenuItemHighlighted (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
+FUNCTION IsMenuItemPopUp (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
    BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
 ```
 | Parameter | Description |
@@ -626,6 +626,37 @@ FUNCTION IsMenuItemOwnerDraw (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
 | *hMenu* | A handle to the menu that contains the menu item. |
 | *item* | The identifier or position of the menu item to get information about. The meaning of this parameter depends on the value of *fByPosition*. |
 | *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+Returns TRUE if the specified menu item is ownerdraw; FALSE otherwise.
+
+---
+
+### <a name="menusetstate"></a>MenuSetState
+
+Sets the state of the specified menu item.
+```
+FUNCTION MenuSetState (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
+   BYVAL fState AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to get information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fState* | The menu item state. It can be one or more of these values (see table below): |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+| fState | Meaning |
+| ----- | ------- |
+| **MFS_CHECKED** | The item is checked. |
+| **MFS_DEFAULT** | The item is the default. |
+| **MFS_DISABLED** | The item is disabled. |
+| **MFS_ENABLED** | The item is enabled. |
+| **MFS_GRAYED** | The item is grayed. |
+| **MFS_HILITE** | The item is highlighted. |
+| **MFS_UNCHECKED** | The item is unchecked. |
+| **MFS_UNHILITE** | The item is not highlighted. |
 
 #### Return value
 

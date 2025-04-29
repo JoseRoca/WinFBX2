@@ -663,3 +663,39 @@ FUNCTION MenuSetState (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
 Returns TRUE if the specified menu item is ownerdraw; FALSE otherwise.
 
 ---
+
+### <a name="menucheckitem"></a>MenuCheckItem
+
+Checks a menu item.
+```
+FUNCTION MenuCheckItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to set information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menuuncheckitem"></a>MenuUnCheckItem
+
+Unchecks a menu item.
+```
+FUNCTION MenuUnCheckItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to set information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---

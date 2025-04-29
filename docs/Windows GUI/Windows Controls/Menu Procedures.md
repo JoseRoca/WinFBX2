@@ -20,6 +20,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 
 | Name       | Description |
 | ---------- | ----------- |
+| [IsMenuHandle](#ismenuhandle) | Determines whether a handle is a menu handle. |
 | [IsMenuItemChecked](#ismenuitemchecked) | Returns TRUE if the specified menu item is checked; FALSE otherwise. |
 | [IsMenuItemDisabled](#ismenuitemdisabled) | Returns TRUE if the specified menu item is disabled; FALSE otherwise. |
 | [IsMenuItemEnabled](#ismenuitemenabled) | Returns TRUE if the specified menu item is enabled; FALSE otherwise. |
@@ -64,6 +65,18 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuSetText](#menusettext) | Sets the text of the specified menu item. |
 | [MenuSetState](#menusetstate) | Sets the state of the specified menu item. |
 | [MenuUnCheckItem](#menuuncheckitem) | Unchecks a menu item. |
+
+---
+
+### <a name="ismenuhandle"></a>IsMenuHandle
+
+Determines whether a handle is a menu handle.
+```
+FUNCTION IsMenuHandle (BYVAL hMenu AS HMENU) AS BOOLEAN
+```
+#### Return value
+
+If the function succeeds, the return value is a TRUE. If the function fails, the return value is FALSE.
 
 ---
 

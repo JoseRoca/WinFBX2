@@ -44,6 +44,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuGetBarInfo](#menugetbarinfo) | Retrieves information about the specified menu bar. |
 | [MenuGetCheckMarkHeight](#menugetcheckmarkheight) | Retrieves the height of the default check-mark bitmap. |
 | [MenuGetCheckMarkWidth](#menugetcheckmarkwidth) | Retrieves the width of the default check-mark bitmap. |
+| [MenuGetContextHelpID](#menugetcontexthelpid) | Retrieves the Help context identifier associated with the specified menu. |
 | [MenuGetDefaultItem](#menugetdefaultitem) | Determines the default menu item on the specified menu. |
 | [MenuGetFont](#menugetfont) | Retrieves information about the font used in menu bars. |
 | [MenuGetFontPointSize](#menugetfontpointsize) | Retrieves the point size of the font used in menu bars. |
@@ -67,6 +68,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuRemoveCloseOption](#menuremovecloseoption) | Removes the system menu close option and disables the X button. |
 | [MenuRestoreCloseOption](#menurestorecloseoption) | Restores the system menu close option and enables Alt+F4 and the X button. |
 | [MenuRightJustifyItem](#menurightjustifyitem) | Right justifies a top level menu item. |
+| [MenuSetContextHelpID](#menusetcontexthelpid) | Associates a Help context identifier with a menu. |
 | [MenuSetDefaultItem](#menusetdefaultitem) | Sets the default menu item for the specified menu. |
 | [MenuSetDefaultItem](#menusetdefaultitem) | Sets the default menu item for the specified menu. |
 | [MenuSetItemBitmaps](#menusetitembitmaps) | Associates the specified bitmap with a menu item. Whether the menu item is selected or clear, the system displays the appropriate bitmap next to the menu item. |
@@ -1092,7 +1094,44 @@ FUNCTION MenuGetRect (BYVAL hwnd AS HWND, BYVAL hmenu AS HMENU) AS RECT
 
 First overloaded function: If the function succeeds, the return value is 0. If the function fails, the return value is a system error code.
 
-Second overloades function: Returns a **RECT** structure.
+Second overloaded function: Returns a **RECT** structure.
+
+---
+
+### <a name="menugetcontexthelpid"></a>MenuGetContextHelpId
+
+Retrieves the Help context identifier associated with the specified menu.
+```
+FUNCTION MenuGetContextHelpId (BYVAL hMenu AS HMENU) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu for which the Help context identifier is to be retrieved. |
+
+#### Return value
+
+Returns the Help context identifier if the menu has one, or zero otherwise.
+
+---
+
+### <a name="menusetcontexthelpid"></a>MenuSetContextHelpId
+
+Associates a Help context identifier with a menu.
+```
+FUNCTION MenuSetContextHelpId (BYVAL hMenu AS HMENU, BYVAL helpID AS DWORD) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu with which to associate the Help context identifier. |
+| *helpID* | The help context identifier. |
+
+#### Return value
+
+Returns TRUE if successful, or FALSE otherwise. To retrieve extended error information, call **GetLastError**.
+
+#### Remarks
+
+All items in the menu share this identifier. Help context identifiers can't be attached to individual menu items.
 
 ---
 

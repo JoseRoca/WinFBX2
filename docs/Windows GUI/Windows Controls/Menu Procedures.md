@@ -835,7 +835,7 @@ FUNCTION MenuGetFont () AS LOGFONTW
 
 #### Return value
 
-A [LOGFONTW(https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfontw)] structure containing the information.
+A [LOGFONTW](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfontw) structure containing the information.
 
 ---
 

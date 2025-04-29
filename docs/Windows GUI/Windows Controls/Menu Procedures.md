@@ -42,6 +42,8 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuEnableItem](#menuenableitem) | Enables the specified menu item. |
 | [MenuFindItemPosition](#menufinditemposition) | Finds the position of the specified menu item. |
 | [MenuGetBarInfo](#menugetbarinfo) | Retrieves information about the specified menu bar. |
+| [MenuGetCheckMarkHeight](#menugetcheckmarkheight) | Retrieves the height of the default check-mark bitmap. |
+| [MenuGetCheckMarkWidth](#menugetcheckmarkwidth) | Retrieves the width of the default check-mark bitmap. |
 | [MenuGetFont](#menugetfont) | Retrieves information about the font used in menu bars. |
 | [MenuGetFontPointSize](#menugetfontpointsize) | Retrieves the point size of the font used in menu bars. |
 | [MenuGetHandle](#menugethandle) | Retrieves a handle to the menu assigned to the specified window or dialog. |
@@ -461,6 +463,32 @@ A **MENUBARINFO** structure.
 #### Result code
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="Menugetcheckmarkheight"></a>MenuGetCheckMarkHeight
+
+Retrieves the height of the default check-mark bitmap.
+```
+FUNCTION FUNCTION MenuGetCheckMarkHeight () AS LONG
+```
+
+#### Remarks
+
+The system displays this bitmap next to selected menu items. Before calling the **MenuSetItemBitmaps** function to replace the default check-mark bitmap for a menu item, an application must determine the correct bitmap size by calling **MenuGetCheckMarkWidth** and **MenuGetCheckMarkHeight**.
+
+---
+
+### <a name="Menugetcheckmarkwidth"></a>MenuGetCheckMarkWidth
+
+Retrieves the width of the default check-mark bitmap.
+```
+FUNCTION FUNCTION MenuGetCheckMarkWidth () AS LONG
+```
+
+#### Remarks
+
+The system displays this bitmap next to selected menu items. Before calling the **MenuSetItemBitmaps** function to replace the default check-mark bitmap for a menu item, an application must determine the correct bitmap size by calling **MenuGetCheckMarkWidth** and **MenuGetCheckMarkHeight**.
 
 ---
 

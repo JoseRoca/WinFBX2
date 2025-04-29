@@ -44,6 +44,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuGetBarInfo](#menugetbarinfo) | Retrieves information about the specified menu bar. |
 | [MenuGetCheckMarkHeight](#menugetcheckmarkheight) | Retrieves the height of the default check-mark bitmap. |
 | [MenuGetCheckMarkWidth](#menugetcheckmarkwidth) | Retrieves the width of the default check-mark bitmap. |
+| [MenuGetDefaultItem](#menugetdefaultitem) | Determines the default menu item on the specified menu. |
 | [MenuGetFont](#menugetfont) | Retrieves information about the font used in menu bars. |
 | [MenuGetFontPointSize](#menugetfontpointsize) | Retrieves the point size of the font used in menu bars. |
 | [MenuGetHandle](#menugethandle) | Retrieves a handle to the menu assigned to the specified window or dialog. |
@@ -64,6 +65,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuRemoveCloseOption](#menuremovecloseoption) | Removes the system menu close option and disables the X button. |
 | [MenuRestoreCloseOption](#menurestorecloseoption) | Restores the system menu close option and enables Alt+F4 and the X button. |
 | [MenuRightJustifyItem](#menurightjustifyitem) | Right justifies a top level menu item. |
+| [MenuSetDefaultItem](#menusetdefaultitem) | Sets the default menu item for the specified menu. |
 | [MenuSetText](#menusettext) | Sets the text of the specified menu item. |
 | [MenuSetState](#menusetstate) | Sets the state of the specified menu item. |
 | [MenuUnCheckItem](#menuuncheckitem) | Unchecks a menu item. |
@@ -133,6 +135,28 @@ MenuAddString hPopup1, "&About", ID_ABOUT, MF_ENABLED
    
 ' Attach the menu to the dialog
 MenuAttach hMenu, hDlg
+```
+---
+### <a name="menugetdefaultitem"></a>MenuGetDefaultItem
+
+Determines the default menu item on the specified menu.
+```
+FUNCTION MenuGetDefaultItem (BYVAL hMenu AS HMENU, BYVAL gmdiFlags AS UINT = 0, BYVAL _
+   fByPosition AS BOOLEAN = TRUE) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu for which to retrieve the default menu item. |
+| *gmdiFlags* | Indicates how the function should search for menu items. This parameter can be zero or more of the following values.<br>GMDI_GOINTOPOPUPS (&H0002): If the default item is one that opens a submenu, the function is to search recursively in the corresponding submenu. If the submenu has no default item, the return value identifies the item that opens the submenu. By default, the function returns the first default item on the specified menu, regardless of whether it is an item that opens a submenu.<br>GMDI_USEDISABLED (&h0001): The function is to return a default item, even if it is disabled. By default, the function skips disabled or grayed items. |
+| *fByPosition* | Indicates whether to retrieve the menu item's identifier or its position. If this parameter is FALSE, the identifier is returned. Otherwise, the position is returned. |
+
+#### Return value
+
+If the function succeeds, the return value is the identifier or position of the menu item. If the function fails, the return value is -1. To get extended error information, call **GetLastError**.
+
+#### Usage example
+```
+MenuGetDefaultItem(hMenu, 1)
 ```
 ---
 
@@ -770,6 +794,28 @@ FUNCTION MenuBoldItem (BYVAL hMenu AS HMENU, BYVAL item AS UINT, BYVAL fByPositi
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
 
+---
+
+### <a name="menugetsefaultitem"></a>MenuSetDefaultItem
+
+Sets the default menu item for the specified menu.
+```
+MenuSetDefaultItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = TRUE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu for which to set the default menu item. |
+| *item* | The identifier or position of the new default menu item or -1 for no default item. The meaning of this parameter depends on the value of fByPos. |
+| *fByPosition* | The meaning of item. If this parameter is FALSE, item is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+TRUE or FALSE. To get extended error information, use the **GetLastError** function.
+
+#### Usage example:
+```
+MenuSetDefaultItem(hMenu, 1)
+```
 ---
 
 ### <a name="menusetstate"></a>MenuSetState

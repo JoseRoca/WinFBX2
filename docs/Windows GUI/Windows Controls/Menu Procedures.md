@@ -33,6 +33,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuAttach](#menuattach) | Attaches a menu to a window or dialog. |
 | [MenuBoldItem](#menubolditem) | Changes the text of a menu item to bold. |
 | [MenuCheckItem](#menucheckitem) | Checks a menu item. |
+| [MenuCheckRadioButton](#menucheckradiobutton) | Checks a specified menu item and makes it a radio item. |
 | [MenuDelete](#menudelete) | Deletes a menu item from an existing menu. |
 | [MenuDestroy](#menudestroy) | Destroys the main menu from the window or dialog. |
 | [MenuDisableItem](#menudisableitem) | Disables the specified menu item. |
@@ -333,6 +334,33 @@ FUNCTION MenuAttach (BYVAL hMenu AS HMENU, BYVAL hwnd AS HWND) AS BOOLEAN
 | *hMenu* | A handle to the new menu. If this parameter is NULL, the window's current menu is removed. |
 | *hwnd* | A handle to the window to which the menu is to be assigned. |
 
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menucheckradiobutton"></a>MenuCheckRadioButton
+
+Checks a specified menu item and makes it a radio item. At the same time, the function clears all other menu items in the associated group and clears the radio-item type flag for those items.
+
+```
+FUNCTION MenuCheckRadioButton (BYVAL hMenu AS HMENU, BYVAL first AS LONG, BYVAL last AS LONG, _
+   BYVAL check AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the group of menu items. |
+| *first* | The identifier or position of the first menu item in the group. |
+| *last* | The identifier or position of the last menu item in the group. |
+| *check* | The identifier or position of the menu item to check. |
+| *fByPosition* | Controls the meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, *item* is the position of the menu item, where position = 1 for the first position, position = 2 for the second, and so on.  |
+
+#### Usage example:
+```
+MenuCheckRadioButton(hMenu, ID_OPEN, ID_EXIT, ID_EXIT)      ' By item identifier
+MenuCheckRadioButton(GetSubMenu(hMenu, 0), 1, 2, 2, TRUE)   ' By position
+```
 #### Return value
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.

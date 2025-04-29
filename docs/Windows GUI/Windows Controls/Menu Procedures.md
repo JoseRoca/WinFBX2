@@ -898,3 +898,23 @@ The function calls **MenuDrawBar** to reflect the changes.
 To remove the system menu close option and disable Alt+F4 and the X button call **MenuRemoveCloseOptiom**.
 
 ---
+
+### <a name="menuaddbitmaptoitem"></a>MenuAddBitmapToItem
+
+Restores the system menu close option and enables Alt+F4 and the X button.
+```
+FUNCTION MenuAddBitmapToItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
+   BYVAL fByPosition AS BOOLEAN, BYVAL hbmp AS HBITMAP) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | Handle of the window or dialog that owns the menu. |
+| *item* | The identifier or position of the menu item to get information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+| *hbmp* | The bitmap handle. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
+
+---

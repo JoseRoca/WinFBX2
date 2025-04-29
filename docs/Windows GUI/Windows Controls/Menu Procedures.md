@@ -49,6 +49,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuGetFontPointSize](#menugetfontpointsize) | Retrieves the point size of the font used in menu bars. |
 | [MenuGetHandle](#menugethandle) | Retrieves a handle to the menu assigned to the specified window or dialog. |
 | [MenuGetItemCount](#menugetitemcount) | Determines the number of items in the specified menu. |
+| [MenuGetItemFromPoint](#menugetitemfrompoint) | Determines which menu item, if any, is at the specified location. |
 | [MenuGetItemID](#menugetitemid) | Retrieves the menu item ID of a menu item located at the specified position in a menu. |
 | [MenuGetRect](#menugetrect) | Calculates the size of a menu bar or a drop-down menu. |
 | [MenuGetState](#menugetstate) | Retrieves the state of the specified menu item. |
@@ -533,6 +534,24 @@ FUNCTION MenuGetItemCount (BYVAL hMenu AS HMENU) AS LONG
 If the function succeeds, the return value specifies the number of items in the menu.
 
 If the function fails, the return value is -1. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menugetitemfrompoint"></a>MenuGetItemFromPoint
+
+Determines which menu item, if any, is at the specified location.
+```
+FUNCTION MenuGetItemFromPoint (NYVAL hwnd AS HWND, BYVAL hMenu AS HMENU, BYVAL ptScreen AS LONG) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | A handle to the window containing the menu. If this value is NULL and the *hMenu* parameter represents a popup menu, the function will find the menu window. |
+| *hMenu* | A handle to the menu containing the menu items to hit test. |
+| *ptScreen* | A structure that specifies the location to test. If *hMenu* specifies a menu bar, this parameter is in window coordinates. Otherwise, it is in client coordinates. |
+
+#### Return value
+
+Returns the zero-based position of the menu item at the specified location or -1 if no menu item is at the specified location.
 
 ---
 

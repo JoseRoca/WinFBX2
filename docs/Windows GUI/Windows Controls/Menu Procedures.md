@@ -918,3 +918,25 @@ FUNCTION MenuAddBitmapToItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, _
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
 
 ---
+
+### <a name="menuaddicontoitem"></a>MenuAddIconToItem
+
+Converts an icon to a bitmap and adds it to the specified hbmpItem field of HMENU item. The caller is responsible for destroying the bitmap generated. The icon will be destroyed if **fAutoDestroy** is set to true. The **hbmpItem** field of the menu item can be used to keep track of the bitmap by passing NULL to the **phbmp** parameter.
+
+```
+FUNCTION MenuAddIconToItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN, _
+   BYVAL hIcon AS HICON, BYVAL fAutoDestroy AS BOOLEAN = TRUE, BYVAL phbmp AS HBITMAP PTR = NULL) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | Handle of the window or dialog that owns the menu. |
+| *item* | The identifier or position of the menu item to get information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+| *hIcon* | The icon handle. |
+| *phbmp* | Location where the bitmap representation of the icon is stored. Can be NULL. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
+
+---

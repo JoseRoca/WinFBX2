@@ -45,8 +45,8 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuGetItemID](#menugetitemid) | Retrieves the menu item ID of a menu item located at the specified position in a menu. |
 | [MenuGetRect](#menugetrect) | Calculates the size of a menu bar or a drop-down menu. |
 | [MenuGetState](#menugetstate) | Retrieves the state of the specified menu item. |
-| [MenuGetSubmenusCount](#menugetsubmenuscount) | Get the number of submenus of a menu. |
 | [MenuGetSubMenu](#menugetsubmenu) | Retrieves a handle to the drop-down menu or submenu activated by the specified menu item. |
+| [MenuGetSubMenusCount](#menugetsubmenuscount) | Get the number of submenus of a menu. |
 | [MenuGetSytemMenuHandle](#menugetsytemmenuhandle) | Enables the application to access the window menu (also known as the system menu or the control menu) for copying and modifying. |
 | [MenuGetText](#menugettext) | Retrieves the text of the specified menu item. |
 | [MenuGetTextLen](#menugettextlen) | Returns the lengnth of the text of the specified menu item. |
@@ -185,7 +185,7 @@ If the function succeeds, the return value is a handle to the drop-down menu or 
 
 ---
 
-### <a name="Menugetsubmenuscount"></a>MenuGetSubmenusCount
+### <a name="Menugetsubmenuscount"></a>MenuGetSubMenusCount
 
 Retrieves the number of submenus of a menu.
 ```

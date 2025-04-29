@@ -853,5 +853,46 @@ First overloaded function: If the function succeeds, the return value is 0. If t
 
 Second overloades function: Returns a **RECT** structure.
 
+---
+
+### <a name="menuremovecloseoptiom"></a>MenuRemoveCloseOptiom
+
+Removes the system menu close option and disables the X button.
+```
+FUNCTION MenuRemoveCloseOptiom (BYVAL hwnd AS HWND) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | Handle of the window or dialog that owns the menu. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
+
+#### Remarks
+
+To restore the close menu, call **MenuRestoreCloseOption**.
+
+The function calls **MenuDrawBar** to reflect the changes.
+
+---
+
+### <a name="menurestorecloseoptiom"></a>MenuRestoreCloseOption
+
+Restores the system menu close option and enables Alt+F4 and the X button.
+```
+FUNCTION MenuRestoreCloseOptiom (BYVAL hwnd AS HWND) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | Handle of the window or dialog that owns the menu. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE.
+
+#### Remarks
+
+The function calls **MenuDrawBar** to reflect the changes.
 
 ---

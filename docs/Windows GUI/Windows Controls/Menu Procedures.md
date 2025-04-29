@@ -31,6 +31,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuAddPopUp](#menuaddpopup) | Adds a popup child menu to an existing menu. |
 | [MenuAddString](#menuaddstring) | Adds a string or separator to an existing menu. |
 | [MenuAttach](#menuattach) | Attaches a menu to a window or dialog. |
+| [MenuBoldItem](#menubolditem) | Changes the text of a menu item to bold. |
 | [MenuCheckItem](#menucheckitem) | Checks a menu item. |
 | [MenuDelete](#menudelete) | Deletes a menu item from an existing menu. |
 | [MenuDestroy](#menudestroy) | Destroys the main menu from the window or dialog. |
@@ -58,7 +59,6 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuRemoveCloseOption](#menuremovecloseoption) | Removes the system menu close option and disables the X button. |
 | [MenuRestoreCloseOption](#menurestorecloseoption) | Restores the system menu close option and enables Alt+F4 and the X button. |
 | [MenuRightJustifyItem](#menurightjustifyitem) | Right justifies a top level menu item. |
-| [MenuSetItemBold](#menusetitembold) | Changes the text of a menu item to bold. |
 | [MenuSetText](#menusettext) | Sets the text of the specified menu item. |
 | [MenuSetState](#menusetstate) | Sets the state of the specified menu item. |
 | [MenuUnCheckItem](#menuuncheckitem) | Unchecks a menu item. |
@@ -633,6 +633,24 @@ Returns TRUE if the specified menu item is ownerdraw; FALSE otherwise.
 
 ---
 
+### <a name="menubolditem"></a>MenuBoldItem
+
+Changes the text of a menu item to bold.
+```
+FUNCTION MenuBoldItem (BYVAL hMenu AS HMENU, BYVAL item AS UINT, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to set information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
 ### <a name="menusetstate"></a>MenuSetState
 
 Sets the state of the specified menu item.
@@ -697,5 +715,143 @@ FUNCTION MenuUnCheckItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPos
 #### Return value
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menuenableitem"></a>MenuEnableItem
+
+Enables the specified menu item.
+```
+FUNCTION MenuEnableItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to set information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menudisableitem"></a>MenuDisableItem
+
+Disables the specified menu item.
+```
+FUNCTION MenuDisableItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to set information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menugrayitem"></a>MenuGrayItem
+
+Grays the specified menu item.
+```
+FUNCTION MenuGrayItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to set information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menuhiliteitem"></a>MenuHiliteItem
+
+Grays the specified menu item.
+```
+FUNCTION MenuHiliteItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to set information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menurightjustifyitem"></a>MenuRightJustiyItem
+
+Grays the specified menu item.
+```
+FUNCTION MenuHiliteItem (BYVAL hMenu AS HMENU, BYVAL item AS LONG, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hMenu* | A handle to the menu that contains the menu item. |
+| *item* | The identifier or position of the menu item to set information about. The meaning of this parameter depends on the value of *fByPosition*. |
+| *fByPosition* | The meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, it is a menu item position. |
+
+#### Return value
+
+If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
+
+---
+
+### <a name="menugetfont"></a>MenuGetFont
+
+Retrieves information about the font used in menu bars.
+```
+FUNCTION MenuGetFont () AS LOGFONTW
+```
+
+#### Return value
+
+A [LOGFONTW(https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfontw)] structure containing the information.
+
+---
+
+### <a name="menugetfontpointsize"></a>MenuGetFontPointSize
+
+Retrieves information about the font used in menu bars.
+```
+FUNCTION MenuGetFontPointSize () AS LONG
+```
+
+#### Return value
+
+If the function fails, the return value is 0.
+
+---
+
+### <a name="menugetrect"></a>MenuGetRect
+
+Calculates the size of a menu bar or a drop-down menu.
+```
+FUNCTION MenuGetRect (BYVAL hwnd AS HWND, BYVAL hmenu AS HMENU, BYVAL prcmenu AS RECT PTR) AS LONG
+FUNCTION MenuGetRect (BYVAL hwnd AS HWND, BYVAL hmenu AS HMENU) AS RECT
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | Handle of the window that owns the menu. |
+| *hMenu* | A handle to the menu. |
+| *prcmenu* | Pointer to a variable of type **RECT** where to return the retrieved values.. |
+
+#### Return value
+
+First overloaded function: If the function succeeds, the return value is 0. If the function fails, the return value is a system error code.
+
+Second overloades function: Returns a **RECT** structure.
+
 
 ---

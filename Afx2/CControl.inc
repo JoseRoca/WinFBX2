@@ -45,6 +45,16 @@ Public:
    DECLARE FUNCTION SetResult (BYVAL Result AS LONG) AS LONG
    DECLARE FUNCTION GetErrorInfo (BYVAL dwError AS LONG = -1) AS DWSTRING
 
+   DECLARE FUNCTION DialogUnitsToPixels (BYVAL hCtl AS HWND, BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DialogUnitsToPixelsRatios (BYVAL hCtl AS HWND, BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+   DECLARE FUNCTION DlgToPixRX (BYVAL hCtl AS HWND) AS SINGLE
+   DECLARE FUNCTION DlgToPixRY (BYVAL hCtl AS HWND) AS SINGLE
+   DECLARE FUNCTION PixelsToDialogUnits (BYVAL hCtl AS HWND, BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
+   DECLARE FUNCTION PixelsToDialogUnitsRatios (BYVAL hCtl AS HWND, BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+   DECLARE FUNCTION PixToDlgRX (BYVAL hCtl AS HWND) AS SINGLE
+   DECLARE FUNCTION PixToDlgRY (BYVAL hCtl AS HWND) AS SINGLE
+
+
 END TYPE
 ' ========================================================================================
 
@@ -95,6 +105,114 @@ PRIVATE FUNCTION CControl.GetErrorInfo (BYVAL nError AS LONG = -1) AS DWSTRING
    END IF
    IF nError THEN dwsMsg = "Error &h" & HEX(nError) & CHR(13, 10) & dwsMsg
    RETURN dwsMsg
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' * Converts the specified dialog box units to screen units (pixels).
+' ========================================================================================
+PRIVATE FUNCTION CControl.DialogUnitsToPixels (BYVAL hCtl AS HWND, BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
+   IF VARPTR(pixelX) = 0 OR VARPTR(pixelY) = 0 THEN RETURN FALSE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = dluX : rc.Bottom = dluY
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN FALSE
+   IF VARPTR(pixelX) THEN pixelX = rc.Right
+   IF VARPTR(pixelY) THEN pixelY = rc.Bottom
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratios from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CControl.DialogUnitsToPixelsRatios (BYVAL hCtl AS HWND, BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+   IF VARPTR(ratioX) = 0 OR VARPTR(ratioY) = 0 THEN RETURN FALSE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = 100 : rc.Bottom = 100
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN FALSE
+   IF VARPTR(ratioX) THEN ratioX = rc.Right / 100
+   IF VARPTR(ratioY) THEN ratioY = rc.Bottom / 100
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CControl.DlgToPixRX (BYVAL hCtl AS HWND) AS SINGLE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN rc.Right / 4
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CControl.DlgToPixRY (BYVAL hCtl AS HWND) AS SINGLE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN rc.Bottom / 8
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CControl.PixToDlgRX (BYVAL hCtl AS HWND) AS SINGLE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN 4.0 / rc.right
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CControl.PixToDlgRY (BYVAL hCtl AS HWND) AS SINGLE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN 8.0 / rc.bottom
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' * Converts the specified screen units (pixels) to dialog box units.
+' ========================================================================================
+PRIVATE FUNCTION CControl.PixelsToDialogUnits (BYVAL hCtl AS HWND, BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
+   IF VARPTR(pixelX) = 0 OR VARPTR(pixelY) = 0 THEN RETURN FALSE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = 4
+   rc.Bottom = 8
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN FALSE
+   IF VARPTR(dluX) THEN dluX = pixelX * (4.0 / rc.right)
+   IF VARPTR(dluY) THEN dluY = pixelY * (8.0 / rc.bottom)
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' * Retrieves the conversion ratios from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CControl.PixelsToDialogUnitsRatios (BYVAL hCtl AS HWND, BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+   IF VARPTR(ratioX) = 0 OR VARPTR(ratioY) = 0 THEN RETURN FALSE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN FALSE
+   IF VARPTR(ratioX) THEN ratioX = 4.0 / rc.right
+   IF VARPTR(ratioY) THEN ratioY = 8.0 / rc.bottom
+   RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 

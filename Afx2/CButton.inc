@@ -27,8 +27,8 @@
 #pragma once
 #include once "windows.bi"
 #include once "win/commctrl.bi"
-#include once "Afx2/CDialog.inc"
 #include once "Afx2/CControl.inc"
+#include once "Afx2/CDialogEx.inc"
 using Afx2
 
 NAMESPACE Afx2
@@ -49,6 +49,11 @@ Public:
    DECLARE CONSTRUCTOR (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
    DECLARE CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    DECLARE DESTRUCTOR
+   DECLARE FUNCTION DlgToPixRX () AS SINGLE
+   DECLARE FUNCTION DlgToPixRY () AS SINGLE
+   DECLARE FUNCTION PixToDlgRX () AS SINGLE
+   DECLARE FUNCTION PixToDlgRY () AS SINGLE
+
    DECLARE FUNCTION CheckDlgButton (BYVAL cIDButton AS LONG, BYVAL uCheck AS DWORD) AS BOOLEAN
    DECLARE FUNCTION CheckRadioButton (BYVAL cIDFirstButton AS LONG, BYVAL cIDLastButton AS LONG, BYVAL cIDCheckButton AS LONG) AS BOOLEAN
    DECLARE FUNCTION IsDlgButtonChecked (BYVAL cIDButton AS LONG) AS UINT
@@ -135,6 +140,51 @@ END DESTRUCTOR
 ' ========================================================================================
 
 ' ========================================================================================
+' * Retrieves the conversion ratio from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CButton.DlgToPixRX () AS SINGLE
+   DIM hDlg AS HWND = GetParent(m_hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN rc.Right / 4
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CButton.DlgToPixRY () AS SINGLE
+   DIM hDlg AS HWND = GetParent(m_hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN rc.Bottom / 8
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CButton.PixToDlgRX () AS SINGLE
+   DIM hDlg AS HWND = GetParent(m_hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN 4.0 / rc.right
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CButton.PixToDlgRY () AS SINGLE
+   DIM hDlg AS HWND = GetParent(m_hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN 8.0 / rc.bottom
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' * Enables a button.
 ' Return value: False if the windows was previous enabled; otherwise TRUE
 ' ========================================================================================
@@ -157,17 +207,17 @@ END FUNCTION
 ' * Retrieves the length of the text in a button control.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.GetTextLength () AS LONG
-   RETURN SendMessageW(m_hCtl, WM_GETTEXTLENGTH, 0, 0)
+   RETURN GetWindowTextLengthW(m_hCtl)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' * Retrieves the text in a button control.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.GetText () AS DWSTRING
-   DIM nLen AS LONG = SendMessageW(m_hCtl, WM_GETTEXTLENGTH, 0, 0)
+   DIM nLen AS LONG = GetWindowTextLengthW(m_hCtl)
    DIM dwsText AS DWSTRING = WSPACE(nLen + 1)
-   SendMessageW(m_hCtl, WM_GETTEXT, (nLen + 1) * 2, cast(LPARAM, *dwsText))
-   RETURN LEFT(dwsText, LEN(dwsText) - 1)
+   ..GetWindowTextW(m_hCtl, dwsText, nLen +  1)
+   RETURN dwsText
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================

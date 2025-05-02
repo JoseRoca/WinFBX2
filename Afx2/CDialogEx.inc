@@ -110,7 +110,13 @@ TYPE CDialog
       DECLARE FUNCTION DialogSend (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
       DECLARE SUB DialogSetIconEx (BYVAL hIconBig AS HICON, BYVAL hIconSmall AS HICON)
       DECLARE FUNCTION DialogUnitsToPixels (BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
+      DECLARE FUNCTION DialogUnitsToPixelsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+      DECLARE FUNCTION DlgToPixRX () AS SINGLE
+      DECLARE FUNCTION DlgToPixRY () AS SINGLE
       DECLARE FUNCTION PixelsToDialogUnits (BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
+      DECLARE FUNCTION PixelsToDialogUnitsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+      DECLARE FUNCTION PixToDlgRX () AS SINGLE
+      DECLARE FUNCTION PixToDlgRY () AS SINGLE
       DECLARE FUNCTION DialogGetSize (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
       DECLARE FUNCTION DialogGetWidth () AS LONG
       DECLARE FUNCTION DialogGetHeight () AS LONG
@@ -299,8 +305,6 @@ PRIVATE FUNCTION CDialog.DialogTemplate (BYREF wszClassName AS WSTRING, BYREF ws
       CHR(m_fontStyle) + _             ' // Font Italic flag
       CHR(m_charset) + _               ' // Font charset
       sFontName & CHR(0) & CHR(0)      ' // Font face name (raw unicode with double nulls)
-
-'      MKShort(wAtom) + _               ' // Dialog class Name
 
    FUNCTION = sTemplateEx
    
@@ -1021,12 +1025,46 @@ END FUNCTION
 PRIVATE FUNCTION CDialog.DialogUnitsToPixels (BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
    IF VARPTR(pixelX) = 0 OR VARPTR(pixelY) = 0 THEN RETURN FALSE
    DIM rc AS RECT
-   rc.Left = dluX : rc.Top = dluY
+   rc.Right = dluX : rc.Bottom = dluY
    DIM bResult AS BOOLEAN = MapDialogRect(m_hDlg, @rc)
    IF bResult = FALSE THEN RETURN FALSE
-   IF VARPTR(pixelX) THEN pixelX = rc.Left
-   IF VARPTR(pixelY) THEN pixelY = rc.Top
+   IF VARPTR(pixelX) THEN pixelX = rc.Right
+   IF VARPTR(pixelY) THEN pixelY = rc.Bottom
    RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratios from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogUnitsToPixelsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+   IF VARPTR(ratioX) = 0 OR VARPTR(ratioY) = 0 THEN RETURN FALSE
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   DIM bResult AS BOOLEAN = MapDialogRect(m_hDlg, @rc)
+   IF bResult = FALSE THEN RETURN FALSE
+   IF VARPTR(ratioX) THEN ratioX = rc.Right / 4
+   IF VARPTR(ratioY) THEN ratioY = rc.Bottom / 8
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DlgToPixRX () AS SINGLE
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   DIM bResult AS BOOLEAN = MapDialogRect(m_hDlg, @rc)
+   RETURN rc.Right / 4
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DlgToPixRY () AS SINGLE
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   DIM bResult AS BOOLEAN = MapDialogRect(m_hDlg, @rc)
+   RETURN rc.Bottom / 8
 END FUNCTION
 ' ========================================================================================
 
@@ -1036,17 +1074,47 @@ END FUNCTION
 PRIVATE FUNCTION CDialog.PixelsToDialogUnits (BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
    IF VARPTR(pixelX) = 0 OR VARPTR(pixelY) = 0 THEN RETURN FALSE
    DIM rc AS RECT
-   rc.Left = pixelX
-   rc.Top = pixelY
+   rc.Right = 4
+   rc.Bottom = 8
    DIM bResult AS BOOLEAN = MapDialogRect(m_hDlg, @rc)
    IF bResult = FALSE THEN RETURN FALSE
-   DIM rx AS SINGLE
-   rx = rc.Left / pixelX
-   DIM ry AS SINGLE
-   ry = rc.Top / pixelY
-   IF VARPTR(dluX) THEN dluX = pixelX / rx
-   IF VARPTR(dluY) THEN dluY = pixelY / ry
+   IF VARPTR(dluX) THEN dluX = pixelX * (4.0 / rc.right)
+   IF VARPTR(dluY) THEN dluY = pixelY * (8.0 / rc.bottom)
    RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratios from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CDialog.PixelsToDialogUnitsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+   IF VARPTR(ratioX) = 0 OR VARPTR(ratioY) = 0 THEN RETURN FALSE
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   DIM bResult AS BOOLEAN = MapDialogRect(m_hDlg, @rc)
+   IF bResult = FALSE THEN RETURN FALSE
+   IF VARPTR(ratioX) THEN ratioX = 4.0 / rc.right
+   IF VARPTR(ratioY) THEN ratioY = 8.0 / rc.bottom
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CDialog.PixToDlgRX () AS SINGLE
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(m_hDlg, @rc)
+   RETURN 4.0 / rc.right
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CDialog.PixToDlgRY () AS SINGLE
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(m_hDlg, @rc)
+   RETURN 8.0 / rc.bottom
 END FUNCTION
 ' ========================================================================================
 
@@ -1600,11 +1668,20 @@ END FUNCTION
 ' WM_CTLCOLORMSGBOX, WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX, WM_CTLCOLORBTN, WM_CTLCOLORDLG
 ' WM_CTLCOLORSCROLLBAR, WM_CTLCOLORSTATIC, WM_COMPAREITEM, WM_VKEYTOITEM, WM_CHARTOITEM
 ' WM_QUERYDRAGICON, WM_INITDIALOG.
+' #define SetDlgMsgResult(hwnd,msg,result) (iif((msg)=WM_CTLCOLORMSGBOX orelse (msg)=WM_CTLCOLOREDIT
+' orelse (msg)=WM_CTLCOLORLISTBOX orelse (msg)=WM_CTLCOLORBTN orelse (msg)=WM_CTLCOLORDLG
+' orelse (msg)=WM_CTLCOLORSCROLLBAR orelse (msg)=WM_CTLCOLORSTATIC orelse (msg)=WM_COMPAREITEM
+' orelse (msg)=WM_VKEYTOITEM orelse (msg)=WM_CHARTOITEM orelse (msg)=WM_QUERYDRAGICON
+' orelse (msg)=WM_INITDIALOG, cast(WINBOOL, (result)), (SetWindowLongPtr((hwnd),DWLP_MSGRESULT,
+' cast(LPARAM, cast(LRESULT, result)),TRUE))))
+' See also this info message from Dominic Mitchell in the PowerBasic forum:
+' https://forum.powerbasic.com/forum/user-to-user-discussions/programming/19130-info-dwl_msgresult
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.CBSetDlgMsgResult(BYVAL result AS LONG_PTR) AS LONG_PTR
    RETURN SetWindowLongPtrW(m_hDlg, DWLP_MSGRESULT, result)
 END FUNCTION
 ' ========================================================================================
+
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.CBGetDlgMsgResult () AS LONG_PTR
    RETURN GetWindowLongPtrW(m_hDlg, DWLP_MSGRESULT)

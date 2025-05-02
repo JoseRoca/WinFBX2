@@ -46,6 +46,42 @@
 USING Afx2
 
 ' ========================================================================================
+' Enables visual styles without using a manifest in the application.
+' ========================================================================================
+PRIVATE FUNCTION AfxEnableVisualStyles () AS BOOLEAN
+
+   ' // Fill the ACTCTXW structure
+   DIM actCtx AS ACTCTXW
+   actCtx.cbSize = SIZEOF(ACTCTXW)
+   actCtx.dwFlags = ACTCTX_FLAG_RESOURCE_NAME_VALID OR ACTCTX_FLAG_SET_PROCESS_DEFAULT OR ACTCTX_FLAG_ASSEMBLY_DIRECTORY_VALID
+
+   ' // Get system directory
+   DIM systemDir AS WSTRING * MAX_PATH
+   DIM cch AS UINT = GetSystemDirectoryW(@systemDir, MAX_PATH)
+   IF cch >= MAX_PATH THEN RETURN FALSE  ' Ensure buffer is not exceeded
+   systemDir[cch] = ASC("\")  ' Append backslash
+   actCtx.lpAssemblyDirectory = @systemDir
+   DIM wszSource AS WSTRING * MAX_PATH = systemDir & "shell32.dll"
+   actCtx.lpSource = CAST(WSTRING PTR, @wszSource)  ' Use shell32.dll's manifest
+   actCtx.lpResourceName = CAST(WSTRING PTR, 124)   ' Resource ID for the manifest (IDR_MANIFEST = 1, RT_MANIFEST = 24)
+
+   ' // Create the activation context
+   DIM hActCtx AS HANDLE = CreateActCtxW(@actCtx)
+   IF hActCtx = INVALID_HANDLE_VALUE THEN RETURN FALSE
+
+   ' // Activate the context
+   DIM activationCookie AS ULONG_PTR
+   ActivateActCtx(hActCtx, @activationCookie)
+
+   ' // Deactivate and release the context
+   DeactivateActCtx(0, activationCookie)
+   ReleaseActCtx(hActCtx)
+   RETURN TRUE
+
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' * Helper procedures to display feedback and errors
 ' ========================================================================================
 PRIVATE FUNCTION AfxMsg OVERLOAD (BYREF wszText AS WSTRING, BYREF wszCaption AS WSTRING = "Message", BYVAL uType AS DWORD = 0) AS LONG
@@ -1095,15 +1131,13 @@ END FUNCTION
 ' ========================================================================================
 ' * Gets the text of a window. This function can also be used to retrieve the text of buttons,
 ' and edit and static controls.
-' Remarks: The function uses the WM_GETTEXT message because GetWindowText cannot retrieve
-' the text of a window in another application.
 ' Example: DIM dws AS DWSTRING = AfxGetWindowText(hwnd)
 ' ========================================================================================
 PRIVATE FUNCTION AfxGetWindowText (BYVAL hwnd AS HWND) AS DWSTRING
-   DIM nLen AS LONG = SendMessageW(hwnd, WM_GETTEXTLENGTH, 0, 0)
-   DIM dwsText AS DWSTRING = SPACE(nLen + 1)
-   SendMessageW(hwnd, WM_GETTEXT, nLen + 1, cast(LPARAM, *dwsText))
-   RETURN LEFT(dwsText, LEN(dwsText) - 1)
+   DIM nLen AS LONG = GetWindowTextLengthW(hwnd)
+   DIM dwsText AS DWSTRING = WSPACE(nLen + 1)
+   GetWindowTextW(hwnd, dwsText, nLen +  1)
+   RETURN dwsText
 END FUNCTION
 ' ========================================================================================
 
@@ -1112,7 +1146,7 @@ END FUNCTION
 ' Usage example: nLen = AfxGetWindowTextLength(hwnd)
 ' ========================================================================================
 PRIVATE FUNCTION AfxGetWindowTextLength (BYVAL hwnd AS HWND) AS LONG
-   FUNCTION = SendMessageW(hwnd, WM_GETTEXTLENGTH, 0, 0)
+   RETURN GetWindowTextLengthW(hwnd)
 END FUNCTION
 ' ========================================================================================
 

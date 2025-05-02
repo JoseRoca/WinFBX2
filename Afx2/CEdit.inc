@@ -27,8 +27,8 @@
 #pragma once
 #include once "windows.bi"
 #include once "win/commctrl.bi"
-#include once "Afx2/CDialog.inc"
 #include once "Afx2/CControl.inc"
+#include once "Afx2/CDialogEx.inc"
 using Afx2
 
 NAMESPACE Afx2
@@ -48,6 +48,11 @@ Public:
    DECLARE CONSTRUCTOR (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
    DECLARE CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    DECLARE DESTRUCTOR
+   DECLARE FUNCTION DlgToPixRX () AS SINGLE
+   DECLARE FUNCTION DlgToPixRY () AS SINGLE
+   DECLARE FUNCTION PixToDlgRX () AS SINGLE
+   DECLARE FUNCTION PixToDlgRY () AS SINGLE
+
    DECLARE FUNCTION CanUndo () AS BOOLEAN
    DECLARE FUNCTION CharFromPos (BYVAL x AS SHORT, BYVAL y AS SHORT) AS DWORD
    DECLARE SUB Clear ()
@@ -145,6 +150,51 @@ END CONSTRUCTOR
 ' ========================================================================================
 PRIVATE DESTRUCTOR CEdit
 END DESTRUCTOR
+' ========================================================================================
+
+' ========================================================================================
+' * Retrieves the conversion ratio from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CEdit.DlgToPixRX () AS SINGLE
+   DIM hDlg AS HWND = GetParent(m_hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN rc.Right / 4
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from dialog units to pixels
+' ========================================================================================
+PRIVATE FUNCTION CEdit.DlgToPixRY () AS SINGLE
+   DIM hDlg AS HWND = GetParent(m_hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN rc.Bottom / 8
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CEdit.PixToDlgRX () AS SINGLE
+   DIM hDlg AS HWND = GetParent(m_hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN 4.0 / rc.right
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Retrieves the conversion ratio from pixels to dialog units
+' ========================================================================================
+PRIVATE FUNCTION CEdit.PixToDlgRY () AS SINGLE
+   DIM hDlg AS HWND = GetParent(m_hCtl)
+   DIM rc AS RECT
+   rc.Right = 4 : rc.Bottom = 8
+   MapDialogRect(hDlg, @rc)
+   RETURN 8.0 / rc.bottom
+END FUNCTION
 ' ========================================================================================
 
 ' ########################################################################################

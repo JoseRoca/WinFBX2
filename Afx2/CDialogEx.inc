@@ -247,16 +247,16 @@ PRIVATE FUNCTION CDialog.RegisterClass (BYREF wszClassName AS CONST WSTRING) AS 
    ' // Class name
    IF LEN(wszClassName) THEN m_wszClassName = wszClassName ELSE RETURN 0
 
-   ' // Fill the WNDCLASSEXW structure
+   ' // Fill the WNDCLASSEXW structure (same data than the #32770 class)
    WITH wcexw
       .cbSize        = SIZEOF(wcexw)
-      .style         = CS_DBLCLKS OR CS_HREDRAW OR CS_VREDRAW
+      .style         = 0
       .lpfnWndProc   = PROCPTR(CDialog.CCustomDialogProc)
       .cbClsExtra    = 0
       .cbWndExtra    = DLGWINDOWEXTRA
       .hInstance     = m_hInstance
       .hCursor       = ..LoadCursorW(NULL, CAST(LPCWSTR, IDC_ARROW))
-      .hbrBackground = CAST(HBRUSH, COLOR_3DFACE + 1)
+      .hbrBackground = 0
       .lpszMenuName  = NULL
       .lpszClassName = @wszClassName
       .hIcon         = 0
@@ -809,7 +809,7 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, 
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
    IF m_hDlg THEN
-      SetWindowPos (m_hDlg, NULL, x, y, cx, cy, SWP_NOZORDER OR SWP_NOACTIVATE)
+      SetWindowPos (m_hDlg, NULL, x, y, cx, cy, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
       IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
    END IF
    RETURN m_hDlg
@@ -838,7 +838,7 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL h
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
    IF m_hDlg THEN
-      SetWindowPos (m_hDlg, NULL, x, y, cx, cy, SWP_NOZORDER OR SWP_NOACTIVATE)
+      SetWindowPos (m_hDlg, NULL, x, y, cx, cy, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
       IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
    END IF
    RETURN m_hDlg

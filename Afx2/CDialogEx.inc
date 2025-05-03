@@ -59,6 +59,7 @@ TYPE CDialog
       m_fontName AS WSTRING * 32              ' // Font face name
       m_IsModal AS BOOLEAN                    ' // Dialog is modal
       m_IsCustom AS BOOLEAN                   ' // Dialog has a custom class
+      m_UsePixels AS BOOLEAN                  ' // Use pixels instead of dialog units
       m_wszClassName AS WSTRING * 256         ' // Class name
       m_DlgRetVal AS INT_PTR                  ' // To simulate EndDialog
       m_hDefPushButton AS HWND                ' // Handle of the default push button
@@ -69,12 +70,18 @@ TYPE CDialog
          BYVAL fontStyle AS BYTE = 0, BYVAL charset AS BYTE = DEFAULT_CHARSET) 
       DECLARE DESTRUCTOR 
       DECLARE FUNCTION RegisterClass (BYREF wszClassName AS CONST WSTRING) AS ATOM
-      DECLARE FUNCTION DialogTemplate (BYREF wszClassName AS WSTRING, BYREF wszTitle AS WSTRING, BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, _
+      DECLARE FUNCTION DialogTemplate (BYREF wszClassName AS WSTRING, BYREF wszTitle AS WSTRING, BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, _
          BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS STRING
       DECLARE FUNCTION DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
-         BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+         BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
          BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
       DECLARE FUNCTION DialogNew (BYREF wszClassName AS WSTRING, BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
+         BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+         BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
+      DECLARE FUNCTION DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
+         BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+         BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
+      DECLARE FUNCTION DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING = "", _
          BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
          BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
       DECLARE FUNCTION DialogShowModeless (BYVAL pCallback AS ANY PTR = NULL) AS INT_PTR
@@ -91,6 +98,8 @@ TYPE CDialog
       DECLARE PROPERTY hDialog (BYVAL hDlg AS HWND)
       DECLARE FUNCTION IsModal () AS BOOLEAN
       DECLARE FUNCTION IsCustom () AS BOOLEAN
+      DECLARE FUNCTION UsesPixels () AS BOOLEAN
+      DECLARE FUNCTION UsesUnits () AS BOOLEAN
       DECLARE FUNCTION FontNew (BYREF wszFaceName AS WSTRING, BYVAL lPointSize AS LONG, _
          BYVAL lWeight AS LONG = 0, BYVAL bItalic AS UBYTE = FALSE, BYVAL bUnderline AS UBYTE = FALSE, _
          BYVAL bStrikeOut AS UBYTE = FALSE, BYVAL bCharSet AS UBYTE = DEFAULT_CHARSET) AS HFONT
@@ -135,6 +144,7 @@ TYPE CDialog
       DECLARE FUNCTION DialogGetFont () AS HFONT
       DECLARE FUNCTION DialogGetFontFaceName () AS DWSTRING
       DECLARE FUNCTION DialogGetFontPointSize () AS LONG
+      DECLARE SUB DialogCenter(BYVAL hwndParent AS HWND = NULL)
 
       ' // Dialog procedure callback
       DECLARE FUNCTION CBGetDlgMsgResult () AS LONG_PTR
@@ -266,12 +276,15 @@ END FUNCTION
 ' ========================================================================================
 ' * Creates a dialog template in memory.
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.DialogTemplate (BYREF wszClassName AS WSTRING, BYREF wszTitle AS WSTRING, BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, _
+PRIVATE FUNCTION CDialog.DialogTemplate (BYREF wszClassName AS WSTRING, BYREF wszTitle AS WSTRING, BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, _
    BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS STRING
    ' // Default styles. PB also includes DS_3DLOOK, but this style is obsolete since the system automatically
    ' // applies the three-dimensional look to dialog boxes created by applications.
-   IF dwStyle = 0 THEN dwStyle = WS_VISIBLE OR DS_CENTER OR DS_MODALFRAME OR DS_NOFAILCREATE OR DS_SETFONT OR WS_OVERLAPPEDWINDOW _
+   IF dwStyle = 0 THEN dwStyle = WS_VISIBLE OR DS_MODALFRAME OR DS_NOFAILCREATE OR DS_SETFONT OR WS_OVERLAPPEDWINDOW _
       OR WS_CAPTION OR WS_CLIPSIBLINGS OR WS_DLGFRAME OR WS_POPUP OR WS_SYSMENU
+   IF x = -1 AND y = -1 THEN dwStyle OR= DS_CENTER
+   IF x = -1 THEN x = 0
+   IF y = -1 THEN y = 0
    ' // Default extended styles.
    IF dwExStyle = 0 THEN dwExStyle = WS_EX_LEFT OR WS_EX_LTRREADING OR WS_EX_RIGHTSCROLLBAR
 
@@ -560,7 +573,7 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
    DIM rc AS RECT
    rc.Left = x : rc.Right  = x + nWidth
    rc.Top  = y : rc.Bottom = y + nHeight
-   MapDialogRect m_hDlg, @rc
+   IF m_UsePixels = FALSE THEN MapDialogRect m_hDlg, @rc
    hCtl = CreateWindowExW (dwExStyle, wsClassName, wszTitle, dwStyle, rc.Left, rc.Top, rc.Right - rc.Left, _
           rc.Bottom - rc.Top, m_hDlg, CAST(HMENU, cID), m_hInstance, CAST(LPVOID, lpParam))
    IF hCtl = NULL THEN EXIT FUNCTION
@@ -713,20 +726,35 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' Returns true if it uses pixels
+' ========================================================================================
+PRIVATE FUNCTION CDialog.UsesPixels () AS BOOLEAN
+   RETURN m_UsePixels
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Returns true if it uses dialog units
+' ========================================================================================
+PRIVATE FUNCTION CDialog.UsesUnits () AS BOOLEAN
+   IF m_UsePixels = TRUE THEN RETURN FALSE ELSE RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' * Creates a modeless dialog in memory
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
-   BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+   BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
    BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
-   CDIALOG_DP("#32770")
-
+   CDIALOG_DP("#32770 - UNITS")
    ' // Default styles
    IF dwStyle THEN dwStyle = dwStyle OR DS_3DLOOK OR DS_NOFAILCREATE OR DS_SETFONT
    IF dwStyle = 0 THEN dwStyle = DS_3DLOOK OR DS_SETFONT OR DS_MODALFRAME OR DS_NOFAILCREATE OR WS_BORDER OR _
                                  WS_CLIPSIBLINGS OR WS_DLGFRAME OR WS_POPUP
    IF dwExStyle = 0 THEN dwExstyle = WS_EX_LEFT OR WS_EX_LTRREADING OR WS_EX_RIGHTSCROLLBAR
    ' // Remove the WS_VISIBLE style to avoid partial images of the dialog to appear before it is completed.
-   ' // The dialog will be sidplayed and activated in the ShowDialogModal or ShowDialogModeless methods with SHowWindow.
+   ' // The dialog will be displayed and activated in the ShowDialogModal or ShowDialogModeless methods with ShowWindow.
    dwStyle = dwStyle AND (NOT WS_VISIBLE)
    DIM sTemplate AS STRING = this.DialogTemplate("", wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
@@ -735,11 +763,12 @@ PRIVATE FUNCTION CDialog.DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF 
 
 END FUNCTION
 ' ========================================================================================
+
 ' ========================================================================================
 ' * Creates a custom modeless dialog in memory
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogNew (BYREF wszClassName AS WSTRING, BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING = "", _
-   BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+   BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
    BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
    CDIALOG_DP(wszClassName)
 
@@ -749,11 +778,69 @@ PRIVATE FUNCTION CDialog.DialogNew (BYREF wszClassName AS WSTRING, BYVAL hParent
                                  WS_CLIPSIBLINGS OR WS_DLGFRAME OR WS_POPUP
    IF dwExStyle = 0 THEN dwExstyle = WS_EX_LEFT OR WS_EX_LTRREADING OR WS_EX_RIGHTSCROLLBAR
    ' // Remove the WS_VISIBLE style to avoid partial images of the dialog to appear before it is completed.
-   ' // The dialog will be sidplayed and activated in the ShowDialogModal or ShowDialogModeless methods with SHowWindow.
+   ' // The dialog will be displayed and activated in the ShowDialogModal or ShowDialogModeless methods with ShowWindow.
    dwStyle = dwStyle AND (NOT WS_VISIBLE)
    DIM sTemplate AS STRING = this.DialogTemplate(wszClassName, wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
+   RETURN m_hDlg
+
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' * Creates a modeless dialog in memory
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
+   BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+   BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
+   CDIALOG_DP("#32770- PIXELS")
+
+   m_UsePixels = TRUE
+   ' // Default styles
+   IF dwStyle THEN dwStyle = dwStyle OR DS_3DLOOK OR DS_NOFAILCREATE OR DS_SETFONT
+   IF dwStyle = 0 THEN dwStyle = DS_3DLOOK OR DS_SETFONT OR DS_MODALFRAME OR DS_NOFAILCREATE OR WS_BORDER OR _
+                                 WS_CLIPSIBLINGS OR WS_DLGFRAME OR WS_POPUP
+   IF dwExStyle = 0 THEN dwExstyle = WS_EX_LEFT OR WS_EX_LTRREADING OR WS_EX_RIGHTSCROLLBAR
+   ' // Remove the WS_VISIBLE style to avoid partial images of the dialog to appear before it is completed.
+   ' // The dialog will be displayed and activated in the ShowDialogModal or ShowDialogModeless methods with ShowWindow.
+   dwStyle = dwStyle AND (NOT WS_VISIBLE)
+   DIM sTemplate AS STRING = this.DialogTemplate("", wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
+   m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
+            hParent, NULL, cast(LPARAM, @this))
+   IF m_hDlg THEN
+      SetWindowPos (m_hDlg, NULL, x, y, cx, cy, SWP_NOZORDER OR SWP_NOACTIVATE)
+      IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
+   END IF
+   RETURN m_hDlg
+
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' * Creates a custom modeless dialog in memory
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING = "", _
+   BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+   BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
+   CDIALOG_DP(wszClassName & " - PIXELS")
+
+   m_UsePixels = TRUE
+   ' // Default styles
+   IF dwStyle THEN dwStyle = dwStyle OR DS_3DLOOK OR DS_NOFAILCREATE OR DS_SETFONT
+   IF dwStyle = 0 THEN dwStyle = DS_3DLOOK OR DS_SETFONT OR DS_MODALFRAME OR DS_NOFAILCREATE OR WS_BORDER OR _
+                                 WS_CLIPSIBLINGS OR WS_DLGFRAME OR WS_POPUP
+   IF dwExStyle = 0 THEN dwExstyle = WS_EX_LEFT OR WS_EX_LTRREADING OR WS_EX_RIGHTSCROLLBAR
+   ' // Remove the WS_VISIBLE style to avoid partial images of the dialog to appear before it is completed.
+   ' // The dialog will be displayed and activated in the ShowDialogModal or ShowDialogModeless methods with ShowWindow.
+   dwStyle = dwStyle AND (NOT WS_VISIBLE)
+   DIM sTemplate AS STRING = this.DialogTemplate(wszClassName, wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
+   m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
+            hParent, NULL, cast(LPARAM, @this))
+   IF m_hDlg THEN
+      SetWindowPos (m_hDlg, NULL, x, y, cx, cy, SWP_NOZORDER OR SWP_NOACTIVATE)
+      IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
+   END IF
    RETURN m_hDlg
 
 END FUNCTION
@@ -815,7 +902,7 @@ END FUNCTION
 PRIVATE FUNCTION CDialog.DialogShowModeless (BYVAL pCallback AS ANY PTR = NULL) AS INT_PTR
    m_IsModal = FALSE
    ' // Display the dialog
-   ShowWindow m_hDlg, SW_SHOW
+   ShowWindow m_hDlg, SW_SHOWNORMAL
    ' // Set the dialog callback
    IF pCallback = NULL THEN
       IF m_IsCustom THEN
@@ -843,7 +930,7 @@ PRIVATE FUNCTION CDialog.DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS 
    ' // Flag the dialog as modal
    m_IsModal = TRUE
    ' // Display the dialog
-   ShowWindow m_hDlg, SW_SHOW
+   ShowWindow m_hDlg, SW_SHOWNORMAL
    ' // Set the dialog callback
    IF pCallback = NULL THEN
       IF m_IsCustom THEN
@@ -1126,8 +1213,11 @@ PRIVATE FUNCTION CDialog.DialogGetSize (BYREF nWidth AS LONG, BYREF nHeight AS L
    ' // Get the dimensions of the window
    DIM rc AS RECT
    GetWindowRect(m_hDlg, @rc)
-   ' // Return the width and height in dialog units
-   RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ' // Return the width and height
+   IF m_UsePixels = FALSE THEN RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   nWidth = rc.Right - rc.Left
+   nHeight = rc.Bottom - rc.Top
+   RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 
@@ -1140,7 +1230,11 @@ PRIVATE FUNCTION CDialog.DialogGetWidth () AS LONG
    FUNCTION = GetWindowRect(m_hDlg, @rc)
    ' // Return the width in dialog units
    DIM AS LONG nWidth, nHeight
-   this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nWidth = rc.Right - rc.Left
+   END IF
    RETURN nWidth
 END FUNCTION
 ' ========================================================================================
@@ -1154,7 +1248,11 @@ PRIVATE FUNCTION CDialog.DialogGetHeight () AS LONG
    FUNCTION = GetWindowRect(m_hDlg, @rc)
    ' // Return the width in dialog units
    DIM AS LONG nWidth, nHeight
-   FUNCTION = this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nHeight = rc.Bottom - rc.Top
+   END IF
    RETURN nHeight
 END FUNCTION
 ' ========================================================================================
@@ -1165,7 +1263,7 @@ END FUNCTION
 ' - nHeight = The new height of the window.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogSetSize (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
-   this.DialogUnitsToPixels(nWidth, nHeight, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN this.DialogUnitsToPixels(nWidth, nHeight, nWidth, nHeight)
    RETURN SetWindowPos(m_hDlg, NULL, 0, 0, nWidth, nHeight, SWP_NOZORDER OR SWP_NOMOVE)
 END FUNCTION
 ' ========================================================================================
@@ -1191,8 +1289,10 @@ PRIVATE FUNCTION CDialog.DialogGetBounds () AS RECT
       IF pProc THEN pProc(m_hDlg, 9, @rc, SIZEOF(rc))
       DyLibFree(pLib)
       ' // Convert to dialog units
-      this.PixelsToDialogUnits(rc.Left, rc.Top, rc.Left, rc.Top)
-      this.PixelsToDialogUnits(rc.Right, rc.Bottom, rc.Right, rc.Bottom)
+      IF m_UsePixels = FALSE THEN
+         this.PixelsToDialogUnits(rc.Left, rc.Top, rc.Left, rc.Top)
+         this.PixelsToDialogUnits(rc.Right, rc.Bottom, rc.Right, rc.Bottom)
+      END IF
    END IF
    RETURN rc
 END FUNCTION
@@ -1209,8 +1309,14 @@ PRIVATE FUNCTION CDialog.DialogGetClient (BYREF nWidth AS LONG, BYREF nHeight AS
    ' // Get the dimensions of the window
    DIM rc AS RECT
    GetClientRect(m_hDlg, @rc)
-   ' // Return the width and height values in dialog units
-   RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ' // Return the width and height values
+   IF m_UsePixels = FALSE THEN
+      RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nWidth = rc.Right - rc.Left
+      nHeight = rc.Bottom - rc.Top
+   END IF
+   RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 
@@ -1223,7 +1329,11 @@ PRIVATE FUNCTION CDialog.DialogGetClientWidth () AS LONG
    FUNCTION = GetClientRect(m_hDlg, @rc)
    ' // Return the width in dialog units
    DIM AS LONG nWidth, nHeight
-   this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nWidth = rc.Right - rc.Left
+   END IF
    RETURN nWidth
 END FUNCTION
 ' ========================================================================================
@@ -1237,7 +1347,11 @@ PRIVATE FUNCTION CDialog.DialogGetClientHeight () AS LONG
    FUNCTION = GetClientRect(m_hDlg, @rc)
    ' // Return the width in dialog units
    DIM AS LONG nWidth, nHeight
-   this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nHeight = rc.Bottom - rc.Top
+   END IF
    RETURN nHeight
 END FUNCTION
 ' ========================================================================================
@@ -1250,7 +1364,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogSetClient (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
    ' // Convert dialog units to pixels
-   this.DialogUnitsToPixels(nWidth, nHeight, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN this.DialogUnitsToPixels(nWidth, nHeight, nWidth, nHeight)
    ' // Convert the client rectangle to a window rectangle.
    ' // The AdjustWindowRectEx function cannot take menu wrapping into account
    ' // because it doesn't know which menu we are using.
@@ -1359,7 +1473,13 @@ PRIVATE FUNCTION CDialog.DialogGetLoc (BYREF nLeft AS LONG, BYREF nTop AS LONG) 
    ' // Convert the coordinates to be relative to the parent
    MapWindowPoints(HWND_DESKTOP, GetParent(m_hDlg), CAST(POINT PTR, @rc), 2)
    ' // Return the left and top values
-   RETURN this.PixelsToDialogUnits(rc.Left, rc.Top, nLeft, nTop)
+   IF m_UsePixels = FALSE THEN
+      RETURN this.PixelsToDialogUnits(rc.Left, rc.Top, nLeft, nTop)
+   ELSE
+      nLeft = rc.Left
+      nTop = rc.Top
+   END IF
+   RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 
@@ -1369,7 +1489,7 @@ END FUNCTION
 ' Return value: TRUE or FALSE. To get extended error information, call GetLastError.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogSetLoc (BYVAL nLeft AS LONG, BYVAL nTop AS LONG) AS BOOLEAN
-   DialogUnitsToPixels(nLeft, nTop, nLeft, nTop)
+   IF m_UsePixels = FALSE THEN DialogUnitsToPixels(nLeft, nTop, nLeft, nTop)
    RETURN SetWindowPos(m_hDlg, 0, nLeft, nTop, 0, 0, SWP_NOSIZE OR SWP_NOZORDER)
 END FUNCTION
 ' ========================================================================================
@@ -1716,7 +1836,13 @@ PRIVATE FUNCTION CDialog.ControlGetSize (BYVAL cId AS LONG, BYREF nWidth AS LONG
    DIM rc AS RECT
    GetWindowRect(GetDlgItem(m_hDlg, cId), @rc)
    ' // Return the width and height in dialog units
-   RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nWidth = rc.Right - rc.Left
+      nHeight = rc.Bottom - rc.Top
+   END IF
+   RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 
@@ -1729,7 +1855,11 @@ PRIVATE FUNCTION CDialog.ControlGetWidth (BYVAL cId AS LONG) AS LONG
    FUNCTION = GetWindowRect(GetDLgItem(m_hDlg, cId), @rc)
    ' // Return the width in dialog units
    DIM AS LONG nWidth, nHeight
-   this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nWidth = rc.Right - rc.Left
+   END IF
    RETURN nWidth
 END FUNCTION
 ' ========================================================================================
@@ -1743,7 +1873,11 @@ PRIVATE FUNCTION CDialog.ControlGetHeight (BYVAL cId AS LONG) AS LONG
    FUNCTION = GetWindowRect(GetDlgItem(m_hDlg, cId), @rc)
    ' // Return the width in dialog units
    DIM AS LONG nWidth, nHeight
-   FUNCTION = this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nHeight = rc.Bottom - rc.Top
+   END IF
    RETURN nHeight
 END FUNCTION
 ' ========================================================================================
@@ -1754,7 +1888,7 @@ END FUNCTION
 ' - nHeight = The new height of the window.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlSetSize (BYVAL cId AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
-   this.DialogUnitsToPixels(nWidth, nHeight, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN this.DialogUnitsToPixels(nWidth, nHeight, nWidth, nHeight)
    RETURN SetWindowPos(GetDlgItem(m_hDlg, cId), NULL, 0, 0, nWidth, nHeight, SWP_NOZORDER OR SWP_NOMOVE)
 END FUNCTION
 ' ========================================================================================
@@ -1771,12 +1905,18 @@ PRIVATE FUNCTION CDialog.ControlGetClient (BYVAL cId AS LONG, BYREF nWidth AS LO
    DIM rc AS RECT
    GetClientRect(GetDlgItem(m_hDlg, cId), @rc)
    ' // Return the width and height values in dialog units
-   RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nWidth = rc.Right - rc.Left
+      nHeight = rc.Bottom - rc.Top
+   END IF
+   RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the width of the the control's client area in dialog units.
+' * Gets the width of the the control's client area
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlGetClientWidth (BYVAL cId AS LONG) AS LONG
    ' // Get the dimensions of the window
@@ -1784,7 +1924,11 @@ PRIVATE FUNCTION CDialog.ControlGetClientWidth (BYVAL cId AS LONG) AS LONG
    FUNCTION = GetClientRect(GetDlgItem(m_hDlg, cId), @rc)
    ' // Return the width in dialog units
    DIM AS LONG nWidth, nHeight
-   this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nWidth = rc.Right - rc.Left
+   END IF
    RETURN nWidth
 END FUNCTION
 ' ========================================================================================
@@ -1798,7 +1942,11 @@ PRIVATE FUNCTION CDialog.ControlGetClientHeight (BYVAL cId AS LONG) AS LONG
    FUNCTION = GetClientRect(GetDlgItem(m_hDlg, cId), @rc)
    ' // Return the width in dialog units
    DIM AS LONG nWidth, nHeight
-   this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN
+      this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
+   ELSE
+      nHeight = rc.Bottom - rc.Top
+   END IF
    RETURN nHeight
 END FUNCTION
 ' ========================================================================================
@@ -1811,7 +1959,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlSetClient (BYVAL cId AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
    ' // Convert dialog units to pixels
-   this.DialogUnitsToPixels(nWidth, nHeight, nWidth, nHeight)
+   IF m_UsePixels = FALSE THEN this.DialogUnitsToPixels(nWidth, nHeight, nWidth, nHeight)
    RETURN SetWindowPos(GetDlgItem(m_hDlg, cId), NULL, 0, 0, nWidth, nHeight, SWP_NOZORDER OR SWP_NOMOVE)
 END FUNCTION
 ' ========================================================================================
@@ -1864,6 +2012,67 @@ PRIVATE SUB CDialog.ControlCenterVert (BYVAL cId AS LONG)
    pt.x = rc.Left
    ScreenToClient hParent, @pt
    MoveWindow hCtrl, pt.x + (nWidthControl \ 2), y, nWidthControl, nHeightControl, CTRUE
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' Centers the dialog.
+' ========================================================================================
+' ========================================================================================
+' Centers a window on the screen or over another window.
+' It also ensures that the placement is done within the work area.
+' Parameters:
+' - hwnd = Handle of the window.
+' - hwndParent = [optional] Handle of the parent window.
+' ========================================================================================
+PRIVATE SUB CDialog.DialogCenter (BYVAL hwndParent AS HWND = NULL)
+
+   DIM rc            AS RECT    ' Window coordinates
+   DIM rcParent      AS RECT    ' Parent window coordinates
+   DIM rcWorkArea    AS RECT    ' Work area coordinates
+   DIM pt            AS POINT   ' x and y coordinates of centered window
+
+   ' // Get the coordinates of the window
+   GetWindowRect m_hDlg, @rc
+   ' // Calculate the width and height of the window
+   DIM nWidth AS LONG = rc.Right - rc.Left
+   DIM nHeight AS LONG = rc.Bottom - rc.Top
+   ' // Get the coordinates of the work area
+   IF SystemParametersInfoW(SPI_GETWORKAREA, SIZEOF(rcWorkArea), @rcWorkArea, 0) = 0 THEN
+      rcWorkArea.Right  = GetSystemMetrics(SM_CXSCREEN)
+      rcWorkArea.Bottom = GetSystemMetrics(SM_CYSCREEN)
+   END IF
+   ' // Get the coordinates of the parent window
+   IF hwndParent THEN
+      GetWindowRect hwndParent, @rcParent
+   ELSE
+      rcParent.Left   = rcWorkArea.Left
+      rcParent.Top    = rcWorkArea.Top
+      rcParent.Right  = rcWorkArea.Right
+      rcParent.Bottom = rcWorkArea.Bottom
+   END IF
+   ' // Calculate the width and height of the parent window
+   DIM nParentWidth AS LONG = rcParent.Right - rcParent.Left
+   DIM nParentHeight AS LONG = rcParent.Bottom - rcParent.Top
+   ' // Calculate the new x coordinate and adjust for work area
+   pt.x = rcParent.Left + ((nParentWidth - nWidth) \ 2)
+   IF (pt.x < rcWorkArea.Left) THEN
+      pt.x = rcWorkArea.Left
+   ELSEIF ((pt.x + nWidth) > rcWorkArea.Right) THEN
+      pt.x = rcWorkArea.Right - nWidth
+   END IF
+   ' // Calculate the new y coordinate and adjust for work area
+   pt.y = rcParent.Top  + ((nParentHeight - nHeight) \ 2)
+   IF (pt.y < rcWorkArea.Top) THEN
+      pt.y = rcWorkArea.Top
+   ELSEIF ((pt.y + nHeight) > rcWorkArea.Bottom) THEN
+      pt.y = rcWorkArea.Bottom - nHeight
+   END IF
+   ' // Convert screen coordinates to client area coordinates
+   IF (GetWindowLongPtrW(m_hDlg, GWL_STYLE) AND WS_CHILD) = WS_CHILD THEN ScreenToClient hwndParent, @pt
+   ' // Reposition the window retaining its size and Z order
+   SetWindowPos(m_hDlg, NULL, pt.x, pt.y, 0, 0, SWP_NOSIZE OR SWP_NOZORDER)
+
 END SUB
 ' ========================================================================================
 

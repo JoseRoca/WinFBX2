@@ -12,6 +12,7 @@
 #pragma once
 #INCLUDE ONCE "win/richedit.bi"
 #include once "Afx2/AfxWin2.inc"
+#include once "Afx2/AfxFontProcs2.inc"
 USING Afx2
 
 ' // For compatibility with the Power Basic syntax
@@ -61,6 +62,8 @@ TYPE CDialog
       m_IsCustom AS BOOLEAN                   ' // Dialog has a custom class
       m_UsePixels AS BOOLEAN                  ' // Use pixels instead of dialog units
       m_wszClassName AS WSTRING * 256         ' // Class name
+      m_rx AS SINGLE = 1                      ' // DPI - Horizontal scaling ratio
+      m_ry AS SINGLE = 1                      ' // DPI - Vertical scaling ratio
       m_DlgRetVal AS INT_PTR                  ' // To simulate EndDialog
       m_hDefPushButton AS HWND                ' // Handle of the default push button
       DIM m_rgUserData(0 TO 99) AS LONG_PTR   ' // User data
@@ -213,6 +216,13 @@ PRIVATE CONSTRUCTOR CDialog (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSiz
                 ICC_PAGESCROLLER_CLASS OR ICC_PROGRESS_CLASS OR ICC_TREEVIEW_CLASSES OR _
                 ICC_UPDOWN_CLASS
    InitCommonControlsEx(@icc)
+   ' // DPI ratios
+   ' // Get the screen device context
+   DIM hDC AS HDC
+   hDC = .GetDC(NULL)
+   m_rx = (.GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   m_ry = (.GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   ReleaseDC NULL, hDC
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -573,9 +583,14 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
    DIM rc AS RECT
    rc.Left = x : rc.Right  = x + nWidth
    rc.Top  = y : rc.Bottom = y + nHeight
-   IF m_UsePixels = FALSE THEN MapDialogRect m_hDlg, @rc
-   hCtl = CreateWindowExW (dwExStyle, wsClassName, wszTitle, dwStyle, rc.Left, rc.Top, rc.Right - rc.Left, _
-          rc.Bottom - rc.Top, m_hDlg, CAST(HMENU, cID), m_hInstance, CAST(LPVOID, lpParam))
+   IF m_UsePixels = FALSE THEN
+      MapDialogRect m_hDlg, @rc
+      hCtl = CreateWindowExW (dwExStyle, wsClassName, wszTitle, dwStyle, rc.Left, rc.Top, (rc.Right - rc.Left), _
+             (rc.Bottom - rc.Top), m_hDlg, CAST(HMENU, cID), m_hInstance, CAST(LPVOID, lpParam))
+   ELSE
+      hCtl = CreateWindowExW (dwExStyle, wsClassName, wszTitle, dwStyle, rc.Left * m_rx, rc.Top * m_ry, (rc.Right - rc.Left) * m_ry, _
+             (rc.Bottom - rc.Top) * m_ry, m_hDlg, CAST(HMENU, cID), m_hInstance, CAST(LPVOID, lpParam))
+   END IF
    IF hCtl = NULL THEN EXIT FUNCTION
    ' // Set the font
    IF bSetFont THEN SendMessageW(hCtl, WM_SETFONT, SendMessageW(m_hDlg, WM_GETFONT, 0, 0), 0)
@@ -748,6 +763,7 @@ PRIVATE FUNCTION CDialog.DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF 
    BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
    BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
    CDIALOG_DP("#32770 - UNITS")
+   m_UsePixels = FALSE
    ' // Default styles
    IF dwStyle THEN dwStyle = dwStyle OR DS_3DLOOK OR DS_NOFAILCREATE OR DS_SETFONT
    IF dwStyle = 0 THEN dwStyle = DS_3DLOOK OR DS_SETFONT OR DS_MODALFRAME OR DS_NOFAILCREATE OR WS_BORDER OR _
@@ -771,7 +787,7 @@ PRIVATE FUNCTION CDialog.DialogNew (BYREF wszClassName AS WSTRING, BYVAL hParent
    BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
    BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
    CDIALOG_DP(wszClassName)
-
+   m_UsePixels = FALSE
    ' // Default styles
    IF dwStyle THEN dwStyle = dwStyle OR DS_3DLOOK OR DS_NOFAILCREATE OR DS_SETFONT
    IF dwStyle = 0 THEN dwStyle = DS_3DLOOK OR DS_SETFONT OR DS_MODALFRAME OR DS_NOFAILCREATE OR WS_BORDER OR _
@@ -805,11 +821,11 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, 
    ' // Remove the WS_VISIBLE style to avoid partial images of the dialog to appear before it is completed.
    ' // The dialog will be displayed and activated in the ShowDialogModal or ShowDialogModeless methods with ShowWindow.
    dwStyle = dwStyle AND (NOT WS_VISIBLE)
-   DIM sTemplate AS STRING = this.DialogTemplate("", wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
+   DIM sTemplate AS STRING = this.DialogTemplate("", wszTitle, x, y, cx * m_rx, cy * m_ry, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
    IF m_hDlg THEN
-      SetWindowPos (m_hDlg, NULL, x, y, cx, cy, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
+      SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
       IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
    END IF
    RETURN m_hDlg
@@ -834,15 +850,14 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL h
    ' // Remove the WS_VISIBLE style to avoid partial images of the dialog to appear before it is completed.
    ' // The dialog will be displayed and activated in the ShowDialogModal or ShowDialogModeless methods with ShowWindow.
    dwStyle = dwStyle AND (NOT WS_VISIBLE)
-   DIM sTemplate AS STRING = this.DialogTemplate(wszClassName, wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
+   DIM sTemplate AS STRING = this.DialogTemplate(wszClassName, wszTitle, x, y, cx * m_rx, cy * m_ry, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
    IF m_hDlg THEN
-      SetWindowPos (m_hDlg, NULL, x, y, cx, cy, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
+      SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
       IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
    END IF
    RETURN m_hDlg
-
 END FUNCTION
 ' ========================================================================================
 

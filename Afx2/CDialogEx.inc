@@ -310,24 +310,24 @@ PRIVATE FUNCTION CDialog.DialogTemplate (BYREF wszClassName AS WSTRING, BYREF ws
    memcpy STRPTR(sClassName), VARPTR(wszClassName), LEN(wszClassName) * 2
 
    DIM sTemplateEx AS STRING = _
-      MKShort(1) + _                   ' // Version is always 1
-      MKShort(&hFFFF) + _              ' // Use extended dialog box template signature
-      MKL(0) + _                       ' // Help context identifier
-      MKL(dwExStyle) + _               ' // Window extended style
-      MKL(dwStyle OR DS_SETFONT) + _   ' // Window style
-      MKShort(0) + _                   ' // Number of controls
-      MKShort(x) + _                   ' // x coordinate
-      MKShort(y) + _                   ' // y coordinate
-      MKShort(cx) + _                  ' // Width of the window
-      MKShort(cy) + _                  ' // Height of the window
-      MKShort(0) + _                   ' // Menu
-      sClassName & CHR(0) & CHR(0) + _     ' // Dialog caption (raw unicode with double nulls)
-      sTitle & CHR(0) & CHR(0) + _     ' // Dialog caption (raw unicode with double nulls)
-      MKShort(m_ptSize) + _            ' // Font point size
-      MKShort(FW_NORMAL) + _           ' // Font weight
-      CHR(m_fontStyle) + _             ' // Font Italic flag
-      CHR(m_charset) + _               ' // Font charset
-      sFontName & CHR(0) & CHR(0)      ' // Font face name (raw unicode with double nulls)
+      MKShort(1) + _                     ' // Version is always 1
+      MKShort(&hFFFF) + _                ' // Use extended dialog box template signature
+      MKL(0) + _                         ' // Help context identifier
+      MKL(dwExStyle) + _                 ' // Window extended style
+      MKL(dwStyle OR DS_SETFONT) + _     ' // Window style
+      MKShort(0) + _                     ' // Number of controls
+      MKShort(x) + _                     ' // x coordinate
+      MKShort(y) + _                     ' // y coordinate
+      MKShort(cx) + _                    ' // Width of the window
+      MKShort(cy) + _                    ' // Height of the window
+      MKShort(0) + _                     ' // Menu
+      sClassName & CHR(0) & CHR(0) + _   ' // Custom dialog class name (raw unicode with double nulls)
+      sTitle & CHR(0) & CHR(0) + _       ' // Dialog caption (raw unicode with double nulls)
+      MKShort(m_ptSize) + _              ' // Font point size
+      MKShort(FW_NORMAL) + _             ' // Font weight
+      CHR(m_fontStyle) + _               ' // Font Italic flag
+      CHR(m_charset) + _                 ' // Font charset
+      sFontName & CHR(0) & CHR(0)        ' // Font face name (raw unicode with double nulls)
 
    FUNCTION = sTemplateEx
    

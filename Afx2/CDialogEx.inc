@@ -929,10 +929,12 @@ PRIVATE FUNCTION CDialog.DialogShowModeless (BYVAL pCallback AS ANY PTR = NULL) 
       SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, cast(LPARAM, pCallBack))
    END IF
    ' // Send a WM_INITDIALOG message
-   DIM hDefButton AS HWND = m_hDefPushButton
-   '// IF the user has not set the BS_DEFPUSHBUTTON style to a button, pass the dialog handle
-   IF hDefButton = NULL THEN hDefButton = m_hDlg
-   SendMessage(m_hDlg, WM_INITDIALOG, cast(WPARAM, hDefButton), cast(LPARAM, @this))
+   ' // Get the handle of the control that should receive the focus
+   DIM hFocus AS HWND = GetNextDlgTabItem(m_hDlg, NULL, FALSE)
+   DIM bRes AS BOOLEAN = SendMessageW(m_hDlg, WM_INITDIALOG, cast(WPARAM, hFocus), cast(LPARAM, @this))
+   ' // If the user returns TRUE when processing WM_INITDIALOG set the focus to the control;
+   ' // If it returns FALSE, do nothing.
+   IF bRes = TRUE THEN SendMessageW(m_hDlg, WM_NEXTDLGCTL, CAST(WPARAM, hFocus), CTRUE)
    RETURN S_OK
 END FUNCTION
 ' ========================================================================================
@@ -957,7 +959,12 @@ PRIVATE FUNCTION CDialog.DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS 
       SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, cast(LPARAM, pCallBack))
    END IF
    ' // Send a WM_INITDIALOG message
-   SendMessage(m_hDlg, WM_INITDIALOG, cast(WPARAM, m_hDlg), cast(LPARAM, @this))
+   ' // Get the handle of the control that should receive the focus
+   DIM hFocus AS HWND = GetNextDlgTabItem(m_hDlg, NULL, FALSE)
+   DIM bRes AS BOOLEAN = SendMessageW(m_hDlg, WM_INITDIALOG, cast(WPARAM, hFocus), cast(LPARAM, @this))
+   ' // If the user returns TRUE when processing WM_INITDIALOG set the focus to the control;
+   ' // If it returns FALSE, do nothing.
+   IF bRes = TRUE THEN SendMessageW(m_hDlg, WM_NEXTDLGCTL, CAST(WPARAM, hFocus), CTRUE)
    ' // Disable the parent window
    DIM hParent AS HWND = GetParent(m_hDlg)
    IF hParent THEN EnableWindow(hParent, FALSE)
@@ -967,7 +974,6 @@ PRIVATE FUNCTION CDialog.DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS 
    LOOP WHILE IsWindow(m_hDlg)
    ' // Enable the parent window
    IF hParent THEN EnableWindow(hParent, TRUE)
-
    RETURN S_OK
 
 END FUNCTION

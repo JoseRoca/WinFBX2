@@ -224,8 +224,8 @@ PRIVATE CONSTRUCTOR CDialog (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSiz
    ' // Get the screen device context
    DIM hDC AS HDC
    hDC = .GetDC(NULL)
-   m_rx = (.GetDeviceCaps(hDC, LOGPIXELSX) / 96)
-   m_ry = (.GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   m_rx = (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   m_ry = (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
    ReleaseDC NULL, hDC
 END CONSTRUCTOR
 ' ========================================================================================
@@ -1377,7 +1377,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Adjusts the bounding rectangle of the dialog based on the desired size of the client area.
+' ** Adjusts the bounding rectangle of the dialog based on the desired size of the client area.
 ' Parameters:
 ' - nWidth = The new width of the client area of the dialog.
 ' - nHeight = The new height of the client area of the dialog.
@@ -1389,6 +1389,7 @@ PRIVATE FUNCTION CDialog.DialogSetClient (BYVAL nWidth AS LONG, BYVAL nHeight AS
    ' // The AdjustWindowRectEx function cannot take menu wrapping into account
    ' // because it doesn't know which menu we are using.
    DIM rc AS RECT, rcTemp  AS RECT
+   IF m_UsePixels THEN nWidth *= m_rx : nHeight *= m_ry
    SetRect(@rc, 0, 0, nWidth, nHeight)
    DIM hMenu AS HANDLE = GetMenu(m_hDlg)
    DIM dwStyle AS DWORD = GetWindowLongPtrW(m_hDlg, GWL_STYLE)

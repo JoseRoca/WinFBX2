@@ -156,6 +156,10 @@ TYPE CDialog
       ' To do: DialogStabilize, DialogNonStable, DialogSetColor, DialogSetIcon (from resource)
       ' DialogStabilize: Disabling the close menu and processing the SC_CLOSE message in the
       ' WM_SYSCOMMAND message has the same effect.
+      ' DialogNonStable: Enabling the close menu and not processing the SC_CLOSE message in the
+      ' WM_SYSCOMMAND message has the same effect.
+      ' DialogSetColor: Would be necessary to subclass the dialog. Without subclassing, it can be
+      ' done processing the WM_CTLCOLORDLG.
 
       ' // Control methods
       DECLARE FUNCTION ControlDisable (BYVAL cId AS LONG) AS BOOLEAN
@@ -243,11 +247,6 @@ END DESTRUCTOR
 ' Remarks:
 '   The values of several of the members of this structure can be retrieved with
 '   GetClassLongPtrW and set with SetClassLongPtrW.
-' Note: The class uses CS_HREDRAW OR CS_VREDRAW as default window styles. Without them,
-' the background is not repainted and the controls leave garbage in it when resized. With
-' them, windows with many controls cause heavy flicker. To avoid flicker, you can change
-' the windows style using e.g. pWindow.ClassStyle = CS_DBLCLKS and take care yourself of
-' repainting.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.RegisterClass (BYREF wszClassName AS CONST WSTRING) AS ATOM
 
@@ -1227,7 +1226,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the width and height of the dialog in dialog units.
+' * Gets the width and height of the dialog.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogGetSize (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
    IF VARPTR(nWidth) = 0 OR VARPTR(nHeight) = 0 THEN RETURN FALSE
@@ -1243,13 +1242,13 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the width of the dialog in dialog units.
+' * Gets the width of the dialog.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogGetWidth () AS LONG
    ' // Get the dimensions of the window
    DIM rc AS RECT
    FUNCTION = GetWindowRect(m_hDlg, @rc)
-   ' // Return the width in dialog units
+   ' // Return the width
    DIM AS LONG nWidth, nHeight
    IF m_UsePixels = FALSE THEN
       this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
@@ -1261,13 +1260,13 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the height of the dialog in dialog units.
+' * Gets the height of the dialog.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogGetHeight () AS LONG
    ' // Get the dimensions of the window
    DIM rc AS RECT
    FUNCTION = GetWindowRect(m_hDlg, @rc)
-   ' // Return the width in dialog units
+   ' // Return the width
    DIM AS LONG nWidth, nHeight
    IF m_UsePixels = FALSE THEN
       this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
@@ -1279,7 +1278,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Sets the size of the dialog in dialog units.
+' * Sets the size of the dialog.
 ' - nWidth = The new width of the window.
 ' - nHeight = The new height of the window.
 ' ========================================================================================
@@ -1342,13 +1341,13 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the width of the the dialog's client area in dialog units.
+' * Gets the width of the the dialog's client area.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogGetClientWidth () AS LONG
    ' // Get the dimensions of the window
    DIM rc AS RECT
    FUNCTION = GetClientRect(m_hDlg, @rc)
-   ' // Return the width in dialog units
+   ' // Return the width
    DIM AS LONG nWidth, nHeight
    IF m_UsePixels = FALSE THEN
       this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
@@ -1360,13 +1359,13 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the height of the dialog's client area in dialog units.
+' * Gets the height of the dialog's client area.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogGetClientHeight () AS LONG
    ' // Get the dimensions of the window
    DIM rc AS RECT
    FUNCTION = GetClientRect(m_hDlg, @rc)
-   ' // Return the width in dialog units
+   ' // Return the width
    DIM AS LONG nWidth, nHeight
    IF m_UsePixels = FALSE THEN
       this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
@@ -1483,7 +1482,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the location of the top left corner of the window in dialog units.
+' * Gets the location of the top left corner of the window.
 ' The location is relative to the upper-left corner of the client area in the parent window.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogGetLoc (BYREF nLeft AS LONG, BYREF nTop AS LONG) AS BOOLEAN
@@ -1505,7 +1504,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Sets the location of the top left corner of the window in dialog units.
+' * Sets the location of the top left corner of the window.
 ' The location is relative to the upper-left corner of the client area in the parent window.
 ' Return value: TRUE or FALSE. To get extended error information, call GetLastError.
 ' ========================================================================================
@@ -1516,7 +1515,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' =====================================================================================
-' * Retrieves a value from the user data area of a CDialog.
+' * Retrieves a value from the user data area of a CDialogEx.
 ' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
 ' =====================================================================================
 PRIVATE FUNCTION CDialog.DialogGetUser (BYVAL idx AS LONG) AS LONG_PTR
@@ -1526,7 +1525,7 @@ END FUNCTION
 ' =====================================================================================
 
 ' =====================================================================================
-' * Sets a value in the user data area of a CWindow.
+' * Sets a value in the user data area of a CDialogEx.
 ' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
 ' =====================================================================================
 PRIVATE SUB CDialog.DialogSetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
@@ -1569,7 +1568,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the location of the top left corner of the window in dialog units.
+' * Gets the location of the top left corner of the window.
 ' The location is relative to the upper-left corner of the client area in the parent window.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlGetLoc (BYVAL cId AS LONG, BYREF nLeft AS LONG, BYREF nTop AS LONG) AS BOOLEAN
@@ -1586,7 +1585,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Sets the location of the top left corner of the window in dialog units.
+' * Sets the location of the top left corner of the window.
 ' The location is relative to the upper-left corner of the client area in the parent window.
 ' Return value: TRUE or FALSE. To get extended error information, call GetLastError.
 ' ========================================================================================
@@ -1851,14 +1850,14 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the width and height of the control in dialog units.
+' * Gets the width and height of the control.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlGetSize (BYVAL cId AS LONG, BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
    IF VARPTR(nWidth) = 0 OR VARPTR(nHeight) = 0 THEN RETURN FALSE
    ' // Get the dimensions of the window
    DIM rc AS RECT
    GetWindowRect(GetDlgItem(m_hDlg, cId), @rc)
-   ' // Return the width and height in dialog units
+   ' // Return the width and height
    IF m_UsePixels = FALSE THEN
       RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
    ELSE
@@ -1870,13 +1869,13 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the width of the window in dialog units.
+' * Gets the width of the window.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlGetWidth (BYVAL cId AS LONG) AS LONG
    ' // Get the dimensions of the window
    DIM rc AS RECT
    FUNCTION = GetWindowRect(GetDLgItem(m_hDlg, cId), @rc)
-   ' // Return the width in dialog units
+   ' // Return the width
    DIM AS LONG nWidth, nHeight
    IF m_UsePixels = FALSE THEN
       this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
@@ -1888,13 +1887,13 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the height of the window in dialog units.
+' * Gets the height of the window.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlGetHeight (BYVAL cId AS LONG) AS LONG
    ' // Get the dimensions of the window
    DIM rc AS RECT
    FUNCTION = GetWindowRect(GetDlgItem(m_hDlg, cId), @rc)
-   ' // Return the width in dialog units
+   ' // Return the width
    DIM AS LONG nWidth, nHeight
    IF m_UsePixels = FALSE THEN
       this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
@@ -1906,7 +1905,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Sets the size in dialog units of the specified window.
+' * Sets the size of the specified window.
 ' - nWidth = The new width of the window.
 ' - nHeight = The new height of the window.
 ' ========================================================================================
@@ -1927,7 +1926,7 @@ PRIVATE FUNCTION CDialog.ControlGetClient (BYVAL cId AS LONG, BYREF nWidth AS LO
    ' // Get the dimensions of the window
    DIM rc AS RECT
    GetClientRect(GetDlgItem(m_hDlg, cId), @rc)
-   ' // Return the width and height values in dialog units
+   ' // Return the width and height values
    IF m_UsePixels = FALSE THEN
       RETURN this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
    ELSE
@@ -1945,7 +1944,7 @@ PRIVATE FUNCTION CDialog.ControlGetClientWidth (BYVAL cId AS LONG) AS LONG
    ' // Get the dimensions of the window
    DIM rc AS RECT
    FUNCTION = GetClientRect(GetDlgItem(m_hDlg, cId), @rc)
-   ' // Return the width in dialog units
+   ' // Return the width
    DIM AS LONG nWidth, nHeight
    IF m_UsePixels = FALSE THEN
       this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)
@@ -1957,13 +1956,13 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the height of the control's client area in dialog units.
+' * Gets the height of the control's client area.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlGetClientHeight (BYVAL cId AS LONG) AS LONG
    ' // Get the dimensions of the window
    DIM rc AS RECT
    FUNCTION = GetClientRect(GetDlgItem(m_hDlg, cId), @rc)
-   ' // Return the width in dialog units
+   ' // Return the width
    DIM AS LONG nWidth, nHeight
    IF m_UsePixels = FALSE THEN
       this.PixelsToDialogUnits(rc.Right - rc.Left, rc.Bottom - rc.Top, nWidth, nHeight)

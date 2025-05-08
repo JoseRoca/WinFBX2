@@ -24,9 +24,17 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
+#if not defined(UNICODE)
+   #define UNICODE
+#endif
+#if not defined(_WIN32_WINNT)
+   #define _WIN32_WINNT &h0602
+#endif
+
 #pragma once
 #include once "windows.bi"
 #include once "win/commctrl.bi"
+#include once "Afx2/DWSTRING.inc"
 
 NAMESPACE Afx2
 
@@ -37,6 +45,7 @@ TYPE CControl
 
 Private:
    m_Result AS LONG                           ' // Last result code
+   DIM m_rgUserData(0 TO 99) AS LONG_PTR      ' // User data
 
 Public:
    DECLARE CONSTRUCTOR
@@ -44,16 +53,27 @@ Public:
    DECLARE FUNCTION GetLastResult () AS LONG
    DECLARE FUNCTION SetResult (BYVAL Result AS LONG) AS LONG
    DECLARE FUNCTION GetErrorInfo (BYVAL dwError AS LONG = -1) AS DWSTRING
+   DECLARE FUNCTION GetUser (BYVAL idx AS LONG) AS LONG_PTR
+   DECLARE SUB SetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
 
    DECLARE FUNCTION DialogUnitsToPixels (BYVAL hCtl AS HWND, BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
    DECLARE FUNCTION DialogUnitsToPixelsRatios (BYVAL hCtl AS HWND, BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
-   DECLARE FUNCTION DlgToPixRX (BYVAL hCtl AS HWND) AS SINGLE
-   DECLARE FUNCTION DlgToPixRY (BYVAL hCtl AS HWND) AS SINGLE
+   DECLARE FUNCTION DluToPixRX (BYVAL hCtl AS HWND) AS SINGLE
+   DECLARE FUNCTION DluToPixRY (BYVAL hCtl AS HWND) AS SINGLE
+   DECLARE FUNCTION DluToPixX (BYVAL hCtl AS HWND, BYVAL dlu AS LONG) AS SINGLE
+   DECLARE FUNCTION DluToPixY (BYVAL hCtl AS HWND, BYVAL dlu AS LONG) AS SINGLE
    DECLARE FUNCTION PixelsToDialogUnits (BYVAL hCtl AS HWND, BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
    DECLARE FUNCTION PixelsToDialogUnitsRatios (BYVAL hCtl AS HWND, BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
-   DECLARE FUNCTION PixToDlgRX (BYVAL hCtl AS HWND) AS SINGLE
-   DECLARE FUNCTION PixToDlgRY (BYVAL hCtl AS HWND) AS SINGLE
-
+   DECLARE FUNCTION PixToDluRX (BYVAL hCtl AS HWND) AS SINGLE
+   DECLARE FUNCTION PixToDluRY (BYVAL hCtl AS HWND) AS SINGLE
+   DECLARE FUNCTION PixToDluX (BYVAL hCtl AS HWND, BYVAL pix AS LONG) AS SINGLE
+   DECLARE FUNCTION PixToDluY (BYVAL hCtl AS HWND, BYVAL pix AS LONG) AS SINGLE
+   DECLARE FUNCTION ScaleRX () AS SINGLE
+   DECLARE FUNCTION ScaleRY () AS SINGLE
+   DECLARE FUNCTION ScaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DECLARE FUNCTION ScaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DECLARE FUNCTION UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DECLARE FUNCTION UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
 
 END TYPE
 ' ========================================================================================
@@ -108,6 +128,25 @@ PRIVATE FUNCTION CControl.GetErrorInfo (BYVAL nError AS LONG = -1) AS DWSTRING
 END FUNCTION
 ' ========================================================================================
 
+' =====================================================================================
+' * Retrieves a value from the user data area of the control.
+' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
+' =====================================================================================
+PRIVATE FUNCTION CControl.GetUser (BYVAL idx AS LONG) AS LONG_PTR
+   IF idx < 0 OR idx > 9 THEN RETURN 0
+   RETURN m_rgUserData(idx)
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' * Sets a value in the user data area of the control.
+' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
+' =====================================================================================
+PRIVATE SUB CControl.SetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
+   IF idx > -1 AND idx < 10 THEN m_rgUserData(idx) = newValue
+END SUB
+' =====================================================================================
+
 ' ========================================================================================
 ' * Converts the specified dialog box units to screen units (pixels).
 ' ========================================================================================
@@ -141,7 +180,7 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the conversion ratio from dialog units to pixels
 ' ========================================================================================
-PRIVATE FUNCTION CControl.DlgToPixRX (BYVAL hCtl AS HWND) AS SINGLE
+PRIVATE FUNCTION CControl.DluToPixRX (BYVAL hCtl AS HWND) AS SINGLE
    DIM hDlg AS HWND = GetParent(hCtl)
    DIM rc AS RECT
    rc.Right = 4 : rc.Bottom = 8
@@ -152,7 +191,7 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the conversion ratio from dialog units to pixels
 ' ========================================================================================
-PRIVATE FUNCTION CControl.DlgToPixRY (BYVAL hCtl AS HWND) AS SINGLE
+PRIVATE FUNCTION CControl.DluToPixRY (BYVAL hCtl AS HWND) AS SINGLE
    DIM hDlg AS HWND = GetParent(hCtl)
    DIM rc AS RECT
    rc.Right = 4 : rc.Bottom = 8
@@ -163,7 +202,7 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the conversion ratio from pixels to dialog units
 ' ========================================================================================
-PRIVATE FUNCTION CControl.PixToDlgRX (BYVAL hCtl AS HWND) AS SINGLE
+PRIVATE FUNCTION CControl.PixToDluRX (BYVAL hCtl AS HWND) AS SINGLE
    DIM hDlg AS HWND = GetParent(hCtl)
    DIM rc AS RECT
    rc.Right = 4 : rc.Bottom = 8
@@ -174,12 +213,34 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the conversion ratio from pixels to dialog units
 ' ========================================================================================
-PRIVATE FUNCTION CControl.PixToDlgRY (BYVAL hCtl AS HWND) AS SINGLE
+PRIVATE FUNCTION CControl.PixToDluRY (BYVAL hCtl AS HWND) AS SINGLE
    DIM hDlg AS HWND = GetParent(hCtl)
    DIM rc AS RECT
    rc.Right = 4 : rc.Bottom = 8
    MapDialogRect(hDlg, @rc)
    RETURN 8.0 / rc.bottom
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Converts dialog uits to pixels
+' ========================================================================================
+PRIVATE FUNCTION CControl.DluToPixX (BYVAL hCtl AS HWND, BYVAL dlu AS LONG) AS SINGLE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = dlu
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN 0
+   RETURN rc.Right
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CControl.DluToPixY (BYVAL hCtl AS HWND, BYVAL dlu AS LONG) AS SINGLE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Bottom = dlu
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN 0
+   RETURN rc.Bottom
 END FUNCTION
 ' ========================================================================================
 
@@ -201,6 +262,31 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' * Converts the specified screen units (pixels) to dialog box units.
+' ========================================================================================
+PRIVATE FUNCTION CControl.PixToDluX (BYVAL hCtl AS HWND, BYVAL pix AS LONG) AS SINGLE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = 4
+   rc.Bottom = 8
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN 0
+   RETURN pix * (4.0 / rc.right)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CControl.PixToDluY (BYVAL hCtl AS HWND, BYVAL pix AS LONG) AS SINGLE
+   DIM hDlg AS HWND = GetParent(hCtl)
+   DIM rc AS RECT
+   rc.Right = 4
+   rc.Bottom = 8
+   DIM bResult AS BOOLEAN = MapDialogRect(hDlg, @rc)
+   IF bResult = FALSE THEN RETURN 0
+   RETURN pix * (8.0 / rc.bottom)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' * Retrieves the conversion ratios from pixels to dialog units
 ' ========================================================================================
 PRIVATE FUNCTION CControl.PixelsToDialogUnitsRatios (BYVAL hCtl AS HWND, BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
@@ -213,6 +299,68 @@ PRIVATE FUNCTION CControl.PixelsToDialogUnitsRatios (BYVAL hCtl AS HWND, BYREF r
    IF VARPTR(ratioX) THEN ratioX = 4.0 / rc.right
    IF VARPTR(ratioY) THEN ratioY = 8.0 / rc.bottom
    RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the desktop horizontal scaling ratio.
+' ========================================================================================
+PRIVATE FUNCTION CControl.ScaleRX () AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   DIM rxRatio AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+   FUNCTION = rxRatio
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the desktop vertical scaling ratio.
+' ========================================================================================
+PRIVATE FUNCTION CControl.ScaleRY () AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   DIM ryRatio AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+   FUNCTION = ryRatio
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Scales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION CControl.ScaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cx * (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Scales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION CControl.ScaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cy * (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Unscales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION CControl.UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cx / (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Unscales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION CControl.UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cy / (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
 END FUNCTION
 ' ========================================================================================
 

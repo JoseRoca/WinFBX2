@@ -35,6 +35,7 @@
 #include once "windows.bi"
 #include once "win/commctrl.bi"
 #include once "Afx2/DWSTRING.inc"
+#include once "Afx2/CDialog.inc"
 
 NAMESPACE Afx2
 
@@ -45,6 +46,7 @@ TYPE CControl
 
 Private:
    m_Result AS LONG                           ' // Last result code
+   m_UsePixels AS BOOLEAN                     ' // Use pixels instead of dialog units
    DIM m_rgUserData(0 TO 99) AS LONG_PTR      ' // User data
 
 Public:
@@ -53,6 +55,9 @@ Public:
    DECLARE FUNCTION GetLastResult () AS LONG
    DECLARE FUNCTION SetResult (BYVAL Result AS LONG) AS LONG
    DECLARE FUNCTION GetErrorInfo (BYVAL dwError AS LONG = -1) AS DWSTRING
+   DECLARE FUNCTION CDialogOwnerPtr (BYVAL hwnd AS HWND) AS CDialog PTR
+   DECLARE PROPERTY UsesPixels () AS BOOLEAN
+   DECLARE PROPERTY UsesPixels (BYVAL bUsePixels AS BOOLEAN)
    DECLARE FUNCTION GetUser (BYVAL idx AS LONG) AS LONG_PTR
    DECLARE SUB SetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
 
@@ -128,6 +133,19 @@ PRIVATE FUNCTION CControl.GetErrorInfo (BYVAL nError AS LONG = -1) AS DWSTRING
 END FUNCTION
 ' ========================================================================================
 
+' ========================================================================================
+' Returns true if it uses pixels
+' ========================================================================================
+PRIVATE PROPERTY CControl.UsesPixels () AS BOOLEAN
+   RETURN m_UsePixels
+END PROPERTY
+' ========================================================================================
+' ========================================================================================
+PRIVATE PROPERTY CControl.UsesPixels (BYVAL bUsePixels AS BOOLEAN)
+   m_UsePixels = bUsePixels
+END PROPERTY
+' ========================================================================================
+
 ' =====================================================================================
 ' * Retrieves a value from the user data area of the control.
 ' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
@@ -146,6 +164,18 @@ PRIVATE SUB CControl.SetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
    IF idx > -1 AND idx < 10 THEN m_rgUserData(idx) = newValue
 END SUB
 ' =====================================================================================
+
+' ========================================================================================
+' Returns a pointer to the CDialog class given the handle of the window created with it
+' or the handle of any of it's children.
+' ========================================================================================
+PRIVATE FUNCTION CControl.CDialogOwnerPtr (BYVAL hwnd AS HWND) AS CDialog PTR
+   IF hwnd = NULL THEN RETURN NULL
+   DIM hRootOwner AS ..HWND = GetAncestor(hwnd, GA_ROOTOWNER)
+   IF hRootOwner = NULL THEN RETURN NULL
+   RETURN CAST(CDialog PTR, .GetWindowLongPtrW(hRootOwner, DWLP_USER))
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' * Converts the specified dialog box units to screen units (pixels).

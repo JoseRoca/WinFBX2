@@ -35,7 +35,6 @@
 #include once "windows.bi"
 #include once "win/commctrl.bi"
 #include once "Afx2/CControl.inc"
-#include once "Afx2/CDialog.inc"
 using Afx2
 
 NAMESPACE Afx2
@@ -114,12 +113,16 @@ END TYPE
 ' ========================================================================================
 PRIVATE CONSTRUCTOR CButton (BYVAL hCtl AS HWND)
    IF IsWindow(hCtl) THEN m_hCtl = hCtl ELSE EXIT CONSTRUCTOR
+   DIM pDlg AS CDialog PTR = this.CDialogOwnerPtr(hCtl)
+   IF pDlg THEN this.UsesPixels = pDlg->UsesPixels
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR CButton (BYVAL hParent AS HWND, BYVAL cID AS LONG)
    DIM hCtl AS HWND = GetDlgItem(hParent, cID)
    IF IsChild(hParent, hCtl) THEN m_hCtl = hCtl ELSE EXIT CONSTRUCTOR
+   DIM pDlg AS CDialog PTR = this.CDialogOwnerPtr(hCtl)
+   IF pDlg THEN this.UsesPixels = pDlg->UsesPixels
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -127,6 +130,7 @@ PRIVATE CONSTRUCTOR CButton (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
    IF VARPTR(pDlg) = 0 THEN EXIT CONSTRUCTOR
    DIM hCtl AS HWND = GetDlgItem(pDlg.hDialog, cID)
    IF IsWindow(hCtl) THEN m_hCtl = hCtl ELSE EXIT CONSTRUCTOR
+   this.UsesPixels = pDlg.UsesPixels
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -134,6 +138,7 @@ PRIVATE CONSTRUCTOR CButton (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    IF pDlg = NULL THEN EXIT CONSTRUCTOR
    DIM hCtl AS HWND = GetDlgItem(pDlg->hDialog, cID)
    IF IsWindow(hCtl) THEN m_hCtl = hCtl ELSE EXIT CONSTRUCTOR
+   this.UsesPixels = pDlg->UsesPixels
 END CONSTRUCTOR
 ' ========================================================================================
 

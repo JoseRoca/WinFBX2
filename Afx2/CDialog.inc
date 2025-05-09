@@ -808,8 +808,10 @@ PRIVATE FUNCTION CDialog.DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF 
    DIM sTemplate AS STRING = this.DialogTemplate("", wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
+   ' // Store a pointer to the class
+   IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
+   ' // Return the dialog handle
    RETURN m_hDlg
-
 END FUNCTION
 ' ========================================================================================
 
@@ -832,8 +834,10 @@ PRIVATE FUNCTION CDialog.DialogNew (BYREF wszClassName AS WSTRING, BYVAL hParent
    DIM sTemplate AS STRING = this.DialogTemplate(wszClassName, wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
+   ' // Store a pointer to the class
+   IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
+   ' // Return the dialog handle
    RETURN m_hDlg
-
 END FUNCTION
 ' ========================================================================================
 
@@ -844,7 +848,6 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, 
    BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
    BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
    CDIALOG_DP("#32770- PIXELS")
-
    m_UsePixels = TRUE
    ' // Default styles
    IF dwStyle THEN dwStyle = dwStyle OR DS_3DLOOK OR DS_NOFAILCREATE OR DS_SETFONT
@@ -861,8 +864,10 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, 
       SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
       IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
    END IF
+   ' // Store a pointer to the class
+   IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
+   ' // Return the dialog handle
    RETURN m_hDlg
-
 END FUNCTION
 ' ========================================================================================
 
@@ -873,7 +878,6 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL h
    BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
    BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
    CDIALOG_DP(wszClassName & " - PIXELS")
-
    m_UsePixels = TRUE
    ' // Default styles
    IF dwStyle THEN dwStyle = dwStyle OR DS_3DLOOK OR DS_NOFAILCREATE OR DS_SETFONT
@@ -890,13 +894,16 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL h
       SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
       IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
    END IF
+   ' // Store a pointer to the class
+   IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
+   ' // Return the dialog handle
    RETURN m_hDlg
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
 ' Internal dialog callback procedure used if the user does not specify a callback
-' in the ShowDialogModal or ShowDialogModeless methods.
+' in the ShowDialogModal or ShowDialogModeless methods. Classic dialogs (#32770).
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
 
@@ -921,7 +928,7 @@ END FUNCTION
 
 ' ========================================================================================
 ' Internal custom dialog callback procedure used if the user does not specify a callback
-' in the ShowDialogModal or ShowDialogModeless methods.
+' in the ShowDialogModal or ShowDialogModeless methods. Custom dialogs.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
 
@@ -2242,3 +2249,15 @@ END FUNCTION
 ' ========================================================================================
 
 END NAMESPACE
+
+' ========================================================================================
+' Returns a pointer to the CDialog class given the handle of the window created with it
+' or the handle of any of it's children.
+' ========================================================================================
+PRIVATE FUNCTION AfxCDialogOwnerPtr (BYVAL hwnd AS HWND) AS CDialog PTR
+   IF hwnd = NULL THEN RETURN NULL
+   DIM hRootOwner AS ..HWND = GetAncestor(hwnd, GA_ROOTOWNER)
+   IF hRootOwner = NULL THEN RETURN NULL
+   RETURN CAST(CDialog PTR, .GetWindowLongPtrW(hRootOwner, DWLP_USER))
+END FUNCTION
+' ========================================================================================

@@ -33,7 +33,6 @@
 
 #pragma once
 #INCLUDE ONCE "win/richedit.bi"
-'#include once "Afx2/AfxWin2.inc"
 #include once "Afx2/AfxFontProcs2.inc"
 USING Afx2
 
@@ -67,29 +66,59 @@ USING Afx2
 
 NAMESPACE Afx2
 
+' // Layout manager - Anchor flags
+ENUM AFX_ANCHORPOINT
+   AFX_ANCHOR_NONE =  0
+   AFX_ANCHOR_WIDTH
+   AFX_ANCHOR_RIGHT
+   AFX_ANCHOR_CENTER_HORZ
+   AFX_ANCHOR_HEIGHT
+   AFX_ANCHOR_HEIGHT_WIDTH
+   AFX_ANCHOR_HEIGHT_RIGHT
+   AFX_ANCHOR_BOTTOM
+   AFX_ANCHOR_BOTTOM_WIDTH
+   AFX_ANCHOR_BOTTOM_RIGHT
+   AFX_ANCHOR_CENTER_HORZ_BOTTOM
+   AFX_ANCHOR_CENTER_VERT
+   AFX_ANCHOR_CENTER_VERT_RIGHT
+   AFX_ANCHOR_CENTER
+END ENUM
+
+' // Layout manager - Anchor properties
+TYPE AFX_ANCHORPROPERTY
+   hwndCtl AS HWND
+   anchor  AS LONG
+   rc      AS RECT
+   centerX AS LONG
+   centerY AS LONG
+END TYPE
+
 ' ========================================================================================
 ' CDialog class
 ' ========================================================================================
 TYPE CDialog
 
    Private:
-      m_hDlg  AS HWND                         ' // Dialog handle
-      m_hInstance AS HINSTANCE                ' // Instance handle
-      m_hRichEditLib AS HMODULE               ' // Rich Edit module handle
-      m_ptSize AS LONG                        ' // Font point size
-      m_fontStyle AS BYTE                     ' // Font style
-      m_charset AS BYTE                       ' // Font character set
-      m_fontName AS WSTRING * 32              ' // Font face name
-      m_IsModal AS BOOLEAN                    ' // Dialog is modal
-      m_IsCustom AS BOOLEAN                   ' // Dialog has a custom class
-      m_UsePixels AS BOOLEAN                  ' // Use pixels instead of dialog units
-      m_wszClassName AS WSTRING * 256         ' // Class name
-      m_rx AS SINGLE = 1                      ' // DPI - Horizontal scaling ratio
-      m_ry AS SINGLE = 1                      ' // DPI - Vertical scaling ratio
-      m_DlgRetVal AS INT_PTR                  ' // To simulate EndDialog
-      m_hDefPushButton AS HWND                ' // Handle of the default push button
-      DIM m_rgUserData(0 TO 99) AS LONG_PTR   ' // User data
+      m_hDlg  AS HWND                            ' // Dialog handle
+      m_hInstance AS HINSTANCE                   ' // Instance handle
+      m_hRichEditLib AS HMODULE                  ' // Rich Edit module handle
+      m_ptSize AS LONG                           ' // Font point size
+      m_fontStyle AS BYTE                        ' // Font style
+      m_charset AS BYTE                          ' // Font character set
+      m_fontName AS WSTRING * 32                 ' // Font face name
+      m_IsModal AS BOOLEAN                       ' // Dialog is modal
+      m_IsCustom AS BOOLEAN                      ' // Dialog has a custom class
+      m_UsePixels AS BOOLEAN                     ' // Use pixels instead of dialog units
+      m_wszClassName AS WSTRING * 256            ' // Class name
+      m_rx AS SINGLE = 1                         ' // DPI - Horizontal scaling ratio
+      m_ry AS SINGLE = 1                         ' // DPI - Vertical scaling ratio
+      m_DlgRetVal AS INT_PTR                     ' // To simulate EndDialog
+      m_hDefPushButton AS HWND                   ' // Handle of the default push button
+      DIM m_rgUserData(0 TO 99) AS LONG_PTR      ' // User data
 
+      ' // Layout manager
+      DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY   ' // Array of anchor property structures
+     
    Public:
       DECLARE CONSTRUCTOR (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, _
          BYVAL fontStyle AS BYTE = 0, BYVAL charset AS BYTE = DEFAULT_CHARSET) 
@@ -226,9 +255,24 @@ TYPE CDialog
       DECLARE FUNCTION DesktopGetClientWidth () AS LONG
       DECLARE FUNCTION DesktopGetClientHeight () AS LONG
 
+      ' // Additional functions
+      DECLARE FUNCTION ScaleRX () AS SINGLE
+      DECLARE FUNCTION ScaleRY () AS SINGLE
+      DECLARE FUNCTION RxRatio () AS SINGLE
+      DECLARE FUNCTION RyRatio () AS SINGLE
+
+      ' // Layout manager
+      DECLARE FUNCTION ControlAnchor (BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
+      DECLARE FUNCTION ControlAnchor (BYVAL hCtl AS HWND, BYVAL nAnchorMode AS LONG) AS BOOLEAN
+      DECLARE FUNCTION ControlAnchor (BYVAL hParent AS HWND, BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
+      DECLARE FUNCTION GetAnchorItem (BYVAL hwndCtl AS HWND) AS LONG
+      DECLARE FUNCTION AdjustControls () AS BOOLEAN
+
 Private:
       DECLARE STATIC FUNCTION CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
       DECLARE STATIC FUNCTION CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+      ' // Layout manager - Callback function to enumerate child windows
+      DECLARE STATIC FUNCTION LayoutEnumChildProc (BYVAL hwnd AS HWND, BYVAL lParam AS LPARAM) AS LONG
 
 END TYPE
 ' ========================================================================================
@@ -581,7 +625,8 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          GetClientRect(m_hDlg, @rcClient)
          x = rcClient.Right - nWidth
          y = rcClient.Bottom - nHeight
-         bSetFont = FALSE
+         x /= m_rx   ' // Adjust for DPI
+         y /= m_ry   ' // Adjust for DPI
       CASE "HSCROLLBAR"
          ' Adds an horizontal scroll bar to the window.
          wsClassName = "Scrollbar"
@@ -2248,7 +2293,198 @@ PRIVAtE FUNCTION CDialog.DesktopGetClientHeight () AS LONG
 END FUNCTION
 ' ========================================================================================
 
+' ========================================================================================
+' Retrieves the desktop horizontal scaling ratio.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ScaleRX () AS SINGLE
+   RETURN m_rx
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves the desktop vertical scaling ratio.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ScaleRY () AS SINGLE
+   RETURN m_ry
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CDialog.rxRatio () AS SINGLE
+   RETURN m_rx
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ryRatio () AS SINGLE
+   RETURN m_ry
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Get the anchor item
+' Return Value: The array index on success, or -1 on failure.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.GetAnchorItem (BYVAL hwndCtl AS HWND) AS LONG
+   FUNCTION = -1
+   FOR i AS LONG = 0 TO UBOUND(m_rgProps)
+      IF m_rgProps(i).hwndCtl = hwndCtl THEN FUNCTION = i : EXIT FOR
+   NEXT
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Anchor the control
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hwndCtl AS HWND, BYVAL nAnchorMode AS LONG) AS BOOLEAN
+   IF .IsWindow(hwndCtl) = FALSE THEN EXIT FUNCTION
+   ' // Check if the item already exists
+   DIM nItem AS LONG = this.GetAnchorItem(hwndCtl)
+   ' // If it does not exist, make room for it
+   IF nItem = -1 THEN
+      REDIM PRESERVE m_rgProps(UBOUND(m_rgProps) + 1) AS AFX_ANCHORPROPERTY
+      nItem = UBOUND(m_rgProps)
+   END IF
+   m_rgProps(nItem).hwndCtl = hwndCtl
+   ' // Get the coordinates of the control
+   DIM rcCtl AS RECT, pt AS POINT
+   .GetWindowRect(hwndCtl, @rcCtl)
+   pt.x = rcCtl.Left
+   pt.y = rcCtl.Top
+   ' // Convert the screen coordinates to screen to client-area coordinates
+   .ScreenToClient(GetParent(hwndCtl), @pt)
+   ' // Get the client coordinates of the parent window
+   DIm rcParent AS RECT
+   .GetClientRect(GetParent(hwndCtl), @rcParent)
+   m_rgProps(nItem).anchor    = MIN(MAX(nAnchorMode, AFX_ANCHOR_NONE), AFX_ANCHOR_CENTER)
+   m_rgProps(nItem).rc.Left   = pt.x
+   m_rgProps(nItem).rc.Top    = pt.y
+   m_rgProps(nItem).rc.Right  = rcParent.Right - (rcCtl.Right - rcCtl.Left + pt.x)
+   m_rgProps(nItem).rc.Bottom = rcParent.Bottom - (rcCtl.Bottom - rcCtl.Top + pt.y)
+   m_rgProps(nItem).centerX   = pt.x - (rcParent.Right \ 2)
+   m_rgProps(nItem).centerY   = pt.y - (rcParent.Bottom \ 2)
+   FUNCTION = TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
+   DIM hwndCtl AS HWND = GetDlgItem(m_hDlg, cID)
+   IF hwndCtl THEN FUNCTION = this.ControlAnchor(hwndCtl, nAnchorMode)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hParent AS HWND, BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
+   DIM hwndCtl AS HWND = GetDlgItem(hParent, cID)
+   IF hwndCtl THEN FUNCTION = this.ControlAnchor(hwndCtl, nAnchorMode)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Callback function to enumerate child windows
+' ========================================================================================
+PRIVATE FUNCTION CDialog.LayoutEnumChildProc (BYVAL hwndChild AS HWND, BYVAL lParam AS LPARAM) AS LONG
+   DIM rcParent AS RECT, rcChild AS RECT
+   DIM nWidth AS LONG, nHeight AS LONG, x AS LONG, y AS LONG, xWidth AS LONG, yHeight AS LONG
+   DIM pDlg AS CDialog PTR = CAST(CDialog PTR, lParam)
+   DIM nItem AS LONG = pDlg->GetAnchorItem(hwndChild)
+   IF nItem > -1 THEN
+      IF pDlg->m_rgProps(nItem).anchor > AFX_ANCHOR_NONE THEN
+         GetWindowRect(hwndChild, @rcChild)
+         nWidth = rcChild.Right - rcChild.Left
+         nHeight = rcChild.Bottom - rcChild.Top
+         GetClientRect(GetParent(hwndChild), @rcParent)
+         x = 0: y = 0: xWidth = 0: yHeight = 0
+         SELECT CASE pDlg->m_rgProps(nItem).anchor
+            CASE AFX_ANCHOR_NONE
+               x = pDlg->m_rgProps(nItem).rc.Left
+               y = pDlg->m_rgProps(nItem).rc.Top
+               xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
+               yHeight = nHeight
+            CASE AFX_ANCHOR_WIDTH
+               x = pDlg->m_rgProps(nItem).rc.Left
+               y = pDlg->m_rgProps(nItem).rc.Top
+               xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
+               yHeight = nHeight
+            CASE AFX_ANCHOR_RIGHT
+               x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
+               y = pDlg->m_rgProps(nItem).rc.Top
+               xWidth = nWidth
+               yHeight = nHeight
+            CASE AFX_ANCHOR_CENTER_HORZ
+               x = (rcParent.Right \ 2) + pDlg->m_rgProps(nItem).centerX
+               y = pDlg->m_rgProps(nItem).rc.Top
+               xWidth = nWidth
+               yHeight = nHeight
+            CASE AFX_ANCHOR_HEIGHT
+               x = pDlg->m_rgProps(nItem).rc.Left
+               y = pDlg->m_rgProps(nItem).rc.Top
+               xWidth = nWidth
+               yHeight = MAX(rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Top - pDlg->m_rgProps(nItem).rc.Bottom, 0)
+            CASE AFX_ANCHOR_HEIGHT_WIDTH
+               x = pDlg->m_rgProps(nItem).rc.Left
+               y = pDlg->m_rgProps(nItem).rc.Top
+               xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
+               yHeight = MAX(rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Top - pDlg->m_rgProps(nItem).rc.Bottom, 0)
+            CASE AFX_ANCHOR_HEIGHT_RIGHT
+               x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
+               y = pDlg->m_rgProps(nItem).rc.Top
+               xWidth = nWidth
+               yHeight = MAX(rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Top - pDlg->m_rgProps(nItem).rc.Bottom, 0)
+            CASE AFX_ANCHOR_BOTTOM
+               x = pDlg->m_rgProps(nItem).rc.Left
+               y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
+               xWidth = nWidth
+               yHeight = nHeight
+            CASE AFX_ANCHOR_BOTTOM_WIDTH
+               x = pDlg->m_rgProps(nItem).rc.Left
+               y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
+               xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
+               yHeight = nHeight
+            CASE AFX_ANCHOR_BOTTOM_RIGHT
+               x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
+               y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
+               xWidth = nWidth
+               yHeight = nHeight
+            CASE AFX_ANCHOR_CENTER_HORZ_BOTTOM
+               x = (rcParent.Right \ 2) + pDlg->m_rgProps(nItem).centerX
+               y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
+               xWidth = nWidth
+               yHeight = nHeight
+            CASE AFX_ANCHOR_CENTER_VERT
+               x = pDlg->m_rgProps(nItem).rc.Left
+               y = (rcParent.Bottom - nHeight) \ 2
+               xWidth = nWidth
+               yHeight = nHeight
+            CASE AFX_ANCHOR_CENTER_VERT_RIGHT
+               x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
+               y = (rcParent.Bottom - nHeight) \ 2
+               xWidth = nWidth
+               yHeight = nHeight
+            CASE AFX_ANCHOR_CENTER
+               x = (rcParent.Right \ 2) + pDlg->m_rgProps(nItem).centerX
+               y = (rcParent.Bottom \ 2) + pDlg->m_rgProps(nItem).centerY
+               xWidth = nWidth
+               yHeight = nHeight
+         END SELECT
+         MoveWindow(hwndChild, x, y, xWidth, yHeight, CTRUE)
+      END IF
+   END IF
+
+   FUNCTION = CTRUE
+
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Adjust the controls size and/or position
+' ========================================================================================
+PRIVATE FUNCTION CDialog.AdjustControls () AS BOOLEAN
+   IF UBOUND(m_rgProps) = -1 THEN RETURN FALSE
+   EnumChildWindows(m_hDlg, CAST(WNDENUMPROC, @LayoutEnumChildProc), CAST(LPARAM, @this))
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+
 END NAMESPACE
+' ########################################################################################
 
 ' ========================================================================================
 ' Returns a pointer to the CDialog class given the handle of the window created with it

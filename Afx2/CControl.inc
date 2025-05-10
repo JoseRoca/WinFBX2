@@ -45,9 +45,9 @@ NAMESPACE Afx2
 TYPE CControl
 
 Private:
-   m_Result AS LONG                           ' // Last result code
-   m_UsePixels AS BOOLEAN                     ' // Use pixels instead of dialog units
-   DIM m_rgUserData(0 TO 99) AS LONG_PTR      ' // User data
+   m_Result AS LONG                       ' // Last result code
+   m_UsePixels AS BOOLEAN                 ' // Use pixels instead of dialog units
+   DIM m_rgUserData(0 TO 9) AS LONG_PTR   ' // User data
 
 Public:
    DECLARE CONSTRUCTOR

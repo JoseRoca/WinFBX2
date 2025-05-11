@@ -956,14 +956,15 @@ END FUNCTION
 ' in the ShowDialogModal or ShowDialogModeless methods. Classic dialogs (#32770).
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
-   STATIC pDlg AS CDIALOG PTR
+
+   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
 
    SELECT CASE uMsg
 
       CASE WM_INITDIALOG
          CDIALOG_DP("WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
          pDlg = CAST(CDIALOG PTR, lParam)
-         CDIALOG_DP("WM_INITDIALOG " & WSTR(pDlg->m_pCallback))
+         CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
@@ -987,10 +988,15 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
 
+   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
+
    SELECT CASE uMsg
 
       CASE WM_INITDIALOG
          CDIALOG_DP("WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
+         pDlg = CAST(CDIALOG PTR, lParam)
+         ' // We will use pDlg to get data of the class, such colors
+'         CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
@@ -1015,18 +1021,10 @@ PRIVATE FUNCTION CDialog.DialogShowModeless (BYVAL pCallback AS ANY PTR = NULL) 
    m_IsModal = FALSE
    ' // Display the dialog
    ShowWindow m_hDlg, SW_SHOWNORMAL
-'  ' // Set the dialog callback
-'   IF pCallback = NULL THEN
-'      IF m_IsCustom THEN
-'         pCallback = PROCPTR(CDialog.CCustomDialogProc)
-'      ELSE
-'         pCallback = PROCPTR(CDialog.CDialogProc)
-'      END IF
-'   END IF
-'   IF pCallback THEN SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LPARAM, pCallBack))
-   ' // Store the user-defined dialog callback
    IF pCallback THEN
+      ' // Store the user-defined dialog callback
       m_pCallback = pCallback
+      ' // Set the dialog callback if it is a custom dialog
       IF m_IsCustom THEN SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LPARAM, pCallBack))
    END IF
    ' // Send a WM_INITDIALOG message
@@ -1049,18 +1047,10 @@ PRIVATE FUNCTION CDialog.DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS 
    m_IsModal = TRUE
    ' // Display the dialog
    ShowWindow m_hDlg, SW_SHOWNORMAL
-   ' // Set the dialog callback
-'   IF pCallback = NULL THEN
-'      IF m_IsCustom THEN
-'         pCallback = PROCPTR(CDialog.CCustomDialogProc)
-'      ELSE
-'         pCallback = PROCPTR(CDialog.CDialogProc)
-'      END IF
-'   END IF
-'   IF pCallback THEN SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LPARAM, pCallBack))
-   ' // Store the user-defined dialog callback
    IF pCallback THEN
+      ' // Store the user-defined dialog callback
       m_pCallback = pCallback
+      ' // Set the dialog callback if it is a custom dualog
       IF m_IsCustom THEN SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LPARAM, pCallBack))
    END IF
    ' // Send a WM_INITDIALOG message
@@ -2504,6 +2494,7 @@ END FUNCTION
 
 
 END NAMESPACE
+
 ' ########################################################################################
 
 ' ========================================================================================

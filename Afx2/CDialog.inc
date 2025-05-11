@@ -966,6 +966,22 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
          pDlg = CAST(CDIALOG PTR, lParam)
          CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
 
+      CASE WM_SYSCOMMAND
+         CDIALOG_DP("WM_SYSCOMMAND")
+         ' // Trap the SC_CLOSE message sent by Alt+F4 and the X-button
+         ' // Abort the action
+         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN RETURN TRUE
+         ' // Or destroy the dialog sending a WM_CLOSE message
+         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN
+            ' SendMessageW hDlg, WM_CLOSE, 0, 0
+            ' RETURN TRUE
+         ' END IF
+         ' // Or destroy the dialog calling the DialogEnd method
+         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN
+            ' pDlg->DialogEnd(1)
+            ' RETURN TRUE
+         ' END IF
+
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
          DestroyWindow hDlg
@@ -973,11 +989,38 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
 
-'      CASE WM_CTLCOLORBTN
-'      CASE WM_CTLCOLOREDIT
-'      CASE WM_CTLCOLORDLG
-'      CASE WM_CTLCOLORLISTBOX
-'      CASE WM_CTLCOLORSTATIC
+      CASE WM_CTLCOLORDLG
+         CDIALOG_DP("WM_CTLCOLORDLG")
+         ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(BGR(255, 0, 0))
+         ' RETURN CAST(LRESULT, hBrush)
+         ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_CTLCOLORBTN
+         CDIALOG_DP("WM_CTLCOLORBTN")
+         ' wParam = HDC; lParam = Handle of the button.
+         ' Return the handle of a brush.
+         ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_CTLCOLOREDIT
+         CDIALOG_DP("WM_CTLCOLOREDIT")
+         ' wParam = HDC; lParam = Handle of the edit control.
+         ' Return the handle of a brush.
+         ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_CTLCOLORLISTBOX
+         CDIALOG_DP("WM_CTLCOLORLISTBOX")
+         ' wParam = HDC; lParam = Handle of the edit control.
+         ' Return the handle of a brush.
+         ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_CTLCOLORSTATIC
+         CDIALOG_DP("WM_CTLCOLORSTATIC")
+         ' // Sample code
+         ' // SetTextColor(wParam, BGR(0, 0, 255))
+         ' // SetBkColor(wParam, BGR(125, 188, 190))
+         ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(RGB(125, 188, 190))
+         ' RETURN CAST(LRESULT, hBrush)
+         ' // This brush must be destroyed wuth DeleteObject
 
    END SELECT
 
@@ -1004,6 +1047,22 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
          ' // We will use pDlg to get data of the class, such colors
 '         CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
 
+      CASE WM_SYSCOMMAND
+         CDIALOG_DP("WM_SYSCOMMAND")
+         ' // Trap the SC_CLOSE message sent by Alt+F4 and the X-button
+         ' // Abort the action
+         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN RETURN TRUE
+         ' // Or destroy the dialog sending a WM_CLOSE message
+         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN
+            ' SendMessageW hDlg, WM_CLOSE, 0, 0
+            ' RETURN TRUE
+         ' END IF
+         ' // Or destroy the dialog calling the DialogEnd method
+         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN
+            ' pDlg->DialogEnd(1)
+            ' RETURN TRUE
+         ' END IF
+
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
          DestroyWindow hDlg
@@ -1011,11 +1070,39 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
 
-'      CASE WM_CTLCOLORBTN
-'      CASE WM_CTLCOLOREDIT
-'      CASE WM_CTLCOLORDLG
-'      CASE WM_CTLCOLORLISTBOX
-'      CASE WM_CTLCOLORSTATIC
+      CASE WM_CTLCOLORDLG
+         CDIALOG_DP("WM_CTLCOLORDLG")
+         ' // Sample code
+         ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(BGR(255, 0, 0))
+         ' RETURN CAST(LRESULT, hBrush)
+         ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_CTLCOLORBTN
+         CDIALOG_DP("WM_CTLCOLORBTN")
+         ' wParam = HDC; lParam = Handle of the button.
+         ' Return the handle of a brush.
+         ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_CTLCOLOREDIT
+         CDIALOG_DP("WM_CTLCOLOREDIT")
+         ' wParam = HDC; lParam = Handle of the edit control.
+         ' Return the handle of a brush.
+         ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_CTLCOLORLISTBOX
+         CDIALOG_DP("WM_CTLCOLORLISTBOX")
+         ' wParam = HDC; lParam = Handle of the edit control.
+         ' Return the handle of a brush.
+         ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_CTLCOLORSTATIC
+         CDIALOG_DP("WM_CTLCOLORSTATIC")
+         ' // Sample code
+         ' // SetTextColor(wParam, BGR(0, 0, 255))
+         ' // SetBkColor(wParam, BGR(125, 188, 190))
+         ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(RGB(125, 188, 190))
+         ' RETURN CAST(LRESULT, hBrush)
+         ' // This brush must be destroyed wuth DeleteObject
 
    END SELECT
 

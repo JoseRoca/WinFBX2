@@ -100,6 +100,7 @@ TYPE CDialog
 
    Private:
       m_hDlg  AS HWND                            ' // Dialog handle
+      m_pCallback AS WNDPROC                     ' // Pointer to a subclassed user callback procedure
       m_hInstance AS HINSTANCE                   ' // Instance handle
       m_hRichEditLib AS HMODULE                  ' // Rich Edit module handle
       m_ptSize AS LONG                           ' // Font point size
@@ -853,6 +854,8 @@ PRIVATE FUNCTION CDialog.DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF 
    DIM sTemplate AS STRING = this.DialogTemplate("", wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
+   ' // Set the default procedure callback
+   SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LONG_PTR, PROCPTR(CDialog.CDialogProc)))
    ' // Store a pointer to the class
    IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
    ' // Return the dialog handle
@@ -909,6 +912,8 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, 
       SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
       IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
    END IF
+   ' // Set the default procedure callback
+   SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LONG_PTR, PROCPTR(CDialog.CDialogProc)))
    ' // Store a pointer to the class
    IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
    ' // Return the dialog handle
@@ -951,11 +956,14 @@ END FUNCTION
 ' in the ShowDialogModal or ShowDialogModeless methods. Classic dialogs (#32770).
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+   STATIC pDlg AS CDIALOG PTR
 
    SELECT CASE uMsg
 
       CASE WM_INITDIALOG
          CDIALOG_DP("WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
+         pDlg = CAST(CDIALOG PTR, lParam)
+         CDIALOG_DP("WM_INITDIALOG " & WSTR(pDlg->m_pCallback))
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
@@ -966,7 +974,9 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
 
    END SELECT
 
-   FUNCTION = 0
+   ' // Forward the messages to the user-defined callback procedure
+   IF pDlg THEN RETURN CallWindowProcW(CAST(WNDPROC, pDlg->m_pCallback), hDlg, uMsg, wParam, lParam)
+   RETURN FALSE
 
 END FUNCTION
 ' ========================================================================================
@@ -991,7 +1001,8 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
 
    END SELECT
 
-   FUNCTION = DefDlgProcW(hDlg, uMsg, wParam, lParam)
+   ' // Forward the messages to the user-defined callback procedure
+   RETURN DefDlgProcW(hDlg, uMsg, wParam, lParam)
 
 END FUNCTION
 ' ========================================================================================
@@ -1000,18 +1011,23 @@ END FUNCTION
 ' * Shows the dialog as modeless.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogShowModeless (BYVAL pCallback AS ANY PTR = NULL) AS INT_PTR
+   CDIALOG_DP("pCallback = " & WSTR(pCallback))
    m_IsModal = FALSE
    ' // Display the dialog
    ShowWindow m_hDlg, SW_SHOWNORMAL
-   ' // Set the dialog callback
-   IF pCallback = NULL THEN
-      IF m_IsCustom THEN
-         pCallback = PROCPTR(CDialog.CCustomDialogProc)
-      ELSE
-         pCallback = PROCPTR(CDialog.CDialogProc)
-      END IF
-   ELSE
-      SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, cast(LPARAM, pCallBack))
+'  ' // Set the dialog callback
+'   IF pCallback = NULL THEN
+'      IF m_IsCustom THEN
+'         pCallback = PROCPTR(CDialog.CCustomDialogProc)
+'      ELSE
+'         pCallback = PROCPTR(CDialog.CDialogProc)
+'      END IF
+'   END IF
+'   IF pCallback THEN SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LPARAM, pCallBack))
+   ' // Store the user-defined dialog callback
+   IF pCallback THEN
+      m_pCallback = pCallback
+      IF m_IsCustom THEN SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LPARAM, pCallBack))
    END IF
    ' // Send a WM_INITDIALOG message
    ' // Get the handle of the control that should receive the focus
@@ -1028,20 +1044,24 @@ END FUNCTION
 ' * Shows the dialog as modal.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS INT_PTR
-
+   CDIALOG_DP("pCallback = " & WSTR(pCallback))
    ' // Flag the dialog as modal
    m_IsModal = TRUE
    ' // Display the dialog
    ShowWindow m_hDlg, SW_SHOWNORMAL
    ' // Set the dialog callback
-   IF pCallback = NULL THEN
-      IF m_IsCustom THEN
-         pCallback = PROCPTR(CDialog.CCustomDialogProc)
-      ELSE
-         pCallback = PROCPTR(CDialog.CDialogProc)
-      END IF
-   ELSE
-      SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, cast(LPARAM, pCallBack))
+'   IF pCallback = NULL THEN
+'      IF m_IsCustom THEN
+'         pCallback = PROCPTR(CDialog.CCustomDialogProc)
+'      ELSE
+'         pCallback = PROCPTR(CDialog.CDialogProc)
+'      END IF
+'   END IF
+'   IF pCallback THEN SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LPARAM, pCallBack))
+   ' // Store the user-defined dialog callback
+   IF pCallback THEN
+      m_pCallback = pCallback
+      IF m_IsCustom THEN SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LPARAM, pCallBack))
    END IF
    ' // Send a WM_INITDIALOG message
    ' // Get the handle of the control that should receive the focus

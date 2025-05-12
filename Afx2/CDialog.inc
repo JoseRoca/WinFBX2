@@ -990,37 +990,46 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
          CDIALOG_DP("WM_DESTROY")
 
       CASE WM_CTLCOLORDLG
-         CDIALOG_DP("WM_CTLCOLORDLG")
+'         CDIALOG_DP("WM_CTLCOLORDLG")
          ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(BGR(255, 0, 0))
          ' RETURN CAST(LRESULT, hBrush)
          ' // This brush must be destroyed wuth DeleteObject
 
       CASE WM_CTLCOLORBTN
-         CDIALOG_DP("WM_CTLCOLORBTN")
+'         CDIALOG_DP("WM_CTLCOLORBTN")
          ' wParam = HDC; lParam = Handle of the button.
          ' Return the handle of a brush.
          ' // This brush must be destroyed wuth DeleteObject
 
       CASE WM_CTLCOLOREDIT
-         CDIALOG_DP("WM_CTLCOLOREDIT")
+'         CDIALOG_DP("WM_CTLCOLOREDIT")
          ' wParam = HDC; lParam = Handle of the edit control.
          ' Return the handle of a brush.
          ' // This brush must be destroyed wuth DeleteObject
 
       CASE WM_CTLCOLORLISTBOX
-         CDIALOG_DP("WM_CTLCOLORLISTBOX")
+'         CDIALOG_DP("WM_CTLCOLORLISTBOX")
          ' wParam = HDC; lParam = Handle of the edit control.
          ' Return the handle of a brush.
          ' // This brush must be destroyed wuth DeleteObject
 
       CASE WM_CTLCOLORSTATIC
-         CDIALOG_DP("WM_CTLCOLORSTATIC")
+'         CDIALOG_DP("WM_CTLCOLORSTATIC")
          ' // Sample code
          ' // SetTextColor(wParam, BGR(0, 0, 255))
          ' // SetBkColor(wParam, BGR(125, 188, 190))
          ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(RGB(125, 188, 190))
          ' RETURN CAST(LRESULT, hBrush)
          ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_SIZE
+          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
+         ' // Adjust anchored controls and redraw the dialog
+         IF pDlg THEN
+            IF wParam = SIZE_RESTORED OR wParam = SIZE_MAXIMIZED THEN
+               IF pDlg->AdjustControls THEN pDlg->DialogRedraw
+            END IF
+         END IF
 
    END SELECT
 
@@ -1071,38 +1080,47 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
          CDIALOG_DP("WM_DESTROY")
 
       CASE WM_CTLCOLORDLG
-         CDIALOG_DP("WM_CTLCOLORDLG")
+'         CDIALOG_DP("WM_CTLCOLORDLG")
          ' // Sample code
          ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(BGR(255, 0, 0))
          ' RETURN CAST(LRESULT, hBrush)
          ' // This brush must be destroyed wuth DeleteObject
 
       CASE WM_CTLCOLORBTN
-         CDIALOG_DP("WM_CTLCOLORBTN")
+'         CDIALOG_DP("WM_CTLCOLORBTN")
          ' wParam = HDC; lParam = Handle of the button.
          ' Return the handle of a brush.
          ' // This brush must be destroyed wuth DeleteObject
 
       CASE WM_CTLCOLOREDIT
-         CDIALOG_DP("WM_CTLCOLOREDIT")
+'         CDIALOG_DP("WM_CTLCOLOREDIT")
          ' wParam = HDC; lParam = Handle of the edit control.
          ' Return the handle of a brush.
          ' // This brush must be destroyed wuth DeleteObject
 
       CASE WM_CTLCOLORLISTBOX
-         CDIALOG_DP("WM_CTLCOLORLISTBOX")
+'         CDIALOG_DP("WM_CTLCOLORLISTBOX")
          ' wParam = HDC; lParam = Handle of the edit control.
          ' Return the handle of a brush.
          ' // This brush must be destroyed wuth DeleteObject
 
       CASE WM_CTLCOLORSTATIC
-         CDIALOG_DP("WM_CTLCOLORSTATIC")
+'         CDIALOG_DP("WM_CTLCOLORSTATIC")
          ' // Sample code
          ' // SetTextColor(wParam, BGR(0, 0, 255))
          ' // SetBkColor(wParam, BGR(125, 188, 190))
          ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(RGB(125, 188, 190))
          ' RETURN CAST(LRESULT, hBrush)
          ' // This brush must be destroyed wuth DeleteObject
+
+      CASE WM_SIZE
+          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
+         ' // Adjust anchored controls and redraw the dialog
+         IF pDlg THEN
+            IF wParam = SIZE_RESTORED OR wParam = SIZE_MAXIMIZED THEN
+               IF pDlg->AdjustControls THEN pDlg->DialogRedraw
+            END IF
+         END IF
 
    END SELECT
 

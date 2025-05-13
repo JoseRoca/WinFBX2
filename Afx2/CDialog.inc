@@ -300,7 +300,6 @@ PRIVATE CONSTRUCTOR CDialog (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSiz
                 ICC_UPDOWN_CLASS
    InitCommonControlsEx(@icc)
    ' // DPI ratios
-   ' // Get the screen device context
    DIM hDC AS HDC
    hDC = .GetDC(NULL)
    m_rx = (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
@@ -997,7 +996,7 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
          ' // Store the values of colors passed by ControlSetColor in an array
          ' DIM hdc AS ..HDC = GetDC(hDlg)
          ' SetDCBrushColor(hdc, BkColor)   '// Get the background color from the array
-         ' ReleaseDC(hDlg)
+         ' ReleaseDC(hDlg, hDC)
          ' RETURN CAST(LRESULT, GetStockBrush(DC_BRUSH))
          '// This stock brush does not have to be deleted
 

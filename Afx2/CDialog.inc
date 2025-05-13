@@ -985,7 +985,7 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
-         DestroyWindow hDlg
+'         DestroyWindow hDlg
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
@@ -1065,7 +1065,7 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
-         DestroyWindow hDlg
+'         DestroyWindow hDlg
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")

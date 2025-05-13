@@ -957,14 +957,16 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
 
-   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
+   ' // Can't use a static variable or we will get a mess if we create another instance of the dialog
+'   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
+   DIM pDlg AS CDialog PTR = CAST(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
 
    SELECT CASE uMsg
 
       CASE WM_INITDIALOG
          CDIALOG_DP("WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
-         pDlg = CAST(CDIALOG PTR, lParam)
-         CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
+'         pDlg = CAST(CDIALOG PTR, lParam)
+'         CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
 
       CASE WM_SYSCOMMAND
          CDIALOG_DP("WM_SYSCOMMAND")
@@ -989,41 +991,29 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
 
-      CASE WM_CTLCOLORDLG
-'         CDIALOG_DP("WM_CTLCOLORDLG")
-         ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(BGR(255, 0, 0))
-         ' RETURN CAST(LRESULT, hBrush)
-         ' // This brush must be destroyed wuth DeleteObject
-
-      CASE WM_CTLCOLORBTN
-'         CDIALOG_DP("WM_CTLCOLORBTN")
-         ' wParam = HDC; lParam = Handle of the button.
-         ' Return the handle of a brush.
-         ' // This brush must be destroyed wuth DeleteObject
-
-      CASE WM_CTLCOLOREDIT
-'         CDIALOG_DP("WM_CTLCOLOREDIT")
-         ' wParam = HDC; lParam = Handle of the edit control.
-         ' Return the handle of a brush.
-         ' // This brush must be destroyed wuth DeleteObject
-
-      CASE WM_CTLCOLORLISTBOX
-'         CDIALOG_DP("WM_CTLCOLORLISTBOX")
-         ' wParam = HDC; lParam = Handle of the edit control.
-         ' Return the handle of a brush.
-         ' // This brush must be destroyed wuth DeleteObject
+      CASE WM_CTLCOLORDLG, WM_CTLCOLORBTN, WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX
+'         CDIALOG_DP("WM_CTLCOLOR")
+         ' wParam = HDC; lParam = Handle of the dialog or the control.
+         ' // Store the values of colors passed by ControlSetColor in an array
+         ' DIM hdc AS ..HDC = GetDC(hDlg)
+         ' SetDCBrushColor(hdc, BkColor)   '// Get the background color from the array
+         ' ReleaseDC(hDlg)
+         ' RETURN CAST(LRESULT, GetStockBrush(DC_BRUSH))
+         '// This stock brush does not have to be deleted
 
       CASE WM_CTLCOLORSTATIC
 '         CDIALOG_DP("WM_CTLCOLORSTATIC")
          ' // Sample code
          ' // SetTextColor(wParam, BGR(0, 0, 255))
          ' // SetBkColor(wParam, BGR(125, 188, 190))
-         ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(RGB(125, 188, 190))
-         ' RETURN CAST(LRESULT, hBrush)
-         ' // This brush must be destroyed wuth DeleteObject
+         ' DIM hdc AS ..HDC = GetDC(hDlg)
+         ' SetDCBrushColor(hdc, BkColor)   '// Get thebackground color from the array
+         ' ReleaseDC(hDlg)
+         ' RETURN CAST(LRESULT, GetStockBrush(DC_BRUSH))
+         '// This stock brush does not have to be deleted
 
       CASE WM_SIZE
-          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
+'          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
          ' // Adjust anchored controls and redraw the dialog
          IF pDlg THEN
             IF wParam = SIZE_RESTORED OR wParam = SIZE_MAXIMIZED THEN
@@ -1046,13 +1036,15 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
 
-   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
+   ' // Can't use a static variable or we will get a mess if we create another instance of the dialog
+'   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
+   DIM pDlg AS CDialog PTR = CAST(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
 
    SELECT CASE uMsg
 
       CASE WM_INITDIALOG
          CDIALOG_DP("WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
-         pDlg = CAST(CDIALOG PTR, lParam)
+'         pDlg = CAST(CDIALOG PTR, lParam)
          ' // We will use pDlg to get data of the class, such colors
 '         CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
 
@@ -1079,49 +1071,35 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
 
-      CASE WM_CTLCOLORDLG
-'         CDIALOG_DP("WM_CTLCOLORDLG")
-         ' // Sample code
-         ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(BGR(255, 0, 0))
-         ' RETURN CAST(LRESULT, hBrush)
-         ' // This brush must be destroyed wuth DeleteObject
-
-      CASE WM_CTLCOLORBTN
-'         CDIALOG_DP("WM_CTLCOLORBTN")
-         ' wParam = HDC; lParam = Handle of the button.
-         ' Return the handle of a brush.
-         ' // This brush must be destroyed wuth DeleteObject
-
-      CASE WM_CTLCOLOREDIT
-'         CDIALOG_DP("WM_CTLCOLOREDIT")
-         ' wParam = HDC; lParam = Handle of the edit control.
-         ' Return the handle of a brush.
-         ' // This brush must be destroyed wuth DeleteObject
-
-      CASE WM_CTLCOLORLISTBOX
-'         CDIALOG_DP("WM_CTLCOLORLISTBOX")
-         ' wParam = HDC; lParam = Handle of the edit control.
-         ' Return the handle of a brush.
-         ' // This brush must be destroyed wuth DeleteObject
+      CASE WM_CTLCOLORDLG, WM_CTLCOLORBTN, WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX
+'         CDIALOG_DP("WM_CTLCOLOR")
+         ' wParam = HDC; lParam = Handle of the dialog or the control.
+         ' // Store the values of colors passed by ControlSetColor in an array
+         ' DIM hdc AS ..HDC = GetDC(hDlg)
+         ' SetDCBrushColor(hdc, BkColor)   '// Get the background color from the array
+         ' ReleaseDC(hDlg)
+         ' RETURN CAST(LRESULT, GetStockBrush(DC_BRUSH))
+         '// This stock brush does not have to be deleted
 
       CASE WM_CTLCOLORSTATIC
 '         CDIALOG_DP("WM_CTLCOLORSTATIC")
          ' // Sample code
          ' // SetTextColor(wParam, BGR(0, 0, 255))
          ' // SetBkColor(wParam, BGR(125, 188, 190))
-         ' DIM hBrush AS ..HBRUSH = CreateSolidBrush(RGB(125, 188, 190))
-         ' RETURN CAST(LRESULT, hBrush)
-         ' // This brush must be destroyed wuth DeleteObject
+         ' DIM hdc AS ..HDC = GetDC(hDlg)
+         ' SetDCBrushColor(hdc, BkColor)   '// Get thebackground color from the array
+         ' ReleaseDC(hDlg)
+         ' RETURN CAST(LRESULT, GetStockBrush(DC_BRUSH))
+         '// This stock brush does not have to be deleted
 
       CASE WM_SIZE
-          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
+'          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
          ' // Adjust anchored controls and redraw the dialog
          IF pDlg THEN
             IF wParam = SIZE_RESTORED OR wParam = SIZE_MAXIMIZED THEN
                IF pDlg->AdjustControls THEN pDlg->DialogRedraw
             END IF
          END IF
-
    END SELECT
 
    ' // Forward the messages to the user-defined callback procedure

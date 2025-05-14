@@ -286,11 +286,11 @@ TYPE CDialog
       DECLARE FUNCTION AdjustControls () AS BOOLEAN
 
       ' // Keyboard accelerators
-      DECLARE PROPERTY AccelHandle () AS HACCEL
-      DECLARE PROPERTY AccelAttach (BYVAL hAccel AS HACCEL)
+      DECLARE PROPERTY AccelHandle () AS ..HACCEL
+      DECLARE SUB AccelAttach (BYVAL hAccel AS ..HACCEL)
       DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYVAL wKey AS WORD, BYVAL cmd AS WORD)
       DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYREF wszKey AS WSTRING, BYVAL cmd AS WORD)
-      DECLARE FUNCTION CreateAcceleratorTable () AS HACCEL
+      DECLARE FUNCTION CreateAcceleratorTable () AS ..HACCEL
       DECLARE SUB DestroyAcceleratorTable
 
 Private:
@@ -2708,16 +2708,16 @@ END FUNCTION
 ' =====================================================================================
 ' Gets/Sets the accelerator table handle
 ' =====================================================================================
-PRIVATE PROPERTY CDialog.AccelHandle () AS HACCEL
+PRIVATE PROPERTY CDialog.AccelHandle () AS ..HACCEL
    PROPERTY = m_hAccel
 END PROPERTY
 ' =====================================================================================
 ' =====================================================================================
-PRIVATE PROPERTY CDialog.AccelAttach (BYVAL hAccel AS HACCEL)
+PRIVATE SUB CDialog.AccelAttach (BYVAL hAccel AS ..HACCEL)
    IF m_hAccel THEN .DestroyAcceleratorTable(m_hAccel)
    IF UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) > -1 THEN ERASE m_rgAccelEntries
    m_hAccel = hAccel
-END PROPERTY
+END SUB
 ' =====================================================================================
 ' =====================================================================================
 ' Adds an accelerator key to the table.
@@ -2740,11 +2740,11 @@ END SUB
 ' =====================================================================================
 ' Creates the accelerator table.
 ' =====================================================================================
-PRIVATE FUNCTION CDialog.CreateAcceleratorTable () AS HACCEL
-   IF UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) = -1 THEN EXIT FUNCTION
+PRIVATE FUNCTION CDialog.CreateAcceleratorTable () AS ..HACCEL
+   IF UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) = -1 THEN RETURN NULL
    IF m_hAccel THEN .DestroyAcceleratorTable(m_hAccel)
    m_hAccel = .CreateAcceleratorTableW(CAST(LPACCEL, @m_rgAccelEntries(0)), UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) + 1)
-   FUNCTION = m_hAccel
+   RETURN m_hAccel
 END FUNCTION
 ' =====================================================================================
 ' =====================================================================================

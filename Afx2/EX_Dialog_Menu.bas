@@ -111,16 +111,17 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    pDlg.CreateAcceleratorTable
 
    ' // Display and activate the dialog as modal
-   pDlg.DialogShowModal(@DlgProc)
-   FUNCTION = pDlg.DialogEndResult
+'   pDlg.DialogShowModal(@DlgProc)
+'   FUNCTION = pDlg.DialogEndResult
 
    ' // Display and activate the dialog as modeless
-'   pDlg.DialogShowModeless(@DlgProc)
+   pDlg.DialogShowModeless(@DlgProc)
 
    ' // Message handler loop
-'   DO
-'      pDlg.DialogDoEvents
-'   LOOP WHILE IsWindow(hDlg)
+   DO
+      pDlg.DialogDoEvents
+   LOOP WHILE IsWindow(hDlg)
+   FUNCTION = pDlg.DialogEndResult
 
 
    ' // You can use a message pump instead

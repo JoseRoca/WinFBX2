@@ -130,6 +130,9 @@ TYPE CDialog
       DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY   ' // Array of anchor property structures
       ' // Dialog and controls colors
       DIM m_rgColors(ANY) AS AFX_DLGCOLORS       ' // Array of colors structures
+      ' // Accelerator table
+      m_hAccel AS HACCEL                         ' // Accelerator table handle
+      DIM m_rgAccelENtries(ANY) AS ACCEL         ' // Table of accelerator keys
      
    Public:
       DECLARE CONSTRUCTOR (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, _
@@ -282,6 +285,14 @@ TYPE CDialog
       DECLARE FUNCTION GetAnchorItem (BYVAL hwndCtl AS HWND) AS LONG
       DECLARE FUNCTION AdjustControls () AS BOOLEAN
 
+      ' // Keyboard accelerators
+      DECLARE PROPERTY AccelHandle () AS HACCEL
+      DECLARE PROPERTY AccelAttach (BYVAL hAccel AS HACCEL)
+      DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYVAL wKey AS WORD, BYVAL cmd AS WORD)
+      DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYREF wszKey AS WSTRING, BYVAL cmd AS WORD)
+      DECLARE FUNCTION CreateAcceleratorTable () AS HACCEL
+      DECLARE SUB DestroyAcceleratorTable
+
 Private:
       DECLARE STATIC FUNCTION CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
       DECLARE STATIC FUNCTION CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
@@ -325,6 +336,9 @@ END CONSTRUCTOR
 ' * Destructor
 ' ========================================================================================
 PRIVATE DESTRUCTOR CDialog
+   ' // Destroy the accelerator table
+   IF m_hAccel THEN ..DestroyAcceleratorTable(m_hAccel)
+   ' // Free the Rich Edit library
    IF m_hRichEditLib THEN FreeLibrary m_hRichEditLib
 END DESTRUCTOR
 ' ========================================================================================
@@ -1189,9 +1203,11 @@ END FUNCTION
 PRIVATE FUNCTION CDialog.DialogDoEvents (BYVAL dwMilliseconds AS DWORD = 1) AS BOOLEAN
    DIM uMsg AS tagMsg
    IF PeekMessageW(@uMsg, NULL, 0, 0, PM_REMOVE) THEN
-      IF IsDialogMessageW(GetActiveWindow, @uMsg) = 0 THEN
-         TranslateMessage @uMsg
-         DispatchMessage @uMsg
+      IF m_hAccel = NULL OR TranslateAcceleratorW(m_hDlg, m_hAccel, @uMsg) = 0 THEN
+         IF IsDialogMessageW(GetActiveWindow, @uMsg) = 0 THEN
+            TranslateMessage @uMsg
+            DispatchMessage @uMsg
+         END IF
       END IF
       RETURN TRUE
    ELSE
@@ -2685,6 +2701,63 @@ END FUNCTION
 
 ' ########################################################################################
 
+' ########################################################################################
+'                           *** KEYBOARD ACCELERATORS ***
+' ########################################################################################
+
+' =====================================================================================
+' Gets/Sets the accelerator table handle
+' =====================================================================================
+PRIVATE PROPERTY CDialog.AccelHandle () AS HACCEL
+   PROPERTY = m_hAccel
+END PROPERTY
+' =====================================================================================
+' =====================================================================================
+PRIVATE PROPERTY CDialog.AccelAttach (BYVAL hAccel AS HACCEL)
+   IF m_hAccel THEN .DestroyAcceleratorTable(m_hAccel)
+   IF UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) > -1 THEN ERASE m_rgAccelEntries
+   m_hAccel = hAccel
+END PROPERTY
+' =====================================================================================
+' =====================================================================================
+' Adds an accelerator key to the table.
+' =====================================================================================
+PRIVATE SUB CDialog.AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYVAL wKey AS WORD, BYVAL cmd AS WORD)
+   REDIM PRESERVE m_rgAccelEntries(UBOUND(m_rgAccelEntries) + 1) AS ACCEL
+   m_rgAccelEntries(UBOUND(m_rgAccelEntries)).fvirt = fvirt
+   m_rgAccelEntries(UBOUND(m_rgAccelEntries)).key = wKey
+   m_rgAccelEntries(UBOUND(m_rgAccelEntries)).cmd = cmd
+END SUB
+' =====================================================================================
+' =====================================================================================
+PRIVATE SUB CDialog.AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYREF wszKey AS WSTRING, BYVAL cmd AS WORD)
+   REDIM PRESERVE m_rgAccelEntries(UBOUND(m_rgAccelEntries) + 1) AS ACCEL
+   m_rgAccelEntries(UBOUND(m_rgAccelEntries)).fvirt = fvirt
+   m_rgAccelEntries(UBOUND(m_rgAccelEntries)).key = ASC(wszKey)
+   m_rgAccelEntries(UBOUND(m_rgAccelEntries)).cmd = cmd
+END SUB
+' =====================================================================================
+' =====================================================================================
+' Creates the accelerator table.
+' =====================================================================================
+PRIVATE FUNCTION CDialog.CreateAcceleratorTable () AS HACCEL
+   IF UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) = -1 THEN EXIT FUNCTION
+   IF m_hAccel THEN .DestroyAcceleratorTable(m_hAccel)
+   m_hAccel = .CreateAcceleratorTableW(CAST(LPACCEL, @m_rgAccelEntries(0)), UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) + 1)
+   FUNCTION = m_hAccel
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Destroys the accelerator table.
+' =====================================================================================
+PRIVATE SUB CDialog.DestroyAcceleratorTable
+   IF m_hAccel THEN .DestroyAcceleratorTable(m_hAccel)
+   IF UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) > -1 THEN ERASE m_rgAccelEntries
+   m_hAccel = NULL
+END SUB
+' =====================================================================================
+
+' ########################################################################################
 
 END NAMESPACE
 

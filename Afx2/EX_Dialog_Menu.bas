@@ -103,8 +103,12 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    ' // Build and attach a menu
    DIM hMenu AS HMENU = BuildMenu(hDlg)
 
-   ' // Set the focus in the edit control
-'   pDlg.ControlSetFocus(103)
+   ' // Create a keyboard accelerator table
+   pDlg.AddAccelerator FVIRTKEY OR FCONTROL, "O", ID_OPEN  ' // Ctrl+O - Open
+   pDlg.AddAccelerator FVIRTKEY OR FCONTROL, "H", ID_HELP  ' // Ctrl+H - Help
+   pDlg.AddAccelerator FVIRTKEY OR FCONTROL, "E", ID_EXIT  ' // Ctrl+E - Exit
+   pDlg.AddAccelerator FVIRTKEY OR FCONTROL, "A", ID_ABOUT ' // Ctrl+A - About
+   pDlg.CreateAcceleratorTable
 
    ' // Display and activate the dialog as modal
    pDlg.DialogShowModal(@DlgProc)
@@ -185,7 +189,7 @@ FUNCTION DlgProc (BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD
                DIM dws AS DWSTRING = AfxGetWindowText(GetDlgItem(hDlg, 103))
                IF LEN(dws) THEN MessageBoxW(0, "Your name is " & dws, "Answer", MB_ICONINFORMATION OR MB_TASKMODAL)
                IF LEN(dws) = 0 THEN MessageBoxW(0, "Hmm ...", "No answer", MB_ICONEXCLAMATION OR MB_TASKMODAL)
-            CASE ID_OPEN TO ID_ABOUT
+           CASE ID_OPEN TO ID_ABOUT
                MessageBoxW(0, "WM_COMMAND received from a menu item!", "Test menu", MB_TASKMODAL)
          END SELECT
 

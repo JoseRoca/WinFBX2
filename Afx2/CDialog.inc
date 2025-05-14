@@ -32,6 +32,7 @@
 #endif
 
 #pragma once
+#INCLUDE ONCE "Afx2/RGB_Colors.bi"
 #INCLUDE ONCE "win/richedit.bi"
 #include once "Afx2/AfxFontProcs2.inc"
 USING Afx2
@@ -93,6 +94,13 @@ TYPE AFX_ANCHORPROPERTY
    centerY AS LONG
 END TYPE
 
+' // Dialog and control colors
+TYPE AFX_DLGCOLORS
+   hwnd AS ..HWND
+   foreColor AS COLORREF
+   backColor AS COLORREF
+END TYPE
+
 ' ========================================================================================
 ' CDialog class
 ' ========================================================================================
@@ -110,6 +118,7 @@ TYPE CDialog
       m_IsModal AS BOOLEAN                       ' // Dialog is modal
       m_IsCustom AS BOOLEAN                      ' // Dialog has a custom class
       m_UsePixels AS BOOLEAN                     ' // Use pixels instead of dialog units
+      m_IsStabilized AS BOOLEAN                  ' // The dialog is stabilized(true) or is not stable (false)
       m_wszClassName AS WSTRING * 256            ' // Class name
       m_rx AS SINGLE = 1                         ' // DPI - Horizontal scaling ratio
       m_ry AS SINGLE = 1                         ' // DPI - Vertical scaling ratio
@@ -119,6 +128,8 @@ TYPE CDialog
 
       ' // Layout manager
       DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY   ' // Array of anchor property structures
+      ' // Dialog and controls colors
+      DIM m_rgColors(ANY) AS AFX_DLGCOLORS       ' // Array of colors structures
      
    Public:
       DECLARE CONSTRUCTOR (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, _
@@ -200,18 +211,14 @@ TYPE CDialog
       DECLARE FUNCTION DialogGetFontFaceName () AS DWSTRING
       DECLARE FUNCTION DialogGetFontPointSize () AS LONG
       DECLARE SUB DialogCenter(BYVAL hwndParent AS HWND = NULL)
+      DECLARE FUNCTION DialogStabilize () AS BOOLEAN
+      DECLARE FUNCTION DialogNonStable () AS BOOLEAN
+      DECLARE FUNCTION IsDialogStabilized () AS BOOLEAN
+      DECLARE FUNCTION IsDialogNonStable () AS BOOLEAN
 
       ' // Dialog procedure callback
       DECLARE FUNCTION CBGetDlgMsgResult () AS LONG_PTR
       DECLARE FUNCTION CBSetDlgMsgResult (BYVAL result AS LONG_PTR) AS LONG_PTR
-
-      ' To do: DialogStabilize, DialogNonStable, DialogSetColor, DialogSetIcon (from resource)
-      ' DialogStabilize: Disabling the close menu and processing the SC_CLOSE message in the
-      ' WM_SYSCOMMAND message has the same effect.
-      ' DialogNonStable: Enabling the close menu and not processing the SC_CLOSE message in the
-      ' WM_SYSCOMMAND message has the same effect.
-      ' DialogSetColor: Would be necessary to subclass the dialog. Without subclassing, it can be
-      ' done processing the WM_CTLCOLORDLG.
 
       ' // Control methods
       DECLARE FUNCTION ControlDisable (BYVAL cId AS LONG) AS BOOLEAN
@@ -243,6 +250,12 @@ TYPE CDialog
       DECLARE SUB ControlSetFont (BYVAL cId AS LONG, BYVAL hFont AS HFONT, BYVAL fRedraw AS BOOLEAN = TRUE)
       DECLARE SUB ControlCenterHoriz (BYVAL cId AS LONG)
       DECLARE SUB ControlCenterVert (BYVAL cId AS LONG)
+
+      ' // Colors
+      DECLARE FUNCTION DialogSetColor (BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+      DECLARE FUNCTION ControlSetColor (BYVAL hwnd AS HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+      DECLARE FUNCTION ControlSetColor (BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+      DECLARE FUNCTION GetColorItem (BYVAL hwnd AS HWND) AS LONG
 
       ' // Desktop window
       DECLARE FUNCTION DesktopGetWindow () AS HWND
@@ -970,46 +983,37 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
       CASE WM_SYSCOMMAND
          CDIALOG_DP("WM_SYSCOMMAND")
          ' // Trap the SC_CLOSE message sent by Alt+F4 and the X-button
+         IF pDlg THEN
          ' // Abort the action
-         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN RETURN TRUE
-         ' // Or destroy the dialog sending a WM_CLOSE message
-         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN
-            ' SendMessageW hDlg, WM_CLOSE, 0, 0
-            ' RETURN TRUE
-         ' END IF
-         ' // Or destroy the dialog calling the DialogEnd method
-         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN
-            ' pDlg->DialogEnd(1)
-            ' RETURN TRUE
-         ' END IF
+            IF (wParam AND &hFFF0) = SC_CLOSE AND pDlg->IsDialogStabilized = TRUE THEN RETURN TRUE
+         END IF
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
-'         DestroyWindow hDlg
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
 
-      CASE WM_CTLCOLORDLG, WM_CTLCOLORBTN, WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX
-'         CDIALOG_DP("WM_CTLCOLOR")
-         ' wParam = HDC; lParam = Handle of the dialog or the control.
-         ' // Store the values of colors passed by ControlSetColor in an array
-         ' DIM hdc AS ..HDC = GetDC(hDlg)
-         ' SetDCBrushColor(hdc, BkColor)   '// Get the background color from the array
-         ' ReleaseDC(hDlg, hDC)
-         ' RETURN CAST(LRESULT, GetStockBrush(DC_BRUSH))
-         '// This stock brush does not have to be deleted
+      CASE WM_CTLCOLORDLG
+         ' wParam = HDC; lParam = Handle of the dialog
+         DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+         IF nItem >= 0 THEN
+            OutputDebugStringW("WM_CTLCOLORDLG")
+            SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+            RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+         END IF
 
-      CASE WM_CTLCOLORSTATIC
-'         CDIALOG_DP("WM_CTLCOLORSTATIC")
-         ' // Sample code
-         ' // SetTextColor(wParam, BGR(0, 0, 255))
-         ' // SetBkColor(wParam, BGR(125, 188, 190))
-         ' DIM hdc AS ..HDC = GetDC(hDlg)
-         ' SetDCBrushColor(hdc, BkColor)   '// Get thebackground color from the array
-         ' ReleaseDC(hDlg)
-         ' RETURN CAST(LRESULT, GetStockBrush(DC_BRUSH))
-         '// This stock brush does not have to be deleted
+      CASE WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX, WM_CTLCOLORSTATIC
+         ' WM_CTLCOLORBTN does not color a button - use XPBUTTON
+         ' wParam = HDC; lParam = Handle of the control.
+         DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+         IF nItem >= 0 THEN
+            OutputDebugStringW("WM_CTLCOLOR - " & WSTR(lParam))
+            SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
+            SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+            SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+            RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+         END IF
 
       CASE WM_SIZE
 '          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
@@ -1050,46 +1054,37 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
       CASE WM_SYSCOMMAND
          CDIALOG_DP("WM_SYSCOMMAND")
          ' // Trap the SC_CLOSE message sent by Alt+F4 and the X-button
+         IF pDlg THEN
          ' // Abort the action
-         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN RETURN TRUE
-         ' // Or destroy the dialog sending a WM_CLOSE message
-         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN
-            ' SendMessageW hDlg, WM_CLOSE, 0, 0
-            ' RETURN TRUE
-         ' END IF
-         ' // Or destroy the dialog calling the DialogEnd method
-         ' IF (wParam AND &hFFF0) = SC_CLOSE THEN
-            ' pDlg->DialogEnd(1)
-            ' RETURN TRUE
-         ' END IF
+            IF (wParam AND &hFFF0) = SC_CLOSE AND pDlg->IsDialogStabilized = TRUE THEN RETURN TRUE
+         END IF
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
-'         DestroyWindow hDlg
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
 
-      CASE WM_CTLCOLORDLG, WM_CTLCOLORBTN, WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX
-'         CDIALOG_DP("WM_CTLCOLOR")
-         ' wParam = HDC; lParam = Handle of the dialog or the control.
-         ' // Store the values of colors passed by ControlSetColor in an array
-         ' DIM hdc AS ..HDC = GetDC(hDlg)
-         ' SetDCBrushColor(hdc, BkColor)   '// Get the background color from the array
-         ' ReleaseDC(hDlg)
-         ' RETURN CAST(LRESULT, GetStockBrush(DC_BRUSH))
-         '// This stock brush does not have to be deleted
+      CASE WM_CTLCOLORDLG
+         ' wParam = HDC; lParam = Handle of the dialog
+         DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+         IF nItem >= 0 THEN
+            OutputDebugStringW("WM_CTLCOLORDLG")
+            SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+            RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+         END IF
 
-      CASE WM_CTLCOLORSTATIC
-'         CDIALOG_DP("WM_CTLCOLORSTATIC")
-         ' // Sample code
-         ' // SetTextColor(wParam, BGR(0, 0, 255))
-         ' // SetBkColor(wParam, BGR(125, 188, 190))
-         ' DIM hdc AS ..HDC = GetDC(hDlg)
-         ' SetDCBrushColor(hdc, BkColor)   '// Get thebackground color from the array
-         ' ReleaseDC(hDlg)
-         ' RETURN CAST(LRESULT, GetStockBrush(DC_BRUSH))
-         '// This stock brush does not have to be deleted
+      CASE WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX, WM_CTLCOLORSTATIC
+         ' WM_CTLCOLORBTN does not color a button - use XPBUTTON
+         ' wParam = HDC; lParam = Handle of the control.
+         DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+         IF nItem >= 0 THEN
+            OutputDebugStringW("WM_CTLCOLOR - " & WSTR(lParam))
+            SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
+            SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+            SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+            RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+         END IF
 
       CASE WM_SIZE
 '          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
@@ -1293,7 +1288,7 @@ END FUNCTION
 ' * Redraws the dialog.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogRedraw () AS BOOLEAN
-   RETURN RedrawWindow(m_hDlg, NULL, NULL, RDW_INVALIDATE OR RDW_UPDATENOW)
+   RETURN RedrawWindow(m_hDlg, NULL, NULL, RDW_INVALIDATE OR RDW_ERASE OR RDW_UPDATENOW)
 END FUNCTION
 ' ========================================================================================
 
@@ -2423,6 +2418,56 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' Make a Dialog stabilized (non-closeable).
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogStabilize () AS BOOLEAN
+   ' // Get the system menu handle
+   DIM hMenu AS HMENU = GetSystemMenu(m_hDlg, FALSE)
+   IF hMenu = NULL THEN RETURN FALSE
+   ' // Get the number of menu items
+   DIM cbItems AS LONG = GetMenuItemCount(hMenu)
+   IF cbItems = 0 THEN RETURN FALSE
+   ' // Remove the close menu item
+   IF RemoveMenu(hMenu, cbItems - 1, MF_REMOVE OR MF_BYPOSITION) = 0 THEN RETURN FALSE
+   ' // Remove the separator line
+   IF RemoveMenu(hMenu, cbItems - 2, MF_REMOVE OR MF_BYPOSITION) = 0 THEN RETURN FALSE
+   ' // Redraw the menu (this refreshes the caption bar, dimming the X button)
+   DrawMenuBar(m_hDlg)
+   ' // Flags the dialog as stabilized
+   m_IsStabilized = TRUE
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Make a Dialog non stable (closeable).
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogNonStable () AS BOOLEAN
+   GetSystemMenu(m_hDlg, TRUE)
+   DrawMenuBar(m_hDlg)
+   m_IsStabilized = FALSE
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Returns true if the dialog is stabilized; otherwise, false.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.IsDialogStabilized () AS BOOLEAN
+   RETURN m_IsStabilized
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Returns true if the dialog is stabilized; otherwise, false.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.IsDialogNonStable () AS BOOLEAN
+   RETURN NOT m_IsStabilized
+END FUNCTION
+' ========================================================================================
+
+' ########################################################################################
+'                               *** LAYOUT MANAGER ***
+' ########################################################################################
+
+' ========================================================================================
 ' Get the anchor item
 ' Return Value: The array index on success, or -1 on failure.
 ' ========================================================================================
@@ -2438,7 +2483,7 @@ END FUNCTION
 ' Anchor the control
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hwndCtl AS HWND, BYVAL nAnchorMode AS LONG) AS BOOLEAN
-   IF .IsWindow(hwndCtl) = FALSE THEN EXIT FUNCTION
+   IF .IsWindow(hwndCtl) = FALSE THEN RETURN FALSE
    ' // Check if the item already exists
    DIM nItem AS LONG = this.GetAnchorItem(hwndCtl)
    ' // If it does not exist, make room for it
@@ -2464,19 +2509,19 @@ PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hwndCtl AS HWND, BYVAL nAnchorMode
    m_rgProps(nItem).rc.Bottom = rcParent.Bottom - (rcCtl.Bottom - rcCtl.Top + pt.y)
    m_rgProps(nItem).centerX   = pt.x - (rcParent.Right \ 2)
    m_rgProps(nItem).centerY   = pt.y - (rcParent.Bottom \ 2)
-   FUNCTION = TRUE
+   RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
    DIM hwndCtl AS HWND = GetDlgItem(m_hDlg, cID)
-   IF hwndCtl THEN FUNCTION = this.ControlAnchor(hwndCtl, nAnchorMode)
+   IF hwndCtl THEN RETURN this.ControlAnchor(hwndCtl, nAnchorMode)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hParent AS HWND, BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
    DIM hwndCtl AS HWND = GetDlgItem(hParent, cID)
-   IF hwndCtl THEN FUNCTION = this.ControlAnchor(hwndCtl, nAnchorMode)
+   IF hwndCtl THEN RETURN this.ControlAnchor(hwndCtl, nAnchorMode)
 END FUNCTION
 ' ========================================================================================
 
@@ -2571,7 +2616,7 @@ PRIVATE FUNCTION CDialog.LayoutEnumChildProc (BYVAL hwndChild AS HWND, BYVAL lPa
       END IF
    END IF
 
-   FUNCTION = CTRUE
+   RETURN CTRUE
 
 END FUNCTION
 ' ========================================================================================
@@ -2586,6 +2631,60 @@ PRIVATE FUNCTION CDialog.AdjustControls () AS BOOLEAN
 END FUNCTION
 ' ========================================================================================
 
+' ########################################################################################
+'                          *** DIALOG AND CONTROS COLORS ***
+' ########################################################################################
+' ========================================================================================
+' Get the anchor item
+' Return Value: The array index on success, or -1 on failure.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.GetColorItem (BYVAL hwnd AS ..HWND) AS LONG
+   FUNCTION = -1
+   FOR i AS LONG = 0 TO UBOUND(m_rgColors)
+      IF m_rgColors(i).hwnd = hwnd THEN FUNCTION = i : EXIT FOR
+   NEXT
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Set the colors of the control
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetColor (BYVAL hwnd AS ..HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+   IF IsWindow(hwnd) = FALSE THEN RETURN FALSE
+   ' // Check if the item already exists
+   DIM nItem AS LONG = this.GetColorItem(hwnd)
+   ' // If it does not exist, make room for it
+   IF nItem = -1 THEN
+      REDIM PRESERVE m_rgColors(UBOUND(m_rgColors) + 1) AS AFX_DLGCOLORS
+      nItem = UBOUND(m_rgColors)
+   END IF
+   m_rgColors(nItem).hwnd = hwnd
+   m_rgColors(nItem).foreColor = foreColor
+   m_rgColors(nItem).backColor = backColor
+   '// Redraw the dialog
+   this.DialogRedraw
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Set the colors of the control
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetColor (BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cID)
+   FUNCTION = this.ControlSetColor(hCtl, foreColor, backColor)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Set the colors of the control
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogSetColor (BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+   FUNCTION = this.ControlSetColor(m_hDlg, foreColor, backColor)
+END FUNCTION
+' ========================================================================================
+
+' ########################################################################################
+
 
 END NAMESPACE
 
@@ -2595,10 +2694,12 @@ END NAMESPACE
 ' Returns a pointer to the CDialog class given the handle of the window created with it
 ' or the handle of any of it's children.
 ' ========================================================================================
-PRIVATE FUNCTION AfxCDialogOwnerPtr (BYVAL hwnd AS HWND) AS CDialog PTR
+PRIVATE FUNCTION AfxCDialogPtr (BYVAL hwnd AS HWND) AS CDialog PTR
    IF hwnd = NULL THEN RETURN NULL
    DIM hRootOwner AS ..HWND = GetAncestor(hwnd, GA_ROOTOWNER)
    IF hRootOwner = NULL THEN RETURN NULL
    RETURN CAST(CDialog PTR, .GetWindowLongPtrW(hRootOwner, DWLP_USER))
 END FUNCTION
 ' ========================================================================================
+
+' ########################################################################################

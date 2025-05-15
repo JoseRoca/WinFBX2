@@ -2,7 +2,7 @@
 
 The `BSTRING` and `DWSTRING` classes implement a dynamic unicode null terminated string. Free Basic has a dynamic string data type (STRING) and a fixed length unicode data type (WSTRING), but it lacks a dynamic unicode string. `BSTRING` and `DWSTRING` behave as if they were native data types, working directly with the intrinsic FreeBasic string functions and operators.
 
-While `DWSTRING`does its own memory allocations, `BSTRING`is a wrapper on top of of the OLE string (aka BSTR) data type and the memory management is done by the COM library. It is better to use `DWSTRING`for general purposes, since it is faster, reserving the use of `BSTRING`for COM programming.
+While `DWSTRING`manages its own memory allocations, `BSTRING`is a wrapper on top of of the OLE string (aka BSTR) data type and the memory management is done by the COM library. It is better to use `DWSTRING`for general purposes, since it is faster, reserving the use of `BSTRING`for COM programming.
 
 **Include file**: BSTRING.INC.
 

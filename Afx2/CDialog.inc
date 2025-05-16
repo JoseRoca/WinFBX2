@@ -32,8 +32,11 @@
 #endif
 
 #pragma once
-#INCLUDE ONCE "Afx2/RGB_Colors.bi"
-#INCLUDE ONCE "win/richedit.bi"
+#include once "Afx2/RGB_Colors.bi"
+#include once "windows.bi"
+#include once "win/commctrl.bi"
+#include once "win/uxtheme.bi"
+#include once "win/richedit.bi"
 #include once "Afx2/AfxFontProcs2.inc"
 USING Afx2
 
@@ -118,6 +121,7 @@ TYPE CDialog
       m_IsModal AS BOOLEAN                       ' // Dialog is modal
       m_IsCustom AS BOOLEAN                      ' // Dialog has a custom class
       m_UsePixels AS BOOLEAN                     ' // Use pixels instead of dialog units
+      m_RepaintDisabled AS BOOLEAN               ' // Repaint is enabled while resizing (true/false)
       m_IsStabilized AS BOOLEAN                  ' // The dialog is stabilized(true) or is not stable (false)
       m_wszClassName AS WSTRING * 256            ' // Class name
       m_rx AS SINGLE = 1                         ' // DPI - Horizontal scaling ratio
@@ -259,6 +263,8 @@ TYPE CDialog
       DECLARE FUNCTION ControlSetColor (BYVAL hwnd AS HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
       DECLARE FUNCTION ControlSetColor (BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
       DECLARE FUNCTION GetColorItem (BYVAL hwnd AS HWND) AS LONG
+      DECLARE SUB DialogEnableRepaint (BYVAL fRepaint AS BOOLEAN)
+      DECLARE FUNCTION IsDialogRepaintDisabled () AS BOOLEAN
 
       ' // Desktop window
       DECLARE FUNCTION DesktopGetWindow () AS HWND
@@ -1008,25 +1014,45 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
 
+      CASE WM_ENTERSIZEMOVE
+         CDIALOG_DP("WM_ENTERSIZEMOVE")
+         IF pDlg THEN pDlg->DialogEnableRepaint(FALSE)
+
+      CASE WM_EXITSIZEMOVE
+         CDIALOG_DP("WM_EXITSIZEMOVE")
+         IF pDlg THEN
+            pDlg->DialogEnableRepaint(TRUE)
+            ' // Redraw the dialog
+            pDlg->DialogRedraw
+         END IF
+'+++++++++++++
       CASE WM_CTLCOLORDLG
          ' wParam = HDC; lParam = Handle of the dialog
-         DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
-         IF nItem >= 0 THEN
-            OutputDebugStringW("WM_CTLCOLORDLG")
-            SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
-            RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+         IF pDlg THEN
+            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
+               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+               IF nItem >= 0 THEN
+                  OutputDebugStringW("WM_CTLCOLORDLG")
+                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+               END IF
+            END IF
          END IF
 
       CASE WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX, WM_CTLCOLORSTATIC
          ' WM_CTLCOLORBTN does not color a button - use XPBUTTON
          ' wParam = HDC; lParam = Handle of the control.
-         DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
-         IF nItem >= 0 THEN
-            OutputDebugStringW("WM_CTLCOLOR - " & WSTR(lParam))
-            SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
-            SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
-            SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
-            RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+         IF pDlg THEN
+            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
+               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+               IF nItem >= 0 THEN
+                  OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
+                  SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
+                  SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+               END IF
+            END IF
          END IF
 
       CASE WM_SIZE
@@ -1093,7 +1119,7 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
          ' wParam = HDC; lParam = Handle of the control.
          DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
          IF nItem >= 0 THEN
-            OutputDebugStringW("WM_CTLCOLOR - " & WSTR(lParam))
+            OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
             SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
             SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
             SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
@@ -2696,6 +2722,21 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogSetColor (BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
    FUNCTION = this.ControlSetColor(m_hDlg, foreColor, backColor)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Enable/disable dialog repainting during resizing
+' ========================================================================================
+PRIVATE SUB CDialog.DialogEnableRepaint (BYVAL fRepaint AS BOOLEAN)
+   m_RepaintDisabled = NOT fRepaint
+END SUB
+' ========================================================================================
+' ========================================================================================
+' Check if repainting is enabled during resizing
+' ========================================================================================
+PRIVATE FUNCTION CDialog.IsDialogRepaintDisabled () AS BOOLEAN
+   RETURN m_RepaintDisabled
 END FUNCTION
 ' ========================================================================================
 

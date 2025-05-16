@@ -1010,9 +1010,11 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
-         ' // If it is a child dialog, enable its parent before destroying it
-         IF GetParent(hDlg) THEN EnableWindow(GetParent(hDlg), TRUE)
-'         DestroyWindow hDlg
+         ' // If it is a child dialog, enable its parent before it is destroyed
+         DIM hParent AS HWND = GetParent(hDlg)
+         IF hParent <> HWND_DESKTOP THEN
+            IF IsWindowEnabled(hParent) = FALSE THEN EnableWindow(hParent, TRUE)
+         END IF
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
@@ -1104,9 +1106,11 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
-         ' // If it is a child dialog, enable its parent before destroying it
-         IF GetParent(hDlg) THEN EnableWindow(GetParent(hDlg), TRUE)
-'         DestroyWindow hDlg
+         ' // If it is a child dialog, enable its parent before it is destroyed
+         DIM hParent AS HWND = GetParent(hDlg)
+         IF hParent <> HWND_DESKTOP THEN
+            IF IsWindowEnabled(hParent) = FALSE THEN EnableWindow(hParent, TRUE)
+         END IF
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")

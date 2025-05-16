@@ -1010,6 +1010,9 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
+         ' // If it is a child dialog, enable its parent before destroying it
+         IF GetParent(hDlg) THEN EnableWindow(GetParent(hDlg), TRUE)
+         DestroyWindow hDlg
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
@@ -1025,7 +1028,7 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
             ' // Redraw the dialog
             pDlg->DialogRedraw
          END IF
-'+++++++++++++
+
       CASE WM_CTLCOLORDLG
          ' wParam = HDC; lParam = Handle of the dialog
          IF pDlg THEN
@@ -1101,29 +1104,52 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
 
       CASE WM_CLOSE
          CDIALOG_DP("WM_CLOSE")
+         ' // If it is a child dialog, enable its parent before destroying it
+         IF GetParent(hDlg) THEN EnableWindow(GetParent(hDlg), TRUE)
+         DestroyWindow hDlg
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
 
+      CASE WM_ENTERSIZEMOVE
+         CDIALOG_DP("WM_ENTERSIZEMOVE")
+         IF pDlg THEN pDlg->DialogEnableRepaint(FALSE)
+
+      CASE WM_EXITSIZEMOVE
+         CDIALOG_DP("WM_EXITSIZEMOVE")
+         IF pDlg THEN
+            pDlg->DialogEnableRepaint(TRUE)
+            ' // Redraw the dialog
+            pDlg->DialogRedraw
+         END IF
+
       CASE WM_CTLCOLORDLG
          ' wParam = HDC; lParam = Handle of the dialog
-         DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
-         IF nItem >= 0 THEN
-            OutputDebugStringW("WM_CTLCOLORDLG")
-            SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
-            RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+         IF pDlg THEN
+            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
+               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+               IF nItem >= 0 THEN
+                  OutputDebugStringW("WM_CTLCOLORDLG")
+                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+               END IF
+            END IF
          END IF
 
       CASE WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX, WM_CTLCOLORSTATIC
          ' WM_CTLCOLORBTN does not color a button - use XPBUTTON
          ' wParam = HDC; lParam = Handle of the control.
-         DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
-         IF nItem >= 0 THEN
-            OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
-            SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
-            SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
-            SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
-            RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+         IF pDlg THEN
+            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
+               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+               IF nItem >= 0 THEN
+                  OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
+                  SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
+                  SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+               END IF
+            END IF
          END IF
 
       CASE WM_SIZE
@@ -1196,8 +1222,8 @@ PRIVATE FUNCTION CDialog.DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS 
    DO
       this.DialogDoEvents
    LOOP WHILE IsWindow(m_hDlg)
-   ' // Enable the parent window
-   IF hParent THEN EnableWindow(hParent, TRUE)
+   ' // Enable the parent window (must be done in WM_CLOSE, before the dialog is destroyed)
+'   IF hParent THEN EnableWindow(hParent, TRUE)
    RETURN S_OK
 
 END FUNCTION

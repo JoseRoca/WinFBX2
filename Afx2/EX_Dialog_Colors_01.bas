@@ -97,7 +97,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
 
    FUNCTION = pDlg.DialogEndResult
 
-   ' // You can use a message pump instead
+   ' // You can use a message pump instead (don't forget to use PostQuitMessage in WM_DESTROY)
 '   DIM uMsg AS tagMsg
 '   WHILE GetMessage(@uMsg, NULL, 0, 0)
 '      IF IsDialogMessage(hDlg, @uMsg) = 0 THEN
@@ -170,6 +170,10 @@ FUNCTION DlgProc (BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD
          IF pDlg THEN pDlg->DialogEnd(1)
          ' // You can use DestroyWindow instead
          ' DestroyWindow hDlg
+
+      CASE WM_DESTROY
+         ' // Post a WM_QUIT message to end the message pump if you are using one
+         ' PostQuitMessage(0)
 
    END SELECT
 

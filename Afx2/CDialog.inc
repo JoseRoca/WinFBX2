@@ -1012,7 +1012,7 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
          CDIALOG_DP("WM_CLOSE")
          ' // If it is a child dialog, enable its parent before destroying it
          IF GetParent(hDlg) THEN EnableWindow(GetParent(hDlg), TRUE)
-         DestroyWindow hDlg
+'         DestroyWindow hDlg
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
@@ -1035,7 +1035,7 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
             IF pDlg->IsDialogRepaintDisabled = FALSE THEN
                DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
                IF nItem >= 0 THEN
-                  OutputDebugStringW("WM_CTLCOLORDLG")
+'                  OutputDebugStringW("WM_CTLCOLORDLG")
                   SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
                   RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
                END IF
@@ -1049,7 +1049,7 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
             IF pDlg->IsDialogRepaintDisabled = FALSE THEN
                DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
                IF nItem >= 0 THEN
-                  OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
+'                  OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
                   SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
                   SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
                   SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
@@ -1106,7 +1106,7 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
          CDIALOG_DP("WM_CLOSE")
          ' // If it is a child dialog, enable its parent before destroying it
          IF GetParent(hDlg) THEN EnableWindow(GetParent(hDlg), TRUE)
-         DestroyWindow hDlg
+'         DestroyWindow hDlg
 
       CASE WM_DESTROY
          CDIALOG_DP("WM_DESTROY")
@@ -1129,7 +1129,7 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
             IF pDlg->IsDialogRepaintDisabled = FALSE THEN
                DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
                IF nItem >= 0 THEN
-                  OutputDebugStringW("WM_CTLCOLORDLG")
+'                  OutputDebugStringW("WM_CTLCOLORDLG")
                   SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
                   RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
                END IF
@@ -1143,7 +1143,7 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
             IF pDlg->IsDialogRepaintDisabled = FALSE THEN
                DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
                IF nItem >= 0 THEN
-                  OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
+'                  OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
                   SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
                   SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
                   SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)

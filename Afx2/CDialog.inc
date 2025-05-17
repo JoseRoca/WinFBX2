@@ -1126,7 +1126,13 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
 
       CASE WM_ENTERSIZEMOVE
          CDIALOG_DP("WM_ENTERSIZEMOVE")
-         IF pDlg THEN pDlg->DialogEnableRepaint(FALSE)
+         IF pDlg THEN
+            IF pDlg->IsDialogRepaintDisabledOnResize = TRUE THEN
+               pDlg->DialogEnableRepaint(FALSE)
+            ELSE
+               pDlg->DialogEnableRepaint(TRUE)
+            END IF
+         END IF
 
       CASE WM_EXITSIZEMOVE
          CDIALOG_DP("WM_EXITSIZEMOVE")

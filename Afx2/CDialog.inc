@@ -110,25 +110,26 @@ END TYPE
 TYPE CDialog
 
    Private:
-      m_hDlg  AS HWND                            ' // Dialog handle
-      m_pCallback AS WNDPROC                     ' // Pointer to a subclassed user callback procedure
-      m_hInstance AS HINSTANCE                   ' // Instance handle
-      m_hRichEditLib AS HMODULE                  ' // Rich Edit module handle
-      m_ptSize AS LONG                           ' // Font point size
-      m_fontStyle AS BYTE                        ' // Font style
-      m_charset AS BYTE                          ' // Font character set
-      m_fontName AS WSTRING * 32                 ' // Font face name
-      m_IsModal AS BOOLEAN                       ' // Dialog is modal
-      m_IsCustom AS BOOLEAN                      ' // Dialog has a custom class
-      m_UsePixels AS BOOLEAN                     ' // Use pixels instead of dialog units
-      m_RepaintDisabled AS BOOLEAN               ' // Repaint is enabled while resizing (true/false)
-      m_IsStabilized AS BOOLEAN                  ' // The dialog is stabilized(true) or is not stable (false)
-      m_wszClassName AS WSTRING * 256            ' // Class name
-      m_rx AS SINGLE = 1                         ' // DPI - Horizontal scaling ratio
-      m_ry AS SINGLE = 1                         ' // DPI - Vertical scaling ratio
-      m_DlgRetVal AS INT_PTR                     ' // To simulate EndDialog
-      m_hDefPushButton AS HWND                   ' // Handle of the default push button
-      DIM m_rgUserData(0 TO 99) AS LONG_PTR      ' // User data
+      m_hDlg  AS HWND                              ' // Dialog handle
+      m_pCallback AS WNDPROC                       ' // Pointer to a subclassed user callback procedure
+      m_hInstance AS HINSTANCE                     ' // Instance handle
+      m_hRichEditLib AS HMODULE                    ' // Rich Edit module handle
+      m_ptSize AS LONG                             ' // Font point size
+      m_fontStyle AS BYTE                          ' // Font style
+      m_charset AS BYTE                            ' // Font character set
+      m_fontName AS WSTRING * 32                   ' // Font face name
+      m_IsModal AS BOOLEAN                         ' // Dialog is modal
+      m_IsCustom AS BOOLEAN                        ' // Dialog has a custom class
+      m_UsePixels AS BOOLEAN                       ' // Use pixels instead of dialog units
+      m_RepaintDisabled AS BOOLEAN                 ' // Repaint is disabled/enabled while resizing (true/false)
+      m_DisableRepaintOnResize AS BOOLEAN          ' // Repaint is enabled while resizing (true/false)
+      m_IsStabilized AS BOOLEAN                    ' // The dialog is stabilized(true) or is not stable (false)
+      m_wszClassName AS WSTRING * 256              ' // Class name
+      m_rx AS SINGLE = 1                           ' // DPI - Horizontal scaling ratio
+      m_ry AS SINGLE = 1                           ' // DPI - Vertical scaling ratio
+      m_DlgRetVal AS INT_PTR                       ' // To simulate EndDialog
+      m_hDefPushButton AS HWND                     ' // Handle of the default push button
+      DIM m_rgUserData(0 TO 99) AS LONG_PTR        ' // User data
 
       ' // Layout manager
       DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY   ' // Array of anchor property structures
@@ -136,7 +137,7 @@ TYPE CDialog
       DIM m_rgColors(ANY) AS AFX_DLGCOLORS       ' // Array of colors structures
       ' // Accelerator table
       m_hAccel AS HACCEL                         ' // Accelerator table handle
-      DIM m_rgAccelENtries(ANY) AS ACCEL         ' // Table of accelerator keys
+      DIM m_rgAccelEntries(ANY) AS ACCEL         ' // Table of accelerator keys
      
    Public:
       DECLARE CONSTRUCTOR (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, _
@@ -265,6 +266,8 @@ TYPE CDialog
       DECLARE FUNCTION GetColorItem (BYVAL hwnd AS HWND) AS LONG
       DECLARE SUB DialogEnableRepaint (BYVAL fRepaint AS BOOLEAN)
       DECLARE FUNCTION IsDialogRepaintDisabled () AS BOOLEAN
+      DECLARE SUB DialogDisableRepaintOnResize (BYVAL fRepaint AS BOOLEAN)
+      DECLARE FUNCTION IsDialogRepaintDisabledOnResize () AS BOOLEAN
 
       ' // Desktop window
       DECLARE FUNCTION DesktopGetWindow () AS HWND
@@ -1021,7 +1024,13 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
 
       CASE WM_ENTERSIZEMOVE
          CDIALOG_DP("WM_ENTERSIZEMOVE")
-         IF pDlg THEN pDlg->DialogEnableRepaint(FALSE)
+         IF pDlg THEN
+            IF pDlg->IsDialogRepaintDisabledOnResize = TRUE THEN
+               pDlg->DialogEnableRepaint(FALSE)
+            ELSE
+               pDlg->DialogEnableRepaint(TRUE)
+            END IF
+         END IF
 
       CASE WM_EXITSIZEMOVE
          CDIALOG_DP("WM_EXITSIZEMOVE")
@@ -2767,6 +2776,20 @@ END SUB
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.IsDialogRepaintDisabled () AS BOOLEAN
    RETURN m_RepaintDisabled
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Enable/disable dialog repainting during resizing
+' ========================================================================================
+PRIVATE SUB CDialog.DialogDisableRepaintOnResize (BYVAL fRepaint AS BOOLEAN)
+   m_DisableRepaintOnResize = fRepaint
+END SUB
+' ========================================================================================
+' ========================================================================================
+' Check if repainting is enabled during resizing
+' ========================================================================================
+PRIVATE FUNCTION CDialog.IsDialogRepaintDisabledOnResize () AS BOOLEAN
+   RETURN m_DisableRepaintOnResize
 END FUNCTION
 ' ========================================================================================
 

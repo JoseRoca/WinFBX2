@@ -1,8 +1,6 @@
 #define _CDIALOG_DEBUG_ 1
-'#include once "windows.bi"
-'#include once "win/commctrl.bi"
-'#include once "win/uxtheme.bi"
 #include once "Afx2/CDialog.inc"
+#include once "Afx2/CListBox.inc"
 USING Afx2
 
 DECLARE FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
@@ -45,6 +43,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    pDlg.DialogCenter
 
    pDlg.DialogSetColor(0, RGB_GOLD)
+'   pDlg.DialogDisableRepaintOnResize(TRUE)    ' // optional: disable repaint on resizing
 
    ' // Set icons
    DIM AS HICON hIconBig, hIconSmall

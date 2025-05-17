@@ -54,15 +54,6 @@ Public:
    DECLARE CONSTRUCTOR (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
    DECLARE CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    DECLARE DESTRUCTOR
-   DECLARE FUNCTION DluToPixRX () AS SINGLE
-   DECLARE FUNCTION DluToPixRY () AS SINGLE
-   DECLARE FUNCTION PixToDluRX () AS SINGLE
-   DECLARE FUNCTION PixToDluRY () AS SINGLE
-   DECLARE FUNCTION DluToPixX (BYVAL dlu AS LONG) AS SINGLE
-   DECLARE FUNCTION DluToPixY (BYVAL dlu AS LONG) AS SINGLE
-   DECLARE FUNCTION PixToDluX (BYVAL pix AS LONG) AS SINGLE
-   DECLARE FUNCTION PixToDluY (BYVAL pix AS LONG) AS SINGLE
-
    DECLARE FUNCTION CheckDlgButton (BYVAL cIDButton AS LONG, BYVAL uCheck AS DWORD) AS BOOLEAN
    DECLARE FUNCTION CheckRadioButton (BYVAL cIDFirstButton AS LONG, BYVAL cIDLastButton AS LONG, BYVAL cIDCheckButton AS LONG) AS BOOLEAN
    DECLARE FUNCTION IsDlgButtonChecked (BYVAL cIDButton AS LONG) AS UINT
@@ -150,70 +141,16 @@ END DESTRUCTOR
 ' ========================================================================================
 
 ' ========================================================================================
-' * Retrieves the conversion ratio from dialog units to pixels
-' ========================================================================================
-PRIVATE FUNCTION CButton.DluToPixRX () AS SINGLE
-   RETURN Base.DluToPixRX(m_hCtl)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Retrieves the conversion ratio from dialog units to pixels
-' ========================================================================================
-PRIVATE FUNCTION CButton.DluToPixRY () AS SINGLE
-   RETURN Base.DluToPixRY(m_hCtl)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Retrieves the conversion ratio from pixels to dialog units
-' ========================================================================================
-PRIVATE FUNCTION CButton.PixToDluRX () AS SINGLE
-   RETURN Base.PixToDluRX(m_hCtl)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Retrieves the conversion ratio from pixels to dialog units
-' ========================================================================================
-PRIVATE FUNCTION CButton.PixToDluRY () AS SINGLE
-   RETURN Base.PixToDluRY(m_hCtl)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Converts dialog units to pixels
-' ========================================================================================
-PRIVATE FUNCTION CButton.DluToPixX (BYVAL dlu AS LONG) AS SINGLE
-   RETURN Base.DluToPixX(m_hCtl, dlu)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION CButton.DluToPixY (BYVAL dlu AS LONG) AS SINGLE
-   RETURN Base.DluToPixY(m_hCtl, dlu)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Converts pixels to dialog units
-' ========================================================================================
-PRIVATE FUNCTION CButton.PixToDluX (BYVAL pix AS LONG) AS SINGLE
-   RETURN Base.DluToPixY(m_hCtl, pix)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION CButton.PixToDluY (BYVAL pix AS LONG) AS SINGLE
-   RETURN Base.DluToPixY(m_hCtl, pix)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' * Enables a button.
-' Return value: False if the windows was previous enabled; otherwise TRUE
+' * Enables the control.
+' Return value: False if the control was previous enabled; otherwise TRUE
 ' ========================================================================================
 PRIVATE FUNCTION CButton.Enable () AS BOOLEAN
    RETURN EnableWindow(m_hCtl, TRUE)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' * Disables a button.
-' Return value: False if the windows was previous disabled; otherwise TRUE
+' * Disables the control.
+' Return value: False if the control was previous disabled; otherwise TRUE
 ' ========================================================================================
 PRIVATE FUNCTION CButton.Disable () AS BOOLEAN
    DIM res AS LONG = EnableWindow(m_hCtl, FALSE)

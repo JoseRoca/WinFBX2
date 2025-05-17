@@ -24,6 +24,13 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
+#if not defined(UNICODE)
+   #define UNICODE
+#endif
+#if not defined(_WIN32_WINNT)
+   #define _WIN32_WINNT &h0602
+#endif
+
 #pragma once
 #include once "windows.bi"
 #include once "win/commctrl.bi"
@@ -43,16 +50,10 @@ Private:
 
 Public:
    DECLARE CONSTRUCTOR (BYVAL hCtl AS HWND)
-   DECLARE CONSTRUCTOR (BYVAL hParent AS HWND, BYVAL hCtl AS HWND)
    DECLARE CONSTRUCTOR (BYVAL hParent AS HWND, BYVAL cID AS LONG)
    DECLARE CONSTRUCTOR (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
    DECLARE CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    DECLARE DESTRUCTOR
-   DECLARE FUNCTION DlgToPixRX () AS SINGLE
-   DECLARE FUNCTION DlgToPixRY () AS SINGLE
-   DECLARE FUNCTION PixToDlgRX () AS SINGLE
-   DECLARE FUNCTION PixToDlgRY () AS SINGLE
-
    DECLARE FUNCTION ApproximateViewRect (BYVAL iWidth AS SHORT, BYVAL iHeight AS SHORT, BYVAL iCount AS LONG) AS DWORD
    DECLARE FUNCTION Arrange (BYVAL code AS UINT) AS BOOLEAN
    DECLARE SUB CancelEditLabel ()
@@ -253,17 +254,16 @@ END TYPE
 ' ========================================================================================
 PRIVATE CONSTRUCTOR CListView (BYVAL hCtl AS HWND)
    IF IsWindow(hCtl) THEN m_hCtl = hCtl ELSE EXIT CONSTRUCTOR
-END CONSTRUCTOR
-' ========================================================================================
-' ========================================================================================
-PRIVATE CONSTRUCTOR CListView (BYVAL hParent AS HWND, BYVAL hCtl AS HWND)
-   IF IsChild(hParent, hCtl) THEN m_hCtl = hCtl ELSE EXIT CONSTRUCTOR
+   DIM pDlg AS CDialog PTR = this.CDialogOwnerPtr(hCtl)
+   IF pDlg THEN this.UsesPixels = pDlg->UsesPixels
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE CONSTRUCTOR CListView (BYVAL hParent AS HWND, BYVAL cID AS LONG)
    DIM hCtl AS HWND = GetDlgItem(hParent, cID)
    IF IsChild(hParent, hCtl) THEN m_hCtl = hCtl ELSE EXIT CONSTRUCTOR
+   DIM pDlg AS CDialog PTR = this.CDialogOwnerPtr(hCtl)
+   IF pDlg THEN this.UsesPixels = pDlg->UsesPixels
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -271,6 +271,7 @@ PRIVATE CONSTRUCTOR CListView (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
    IF VARPTR(pDlg) = 0 THEN EXIT CONSTRUCTOR
    DIM hCtl AS HWND = GetDlgItem(pDlg.hDialog, cID)
    IF IsWindow(hCtl) THEN m_hCtl = hCtl ELSE EXIT CONSTRUCTOR
+   this.UsesPixels = pDlg.UsesPixels
 END CONSTRUCTOR
 ' ========================================================================================
 ' ========================================================================================
@@ -278,6 +279,7 @@ PRIVATE CONSTRUCTOR CListView (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    IF pDlg = NULL THEN EXIT CONSTRUCTOR
    DIM hCtl AS HWND = GetDlgItem(pDlg->hDialog, cID)
    IF IsWindow(hCtl) THEN m_hCtl = hCtl ELSE EXIT CONSTRUCTOR
+   this.UsesPixels = pDlg->UsesPixels
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -286,51 +288,6 @@ END CONSTRUCTOR
 ' ========================================================================================
 PRIVATE DESTRUCTOR CListView
 END DESTRUCTOR
-' ========================================================================================
-
-' ========================================================================================
-' * Retrieves the conversion ratio from dialog units to pixels
-' ========================================================================================
-PRIVATE FUNCTION CListView.DlgToPixRX () AS SINGLE
-   DIM hDlg AS HWND = GetParent(m_hCtl)
-   DIM rc AS RECT
-   rc.Right = 4 : rc.Bottom = 8
-   MapDialogRect(hDlg, @rc)
-   RETURN rc.Right / 4
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Retrieves the conversion ratio from dialog units to pixels
-' ========================================================================================
-PRIVATE FUNCTION CListView.DlgToPixRY () AS SINGLE
-   DIM hDlg AS HWND = GetParent(m_hCtl)
-   DIM rc AS RECT
-   rc.Right = 4 : rc.Bottom = 8
-   MapDialogRect(hDlg, @rc)
-   RETURN rc.Bottom / 8
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Retrieves the conversion ratio from pixels to dialog units
-' ========================================================================================
-PRIVATE FUNCTION CListView.PixToDlgRX () AS SINGLE
-   DIM hDlg AS HWND = GetParent(m_hCtl)
-   DIM rc AS RECT
-   rc.Right = 4 : rc.Bottom = 8
-   MapDialogRect(hDlg, @rc)
-   RETURN 4.0 / rc.right
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Retrieves the conversion ratio from pixels to dialog units
-' ========================================================================================
-PRIVATE FUNCTION CListView.PixToDlgRY () AS SINGLE
-   DIM hDlg AS HWND = GetParent(m_hCtl)
-   DIM rc AS RECT
-   rc.Right = 4 : rc.Bottom = 8
-   MapDialogRect(hDlg, @rc)
-   RETURN 8.0 / rc.bottom
-END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================

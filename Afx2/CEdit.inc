@@ -54,15 +54,6 @@ Public:
    DECLARE CONSTRUCTOR (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
    DECLARE CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    DECLARE DESTRUCTOR
-   DECLARE FUNCTION DluToPixRX () AS SINGLE
-   DECLARE FUNCTION DluToPixRY () AS SINGLE
-   DECLARE FUNCTION PixToDluRX () AS SINGLE
-   DECLARE FUNCTION PixToDluRY () AS SINGLE
-   DECLARE FUNCTION DluToPixX (BYVAL dlu AS LONG) AS SINGLE
-   DECLARE FUNCTION DluToPixY (BYVAL dlu AS LONG) AS SINGLE
-   DECLARE FUNCTION PixToDluX (BYVAL pix AS LONG) AS SINGLE
-   DECLARE FUNCTION PixToDluY (BYVAL pix AS LONG) AS SINGLE
-
    DECLARE FUNCTION CanUndo () AS BOOLEAN
    DECLARE FUNCTION CharFromPos (BYVAL x AS SHORT, BYVAL y AS SHORT) AS DWORD
    DECLARE SUB Clear ()
@@ -168,60 +159,6 @@ PRIVATE DESTRUCTOR CEdit
 END DESTRUCTOR
 ' ========================================================================================
 
-' ========================================================================================
-' * Retrieves the conversion ratio from dialog units to pixels
-' ========================================================================================
-PRIVATE FUNCTION CEdit.DluToPixRX () AS SINGLE
-   RETURN Base.DluToPixRX(m_hCtl)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Retrieves the conversion ratio from dialog units to pixels
-' ========================================================================================
-PRIVATE FUNCTION CEdit.DluToPixRY () AS SINGLE
-   RETURN Base.DluToPixRY(m_hCtl)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Retrieves the conversion ratio from pixels to dialog units
-' ========================================================================================
-PRIVATE FUNCTION CEdit.PixToDluRX () AS SINGLE
-   RETURN Base.PixToDluRX(m_hCtl)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Retrieves the conversion ratio from pixels to dialog units
-' ========================================================================================
-PRIVATE FUNCTION CEdit.PixToDluRY () AS SINGLE
-   RETURN Base.PixToDluRY(m_hCtl)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Converts dialog units to pixels
-' ========================================================================================
-PRIVATE FUNCTION CEdit.DluToPixX (BYVAL dlu AS LONG) AS SINGLE
-   RETURN Base.DluToPixX(m_hCtl, dlu)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION CEdit.DluToPixY (BYVAL dlu AS LONG) AS SINGLE
-   RETURN Base.DluToPixY(m_hCtl, dlu)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Converts pixels to dialog units
-' ========================================================================================
-PRIVATE FUNCTION CEdit.PixToDluX (BYVAL pix AS LONG) AS SINGLE
-   RETURN Base.PixToDluX(m_hCtl, pix)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION CEdit.PixToDluY (BYVAL pix AS LONG) AS SINGLE
-   RETURN Base.PixToDluY(m_hCtl, pix)
-END FUNCTION
-' ========================================================================================
-
 ' ########################################################################################
 '                                      *** EDIT ***
 ' ########################################################################################
@@ -286,16 +223,16 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' * Enables a button.
-' Return value: False if the windows was previous enabled; otherwise TRUE
+' * Enables the control.
+' Return value: False if the control was previous enabled; otherwise TRUE
 ' ========================================================================================
 PRIVATE FUNCTION CEdit.Enable () AS BOOLEAN
    RETURN EnableWindow(m_hCtl, TRUE)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' * Disables a button.
-' Return value: False if the windows was previous disabled; otherwise TRUE
+' * Disables the control.
+' Return value: False if the control was previous disabled; otherwise TRUE
 ' ========================================================================================
 PRIVATE FUNCTION CEdit.Disable () AS BOOLEAN
    DIM res AS LONG = EnableWindow(m_hCtl, FALSE)

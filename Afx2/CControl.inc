@@ -45,9 +45,9 @@ NAMESPACE Afx2
 TYPE CControl
 
 Private:
-   m_Result AS LONG                       ' // Last result code
-   m_UsePixels AS BOOLEAN                 ' // Use pixels instead of dialog units
-   DIM m_rgUserData(0 TO 9) AS LONG_PTR   ' // User data
+   m_Result AS LONG                        ' // Last result code
+   m_UsePixels AS BOOLEAN                  ' // Use pixels instead of dialog units
+   DIM m_rgUserData(0 TO 19) AS LONG_PTR   ' // User data
 
 Public:
    DECLARE CONSTRUCTOR
@@ -151,7 +151,7 @@ END PROPERTY
 ' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
 ' =====================================================================================
 PRIVATE FUNCTION CControl.GetUser (BYVAL idx AS LONG) AS LONG_PTR
-   IF idx < 0 OR idx > 9 THEN RETURN 0
+   IF idx < 0 OR idx > 19 THEN RETURN 0
    RETURN m_rgUserData(idx)
 END FUNCTION
 ' =====================================================================================
@@ -161,7 +161,7 @@ END FUNCTION
 ' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
 ' =====================================================================================
 PRIVATE SUB CControl.SetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
-   IF idx > -1 AND idx < 10 THEN m_rgUserData(idx) = newValue
+   IF idx > -1 AND idx < 20 THEN m_rgUserData(idx) = newValue
 END SUB
 ' =====================================================================================
 

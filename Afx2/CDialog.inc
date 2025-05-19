@@ -130,15 +130,25 @@ TYPE CDialog
       m_DlgRetVal AS INT_PTR                       ' // To simulate EndDialog
       m_hDefPushButton AS HWND                     ' // Handle of the default push button
       DIM m_rgUserData(0 TO 99) AS LONG_PTR        ' // User data
-
       ' // Layout manager
-      DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY   ' // Array of anchor property structures
+      DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY     ' // Array of anchor property structures
       ' // Dialog and controls colors
-      DIM m_rgColors(ANY) AS AFX_DLGCOLORS       ' // Array of colors structures
+      DIM m_rgColors(ANY) AS AFX_DLGCOLORS         ' // Array of colors structures
       ' // Accelerator table
-      m_hAccel AS HACCEL                         ' // Accelerator table handle
-      DIM m_rgAccelEntries(ANY) AS ACCEL         ' // Table of accelerator keys
-     
+      m_hAccel AS HACCEL                           ' // Accelerator table handle
+      DIM m_rgAccelEntries(ANY) AS ACCEL           ' // Table of accelerator keys
+      ' // Scrollable dialogs
+      m_IsDialogScrollable AS BOOLEAN              ' // Dialog scrollable -True of False
+      m_OrigClientRect AS RECT                     ' // Coordinates of the dialog's original client area
+      m_nHorzInc AS LONG                           ' // Horizontal increment
+      m_nVertInc AS LONG                           ' // Vertical increment
+      m_HScrollMax AS LONG                         ' // Maximum horizontal scroll value
+      m_VScrollMax AS LONG                         ' // Maximum vertical scroll value
+      m_HScrollPos AS LONG                         ' // Horizontal scroll position
+      m_VScrollPos AS LONG                         ' // Vertical scroll position
+      m_HorzUnits AS LONG                          ' // Amount, in device units, of horizontal scrolling
+      m_VertUnits AS LONG                          ' // Amount, in device units, of vertical scrolling
+
    Public:
       DECLARE CONSTRUCTOR (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, _
          BYVAL fontStyle AS BYTE = 0, BYVAL charset AS BYTE = DEFAULT_CHARSET) 
@@ -301,6 +311,15 @@ TYPE CDialog
       DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYREF wszKey AS WSTRING, BYVAL cmd AS WORD)
       DECLARE FUNCTION CreateAcceleratorTable () AS ..HACCEL
       DECLARE SUB DestroyAcceleratorTable
+
+      ' // Scrollable dialogs
+      DECLARE FUNCTION DialogSetViewPort (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
+      DECLARE FUNCTION IsDialogScrollable () AS BOOLEAN
+      DECLARE SUB DialogResetScrollBars
+      DECLARE SUB DialogSetupScrollBars
+      DECLARE SUB DialogOnVScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
+      DECLARE SUB DialogOnHScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
+      DECLARE SUB DialogOnSize (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
 
 Private:
       DECLARE STATIC FUNCTION CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
@@ -1076,7 +1095,19 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
             IF wParam = SIZE_RESTORED OR wParam = SIZE_MAXIMIZED THEN
                IF pDlg->AdjustControls THEN pDlg->DialogRedraw
             END IF
+            ' // Scrollable dialogs - Setup scrollbars
+            IF pDlg->IsDialogScrollable THEN
+               pDlg->DialogResetScrollbars
+               pDlg->DialogSetupScrollbars
+            END IF
          END IF
+
+      CASE WM_HSCROLL
+         ' // Horizontal scrollbar
+         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnHScroll(wParam, lParam)
+      CASE WM_VSCROLL
+         ' // Vertical scrollbar
+         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnVScroll(wParam, lParam)
 
    END SELECT
 
@@ -1178,7 +1209,20 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
             IF wParam = SIZE_RESTORED OR wParam = SIZE_MAXIMIZED THEN
                IF pDlg->AdjustControls THEN pDlg->DialogRedraw
             END IF
+            ' // Scrollable dialogs - Setup scrollbars
+            IF pDlg->IsDialogScrollable THEN
+               pDlg->DialogResetScrollbars
+               pDlg->DialogSetupScrollbars
+            END IF
          END IF
+
+      CASE WM_HSCROLL
+         ' // Horizontal scrollbar
+         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnHScroll(wParam, lParam)
+      CASE WM_VSCROLL
+         ' // Vertical scrollbar
+         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnVScroll(wParam, lParam)
+
    END SELECT
 
    ' // Forward the messages to the user-defined callback procedure
@@ -1208,6 +1252,12 @@ PRIVATE FUNCTION CDialog.DialogShowModeless (BYVAL pCallback AS ANY PTR = NULL) 
    ' // If the user returns TRUE when processing WM_INITDIALOG set the focus to the control;
    ' // If it returns FALSE, do nothing.
    IF bRes = TRUE THEN SendMessageW(m_hDlg, WM_NEXTDLGCTL, CAST(WPARAM, hFocus), CTRUE)
+   ' // Get the client area
+   DIM rc AS RECT
+   GetCLientRect(m_hDlg, @rc)
+   DIM nWidth AS LONG = rc.Right - rc.Left
+   DIM nHeight AS LONG = rc.Bottom - rc.Top
+   SendMessageW m_hDlg, WM_SIZE, 0, MAKELONG(nWidth, nHeight)
    RETURN S_OK
 END FUNCTION
 ' ========================================================================================
@@ -1234,6 +1284,12 @@ PRIVATE FUNCTION CDialog.DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS 
    ' // If the user returns TRUE when processing WM_INITDIALOG set the focus to the control;
    ' // If it returns FALSE, do nothing.
    IF bRes = TRUE THEN SendMessageW(m_hDlg, WM_NEXTDLGCTL, CAST(WPARAM, hFocus), CTRUE)
+   ' // Get the client area
+   DIM rc AS RECT
+   GetCLientRect(m_hDlg, @rc)
+   DIM nWidth AS LONG = rc.Right - rc.Left
+   DIM nHeight AS LONG = rc.Bottom - rc.Top
+   SendMessageW m_hDlg, WM_SIZE, 0, MAKELONG(nWidth, nHeight)
    ' // Disable the parent window
    DIM hParent AS HWND = GetParent(m_hDlg)
    IF hParent THEN EnableWindow(hParent, FALSE)
@@ -2856,6 +2912,137 @@ PRIVATE SUB CDialog.DestroyAcceleratorTable
    m_hAccel = NULL
 END SUB
 ' =====================================================================================
+
+' ########################################################################################
+'                              *** SCROLLABLE DIALOG ***
+' ########################################################################################
+
+' ========================================================================================
+' Makes a window scrollable by shrinking its cient area
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogSetViewPort (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
+   ' // Data for optional scrollable dialogs
+   m_HorzUnits = 10
+   m_VertUnits = 10
+   GetClientRect(m_hDlg, @m_OrigClientRect)
+   ' // Shrink the client size
+   this.DialogSetClient(nWidth, nHeight)
+   m_IsDialogScrollable = TRUE
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CDialog.IsDialogScrollable () AS BOOLEAN
+   FUNCTION = m_IsDialogScrollable
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Resets the window scrolling information
+' ========================================================================================
+PRIVATE SUB CDialog.DialogResetScrollBars
+   ScrollWindow(m_hDlg, m_HScrollPos * m_HorzUnits, 0, NULL, NULL)
+   ScrollWindow(m_hDlg, 0, m_VScrollPos * m_HorzUnits, NULL, NULL)
+   m_HScrollPos = 0
+   m_VScrollPos = 0
+   SetScrollPos(m_hDlg, SB_HORZ, m_HScrollPos, CTRUE)
+   SetScrollPos(m_hDlg, SB_VERT, m_VScrollPos, CTRUE)
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' Sets the scroll information
+' ========================================================================================
+PRIVATE SUB CDialog.DialogSetupScrollBars
+   DIM bMaximized AS LONG, tempRect AS RECT ', wp AS WINDOWPLACEMENT
+   GetClientRect(m_hDlg, @tempRect)
+'   GetWindowPlacement(m_hwnd, @wp)
+'   bMaximized = (wp.showCmd = SW_MAXIMIZE)
+   ' // Calculate how many scrolling increments for the client area
+   m_nHorzInc = ((m_OrigClientRect.Right - m_OrigClientRect.Left) - (tempRect.Right  - tempRect.Left) ) \ m_HorzUnits
+   m_nVertInc = ((m_OrigClientRect.Bottom - m_OrigClientRect.Top) - (tempRect.bottom - tempRect.Top ) ) \ m_VertUnits
+   '// Set the vertical and horizontal scrolling info
+   m_HScrollMax = MAX(0, m_nHorzInc)
+   m_HScrollPos = MIN(m_HScrollPos, m_HScrollMax)
+   SetScrollRange(m_hDlg, SB_HORZ, 0, m_HScrollMax, FALSE)
+   SetScrollPos(m_hDlg, SB_HORZ, m_HScrollPos, CTRUE)
+   m_VScrollMax = MAX(0, m_nVertInc)
+   m_VScrollPos = MIN(m_VScrollPos, m_VScrollMax)
+   SetScrollRange(m_hDlg, SB_VERT, 0, m_VScrollMax, FALSE)
+   SetScrollPos(m_hDlg, SB_VERT, m_VScrollPos, TRUE)
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' Handle vertical scrollbar messages
+' WM_VSCROLL
+' nScrollCode = (int) LOWORD(wParam); // scroll bar value
+' nPos = (short int) HIWORD(wParam);  // scroll box position
+' hwndScrollBar = (HWND) lParam;      // handle of scroll bar
+' ========================================================================================
+PRIVATE SUB CDialog.DialogOnVScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
+   DIM nInc AS LONG, iMove AS LONG
+   SELECT CASE LOWORD(wParam)
+      CASE SB_TOP        : nInc = -m_VScrollPos
+      CASE SB_BOTTOM     : nInc = m_VScrollMax - m_VScrollPos
+      CASE SB_LINEUP     : nInc = -1
+      CASE SB_LINEDOWN   : nInc = 1
+      CASE SB_PAGEUP     : nInc = MIN(-1, -m_nVertInc)
+      CASE SB_PAGEDOWN   : nInc = MAX(1, m_nVertInc)
+      CASE SB_THUMBTRACK : nInc = HIWORD(wParam) - m_VScrollPos
+      CASE ELSE          : nInc = 0
+   END SELECT
+   nInc = MAX(-m_VScrollPos, MIN(nInc, m_VScrollMax - m_VScrollPos))
+   IF nInc THEN
+      m_VScrollPos += nInc
+      iMove = -m_HorzUnits * nInc
+      ScrollWindow(m_hDlg, 0, iMove, NULL, NULL)
+      SetScrollPos(m_hDlg, SB_VERT, m_VScrollPos, CTRUE)
+   END IF
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' Handle horizontal scrollbar messages
+' WM_HSCROLL
+' nScrollCode = (int) LOWORD(wParam);  // scroll bar value
+' nPos = (short int) HIWORD(wParam);   // scroll box position
+' hwndScrollBar = (HWND) lParam;       // handle of scroll bar
+' ========================================================================================
+PRIVATE SUB CDialog.DialogOnHScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
+   DIM nInc AS LONG, iMove AS LONG
+   SELECT CASE LOWORD(wParam)
+      CASE SB_TOP        : nInc = -m_HScrollPos
+      CASE SB_BOTTOM     : nInc = m_HScrollMax - m_HScrollPos
+      CASE SB_LINEUP     : nInc = -1
+      CASE SB_LINEDOWN   : nInc = 1
+      CASE SB_PAGEUP     : nInc = -m_HorzUnits
+      CASE SB_PAGEDOWN   : nInc = m_HorzUnits
+      CASE SB_THUMBTRACK : nInc = HIWORD(wParam) - m_HScrollPos
+      CASE ELSE          : nInc = 0
+   END SELECT
+   nInc = MAX(-m_HScrollPos, MIN(nInc, m_HScrollMax - m_HScrollPos))
+   IF nInc THEN
+      m_HScrollPos += nInc
+      iMove = -m_HorzUnits * nInc
+      ScrollWindow(m_hDlg, iMove, 0, NULL, NULL)
+      SetScrollPos(m_hDlg, SB_HORZ, m_HScrollPos, CTRUE)
+  END IF
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' Handle WM_SIZE messges
+' WM_SIZE
+' fwSizeType = wParam;      // resizing flag
+' nWidth = LOWORD(lParam);  // width of client area
+' nHeight = HIWORD(lParam); // height of client area
+' ========================================================================================
+PRIVATE SUB CDialog.DialogOnSize (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
+   this.DialogResetScrollbars
+   this.DialogSetupScrollbars
+END SUB
+' ========================================================================================
 
 ' ########################################################################################
 

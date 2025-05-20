@@ -55,11 +55,14 @@ Public:
    DECLARE CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    DECLARE DESTRUCTOR
 
-   DECLARE FUNCTION Enable () AS BOOLEAN
-   DECLARE FUNCTION Disable () AS BOOLEAN
+   DECLARE FUNCTION AddItemData (BYVAL pData AS LRESULT) AS LONG
    DECLARE FUNCTION AddString (BYVAL pwszText AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION CalcHorizontalExtent () AS LONG
    DECLARE FUNCTION DeleteString (BYVAL Index AS LONG) AS LONG
    DECLARE FUNCTION Dir (BYVAL Attr AS UINT, BYVAL pwszFileSpec AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION Disable () AS BOOLEAN
+   DECLARE FUNCTION Enable () AS BOOLEAN
+   DECLARE FUNCTION FindItemData (BYVAL indexStart AS LONG, BYVAL pData AS LRESULT) AS LONG
    DECLARE FUNCTION FindString (BYVAL start AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION FindStringExact (BYVAL start AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION GetComboBoxInfo (BYREF cbi AS COMBOBOXINFO) AS BOOLEAN
@@ -81,11 +84,15 @@ Public:
    DECLARE FUNCTION GetLbText (BYVAL Index AS LONG) AS DWSTRING
    DECLARE FUNCTION GetLocale () AS LONG
    DECLARE FUNCTION GetMinVisible () AS LONG
+   DECLARE FUNCTION GetText () AS DWSTRING
+   DECLARE FUNCTION GetTextLength () AS LONG
    DECLARE FUNCTION GetTopIndex () AS LONG
    DECLARE FUNCTION InitStorage (BYVAL items AS LONG, BYVAL cb AS LONG) AS LONG
+   DECLARE FUNCTION InsertItemData (BYVAL index AS LONG, BYVAL pData AS LRESULT) AS LONG
    DECLARE FUNCTION InsertString (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE SUB LimitText (BYVAL chLimit AS LONG)
    DECLARE SUB ResetContent
+   DECLARE FUNCTION SelectItemData (BYVAL indexStart AS LONG, BYVAL pData AS LRESULT) AS LONG
    DECLARE FUNCTION SelectString (BYVAL Index AS DWORD, BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION SetCueBannerText (BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION SetCurSel (BYVAL Index AS DWORD) AS LONG
@@ -95,19 +102,12 @@ Public:
    DECLARE SUB SetHorizontalExtent (BYVAL nWidth AS LONG)
    DECLARE FUNCTION SetItemData (BYVAL index AS DWORD, BYVAL nData AS LPARAM) AS LONG
    DECLARE FUNCTION SetItemHeight (BYVAL index AS LONG, BYVAL nHeight AS LONG) AS LONG
-   DECLARE FUNCTION SetLocale (BYVAL hComboBox AS HWND, BYVAL lcid AS LONG) AS LONG
+   DECLARE FUNCTION SetLocale (BYVAL lcid AS LONG) AS LONG
    DECLARE FUNCTION SetMinVisible (BYVAL iMinVisible AS LONG) AS LONG
+   DECLARE FUNCTION SetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
    DECLARE FUNCTION SetTopIndex (BYVAL index AS DWORD) AS LONG
    DECLARE SUB ShowDropDown
    DECLARE SUB HideDropDown
-   DECLARE FUNCTION CalcHorizontalExtent () AS LONG
-   DECLARE FUNCTION AddItemData (BYVAL pData AS LRESULT) AS LONG
-   DECLARE FUNCTION InsertItemData (BYVAL index AS LONG, BYVAL pData AS LRESULT) AS LONG
-   DECLARE FUNCTION FindItemData (BYVAL indexStart AS LONG, BYVAL pData AS LRESULT) AS LONG
-   DECLARE FUNCTION SelectItemData (BYVAL indexStart AS LONG, BYVAL pData AS LRESULT) AS LONG
-   DECLARE FUNCTION GetTextLength () AS LONG
-   DECLARE FUNCTION GetText () AS DWSTRING
-   DECLARE FUNCTION SetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
 
 END TYPE
 ' ========================================================================================
@@ -225,6 +225,7 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CCombobox.GetComboBoxInfo (BYREF cbi AS COMBOBOXINFO) AS BOOLEAN
    IF VARPTR(cbi) = 0 THEN RETURN FALSE
+   IF cbi.cbSize = 0 THEN cbi.cbSize = SIZEOF(COMBOBOXINFO)
    RETURN SendMessageW(m_hCtl, CB_GETCOMBOBOXINFO, 0, CAST(LPARAM, @cbi))
 END FUNCTION
 ' ========================================================================================
@@ -430,8 +431,8 @@ END SUB
 ' Searches the list of a combo box for an item that begins with the characters in a
 ' specified string. If a matching item is found, it is selected and copied to the edit control.
 ' ========================================================================================
-PRIVATE FUNCTION CCombobox.SelectString (BYVAL Index AS DWORD, BYVAL pwszText AS WSTRING PTR) AS LONG
-   RETURN SendMessageW(m_hCtl, CB_SELECTSTRING, Index, CAST(LPARAM, pwszText))
+PRIVATE FUNCTION CCombobox.SelectString (BYVAL index AS DWORD, BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendMessageW(m_hCtl, CB_SELECTSTRING, index, CAST(LPARAM, pwszText))
 END FUNCTION
 ' ========================================================================================
 
@@ -448,8 +449,8 @@ END FUNCTION
 ' into view. The text in the edit control of the combo box changes to reflect the new
 ' selection, and any previous selection in the list is removed.
 ' ========================================================================================
-PRIVATE FUNCTION CCombobox.SetCurSel (BYVAL Index AS DWORD) AS LONG
-   RETURN SendMessageW(m_hCtl, CB_SETCURSEL, Index, 0)
+PRIVATE FUNCTION CCombobox.SetCurSel (BYVAL index AS DWORD) AS LONG
+   RETURN SendMessageW(m_hCtl, CB_SETCURSEL, index, 0)
 END FUNCTION
 ' ========================================================================================
 
@@ -514,8 +515,8 @@ END FUNCTION
 ' locale not installed on the system, the return value is CB_ERR and the current combo box
 ' locale is not changed.
 ' ========================================================================================
-PRIVATE FUNCTION CComboBox.SetLocale (BYVAL hComboBox AS HWND, BYVAL lcid AS LONG) AS LONG
-   FUNCTION = SendMessageW(hComboBox, CB_SETLOCALE, cast(WPARAM, lcid), 0)
+PRIVATE FUNCTION CComboBox.SetLocale (BYVAL lcid AS LONG) AS LONG
+   FUNCTION = SendMessageW(m_hCtl, CB_SETLOCALE, cast(WPARAM, lcid), 0)
 END FUNCTION
 ' ========================================================================================
 

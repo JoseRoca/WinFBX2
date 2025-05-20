@@ -58,10 +58,14 @@ Public:
    DECLARE FUNCTION Disable () AS BOOLEAN
    DECLARE FUNCTION AddFile (BYVAL pwszFileName AS WSTRING PTR) AS LONG
    DECLARE FUNCTION AddString (BYVAL pwszText AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION Add (BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION DeleteString (BYVAL Index AS LONG) AS LONG
+   DECLARE FUNCTION Delete_ (BYVAL Index AS LONG) AS LONG
    DECLARE FUNCTION Dir (BYVAL Attr AS DWORD, BYVAL pwszFileSpec AS WSTRING PTR) AS LONG
    DECLARE FUNCTION FindString (BYVAL indexStart AS LONG, BYVAL pwszString AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION Find (BYVAL indexStart AS LONG, BYVAL pwszString AS WSTRING PTR) AS LONG
    DECLARE FUNCTION FindStringExact (BYVAL indexStart AS LONG, BYVAL pwszSearchString AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION FindExact (BYVAL indexStart AS LONG, BYVAL pwszSearchString AS WSTRING PTR) AS LONG
    DECLARE FUNCTION GetAnchorIndex () AS LONG
    DECLARE FUNCTION GetCaretIndex () AS LONG
    DECLARE FUNCTION GetCount () AS LONG
@@ -74,6 +78,7 @@ Public:
    DECLARE FUNCTION GetItemRect (BYVAL index AS LONG) AS RECT
    DECLARE FUNCTION GetLocale () AS LONG
    DECLARE FUNCTION GetSel (BYVAL Index AS LONG) AS BOOLEAN
+   DECLARE FUNCTION GetState (BYVAL Index AS LONG) AS BOOLEAN
    DECLARE FUNCTION GetSelCount () AS LONG
    DECLARE FUNCTION GetSelItems (BYVAL items AS DWORD, BYVAL rgItems AS LONG PTR) AS LONG
    DECLARE FUNCTION GetText (BYVAL Index AS LONG) AS DWSTRING
@@ -81,8 +86,10 @@ Public:
    DECLARE FUNCTION GetTopIndex () AS LONG
    DECLARE FUNCTION InitStorage (BYVAL nItems AS DWORD, BYVAL nBytes AS DWORD) AS LONG
    DECLARE FUNCTION InsertString (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION Insert (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION ItemFromPoint (BYVAL x AS SHORT, BYVAL y AS SHORT) AS LONG
    DECLARE SUB ResetContent
+   DECLARE SUB Reset
    DECLARE FUNCTION SelectString (BYVAL start AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION SelItemRange (BYVAL fSel AS LONG, BYVAL startIndex AS SHORT, BYVAL endIndex AS SHORT) AS LONG
    DECLARE FUNCTION SelItemRangeEx (BYVAL startIndex AS LONG, BYVAL endIndex AS LONG) AS LONG
@@ -95,16 +102,22 @@ Public:
    DECLARE FUNCTION SetItemData (BYVAL index AS LONG, BYVAL pData AS LONG) AS LONG
    DECLARE FUNCTION SetItemHeight (BYVAL nHeight AS DWORD) AS LONG
    DECLARE FUNCTION SetLocale (BYVAL hListBox AS DWORD, BYVAL wLocaleID AS DWORD) AS LONG
-   DECLARE FUNCTION SetSel (BYVAL fSelect AS LONG, BYVAL index AS LONG) AS LONG
+   DECLARE FUNCTION SetSel (BYVAL fSelect AS BOOLEAN, BYVAL index AS LONG = -1) AS LONG
+   DECLARE FUNCTION Select_ (BYVAL index AS LONG =-1) AS LONG
+   DECLARE FUNCTION SelectString (BYVAL index AS LONG =-1) AS LONG
+   DECLARE FUNCTION Unselect (BYVAL index AS LONG = -1) AS LONG
+   DECLARE FUNCTION UnselectString (BYVAL index AS LONG = -1) AS LONG
    DECLARE SUB SetTabStops (BYVAL cTabs AS LONG, BYVAL prgTabs AS LONG PTR)
    DECLARE FUNCTION SetTopIndex (BYVAL index AS LONG) AS LONG
 
    DECLARE FUNCTION ReplaceString (BYVAL index AS LONG, BYVAL pwszNewText AS WSTRING PTR, BYVAL pNewData AS LONG_PTR = 0) AS LONG
+   DECLARE FUNCTION SetText (BYVAL index AS LONG, BYVAL pwszNewText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION CalcHorizontalExtent () AS LONG
    DECLARE FUNCTION AddItemData (BYVAL pData AS ANY PTR) AS LONG
    DECLARE FUNCTION InsertItemData (BYVAL index AS LONG, BYVAL pData AS ANY PTR) AS LONG
    DECLARE FUNCTION FindItemData (BYVAL indexStart AS LONG, BYVAL pData AS ANY PTR) AS LONG
    DECLARE FUNCTION SelectItemData (BYVAL indexStart AS LONG, BYVAL pData AS ANY PTR) AS LONG
+   DECLARE FUNCTION GetSelect (BYVAL startIndex AS LONG = 0) AS LONG
 
 END TYPE
 ' ========================================================================================
@@ -187,11 +200,21 @@ PRIVATE FUNCTION CListBox.AddString (BYVAL pwszText AS WSTRING PTR) AS LONG
    RETURN SendMessageW(m_hCtl, LB_ADDSTRING, 0, CAST(LPARAM, pwszText))
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListBox.Add (BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendMessageW(m_hCtl, LB_ADDSTRING, 0, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' Deletes a string in a list box.
 ' ========================================================================================
 PRIVATE FUNCTION CListBox.DeleteString (BYVAL Index AS LONG) AS LONG
+   RETURN SendMessageW(m_hCtl, LB_DELETESTRING, Index, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListBox.Delete_ (BYVAL Index AS LONG) AS LONG
    RETURN SendMessageW(m_hCtl, LB_DELETESTRING, Index, 0)
 END FUNCTION
 ' ========================================================================================
@@ -213,12 +236,22 @@ PRIVATE FUNCTION CListBox.FindString (BYVAL indexStart AS LONG, BYVAL pwszString
    RETURN SendMessageW(m_hCtl, LB_FINDSTRING, indexStart, CAST(LPARAM, pwszString))
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListBox.Find (BYVAL indexStart AS LONG, BYVAL pwszString AS WSTRING PTR) AS LONG
+   RETURN SendMessageW(m_hCtl, LB_FINDSTRING, indexStart, CAST(LPARAM, pwszString))
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' Finds the first list box string that exactly matches the specified string, except that
 ' the search is not case sensitive.
 ' ========================================================================================
 PRIVATE FUNCTION CListBox.FindStringExact (BYVAL indexStart AS LONG, BYVAL pwszSearchString AS WSTRING PTR) AS LONG
+   RETURN SendMessageW(m_hCtl, LB_FINDSTRINGEXACT, indexStart, CAST(LPARAM, pwszSearchString))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListBox.FindExact (BYVAL indexStart AS LONG, BYVAL pwszSearchString AS WSTRING PTR) AS LONG
    RETURN SendMessageW(m_hCtl, LB_FINDSTRINGEXACT, indexStart, CAST(LPARAM, pwszSearchString))
 END FUNCTION
 ' ========================================================================================
@@ -323,6 +356,38 @@ PRIVATE FUNCTION CListBox.GetSel (BYVAL Index AS LONG) AS BOOLEAN
    RETURN SendMessageW(m_hCtl, LB_GETSEL, Index, 0) > 0
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+' Checks if the item is selected or not.
+' ========================================================================================
+PRIVATE FUNCTION CListBox.GetState (BYVAL Index AS LONG) AS BOOLEAN
+   RETURN SendMessageW(m_hCtl, LB_GETSEL, Index, 0) > 0
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' The listbox is searched to find the first selected item. If the item parameter is included,
+' searching starts at that position to facilitate retrieving multiple selected items.
+' If item is omitted, the search starts at the first data item. The index number of the
+' selected item is returned as the result of the function. If no item is selected, the
+' value -1 is returned.
+' ========================================================================================
+PRIVATE FUNCTION CListBox.GetSelect (BYVAL startIndex AS LONG = 0) AS LONG
+   IF (GetWindowLongPtrW(m_hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      ' // Search for the first selected item starting from startIndex (zero-based)
+      DIM nCount AS LONG = SendMessageW(m_hCtl, LB_GETCOUNT, 0, 0)
+      FOR selectedIndex AS LONG = startIndex TO nCount - 1
+         IF SendMessageW(m_hCtl, LB_GETSEL, selectedIndex, 0) <> 0 THEN
+            RETURN selectedIndex ' Zero-based index
+         END IF
+      NEXT
+      ' // If no item is selected, return -1
+      RETURN -1
+   ELSE
+      '// Single slection listbox
+      RETURN this.GetCursel
+   END IF
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' Gets the total number of selected items in a multiple-selection list box.
@@ -389,6 +454,11 @@ PRIVATE FUNCTION CListBox.InsertString (BYVAL Index AS LONG, BYVAL pwszText AS W
    RETURN SendMessageW(m_hCtl, LB_INSERTSTRING, Index, CAST(LPARAM, pwszText))
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListBox.Insert (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendMessageW(m_hCtl, LB_INSERTSTRING, Index, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' Gets the zero-based index of the item nearest the specified point in a list box.
@@ -402,6 +472,11 @@ END FUNCTION
 ' Removes all items from a list box.
 ' ========================================================================================
 PRIVATE SUB CListBox.ResetContent
+   SendMessageW m_hCtl, LB_RESETCONTENT, 0, 0
+END SUB
+' ========================================================================================
+' ========================================================================================
+PRIVATE SUB CListBox.Reset
    SendMessageW m_hCtl, LB_RESETCONTENT, 0, 0
 END SUB
 ' ========================================================================================
@@ -517,10 +592,66 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Selects a string in a multiple-selection list box.
+' Selects a string in a list box.
 ' ========================================================================================
-PRIVATE FUNCTION CListBox.SetSel (BYVAL fSelect AS LONG, BYVAL index AS LONG) AS LONG
-   RETURN SendMessageW(m_hCtl, LB_SETSEL, fSelect, index)
+PRIVATE FUNCTION CListBox.SetSel (BYVAL fSelect AS BOOLEAN, BYVAL index AS LONG = -1) AS LONG
+   IF (GetWindowLongPtrW(m_hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETSEL, fSelect, index)
+   ELSE
+      '// Single slection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETCURSEL, index, 0)
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Selects the specified string in a list box.
+' ========================================================================================
+PRIVATE FUNCTION CListBox.Select_ (BYVAL index AS LONG =-1) AS LONG
+   IF (GetWindowLongPtrW(m_hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETSEL, CTRUE, index)
+   ELSE
+      '// Single slection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETCURSEL, Index, 0)
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Selects the specified string in a list box.
+' ========================================================================================
+PRIVATE FUNCTION CListBox.SelectString (BYVAL index AS LONG =-1) AS LONG
+   IF (GetWindowLongPtrW(m_hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETSEL, CTRUE, index)
+   ELSE
+      '// Single slection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETCURSEL, Index, 0)
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Unselects the specified string in a multiple-selection list box.
+' ========================================================================================
+PRIVATE FUNCTION CListBox.Unselect (BYVAL index AS LONG = -1) AS LONG
+   IF (GetWindowLongPtrW(m_hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETSEL, FALSE, index)
+   ELSE
+      ' // Single slection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETCURSEL, -1, 0)
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListBox.UnselectString (BYVAL index AS LONG = -1) AS LONG
+   IF (GetWindowLongPtrW(m_hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETSEL, FALSE, index)
+   ELSE
+      ' // Single slection listbox
+      RETURN SendMessageW(m_hCtl, LB_SETCURSEL, -1, 0)
+   END IF
 END FUNCTION
 ' ========================================================================================
 
@@ -551,6 +682,16 @@ PRIVATE FUNCTION CListBox.ReplaceString (BYVAL index AS LONG, BYVAL pwszNewText 
    IF index = LB_ERR OR index = LB_ERRSPACE THEN RETURN index
    lRes = SendMessageW(m_hCtl, LB_SETITEMDATA, index, CAST(LPARAM, pNewData))
    IF lRes = LB_ERR THEN RETURN lRes
+   RETURN SendMessageW(m_hCtl, IIF((GetWindowLongPtrW(m_hCtl, GWL_STYLE) AND LBS_MULTIPLESEL), LB_SETSEL, LB_SETCURSEL), index, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListBox.SetText (BYVAL index AS LONG, BYVAL pwszNewText AS WSTRING PTR) AS LONG
+   DIM lRes AS LONG = SendMessageW(m_hCtl, LB_DELETESTRING, index, 0)
+   IF lRes = LB_ERR THEN RETURN lRes
+   ' // Insert the new string
+   index = SendMessageW(m_hCtl, LB_INSERTSTRING, index, CAST(LPARAM, pwszNewText))
+   IF index = LB_ERR OR index = LB_ERRSPACE THEN RETURN index
    RETURN SendMessageW(m_hCtl, IIF((GetWindowLongPtrW(m_hCtl, GWL_STYLE) AND LBS_MULTIPLESEL), LB_SETSEL, LB_SETCURSEL), index, 0)
 END FUNCTION
 ' ========================================================================================

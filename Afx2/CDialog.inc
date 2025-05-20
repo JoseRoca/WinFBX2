@@ -598,6 +598,11 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          ' Adds a list box to the window.
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_HSCROLL OR WS_VSCROLL OR WS_BORDER OR WS_TABSTOP OR LBS_STANDARD OR LBS_HASSTRINGS OR LBS_SORT OR LBS_NOTIFY
          IF dwExStyle = -1 THEN dwExStyle = WS_EX_CLIENTEDGE
+      CASE "LISTBOXMULTISELECT", "LBMULTISELECT"
+         ' Adds a muliple-selection list box to the window.
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_HSCROLL OR WS_VSCROLL OR WS_BORDER OR WS_TABSTOP OR LBS_STANDARD OR LBS_HASSTRINGS OR LBS_SORT OR LBS_NOTIFY OR LBS_EXTENDEDSEL
+         IF dwExStyle = -1 THEN dwExStyle = WS_EX_CLIENTEDGE
+         wsClassName = "ListBox"
       CASE "PROGRESSBAR", "MSCTLS_PROGRESS32"
          ' Adds a progress bar to the window.
          wsClassName = "msctls_progress32"

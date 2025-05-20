@@ -54,18 +54,17 @@ Public:
    DECLARE CONSTRUCTOR (BYREF pDlg AS CDialog, BYVAL cID AS LONG)
    DECLARE CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    DECLARE DESTRUCTOR
-   DECLARE FUNCTION Enable () AS BOOLEAN
-   DECLARE FUNCTION Disable () AS BOOLEAN
    DECLARE FUNCTION AddFile (BYVAL pwszFileName AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION AddItemData (BYVAL pData AS ANY PTR) AS LONG
    DECLARE FUNCTION AddString (BYVAL pwszText AS WSTRING PTR) AS LONG
-   DECLARE FUNCTION Add (BYVAL pwszText AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION CalcHorizontalExtent () AS LONG
    DECLARE FUNCTION DeleteString (BYVAL Index AS LONG) AS LONG
-   DECLARE FUNCTION Delete_ (BYVAL Index AS LONG) AS LONG
    DECLARE FUNCTION Dir (BYVAL Attr AS DWORD, BYVAL pwszFileSpec AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION Disable () AS BOOLEAN
+   DECLARE FUNCTION Enable () AS BOOLEAN
+   DECLARE FUNCTION FindItemData (BYVAL indexStart AS LONG, BYVAL pData AS ANY PTR) AS LONG
    DECLARE FUNCTION FindString (BYVAL indexStart AS LONG, BYVAL pwszString AS WSTRING PTR) AS LONG
-   DECLARE FUNCTION Find (BYVAL indexStart AS LONG, BYVAL pwszString AS WSTRING PTR) AS LONG
    DECLARE FUNCTION FindStringExact (BYVAL indexStart AS LONG, BYVAL pwszSearchString AS WSTRING PTR) AS LONG
-   DECLARE FUNCTION FindExact (BYVAL indexStart AS LONG, BYVAL pwszSearchString AS WSTRING PTR) AS LONG
    DECLARE FUNCTION GetAnchorIndex () AS LONG
    DECLARE FUNCTION GetCaretIndex () AS LONG
    DECLARE FUNCTION GetCount () AS LONG
@@ -78,20 +77,22 @@ Public:
    DECLARE FUNCTION GetItemRect (BYVAL index AS LONG) AS RECT
    DECLARE FUNCTION GetLocale () AS LONG
    DECLARE FUNCTION GetSel (BYVAL Index AS LONG) AS BOOLEAN
-   DECLARE FUNCTION GetState (BYVAL Index AS LONG) AS BOOLEAN
    DECLARE FUNCTION GetSelCount () AS LONG
+   DECLARE FUNCTION GetSelect (BYVAL startIndex AS LONG = 0) AS LONG
    DECLARE FUNCTION GetSelItems (BYVAL items AS DWORD, BYVAL rgItems AS LONG PTR) AS LONG
+   DECLARE FUNCTION GetState (BYVAL Index AS LONG) AS BOOLEAN
    DECLARE FUNCTION GetText (BYVAL Index AS LONG) AS DWSTRING
    DECLARE FUNCTION GetTextLen (BYVAL index AS LONG) AS LONG
    DECLARE FUNCTION GetTopIndex () AS LONG
    DECLARE FUNCTION InitStorage (BYVAL nItems AS DWORD, BYVAL nBytes AS DWORD) AS LONG
+   DECLARE FUNCTION InsertItemData (BYVAL index AS LONG, BYVAL pData AS ANY PTR) AS LONG
    DECLARE FUNCTION InsertString (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
-   DECLARE FUNCTION Insert (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION ItemFromPoint (BYVAL x AS SHORT, BYVAL y AS SHORT) AS LONG
+   DECLARE FUNCTION ReplaceString (BYVAL index AS LONG, BYVAL pwszNewText AS WSTRING PTR, BYVAL pNewData AS LONG_PTR = 0) AS LONG
    DECLARE SUB ResetContent
-   DECLARE SUB Reset
+   DECLARE FUNCTION SelectItemData (BYVAL indexStart AS LONG, BYVAL pData AS ANY PTR) AS LONG
    DECLARE FUNCTION SelectString (BYVAL start AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
-   DECLARE FUNCTION SelItemRange (BYVAL fSel AS LONG, BYVAL startIndex AS SHORT, BYVAL endIndex AS SHORT) AS LONG
+   DECLARE FUNCTION SelItemRange (BYVAL fSel AS BOOLEAN, BYVAL startIndex AS SHORT, BYVAL endIndex AS SHORT) AS LONG
    DECLARE FUNCTION SelItemRangeEx (BYVAL startIndex AS LONG, BYVAL endIndex AS LONG) AS LONG
    DECLARE FUNCTION SetAnchorIndex (BYVAL index AS LONG) AS LONG
    DECLARE FUNCTION SetCaretIndex (BYVAL index AS LONG) AS LONG
@@ -101,23 +102,23 @@ Public:
    DECLARE SUB SetHorizontalExtent (BYVAL cxExtent AS LONG)
    DECLARE FUNCTION SetItemData (BYVAL index AS LONG, BYVAL pData AS LONG) AS LONG
    DECLARE FUNCTION SetItemHeight (BYVAL nHeight AS DWORD) AS LONG
-   DECLARE FUNCTION SetLocale (BYVAL hListBox AS DWORD, BYVAL wLocaleID AS DWORD) AS LONG
+   DECLARE FUNCTION SetLocale (BYVAL wLocaleID AS DWORD) AS LONG
    DECLARE FUNCTION SetSel (BYVAL fSelect AS BOOLEAN, BYVAL index AS LONG = -1) AS LONG
-   DECLARE FUNCTION Select_ (BYVAL index AS LONG =-1) AS LONG
    DECLARE FUNCTION SelectString (BYVAL index AS LONG =-1) AS LONG
-   DECLARE FUNCTION Unselect (BYVAL index AS LONG = -1) AS LONG
+   DECLARE FUNCTION SetText (BYVAL index AS LONG, BYVAL pwszNewText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION UnselectString (BYVAL index AS LONG = -1) AS LONG
    DECLARE SUB SetTabStops (BYVAL cTabs AS LONG, BYVAL prgTabs AS LONG PTR)
    DECLARE FUNCTION SetTopIndex (BYVAL index AS LONG) AS LONG
 
-   DECLARE FUNCTION ReplaceString (BYVAL index AS LONG, BYVAL pwszNewText AS WSTRING PTR, BYVAL pNewData AS LONG_PTR = 0) AS LONG
-   DECLARE FUNCTION SetText (BYVAL index AS LONG, BYVAL pwszNewText AS WSTRING PTR) AS LONG
-   DECLARE FUNCTION CalcHorizontalExtent () AS LONG
-   DECLARE FUNCTION AddItemData (BYVAL pData AS ANY PTR) AS LONG
-   DECLARE FUNCTION InsertItemData (BYVAL index AS LONG, BYVAL pData AS ANY PTR) AS LONG
-   DECLARE FUNCTION FindItemData (BYVAL indexStart AS LONG, BYVAL pData AS ANY PTR) AS LONG
-   DECLARE FUNCTION SelectItemData (BYVAL indexStart AS LONG, BYVAL pData AS ANY PTR) AS LONG
-   DECLARE FUNCTION GetSelect (BYVAL startIndex AS LONG = 0) AS LONG
+   ' // To mimic PowerBasic names
+   DECLARE FUNCTION Add (BYVAL pwszText AS WSTRING PTR) AS LONG   ' // same as AddString
+   DECLARE FUNCTION Delete_ (BYVAL Index AS LONG) AS LONG   ' // same as DeleteString
+   DECLARE FUNCTION Find (BYVAL indexStart AS LONG, BYVAL pwszString AS WSTRING PTR) AS LONG   ' // same as FindString
+   DECLARE FUNCTION FindExact (BYVAL indexStart AS LONG, BYVAL pwszSearchString AS WSTRING PTR) AS LONG   ' // same as FindStringExact
+   DECLARE FUNCTION Insert (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG   ' // same as InsertString
+   DECLARE SUB Reset   ' // same as ResetContent
+   DECLARE FUNCTION Select_ (BYVAL index AS LONG =-1) AS LONG   ' // same as SetSel
+   DECLARE FUNCTION Unselect (BYVAL index AS LONG = -1) AS LONG   ' //same as UnselectString
 
 END TYPE
 ' ========================================================================================
@@ -493,7 +494,7 @@ END FUNCTION
 ' ========================================================================================
 ' Selects one or more consecutive items in a multiple-selection list box.
 ' ========================================================================================
-PRIVATE FUNCTION CListBox.SelItemRange (BYVAL fSel AS LONG, BYVAL startIndex AS SHORT, BYVAL endIndex AS SHORT) AS LONG
+PRIVATE FUNCTION CListBox.SelItemRange (BYVAL fSel AS BOOLEAN, BYVAL startIndex AS SHORT, BYVAL endIndex AS SHORT) AS LONG
    RETURN SendMessageW(m_hCtl, LB_SELITEMRANGE, fSel, MAKELONG(startIndex, endIndex))
 END FUNCTION
 ' ========================================================================================
@@ -586,7 +587,7 @@ END FUNCTION
 ' sorting order of displayed text (for list boxes with the LBS_SORT style) and of text
 ' added by the LB_ADDSTRING message.
 ' ========================================================================================
-PRIVATE FUNCTION CListBox.SetLocale (BYVAL hListBox AS DWORD, BYVAL wLocaleID AS DWORD) AS LONG
+PRIVATE FUNCTION CListBox.SetLocale (BYVAL wLocaleID AS DWORD) AS LONG
    RETURN SendMessageW(m_hCtl, LB_SETLOCALE, wLocaleID, 0)
 END FUNCTION
 ' ========================================================================================

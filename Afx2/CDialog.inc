@@ -199,6 +199,7 @@ TYPE CDialog
       DECLARE FUNCTION DialogDisable () AS BOOLEAN
       DECLARE FUNCTION DialogEnable () AS BOOLEAN
       DECLARE FUNCTION DialogRedraw () AS BOOLEAN
+      DECLARE SUB ForceVisibleDisplay
       DECLARE FUNCTION DialogPost (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
       DECLARE FUNCTION DialogSend (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
       DECLARE SUB DialogSetIconEx (BYVAL hIconBig AS HICON, BYVAL hIconSmall AS HICON)
@@ -290,6 +291,15 @@ TYPE CDialog
       DECLARE FUNCTION DesktopGetClient (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
       DECLARE FUNCTION DesktopGetClientWidth () AS LONG
       DECLARE FUNCTION DesktopGetClientHeight () AS LONG
+      DECLARE SUB DesktopGetPPI (BYREF xPPI AS LONG, BYREF yPPI AS LONG)
+      DECLARE FUNCTION DesktopGetPPIX () AS LONG
+      DECLARE FUNCTION DesktopGetPPIY () AS LONG
+
+      ' // Display
+      DECLARE FUNCTION DisplayGetPixelsWidth () AS DWORD
+      DECLARE FUNCTION DisplayGetPixelsHeight () AS DWORD
+      DECLARE FUNCTION DisplayGetBitsPerPixel () AS DWORD
+      DECLARE FUNCTION DisplayGetFrequency () AS DWORD
 
       ' // Additional functions
       DECLARE FUNCTION ScaleRX () AS SINGLE
@@ -1441,6 +1451,150 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' If you use dual (or even triple/quad) displays then you have undoubtedly encountered the
+' following situation: You change the physical order of your displays, or otherwise
+' reconfigure the logical ordering using your display software. This sometimes has the
+' side-effect of changing your desktop coordinates from zero-based to negative starting
+' coordinates (i.e. the top-left coordinate of your desktop changes from 0,0 to -1024,-768).
+' This effects many Windows programs which restore their last on-screen position whenever
+' they are started. Should the user reorder their display configuration this can sometimes
+' result in a Windows program subsequently starting in an off-screen position (i.e. at a
+' location that used to be visible) - and is now effectively invisible, preventing the
+' user from closing it down or otherwise moving it back on-screen.
+' The ForceVisibleDisplay function can be called at program start-time right after the
+' main window has been created and positioned 'on-screen'. Should the window be positioned
+' in an off-screen position, it is forced back onto the nearest display to its last
+' position. The user will be unaware this is happening and won't even realise to thank you
+' for keeping their user-interface visible, even though they changed their display
+' settings.
+' Source: http://www.catch22.net/tuts/tips2
+' ========================================================================================
+PRIVATE SUB CDialog.ForceVisibleDisplay
+   ' // Check if the specified window-rectangle is visible on any display
+   DIM rc AS RECT
+   GetWindowRect(m_hDlg, @rc)
+   IF MonitorFromRect(@rc, MONITOR_DEFAULTTONULL) <> NULL THEN EXIT SUB
+   ' // Find the nearest display to the rectangle
+   DIM hMonitor AS HMONITOR
+   DIM mi AS MONITORINFO
+   mi.cbSize = SIZEOF(mi)
+   hMonitor = MonitorFromRect(@rc, MONITOR_DEFAULTTONEAREST)
+   GetMonitorInfoW(hMonitor, @mi)
+   ' // Center window rectangle
+   rc.left = mi.rcWork.left + ((mi.rcWork.right - mi.rcWork.left) - (rc.right-rc.left)) \ 2
+   rc.top = mi.rcWork.top + ((mi.rcWork.bottom - mi.rcWork.top) - (rc.bottom-rc.top)) \ 2
+   SetWindowPos(m_hDlg, 0, rc.left, rc.top, 0, 0, SWP_NOACTIVATE OR SWP_NOZORDER OR SWP_NOSIZE)
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' Centers the dialog.
+' ========================================================================================
+' ========================================================================================
+' Centers a window on the screen or over another window.
+' It also ensures that the placement is done within the work area.
+' Parameters:
+' - hwnd = Handle of the window.
+' - hwndParent = [optional] Handle of the parent window.
+' ========================================================================================
+PRIVATE SUB CDialog.DialogCenter (BYVAL hwndParent AS HWND = NULL)
+
+   DIM rc            AS RECT    ' Window coordinates
+   DIM rcParent      AS RECT    ' Parent window coordinates
+   DIM rcWorkArea    AS RECT    ' Work area coordinates
+   DIM pt            AS POINT   ' x and y coordinates of centered window
+
+   ' // Get the coordinates of the window
+   GetWindowRect m_hDlg, @rc
+   ' // Calculate the width and height of the window
+   DIM nWidth AS LONG = rc.Right - rc.Left
+   DIM nHeight AS LONG = rc.Bottom - rc.Top
+   ' // Get the coordinates of the work area
+   IF SystemParametersInfoW(SPI_GETWORKAREA, SIZEOF(rcWorkArea), @rcWorkArea, 0) = 0 THEN
+      rcWorkArea.Right  = GetSystemMetrics(SM_CXSCREEN)
+      rcWorkArea.Bottom = GetSystemMetrics(SM_CYSCREEN)
+   END IF
+   ' // Get the coordinates of the parent window
+   IF hwndParent THEN
+      GetWindowRect hwndParent, @rcParent
+   ELSE
+      rcParent.Left   = rcWorkArea.Left
+      rcParent.Top    = rcWorkArea.Top
+      rcParent.Right  = rcWorkArea.Right
+      rcParent.Bottom = rcWorkArea.Bottom
+   END IF
+   ' // Calculate the width and height of the parent window
+   DIM nParentWidth AS LONG = rcParent.Right - rcParent.Left
+   DIM nParentHeight AS LONG = rcParent.Bottom - rcParent.Top
+   ' // Calculate the new x coordinate and adjust for work area
+   pt.x = rcParent.Left + ((nParentWidth - nWidth) \ 2)
+   IF (pt.x < rcWorkArea.Left) THEN
+      pt.x = rcWorkArea.Left
+   ELSEIF ((pt.x + nWidth) > rcWorkArea.Right) THEN
+      pt.x = rcWorkArea.Right - nWidth
+   END IF
+   ' // Calculate the new y coordinate and adjust for work area
+   pt.y = rcParent.Top  + ((nParentHeight - nHeight) \ 2)
+   IF (pt.y < rcWorkArea.Top) THEN
+      pt.y = rcWorkArea.Top
+   ELSEIF ((pt.y + nHeight) > rcWorkArea.Bottom) THEN
+      pt.y = rcWorkArea.Bottom - nHeight
+   END IF
+   ' // Convert screen coordinates to client area coordinates
+   IF (GetWindowLongPtrW(m_hDlg, GWL_STYLE) AND WS_CHILD) = WS_CHILD THEN ScreenToClient hwndParent, @pt
+   ' // Reposition the window retaining its size and Z order
+   SetWindowPos(m_hDlg, NULL, pt.x, pt.y, 0, 0, SWP_NOSIZE OR SWP_NOZORDER)
+
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' Make a Dialog stabilized (non-closeable).
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogStabilize () AS BOOLEAN
+   ' // Get the system menu handle
+   DIM hMenu AS HMENU = GetSystemMenu(m_hDlg, FALSE)
+   IF hMenu = NULL THEN RETURN FALSE
+   ' // Get the number of menu items
+   DIM cbItems AS LONG = GetMenuItemCount(hMenu)
+   IF cbItems = 0 THEN RETURN FALSE
+   ' // Remove the close menu item
+   IF RemoveMenu(hMenu, cbItems - 1, MF_REMOVE OR MF_BYPOSITION) = 0 THEN RETURN FALSE
+   ' // Remove the separator line
+   IF RemoveMenu(hMenu, cbItems - 2, MF_REMOVE OR MF_BYPOSITION) = 0 THEN RETURN FALSE
+   ' // Redraw the menu (this refreshes the caption bar, dimming the X button)
+   DrawMenuBar(m_hDlg)
+   ' // Flags the dialog as stabilized
+   m_IsStabilized = TRUE
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Make a Dialog non stable (closeable).
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DialogNonStable () AS BOOLEAN
+   GetSystemMenu(m_hDlg, TRUE)
+   DrawMenuBar(m_hDlg)
+   m_IsStabilized = FALSE
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Returns true if the dialog is stabilized; otherwise, false.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.IsDialogStabilized () AS BOOLEAN
+   RETURN m_IsStabilized
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Returns true if the dialog is stabilized; otherwise, false.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.IsDialogNonStable () AS BOOLEAN
+   RETURN NOT m_IsStabilized
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' Places (posts) a message in the message queue associated with the thread that created the
 ' specified dialog and returns without waiting for the thread to process the message.
 ' ========================================================================================
@@ -1914,7 +2068,12 @@ PRIVATE FUNCTION CDialog.ControlGetLoc (BYVAL cId AS LONG, BYREF nLeft AS LONG, 
    ' // Convert the coordinates to be relative to the parent
    MapWindowPoints(HWND_DESKTOP, GetParent(hCtl), CAST(POINT PTR, @rc), 2)
    ' // Return the left and top values
-   RETURN this.PixelsToDialogUnits(rc.Left, rc.Top, nLeft, nTop)
+   IF m_UsePixels = FALSE THEN
+      RETURN this.PixelsToDialogUnits(rc.Left, rc.Top, nLeft, nTop)
+   ELSE
+      nLeft = rc.Left
+      nTop = rc.Top
+   END IF
 END FUNCTION
 ' ========================================================================================
 
@@ -1924,7 +2083,7 @@ END FUNCTION
 ' Return value: TRUE or FALSE. To get extended error information, call GetLastError.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlSetLoc (BYVAL cId AS LONG, BYVAL nLeft AS LONG, BYVAL nTop AS LONG) AS BOOLEAN
-   DialogUnitsToPixels(nLeft, nTop, nLeft, nTop)
+   IF m_UsePixels = FALSE THEN DialogUnitsToPixels(nLeft, nTop, nLeft, nTop)
    RETURN SetWindowPos(GetDlgItem(m_hDlg, cId), 0, nLeft, nTop, 0, 0, SWP_NOSIZE OR SWP_NOZORDER)
 END FUNCTION
 ' ========================================================================================
@@ -2371,67 +2530,6 @@ PRIVATE SUB CDialog.ControlCenterVert (BYVAL cId AS LONG)
 END SUB
 ' ========================================================================================
 
-' ========================================================================================
-' Centers the dialog.
-' ========================================================================================
-' ========================================================================================
-' Centers a window on the screen or over another window.
-' It also ensures that the placement is done within the work area.
-' Parameters:
-' - hwnd = Handle of the window.
-' - hwndParent = [optional] Handle of the parent window.
-' ========================================================================================
-PRIVATE SUB CDialog.DialogCenter (BYVAL hwndParent AS HWND = NULL)
-
-   DIM rc            AS RECT    ' Window coordinates
-   DIM rcParent      AS RECT    ' Parent window coordinates
-   DIM rcWorkArea    AS RECT    ' Work area coordinates
-   DIM pt            AS POINT   ' x and y coordinates of centered window
-
-   ' // Get the coordinates of the window
-   GetWindowRect m_hDlg, @rc
-   ' // Calculate the width and height of the window
-   DIM nWidth AS LONG = rc.Right - rc.Left
-   DIM nHeight AS LONG = rc.Bottom - rc.Top
-   ' // Get the coordinates of the work area
-   IF SystemParametersInfoW(SPI_GETWORKAREA, SIZEOF(rcWorkArea), @rcWorkArea, 0) = 0 THEN
-      rcWorkArea.Right  = GetSystemMetrics(SM_CXSCREEN)
-      rcWorkArea.Bottom = GetSystemMetrics(SM_CYSCREEN)
-   END IF
-   ' // Get the coordinates of the parent window
-   IF hwndParent THEN
-      GetWindowRect hwndParent, @rcParent
-   ELSE
-      rcParent.Left   = rcWorkArea.Left
-      rcParent.Top    = rcWorkArea.Top
-      rcParent.Right  = rcWorkArea.Right
-      rcParent.Bottom = rcWorkArea.Bottom
-   END IF
-   ' // Calculate the width and height of the parent window
-   DIM nParentWidth AS LONG = rcParent.Right - rcParent.Left
-   DIM nParentHeight AS LONG = rcParent.Bottom - rcParent.Top
-   ' // Calculate the new x coordinate and adjust for work area
-   pt.x = rcParent.Left + ((nParentWidth - nWidth) \ 2)
-   IF (pt.x < rcWorkArea.Left) THEN
-      pt.x = rcWorkArea.Left
-   ELSEIF ((pt.x + nWidth) > rcWorkArea.Right) THEN
-      pt.x = rcWorkArea.Right - nWidth
-   END IF
-   ' // Calculate the new y coordinate and adjust for work area
-   pt.y = rcParent.Top  + ((nParentHeight - nHeight) \ 2)
-   IF (pt.y < rcWorkArea.Top) THEN
-      pt.y = rcWorkArea.Top
-   ELSEIF ((pt.y + nHeight) > rcWorkArea.Bottom) THEN
-      pt.y = rcWorkArea.Bottom - nHeight
-   END IF
-   ' // Convert screen coordinates to client area coordinates
-   IF (GetWindowLongPtrW(m_hDlg, GWL_STYLE) AND WS_CHILD) = WS_CHILD THEN ScreenToClient hwndParent, @pt
-   ' // Reposition the window retaining its size and Z order
-   SetWindowPos(m_hDlg, NULL, pt.x, pt.y, 0, 0, SWP_NOSIZE OR SWP_NOZORDER)
-
-END SUB
-' ========================================================================================
-
 ' ########################################################################################
 '                                *** Desktop procedures ***
 ' ########################################################################################
@@ -2541,6 +2639,107 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' Returns the number of pixels per logical inch along the screen width and height.
+' In a system with multiple display monitors, this value is the same for all monitors.
+' Remarks: The resolution is always specified in pixels.  This procedure is particularly
+' useful in drawing items such as rulers and graphs to a "representative physical size".
+' There are 25.4 millimeters per inch, so just divide by 25.4 to convert from
+' pixels per inch to pixels per millimeter.
+' ========================================================================================
+PRIVATE SUB CDialog.DesktopGetPPI (BYREF xPPI AS LONG, BYREF yPPI AS LONG)
+   IF VARPTR(xPPI) = 0 OR VARPTR(yPPI) = 0 THEN EXIT SUB
+   DIM hDC As ..HDC
+   ' // Get the device context for the screen
+   hDC = GetDC(NULL)
+   ' // Retrieve horizontal and vertical PPI
+   xPPI = GetDeviceCaps(hDC, LOGPIXELSX)
+   yPPI = GetDeviceCaps(hDC, LOGPIXELSY)
+   ' // Release the device context
+   ReleaseDC(NULL, hDC)
+END SUB
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DesktopGetPPIX () AS LONG
+   DIM hDC As ..HDC
+   ' // Get the device context for the screen
+   hDC = GetDC(NULL)
+   ' // Retrieve horizontal and vertical PPI
+   DIM xPPI AS LONG = GetDeviceCaps(hDC, LOGPIXELSX)
+   ' // Release the device context
+   ReleaseDC(NULL, hDC)
+   RETURN xPPI
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DesktopGetPPIY () AS LONG
+   DIM hDC As ..HDC
+   ' // Get the device context for the screen
+   hDC = GetDC(NULL)
+   ' // Retrieve horizontal and vertical PPI
+   DIM yPPI AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
+   ' // Release the device context
+   ReleaseDC(NULL, hDC)
+   RETURN yPPI
+END FUNCTION
+' ========================================================================================
+
+' ########################################################################################
+'                                *** Display procedures ***
+' ########################################################################################
+
+' ========================================================================================
+' Returns the width, in pixels, of the current display device on the computer on which the
+' calling thread is running. Contrarily to GetSystemMetrics or GetDeviceCaps, it returns
+' the real width even when it is called from an application that is not DPI aware, e.g. an
+' application running virtualized in a monitor 1920 pixels width and a DPI of 192, will
+' return 960 pixels if it calls GetSystemMetrics or GetDeviceCaps, but will return 1920
+' pixels calling EnumDisplaySettingsW.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DisplayGetPixelsWidth () AS DWORD
+   DIM dm AS DEVMODEW
+   dm.dmSize = SIZEOF(dm)
+   EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, @dm)
+   FUNCTION = dm.dmPelsWidth
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Returns the height, in pixels, of the current display device on the computer on which the
+' calling thread is running.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DisplayGetPixelsHeight () AS DWORD
+   DIM dm AS DEVMODEW
+   dm.dmSize = SIZEOF(dm)
+   EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, @dm)
+   FUNCTION = dm.dmPelsHeight
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Returns the color resolution, in bits per pixel, of the display device.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DisplayGetBitsPerPixel () AS DWORD
+   DIM dm AS DEVMODEW
+   dm.dmSize = SIZEOF(dm)
+   EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, @dm)
+   FUNCTION = dm.dmBitsPerPel
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Returns the frequency, in hertz (cycles per second), of the display device in a
+' particular mode. This value is also known as the display device's vertical refresh rate.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.DisplayGetFrequency () AS DWORD
+   DIM dm AS DEVMODEW
+   dm.dmSize = SIZEOF(dm)
+   EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, @dm)
+   FUNCTION = dm.dmDisplayFrequency
+END FUNCTION
+' ========================================================================================
+
+' ########################################################################################
+'                                  *** DPI Ratios ***
+' ########################################################################################
+
+' ========================================================================================
 ' Retrieves the desktop horizontal scaling ratio.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ScaleRX () AS SINGLE
@@ -2562,52 +2761,6 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ryRatio () AS SINGLE
    RETURN m_ry
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Make a Dialog stabilized (non-closeable).
-' ========================================================================================
-PRIVATE FUNCTION CDialog.DialogStabilize () AS BOOLEAN
-   ' // Get the system menu handle
-   DIM hMenu AS HMENU = GetSystemMenu(m_hDlg, FALSE)
-   IF hMenu = NULL THEN RETURN FALSE
-   ' // Get the number of menu items
-   DIM cbItems AS LONG = GetMenuItemCount(hMenu)
-   IF cbItems = 0 THEN RETURN FALSE
-   ' // Remove the close menu item
-   IF RemoveMenu(hMenu, cbItems - 1, MF_REMOVE OR MF_BYPOSITION) = 0 THEN RETURN FALSE
-   ' // Remove the separator line
-   IF RemoveMenu(hMenu, cbItems - 2, MF_REMOVE OR MF_BYPOSITION) = 0 THEN RETURN FALSE
-   ' // Redraw the menu (this refreshes the caption bar, dimming the X button)
-   DrawMenuBar(m_hDlg)
-   ' // Flags the dialog as stabilized
-   m_IsStabilized = TRUE
-   RETURN TRUE
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Make a Dialog non stable (closeable).
-' ========================================================================================
-PRIVATE FUNCTION CDialog.DialogNonStable () AS BOOLEAN
-   GetSystemMenu(m_hDlg, TRUE)
-   DrawMenuBar(m_hDlg)
-   m_IsStabilized = FALSE
-   RETURN TRUE
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Returns true if the dialog is stabilized; otherwise, false.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.IsDialogStabilized () AS BOOLEAN
-   RETURN m_IsStabilized
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Returns true if the dialog is stabilized; otherwise, false.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.IsDialogNonStable () AS BOOLEAN
-   RETURN NOT m_IsStabilized
 END FUNCTION
 ' ========================================================================================
 

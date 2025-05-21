@@ -121,14 +121,14 @@ Public:
    DECLARE FUNCTION GetItemPosition (BYVAL i AS LONG) AS POINT
    DECLARE FUNCTION GetItemRect (BYVAL i AS LONG, BYREF rc AS RECT, BYVAL code AS LONG) AS BOOLEAN
    DECLARE FUNCTION GetItemRect (BYVAL i AS LONG, BYVAL code AS LONG) AS RECT
-   DECLARE FUNCTION GetItemSpacing (BYVAL fSmall AS LONG) AS DWORD
+   DECLARE FUNCTION GetItemSpacing (BYVAL fSmall AS BOOLEAN) AS DWORD
    DECLARE FUNCTION GetItemState (BYVAL i AS LONG, BYVAL mask AS LONG) AS UINT
    DECLARE SUB GetItemText (BYVAL i AS LONG, BYVAL iSubItem AS LONG, BYVAL pwszText AS WSTRING PTR, BYVAL cchTextMax AS LONG = MAX_PATH + 1)
    DECLARE FUNCTION GetTextW (BYVAL i AS LONG, BYVAL iSubItem AS LONG, BYVAL cchTextMax AS LONG = MAX_PATH + 1) AS DWSTRING
    DECLARE FUNCTION GetNextItem (BYVAL iStart AS LONG, BYVAL flags AS UINT) AS LONG
    DECLARE FUNCTION GetSelection () AS LONG
    DECLARE FUNCTION GetFocusedItem () AS LONG
-   DECLARE FUNCTION GetNextItemIndex (BYREF plvii AS LVITEMINDEX, BYVAL flags AS LONG) AS LONG
+   DECLARE FUNCTION GetNextItemIndex (BYREF plvii AS LVITEMINDEX, BYVAL flags AS ..LPARAM) AS LONG
    DECLARE FUNCTION GetNumberOfWorkAreas () AS DWORD
    DECLARE FUNCTION GetOrigin (BYREF ptOrg AS POINT) AS BOOLEAN
    DECLARE FUNCTION GetOrigin () AS POINT
@@ -169,7 +169,7 @@ Public:
    DECLARE FUNCTION AppendItem (BYVAL iImage AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    DECLARE FUNCTION InsertMarkHitTest (BYREF pt AS POINT, BYREF vim AS LVINSERTMARK) AS BOOLEAN
    DECLARE FUNCTION IsGroupViewEnabled () AS BOOLEAN
-   DECLARE FUNCTION IsItemVisible (BYVAL index AS DWORD) AS BOOLEAN
+   DECLARE FUNCTION IsItemVisible (BYVAL index AS UINT) AS BOOLEAN
    DECLARE FUNCTION MapIDToIndex (BYVAL id AS UINT) AS UINT
    DECLARE FUNCTION MapIndexToID (BYVAL index AS UINT) AS UINT
    DECLARE FUNCTION RedrawItems (BYVAL iFirst AS LONG, BYVAL iLast AS LONG) AS BOOLEAN
@@ -236,7 +236,7 @@ Public:
    DECLARE FUNCTION GetColumnCount () AS LONG
    DECLARE FUNCTION GetHeaderText (BYVAL iCol AS LONG, BYVAL cchTextMax AS LONG = MAX_PATH + 1) AS DWSTRING
    DECLARE FUNCTION GetColumnOrder (BYVAL iCol AS LONG) AS LONG
-   DECLARE FUNCTION GetOrderArray (BYVAL iSize AS DWORD, BYVAL pi AS LONG PTR) AS LONG
+   DECLARE FUNCTION GetOrderArray (BYVAL iCount AS DWORD, BYVAL pi AS LONG PTR) AS LONG
    DECLARE FUNCTION GetTooltipsFont () AS HFONT
    DECLARE SUB SetTooltipsFont (BYVAL hFont AS HFONT = NULL, BYVAL fRedraw AS BOOLEAN = FALSE)
    DECLARE FUNCTION SetHeaderFont (BYREF wszFaceName AS WSTRING, BYVAL lPointSize AS LONG, _
@@ -837,7 +837,7 @@ END FUNCTION
 ' ========================================================================================
 ' Determines the spacing between items in a list-view control.
 ' ========================================================================================
-PRIVATE FUNCTION CListView.GetItemSpacing (BYVAL fSmall AS LONG) AS DWORD
+PRIVATE FUNCTION CListView.GetItemSpacing (BYVAL fSmall AS BOOLEAN) AS DWORD
    RETURN SendMessageW(m_hCtl, LVM_GETITEMSPACING, fSmall, 0)
 END FUNCTION
 ' ========================================================================================
@@ -908,8 +908,8 @@ END FUNCTION
 ' Gets the index of the item in a particular list-view control that has the specified
 ' properties and relationship to another specific item.
 ' ========================================================================================
-PRIVATE FUNCTION CListView.GetNextItemIndex (BYREF plvii AS LVITEMINDEX, BYVAL flags AS LONG) AS LONG
-   RETURN SendMessageW(m_hCtl, LVM_GETNEXTITEMINDEX, CAST(WPARAM, @plvii), MAKELONG(flags, 0))
+PRIVATE FUNCTION CListView.GetNextItemIndex (BYREF plvii AS LVITEMINDEX, BYVAL flags AS ..LPARAM) AS LONG
+   RETURN SendMessageW(m_hCtl, LVM_GETNEXTITEMINDEX, CAST(WPARAM, @plvii), flags)
 END FUNCTION
 ' ========================================================================================
 
@@ -1298,7 +1298,7 @@ END FUNCTION
 ' ========================================================================================
 ' Indicates whether an item in the list-view control is visible.
 ' ========================================================================================
-PRIVATE FUNCTION CListView.IsItemVisible (BYVAL index AS DWORD) AS BOOLEAN
+PRIVATE FUNCTION CListView.IsItemVisible (BYVAL index AS UINT) AS BOOLEAN
    RETURN SendMessageW(m_hCtl, LVM_ISITEMVISIBLE, index, 0)
 END FUNCTION
 ' ========================================================================================
@@ -1947,10 +1947,10 @@ END FUNCTION
 ' ========================================================================================
 ' Gets the current left-to-right order of items in the header of a listview control.
 ' ========================================================================================
-PRIVATE FUNCTION CListView.GetOrderArray (BYVAL iSize AS DWORD, BYVAL pi AS LONG PTR) AS LONG
+PRIVATE FUNCTION CListView.GetOrderArray (BYVAL iCount AS DWORD, BYVAL pi AS LONG PTR) AS LONG
    DIM hLvHeader AS HWND = CAST(HWND, SendMessageW(m_hCtl, LVM_GETHEADER, 0, 0))
    IF hLvHeader = 0 THEN RETURN 0
-   RETURN SendMessageW(hLvHeader, HDM_GETORDERARRAY, iSize, CAST(LPARAM, pi))
+   RETURN SendMessageW(hLvHeader, HDM_GETORDERARRAY, iCount, CAST(LPARAM, pi))
 END FUNCTION
 ' ========================================================================================
 

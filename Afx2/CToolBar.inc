@@ -148,7 +148,7 @@ Public:
    DECLARE FUNCTION SetState (BYVAL idButton AS LONG, BYVAL fState AS SHORT) AS BOOLEAN
    DECLARE SUB SetStyle (BYVAL dwStyle AS DWORD)
    DECLARE SUB SetToolTips (BYVAL hwndToolTip AS HWND)
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS DWORD) AS DWORD
+   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS DWORD
    DECLARE SUB SetWindowTheme (BYVAL pwszTheme AS WSTRING PTR)
    DECLARE SUB MakeOpaque ()
    DECLARE FUNCTION GetObject () AS IDropTarget PTR
@@ -1070,7 +1070,7 @@ END SUB
 ' change the character set used by the control at run time rather than having to re-create
 ' the control. Returns the previous Unicode format flag for the control.
 ' ========================================================================================
-PRIVATE FUNCTION CToolBar.SetUnicodeFormat (BYVAL fUnicode AS DWORD) AS DWORD
+PRIVATE FUNCTION CToolBar.SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS DWORD
    FUNCTION = SendMessageW(m_hCtl, TB_SETUNICODEFORMAT, cast(WPARAM, fUnicode), 0)
 END FUNCTION
 ' ========================================================================================

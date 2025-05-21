@@ -93,21 +93,36 @@ Public:
    DECLARE SUB LimitText (BYVAL chLimit AS LONG)
    DECLARE SUB ResetContent
    DECLARE FUNCTION SelectItemData (BYVAL indexStart AS LONG, BYVAL pData AS LRESULT) AS LONG
-   DECLARE FUNCTION SelectString (BYVAL Index AS DWORD, BYVAL pwszText AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION SelectString (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION SelectString (BYVAL index AS LONG) AS LONG
    DECLARE FUNCTION SetCueBannerText (BYVAL pwszText AS WSTRING PTR) AS LONG
-   DECLARE FUNCTION SetCurSel (BYVAL Index AS DWORD) AS LONG
+   DECLARE FUNCTION SetCurSel (BYVAL Index AS LONG) AS LONG
    DECLARE FUNCTION SetDroppedWidth (BYVAL nWidth AS LONG) AS LONG
    DECLARE FUNCTION SetEditSel (BYVAL nStart AS INTEGER, BYVAL nEnd AS INTEGER) AS LONG
    DECLARE FUNCTION SetExtendedUI (BYVAL flags AS UINT) AS LONG
    DECLARE SUB SetHorizontalExtent (BYVAL nWidth AS LONG)
-   DECLARE FUNCTION SetItemData (BYVAL index AS DWORD, BYVAL nData AS LPARAM) AS LONG
+   DECLARE FUNCTION SetItemData (BYVAL index AS LONG, BYVAL nData AS LPARAM) AS LONG
    DECLARE FUNCTION SetItemHeight (BYVAL index AS LONG, BYVAL nHeight AS LONG) AS LONG
    DECLARE FUNCTION SetLocale (BYVAL lcid AS LONG) AS LONG
    DECLARE FUNCTION SetMinVisible (BYVAL iMinVisible AS LONG) AS LONG
    DECLARE FUNCTION SetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
-   DECLARE FUNCTION SetTopIndex (BYVAL index AS DWORD) AS LONG
+   DECLARE FUNCTION SetTopIndex (BYVAL index AS LONG) AS LONG
    DECLARE SUB ShowDropDown
    DECLARE SUB HideDropDown
+   DECLARE FUNCTION UnselectString () AS LONG
+
+   ' // To mimic PowerBasic names
+   DECLARE FUNCTION Add (BYVAL pwszText AS WSTRING PTR) AS LONG   ' // same as AddString
+   DECLARE FUNCTION Delete_ (BYVAL Index AS LONG) AS LONG   ' // same as DeleteString
+   DECLARE FUNCTION Find (BYVAL indexStart AS LONG, BYVAL pwszString AS WSTRING PTR) AS LONG   ' // same as FindString
+   DECLARE FUNCTION FindExact (BYVAL indexStart AS LONG, BYVAL pwszSearchString AS WSTRING PTR) AS LONG   ' // same as FindStringExact
+   DECLARE FUNCTION GetSelCount () AS LONG
+   DECLARE FUNCTION GetSelect () AS LONG
+   DECLARE FUNCTION GetState (BYVAL item AS LONG) AS BOOLEAN
+   DECLARE FUNCTION Insert (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG   ' // same as InsertString
+   DECLARE SUB Reset   ' // same as ResetContent
+   DECLARE FUNCTION Select_ (BYVAL index AS LONG) AS LONG   ' // same as SetCurSel
+   DECLARE FUNCTION Unselect () AS LONG   ' // same as UnselectString
 
 END TYPE
 ' ========================================================================================
@@ -183,11 +198,21 @@ PRIVATE FUNCTION CCombobox.AddString (BYVAL pwszText AS WSTRING PTR) AS LONG
    RETURN SendMessageW(m_hCtl, CB_ADDSTRING, 0, CAST(LPARAM, pwszText))
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.Add (BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendMessageW(m_hCtl, CB_ADDSTRING, 0, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' Deletes a string in the list box of a combo box.
 ' ========================================================================================
 PRIVATE FUNCTION CCombobox.DeleteString (BYVAL Index AS LONG) AS LONG
+   RETURN SendMessageW(m_hCtl, CB_DELETESTRING, Index, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.Delete_ (BYVAL Index AS LONG) AS LONG
    RETURN SendMessageW(m_hCtl, CB_DELETESTRING, Index, 0)
 END FUNCTION
 ' ========================================================================================
@@ -210,12 +235,22 @@ PRIVATE FUNCTION CCombobox.FindString (BYVAL start AS LONG, BYVAL pwszText AS WS
    RETURN SendMessageW(m_hCtl, CB_FINDSTRING, start, CAST(LPARAM, pwszText))
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.Find (BYVAL start AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendMessageW(m_hCtl, CB_FINDSTRING, start, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' Finds the first list box string in a combo box that matches the string specified in the
 ' start parameter.
 ' ========================================================================================
 PRIVATE FUNCTION CCombobox.FindStringExact (BYVAL start AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendMessageW(m_hCtl, CB_FINDSTRINGEXACT, start, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.FindExact (BYVAL start AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    RETURN SendMessageW(m_hCtl, CB_FINDSTRINGEXACT, start, CAST(LPARAM, pwszText))
 END FUNCTION
 ' ========================================================================================
@@ -273,6 +308,23 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CCombobox.GetCurSel () AS LONG
    RETURN SendMessageW(m_hCtl, CB_GETCURSEL, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.GetSelect () AS LONG
+   RETURN SendMessageW(m_hCtl, CB_GETCURSEL, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.GetState (BYVAL item AS LONG) AS BOOLEAN
+   DIM selItem AS LONG = SendMessageW(m_hCtl, CB_GETCURSEL, 0, 0)
+   IF selItem = item THEN RETURN TRUE ELSE RETURN FALSE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CComboBox.GetSelCount () AS LONG
+   DIM item AS LONG = SendMessageW(m_hCtl, CB_GETCURSEL, 0, 0)
+   IF item <> CB_ERR THEN RETURN 1 ELSE RETURN 0
 END FUNCTION
 ' ========================================================================================
 
@@ -410,6 +462,11 @@ PRIVATE FUNCTION CCombobox.InsertString (BYVAL Index AS LONG, BYVAL pwszText AS 
    RETURN SendMessageW(m_hCtl, CB_INSERTSTRING, Index, CAST(LPARAM, pwszText))
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.Insert (BYVAL Index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendMessageW(m_hCtl, CB_INSERTSTRING, Index, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' Limits the length of the text the user may type into the edit control of a combo box.
@@ -426,13 +483,23 @@ PRIVATE SUB CComboBox.ResetContent
    SendMessage m_hCtl, CB_RESETCONTENT, 0, 0
 END SUB
 ' ========================================================================================
+' ========================================================================================
+PRIVATE SUB CComboBox.Reset
+   SendMessage m_hCtl, CB_RESETCONTENT, 0, 0
+END SUB
+' ========================================================================================
 
 ' ========================================================================================
 ' Searches the list of a combo box for an item that begins with the characters in a
 ' specified string. If a matching item is found, it is selected and copied to the edit control.
 ' ========================================================================================
-PRIVATE FUNCTION CCombobox.SelectString (BYVAL index AS DWORD, BYVAL pwszText AS WSTRING PTR) AS LONG
+PRIVATE FUNCTION CCombobox.SelectString (BYVAL index AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    RETURN SendMessageW(m_hCtl, CB_SELECTSTRING, index, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.SelectString (BYVAL index AS LONG) AS LONG
+   RETURN SendMessageW(m_hCtl, CB_SETCURSEL, index, 0)
 END FUNCTION
 ' ========================================================================================
 
@@ -449,8 +516,23 @@ END FUNCTION
 ' into view. The text in the edit control of the combo box changes to reflect the new
 ' selection, and any previous selection in the list is removed.
 ' ========================================================================================
-PRIVATE FUNCTION CCombobox.SetCurSel (BYVAL index AS DWORD) AS LONG
+PRIVATE FUNCTION CCombobox.SetCurSel (BYVAL index AS LONG) AS LONG
    RETURN SendMessageW(m_hCtl, CB_SETCURSEL, index, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.Select_ (BYVAL index AS LONG) AS LONG
+   RETURN SendMessageW(m_hCtl, CB_SETCURSEL, index, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.UnselectString () AS LONG
+   RETURN SendMessageW(m_hCtl, CB_SETCURSEL, -1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CCombobox.Unselect () AS LONG
+   RETURN SendMessageW(m_hCtl, CB_SETCURSEL, -1, 0)
 END FUNCTION
 ' ========================================================================================
 
@@ -495,7 +577,7 @@ END SUB
 ' ========================================================================================
 ' Sets the value associated with the specified item in a combo box.
 ' ========================================================================================
-PRIVATE FUNCTION CCombobox.SetItemData (BYVAL index AS DWORD, BYVAL nData AS LPARAM) AS LONG
+PRIVATE FUNCTION CCombobox.SetItemData (BYVAL index AS LONG, BYVAL nData AS LPARAM) AS LONG
    RETURN SendMessageW(m_hCtl, CB_SETITEMDATA, index, nData)
 END FUNCTION
 ' ========================================================================================
@@ -528,13 +610,12 @@ PRIVATE FUNCTION CCombobox.SetMinVisible (BYVAL iMinVisible AS LONG) AS LONG
 END FUNCTION
 ' ========================================================================================
 
-
 ' ========================================================================================
 ' Ensures that a particular item is visible in the list box of a combo box. The system
 ' scrolls the list box contents so that either the specified it. If the message is successful,
 ' the return value is zero. If the message fails, the return value is CB_ERR.
 ' ========================================================================================
-PRIVATE FUNCTION CComboBox.SetTopIndex (BYVAL index AS DWORD) AS LONG
+PRIVATE FUNCTION CComboBox.SetTopIndex (BYVAL index AS LONG) AS LONG
    FUNCTION = SendMessageW(m_hCtl, CB_SETTOPINDEX, cast(WPARAM, index), 0)
 END FUNCTION
 ' ========================================================================================
@@ -658,7 +739,7 @@ Public:
    DECLARE CONSTRUCTOR (BYVAL pDlg AS CDialog PTR, BYVAL cID AS LONG)
    DECLARE DESTRUCTOR
 
-   DECLARE FUNCTION DeleteItem (BYVAL nIndex AS DWORD) AS LONG
+   DECLARE FUNCTION DeleteItem (BYVAL nIndex AS LONG) AS LONG
    DECLARE FUNCTION GetComboControl () AS HWND
    DECLARE FUNCTION GetEditControl () AS HWND
    DECLARE FUNCTION GetExtendedStyle () AS DWORD
@@ -679,7 +760,7 @@ END TYPE
 ' Removes an item from a ComboBoxEx control. Returns an INT value that represents the number
 ' of items remaining in the control. If iIndex is invalid, the message returns CB_ERR.
 ' ========================================================================================
-PRIVATE FUNCTION CComboBoxEx.DeleteItem (BYVAL nIndex AS DWORD) AS LONG
+PRIVATE FUNCTION CComboBoxEx.DeleteItem (BYVAL nIndex AS LONG) AS LONG
    RETURN SendMessageW(m_hCtl, CBEM_DELETEITEM, cast(WPARAM, nIndex), 0)
 END FUNCTION
 ' ========================================================================================

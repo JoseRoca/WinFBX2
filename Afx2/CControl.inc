@@ -80,6 +80,9 @@ Public:
    DECLARE FUNCTION UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
    DECLARE FUNCTION UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
 
+   DECLARE FUNCTION GetFileVersion (BYVAL pwszFileName AS WSTRING PTR) AS LONG
+   DECLARE FUNCTION ComCtlVersion () AS LONG
+
 END TYPE
 ' ========================================================================================
 
@@ -391,6 +394,35 @@ PRIVATE FUNCTION CControl.UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
    DIM hDC AS HDC = GetDC(HWND_DESKTOP)
    FUNCTION = cy / (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
    ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Returns the version of specified file multiplied by 100, e.g. 601 for version 6.01.
+' Example: DIM ver AS LONG = AfxGetFileVersion("COMCTL32.DLL")
+' ========================================================================================
+PRIVATE FUNCTION CControl.GetFileVersion (BYVAL pwszFileName AS WSTRING PTR) AS LONG
+   DIM pvsffi AS VS_FIXEDFILEINFO PTR, dwHandle AS DWORD
+   DIM cbLen AS DWORD = GetFileVersionInfoSizeW(pwszFileName, @dwHandle)
+   IF cbLen = 0 THEN EXIT FUNCTION
+   DIM pVerInfo AS HANDLE = HeapAlloc(GetProcessHeap, HEAP_ZERO_MEMORY, cbLen)
+   IF pVerInfo = NULL THEN EXIT FUNCTION
+   IF GetFileVersionInfoW(pwszFileName, dwHandle, cbLen, pVerInfo) THEN
+      IF VerQueryValueW(pVerInfo, "\", @pvsffi, @cbLen) THEN
+         DIM wMajor AS WORD = HIWORD(pvsffi->dwFileVersionMS)
+         DIM wMinor AS WORD = LOWORD(pvsffi->dwFileVersionMS)
+         FUNCTION = (wMajor + wMinor / 100) * 100
+      END IF
+   END IF
+   HeapFree(GetProcessHeap, 0, pVerInfo)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Returns the version of CommCtl32.dll multiplied by 100, e.g. 582 for version 5.82.
+' ========================================================================================
+PRIVATE FUNCTION CControl.ComCtlVersion () AS LONG
+   FUNCTION = this.GetFileVersion("COMCTL32.DLL")
 END FUNCTION
 ' ========================================================================================
 

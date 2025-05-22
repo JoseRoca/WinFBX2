@@ -33,9 +33,14 @@
 
 #pragma once
 #include once "windows.bi"
+#include once "win/windowsx.bi"
 #include once "win/commctrl.bi"
 #include once "Afx2/DWSTRING.inc"
 #include once "Afx2/CDialog.inc"
+' // conflictin defines in windowsx.bi
+#undef DeleteBitmap
+#undef GetNextSibling
+#undef GetPrevSibling
 
 NAMESPACE Afx2
 

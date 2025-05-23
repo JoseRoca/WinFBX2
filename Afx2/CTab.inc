@@ -72,7 +72,6 @@ Public:
    DECLARE FUNCTION GetText (BYVAL nTabIndex AS DWORD, BYVAL pwszText AS WSTRING PTR, BYVAL cchTextMax AS LONG) AS BOOLEAN
    DECLARE FUNCTION GetText (BYVAL nTabIndex AS DWORD) AS DWSTRING
    DECLARE FUNCTION GetToolTips () AS HWND
-   DECLARE FUNCTION GetUnicodeFormat () AS BOOLEAN
    DECLARE FUNCTION HighlightItem (BYVAL idItem AS LONG, BYVAL fHighlight AS WORD) AS LONG
    DECLARE FUNCTION HitTest (BYREF info AS TC_HITTESTINFO) AS LONG
    DECLARE FUNCTION InsertItem (BYVAL iItem AS DWORD, BYREF item AS TCITEMW) AS LONG
@@ -91,7 +90,6 @@ Public:
    DECLARE SUB SetPadding (BYVAL cx AS INTEGER, BYVAL cy AS INTEGER)
    DECLARE FUNCTION SetText (BYVAL nTabIndex AS DWORD, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
    DECLARE SUB SetToolTips (BYVAL hwndTT AS HWND)
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
 
 END TYPE
 ' ========================================================================================
@@ -291,14 +289,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Retrieves the UNICODE character format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CTab.GetUnicodeFormat () AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, TCM_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Sets the highlight state of a tab item.
 ' ========================================================================================
 PRIVATE FUNCTION CTab.HighlightItem (BYVAL idItem AS LONG, BYVAL fHighlight AS WORD) AS LONG
@@ -465,16 +455,6 @@ END FUNCTION
 PRIVATE SUB CTab.SetToolTips (BYVAL hwndTT AS HWND)
    SendMessageW m_hCtl, TCM_SETTOOLTIPS, CAsT(WPARAM, hwndTT), 0
 END SUB
-' ========================================================================================
-
-' ========================================================================================
-' Sets the Unicode character format flag for the control. This message allows you to
-' change the character set used by the control at run time rather than having to re-create
-' the control.
-' ========================================================================================
-FUNCTION CTab.SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, TCM_SETUNICODEFORMAT, fUnicode, 0)
-END FUNCTION
 ' ========================================================================================
 
 END NAMESPACE

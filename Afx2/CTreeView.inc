@@ -147,7 +147,6 @@ Public:
    DECLARE FUNCTION GetSelectedCount () AS DWORD
    DECLARE FUNCTION GetTextColor () AS COLORREF
    DECLARE FUNCTION GetToolTips () AS HWND
-   DECLARE FUNCTION GetUnicodeFormat () AS BOOLEAN
    DECLARE FUNCTION GetVisibleCount () AS UINT
    DECLARE FUNCTION HitTest (BYREF ht AS TVHITTESTINFO) AS HTREEITEM
    DECLARE FUNCTION MapAccIDToHTREEITEM (BYVAL id AS UINT) AS HTREEITEM
@@ -171,7 +170,6 @@ Public:
    DECLARE FUNCTION SetScrollTime (BYVAL uMaxScrollTime AS UINT) AS UINT
    DECLARE FUNCTION SetTextColor (BYVAL clrText AS COLORREF) AS COLORREF
    DECLARE FUNCTION SetToolTips (BYVAL hwndTT AS HWND) AS HWND
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
    DECLARE FUNCTION ShowInfoTip (BYVAL hitem AS HTREEITEM) AS DWORD
    DECLARE FUNCTION SortChildren (BYVAL hitem AS HTREEITEM, BYVAL fRecurse AS BOOLEAN) AS BOOLEAN
    DECLARE FUNCTION SortChildrenCB (BYVAL psort AS TVSORTCB PTR, BYVAL fRecurse AS BOOLEAN) AS BOOLEAN
@@ -1026,14 +1024,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Retrieves the Unicode character format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CTreeView.GetUnicodeFormat () AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, TVM_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Obtains the number of items that can be fully visible in the client window of a
 ' treeview control.
 ' ========================================================================================
@@ -1237,14 +1227,6 @@ END FUNCTION
 'PRIVATE FUNCTION CTreeView.SetBorder (BYVAL dwFlags AS DWORD, BYVAL xBorder AS SHORT, BYVAL yBorder AS SHORT) AS LONG
 '   RETURN SendMessageW(m_hCtl, TVM_SETBORDER, dwFlags, MAKELONG(xBorder, yBorder))
 'END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Sets the Unicode character format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CTreeView.SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, TVM_SETUNICODEFORMAT, fUnicode, 0)
-END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================

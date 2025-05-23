@@ -200,7 +200,7 @@ END SUB
 ' - bState = A BOOLEAN that specifies the state. TRUE to set the flag, otherwise FALSE.
 ' ========================================================================================
 PRIVATE SUB CButton.SetDontClick (BYVAL bState AS BOOLEAN)
-   SendMessageW(m_hCtl, BM_SETDONTCLICK, cast(WPARAM, bState), 0)
+   SendMessageW(m_hCtl, BM_SETDONTCLICK, bState, 0)
 END SUB
 ' ========================================================================================
 ' ========================================================================================
@@ -229,7 +229,7 @@ END FUNCTION
 ' associated with the button, if any; otherwise, it is NULL.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.SetBitmap (BYVAL hbmp AS HBITMAP) AS HBITMAP
-   RETURN cast(HBITMAP, SendMessageW(m_hCtl, BM_SETIMAGE, cast(WPARAM, IMAGE_BITMAP), cast(LPARAM, hbmp)))
+   RETURN cast(HBITMAP, SendMessageW(m_hCtl, BM_SETIMAGE, IMAGE_BITMAP, cast(LPARAM, hbmp)))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -237,7 +237,7 @@ END FUNCTION
 ' associated with the button, if any; otherwise, it is NULL.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.SetIcon (BYVAL hIcon AS HICON) AS HICON
-   RETURN cast(..HICON, SendMessageW(m_hCtl, BM_SETIMAGE, cast(WPARAM, IMAGE_ICON), cast(LPARAM, hIcon)))
+   RETURN cast(..HICON, SendMessageW(m_hCtl, BM_SETIMAGE, IMAGE_ICON, cast(LPARAM, hIcon)))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -245,28 +245,28 @@ END FUNCTION
 ' the image previously associated with the button, if any; otherwise, it is NULL.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.SetImage (BYVAL ImageType AS DWORD, BYVAL hImage AS HANDLE) AS HANDLE
-   RETURN cast(HANDLE, SendMessageW(m_hCtl, BM_SETIMAGE, cast(WPARAM, ImageType), cast(LPARAM, hImage)))
+   RETURN cast(HANDLE, SendMessageW(m_hCtl, BM_SETIMAGE, ImageType, cast(LPARAM, hImage)))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Deletes a bitmap associated with a button. Returns TRUE or FALSE.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.DeleteBitmap () AS BOOLEAN
-   RETURN DeleteObject(cast(HGDIOBJ, SendMessageW(m_hCtl, BM_SETIMAGE, cast(WPARAM, IMAGE_BITMAP), cast(LPARAM, NULL))))
+   RETURN DeleteObject(cast(HGDIOBJ, SendMessageW(m_hCtl, BM_SETIMAGE, IMAGE_BITMAP, cast(LPARAM, NULL))))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Deletes an icon associated with a button. Returns TRUE or FALSE.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.DeleteIcon () AS BOOLEAN
-   RETURN DeleteObject(cast(HGDIOBJ, SendMessageW(m_hCtl, BM_SETIMAGE, cast(WPARAM, IMAGE_ICON), cast(LPARAM, NULL))))
+   RETURN DeleteObject(cast(HGDIOBJ, SendMessageW(m_hCtl, BM_SETIMAGE, IMAGE_ICON, cast(LPARAM, NULL))))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Deletes an image (icon or bitmap) associated a button. Returns TRUE or FALSE.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.DeleteImage (BYVAL ImageType AS DWORD) AS BOOLEAN
-   RETURN DeleteObject(cast(HGDIOBJ, SendMessageW(m_hCtl, BM_SETIMAGE, cast(WPARAM, ImageType), cast(LPARAM, NULL))))
+   RETURN DeleteObject(cast(HGDIOBJ, SendMessageW(m_hCtl, BM_SETIMAGE, ImageType, cast(LPARAM, NULL))))
 END FUNCTION
 ' ========================================================================================
 

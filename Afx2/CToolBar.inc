@@ -104,7 +104,6 @@ Public:
    DECLARE FUNCTION GetStyle () AS DWORD
    DECLARE FUNCTION GetTextRows () AS DWORD
    DECLARE FUNCTION GetTooltips () AS HWND
-   DECLARE FUNCTION GetUnicodeFormat () AS DWORD
    DECLARE FUNCTION HideButton (BYVAL idButton AS LONG, BYVAL fShow AS SHORT) AS BOOLEAN
    DECLARE FUNCTION HitTest (BYVAL pptHitTest AS POINT PTR) AS LONG
    DECLARE FUNCTION Indeterminate (BYVAL idButton AS LONG, BYVAL fIndeterminate AS SHORT) AS BOOLEAN
@@ -148,7 +147,6 @@ Public:
    DECLARE FUNCTION SetState (BYVAL idButton AS LONG, BYVAL fState AS SHORT) AS BOOLEAN
    DECLARE SUB SetStyle (BYVAL dwStyle AS DWORD)
    DECLARE SUB SetToolTips (BYVAL hwndToolTip AS HWND)
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS DWORD
    DECLARE SUB SetWindowTheme (BYVAL pwszTheme AS WSTRING PTR)
    DECLARE SUB MakeOpaque ()
    DECLARE FUNCTION GetObject () AS IDropTarget PTR
@@ -663,14 +661,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Retrieves the Unicode character format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CToolBar.GetUnicodeFormat () AS DWORD
-   FUNCTION = SendMessageW(m_hCtl, TB_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Hides or shows the specified button in a toolbar.
 ' Returns TRUE if successful, or FALSE otherwise.
 ' ========================================================================================
@@ -1063,16 +1053,6 @@ END SUB
 PRIVATE SUB CToolBar.SetToolTips (BYVAL hwndToolTip AS HWND)
    SendMessageW(m_hCtl, TB_SETTOOLTIPS, CAST(WPARAM, hwndToolTip), 0)
 END SUB
-' ========================================================================================
-
-' ========================================================================================
-' Sets the Unicode character format flag for the control. This message allows you to
-' change the character set used by the control at run time rather than having to re-create
-' the control. Returns the previous Unicode format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CToolBar.SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS DWORD
-   FUNCTION = SendMessageW(m_hCtl, TB_SETUNICODEFORMAT, cast(WPARAM, fUnicode), 0)
-END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================

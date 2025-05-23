@@ -75,7 +75,6 @@ Public:
    DECLARE FUNCTION GetTic (BYVAL iTic AS DWORD) AS LONG
    DECLARE FUNCTION GetTicPos (BYVAL iTic AS DWORD) AS LONG
    DECLARE FUNCTION GetTooltips () AS HWND
-   DECLARE FUNCTION GetUnicodeFormat () AS BOOLEAN
    DECLARE FUNCTION SetBuddy (BYVAL fLocation AS BOOLEAN, BYVAL hwndBuddy AS HWND) AS HWND
    DECLARE FUNCTION SetLineSize (BYVAL lLineSize AS LONG) AS LONG
    DECLARE FUNCTION SetPageSize (BYVAL lPageSize AS LONG) AS LONG
@@ -91,7 +90,6 @@ Public:
    DECLARE SUB SetTicFreq (BYVAL wFreq AS WORD)
    DECLARE FUNCTION SetTipSide (BYVAL fLocation AS LONG) AS LONG
    DECLARE SUB SetToolTips (BYVAL hwndTT AS HWND)
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
 
 END TYPE
 ' ========================================================================================
@@ -318,14 +316,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Retrieves the Unicode character format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CTrackbar.GetUnicodeFormat () AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, TBM_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Assigns a window as the buddy window for a trackbar control. Trackbar buddy windows are
 ' automatically displayed in a location relative to the control's orientation (horizontal
 ' or vertical).
@@ -458,16 +448,6 @@ END FUNCTION
 PRIVATE SUB CTrackbar.SetToolTips (BYVAL hwndTT AS HWND)
    SendMessageW(m_hCtl, TBM_SETTOOLTIPS, cast(WPARAM, hwndTT), 0)
 END SUB
-' ========================================================================================
-
-' ========================================================================================
-' Sets the Unicode character format flag for the control. This message allows you to
-' change the character set used by the control at run time rather than having to re-create
-' the control. Returns the previous Unicode format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CTrackbar.SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, TBM_SETUNICODEFORMAT, fUnicode, 0)
-END FUNCTION
 ' ========================================================================================
 
 END NAMESPACE

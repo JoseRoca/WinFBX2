@@ -745,13 +745,11 @@ Public:
    DECLARE FUNCTION GetExtendedStyle () AS DWORD
    DECLARE FUNCTION GetImageList () AS HIMAGELIST
    DECLARE FUNCTION GetItem (BYREF CBItem AS COMBOBOXEXITEMW) AS BOOLEAN
-   DECLARE FUNCTION GetUnicodeFormat () AS DWORD
    DECLARE FUNCTION HasEditChanged () AS BOOLEAN
    DECLARE FUNCTION InsertItem (BYREF CBItem AS COMBOBOXEXITEMW) AS LONG
    DECLARE FUNCTION SetExtendedStyle (BYVAL dwMask AS DWORD, BYVAL dwExStyle AS DWORD) AS DWORD
    DECLARE FUNCTION SetImageList (BYVAL himl AS HIMAGELIST) AS HIMAGELIST
    DECLARE FUNCTION SetItem (BYREF CBItem AS COMBOBOXEXITEMW) AS BOOLEAN
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
    DECLARE SUB SetWindowTheme (BYVAL pwszStyle AS WSTRING PTR)
 
 END TYPE
@@ -808,15 +806,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Returns the Unicode format flag for the control. If this value is nonzero, the control
-' is using Unicode characters. If this value is zero, the control is using ANSI characters.
-' ========================================================================================
-PRIVATE FUNCTION CComboBoxEx.GetUnicodeFormat () AS DWORD
-   RETURN SendMessageW(m_hCtl, CBEM_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Determines whether or not the user has changed the text of a ComboBoxEx edit control.
 ' Returns TRUE or FALSE.
 ' ========================================================================================
@@ -858,16 +847,6 @@ END FUNCTION
 PRIVATE FUNCTION CComboBoxEx.SetItem (BYREF CBItem AS COMBOBOXEXITEMW) AS BOOLEAN
    IF VARPTR(CBItem) = 0 THEN RETURN FALSE
    RETURN SendMessageW(m_hCtl, CBEM_SETITEMW, 0, cast(LPARAM, @CBItem))
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Sets the UNICODE character format flag for the control. This message enables you to
-' change the character set used by the control at run time rather than having to re-create
-' the control. Returns the previous Unicode format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CComboBoxEx.SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, CBEM_SETUNICODEFORMAT, fUnicode, 0)
 END FUNCTION
 ' ========================================================================================
 

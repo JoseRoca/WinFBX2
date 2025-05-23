@@ -77,7 +77,6 @@ Public:
    DECLARE FUNCTION GetOverflowRect () AS RECT
    DECLARE FUNCTION GetStateImageList () AS HIMAGELIST
    DECLARE FUNCTION GetText (BYVAL iCol AS LONG, BYVAL cchTextMax AS LONG = 0) AS DWSTRING
-   DECLARE FUNCTION GetUnicodeFormat () AS BOOLEAN
    DECLARE FUNCTION HitTest (BYREF hdhti AS HDHITTESTINFO) AS LONG
    DECLARE FUNCTION HitTest () AS HDHITTESTINFO
    DECLARE FUNCTION InsertItem (BYVAL i AS DWORD, BYREF hdi AS HDITEM) AS LONG
@@ -96,7 +95,6 @@ Public:
    DECLARE FUNCTION SetOrderArray (BYVAL iSize AS DWORD, BYVAL lpiArray AS LONG PTR) AS LONG
    DECLARE FUNCTION SetStateImageList (BYVAL himl AS HIMAGELIST) AS HIMAGELIST
    DECLARE FUNCTION SetText (BYVAL nItem AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS LONG
 
 END TYPE
 ' ========================================================================================
@@ -341,14 +339,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the Unicode character format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CHeader.GetUnicodeFormat () AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, HDM_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Gets the text of the specified column.
 ' ========================================================================================
 PRIVATE FUNCTION CHeader.GetText (BYVAL iCol AS LONG, BYVAL cchTextMax AS LONG = 0) AS DWSTRING
@@ -521,15 +511,6 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CHeader.SetStateImageList (BYVAL himl AS HIMAGELIST) AS HIMAGELIST
    RETURN CAST(HIMAGELIST, SendMessageW(m_hCtl, HDM_SETIMAGELIST, HDSIL_STATE, CAST(LPARAM, himl)))
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Sets the UNICODE character format flag for the control. This message allows you to
-' change the character set used by the control at run time rather than having to re-create the control.
-' ========================================================================================
-PRIVATE FUNCTION CHeader.SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS LONG
-   RETURN SendMessageW(m_hCtl, HDM_SETUNICODEFORMAT, fUnicode, 0)
 END FUNCTION
 ' ========================================================================================
 

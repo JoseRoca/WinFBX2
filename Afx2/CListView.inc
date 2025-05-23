@@ -147,7 +147,6 @@ Public:
    DECLARE FUNCTION GetTileViewInfo () AS LVTILEVIEWINFO
    DECLARE FUNCTION GetToolTips () AS HWND
    DECLARE FUNCTION GetTopIndex () AS LONG
-   DECLARE FUNCTION GetUnicodeFormat () AS BOOLEAN
    DECLARE FUNCTION GetView () AS DWORD
    DECLARE FUNCTION GetViewRect (BYREF rc AS RECT) AS BOOLEAN
    DECLARE FUNCTION GetViewRect () AS RECT
@@ -214,7 +213,6 @@ Public:
    DECLARE FUNCTION SetTileInfo (BYREF lvtinfo AS LVTILEINFO) AS BOOLEAN
    DECLARE FUNCTION SetTileViewInfo (BYREF lvtvinfo AS LVTILEVIEWINFO) AS BOOLEAN
    DECLARE FUNCTION SetToolTips (BYVAL hwndToolTip AS HWND) AS HWND
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
    DECLARE FUNCTION SetView (BYVAL iView AS DWORD) AS LONG
    DECLARE SUB SetWorkAreas (BYVAL nWorkAreas AS LONG, BYREF rc AS RECT)
    DECLARE FUNCTION SortGroups (BYVAL _pfnGroupCompare AS PFNLVGROUPCOMPARE PTR, BYVAL _plv AS ANY PTR) AS BOOLEAN
@@ -1064,14 +1062,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the Unicode character format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetUnicodeFormat () AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, LVM_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Gets the current view of a list-view control.
 ' ========================================================================================
 PRIVATE FUNCTION CListView.GetView () AS DWORD
@@ -1699,16 +1689,6 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CListView.SetToolTips (BYVAL hwndToolTip AS HWND) AS HWND
    RETURN CAST(HWND, SendMessageW(m_hCtl, LVM_SETTOOLTIPS, CAST(LPARAM, hwndToolTip), 0))
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Sets the Unicode character format flag for the control. This message allows you to
-' change the character set used by the control at run time rather than having to re-create
-' the control.
-' ========================================================================================
-PRIVATE FUNCTION CListView.SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, LVM_SETUNICODEFORMAT, fUnicode, 0)
 END FUNCTION
 ' ========================================================================================
 

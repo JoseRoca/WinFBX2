@@ -67,7 +67,6 @@ Public:
    DECLARE FUNCTION GetTextLength (BYVAL nPart AS DWORD) AS LONG
    DECLARE SUB GetTipText (BYVAL nPart AS WORD, BYVAL pwszText AS WSTRING PTR, BYVAL wMaxLen AS WORD)
    DECLARE FUNCTION GetTipText (BYVAL nPart AS WORD) AS DWSTRING
-   DECLARE FUNCTION GetUnicodeFormat () AS DWORD
    DECLARE FUNCTION IsSimple () AS BOOLEAN
    DECLARE FUNCTION SetBkColor (BYVAL clrBk AS COLORREF) AS COLORREF
    DECLARE SUB SetFont (BYVAL hFont AS HFONT, BYVAL fRedraw AS LONG = FALSE)
@@ -76,7 +75,6 @@ Public:
    DECLARE FUNCTION SetParts (BYVAL dwParts AS DWORD, BYVAL rgWidths AS LONG PTR) AS BOOLEAN
    DECLARE FUNCTION SetText (BYVAL nPart AS LONG, BYVAL pwszText AS WSTRING PTR, BYVAL uType AS DWORD = 0) AS BOOLEAN
    DECLARE SUB SetTipText (BYVAL nPart AS LONG, BYVAL pwszTipText AS WSTRING PTR)
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS DWORD) AS DWORD
    DECLARE SUB Simple (BYVAL fSimple AS BOOLEAN)
 
 END TYPE
@@ -262,15 +260,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Returns the Unicode format flag for the control. If this value is nonzero, the control
-' is using Unicode characters. If this value is zero, the control is using ANSI characters.
-' ========================================================================================
-PRIVATE FUNCTION CStatusBar.GetUnicodeFormat () AS DWORD
-   FUNCTION = SendMessageW(m_hCtl, SB_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Checks a status bar control to determine if it is in simple mode.
 ' Returns TRUE if the status bar control is in simple mode, or FALSE otherwise.
 ' ========================================================================================
@@ -366,16 +355,6 @@ END FUNCTION
 PRIVATE SUB CStatusBar.SetTipText (BYVAL nPart AS LONG, BYVAL pwszTipText AS WSTRING PTR)
    SendMessageW(m_hCtl, SB_SETTIPTEXTW, cast(WPARAM, nPart), cast(LPARAM, pwszTipText))
 END SUB
-' ========================================================================================
-
-' ========================================================================================
-' Sets the Unicode character format flag for the control. This message allows you to
-' change the character set used by the control at run time rather than having to re-create
-' the control. Returns the previous Unicode format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CStatusBar.SetUnicodeFormat (BYVAL fUnicode AS DWORD) AS DWORD
-   FUNCTION = SendMessageW(m_hCtl, SB_SETUNICODEFORMAT, cast(WPARAM, fUnicode), 0)
-END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================

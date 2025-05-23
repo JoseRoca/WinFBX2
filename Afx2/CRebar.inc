@@ -79,7 +79,6 @@ Public:
    DECLARE FUNCTION GetRowHeight (BYVAL uRow AS DWORD) AS DWORD
    DECLARE FUNCTION GetTextColor () AS COLORREF
    DECLARE FUNCTION GetTooltips () AS HWND
-   DECLARE FUNCTION GetUnicodeFormat () AS LONG
    DECLARE FUNCTION HitTest (BYREF rhbt AS RBHITTESTINFO) AS LONG
    DECLARE FUNCTION IdToIndex (BYVAL uBandID AS DWORD) AS LONG
    DECLARE FUNCTION InsertBand (BYVAL nIndex AS LONG, BYREF rbbi AS REBARBANDINFOW) AS BOOLEAN
@@ -98,7 +97,6 @@ Public:
    DECLARE FUNCTION SetParent (BYVAL hwndParent AS hWND) AS HWND
    DECLARE FUNCTION SetTextColor (BYVAL clrText AS COLORREF) AS COLORREF
    DECLARE SUB SetTooltips (BYVAL hwndToolTip AS HWND)
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS DWORD
    DECLARE SUB SetWindowTheme (BYVAL pwszTheme AS WSTRING PTR)
    DECLARE FUNCTION ShowBand (BYVAL uBand AS DWORD, BYVAL fShow AS BOOLEAN) AS BOOLEAN
    DECLARE FUNCTION SizeToRect (BYVAL prc AS RECT PTR) AS BOOLEAN
@@ -366,14 +364,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Retrieves the Unicode character format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CRebar.GetUnicodeFormat () AS LONG
-   RETURN SendMessageW(m_hCtl, RB_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Determines which portion of a rebar band is at a given point on the screen, if a rebar
 ' band exists at that point.
 ' - m_hCtl: Pointer to the rebar control.
@@ -528,16 +518,6 @@ END FUNCTION
 PRIVATE SUB CRebar.SetTooltips (BYVAL hwndToolTip AS HWND)
    SendMessageW(m_hCtl, RB_SETTOOLTIPS, cast(WPARAM, hwndToolTip), 0)
 END SUB
-' ========================================================================================
-
-' ========================================================================================
-' Sets the Unicode character format flag for the control. This message allows you to
-' change the character set used by the control at run time rather than having to re-create
-' the control. Returns the previous Unicode format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CRebar.SetUnicodeFormat (BYVAL fUnicode AS BOOLEAN) AS DWORD
-   RETURN SendMessageW(m_hCtl, RB_SETUNICODEFORMAT, fUnicode, 0)
-END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================

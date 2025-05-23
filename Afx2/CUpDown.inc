@@ -62,7 +62,6 @@ Public:
    DECLARE FUNCTION GetPos32 (BYVAL pfError AS LONG PTR = NULL) AS LONG
    DECLARE FUNCTION GetRange () AS LONG
    DECLARE SUB GetRange32 (BYVAL pLow AS LONG PTR, BYVAL pHigh AS LONG PTR)
-   DECLARE FUNCTION GetUnicodeFormat () AS DWORD
    DECLARE FUNCTION SetAccel (BYVAL cAccels AS DWORD, BYREF paAccels AS UDACCEL PTR) AS BOOLEAN
    DECLARE FUNCTION SetBase (BYVAL nBase AS LONG) AS LONG
    DECLARE FUNCTION SetBuddy (BYVAL hwndBuddy AS HWND) AS HWND
@@ -70,7 +69,6 @@ Public:
    DECLARE FUNCTION SetPos32 (BYVAL nPos AS LONG) AS LONG
    DECLARE SUB SetRange (BYVAL nUpper AS SHORT, BYVAL nLower AS SHORT)
    DECLARE SUB SetRange32 (BYVAL iLow AS LONG, BYVAL iHigh AS LONG)
-   DECLARE FUNCTION SetUnicodeFormat (BYVAL fUnicode AS DWORD) AS DWORD
 
 END TYPE
 ' ========================================================================================
@@ -179,14 +177,6 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' Retrieves the Unicode character format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CUpDown.GetUnicodeFormat () AS DWORD
-   FUNCTION = SendMessageW(m_hCtl, UDM_GETUNICODEFORMAT, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Sets the acceleration for an up-down control.
 ' Returns TRUE if successful, or FALSE otherwise.
 ' ========================================================================================
@@ -245,15 +235,6 @@ END SUB
 PRIVATE SUB CUpDown.SetRange32 (BYVAL iLow AS LONG, BYVAL iHigh AS LONG)
    SendMessageW(m_hCtl, UDM_SETRANGE32, cast(WPARAM, iLow), cast(LPARAM, iHigh))
 END SUB
-' ========================================================================================
-
-' ========================================================================================
-' Sets the Unicode character format flag for the control.
-' Returns the previous Unicode format flag for the control.
-' ========================================================================================
-PRIVATE FUNCTION CUpDown.SetUnicodeFormat (BYVAL fUnicode AS DWORD) AS DWORD
-   FUNCTION = SendMessageW(m_hCtl, UDM_SETUNICODEFORMAT, cast(WPARAM, fUnicode), 0)
-END FUNCTION
 ' ========================================================================================
 
 END NAMESPACE

@@ -749,8 +749,8 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
    ' // Don't allow negative values for the styles
    IF dwStyle = -1 THEN dwStyle = 0
    IF dwExStyle = -1 THEN dwExStyle = 0
-   ' // Make sure that the control has the WS_CHILD style
-   dwStyle = dwStyle OR WS_CHILD
+   ' // Make sure that the control has the WS_CHILD style and that it is visible
+   dwStyle = dwStyle OR WS_CHILD OR WS_VISIBLE
 
    ' // Create the control
    DIM rc AS RECT
@@ -2728,7 +2728,7 @@ PRIVATE FUNCTION CDialog.ControlSetIcon (BYVAL cId AS LONG, BYREF wszImage AS WS
    DIM wszClassName AS WSTRING * 260
    DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
    IF hCtl = NULL THEN RETURN FALSE
-   GetClassName(hCtl, @wszClassName, 260)
+   GetClassNameW(hCtl, wszClassName, SIZEOF(wszClassName))
    wszClassName = UCASE(wszClassName)
    SELECT CASE wszClassName
       CASE "BUTTON"
@@ -2777,10 +2777,10 @@ END FUNCTION
 ' The old image handle is released.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlSetBitmap (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
-   DIM wszClassName AS WSTRING * 260
    DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
    IF hCtl = NULL THEN RETURN FALSE
-   GetClassName(hCtl, @wszClassName, 260)
+   DIM wszClassName AS WSTRING * 260
+   GetClassNameW(hCtl, wszClassName, SIZEOF(wszClassName))
    wszClassName = UCASE(wszClassName)
    SELECT CASE wszClassName
       CASE "BUTTON"

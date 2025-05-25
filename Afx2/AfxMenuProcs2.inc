@@ -1,6 +1,6 @@
 ' ########################################################################################
 ' Platform: Microsoft Windows
-' Filename: AfxMenuProc2.inc
+' Filename: AfxMenuProcs2.inc
 ' Purpose:  Windows Menus.
 ' Compiler: Free Basic 32 & 64 bit
 ' Copyright (c) 2025 José Roca
@@ -23,6 +23,13 @@
 ' OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
+
+#if not defined(UNICODE)
+   #define UNICODE
+#endif
+#if not defined(_WIN32_WINNT)
+   #define _WIN32_WINNT &h0602
+#endif
 
 #pragma once
 #include once "windows.bi"

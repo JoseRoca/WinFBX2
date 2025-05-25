@@ -24,6 +24,7 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
+#pragma once
 #if not defined(UNICODE)
    #define UNICODE
 #endif
@@ -31,13 +32,12 @@
    #define _WIN32_WINNT &h0602
 #endif
 
-#pragma once
 #include once "Afx2/RGB_Colors.bi"
 #include once "windows.bi"
 #include once "win/commctrl.bi"
 #include once "win/uxtheme.bi"
 #include once "win/richedit.bi"
-#include once "Afx2/AfxFontProcs2.inc"
+#include once "Afx2/DWSTRING.inc"
 USING Afx2
 
 ' // For compatibility with the Power Basic syntax
@@ -48,6 +48,17 @@ USING Afx2
 #define CBNMHWND(wp, lp) cast(HWND, lp)
 #define CBNMID(wp, lp) HIWORD(wp)
 #define CBNMHDR(wp, lp) cast(NMHDR PTR, lp)
+' // For cast notification messages, e.g.
+' DIM p AS NMDATETIMECHANGE PTR = CBNMSGPTR(NMDATETIMECHANGE, wParam, lParam)
+' print p->nmhdr.idfrom
+' print p->dwFlags
+#define CBNMSGPTR(msg, wp, lp) cast(msg PTR, CBNMHDR(wp, lp))
+' // To copy notification messages, e.g.
+' DIM dt AS NMDATETIMECHANGE
+' CBNMTYPESET(dt, wParam, lParam)
+' print dt.nmhdr.idfrom
+' print dt.dwFlags
+#define CBNMTYPESET(tp, wp, lp) memcpy @dt, CAST(ANY PTR, lp), SIZEOF(dt)
 
 ' ========================================================================================
 ' Macro for debug
@@ -202,6 +213,7 @@ TYPE CDialog
       DECLARE SUB ForceVisibleDisplay
       DECLARE FUNCTION DialogPost (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
       DECLARE FUNCTION DialogSend (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
+      DECLARE SUB DialogSetIcon (BYREF wszImage AS WSTRING)
       DECLARE SUB DialogSetIconEx (BYVAL hIconBig AS HICON, BYVAL hIconSmall AS HICON)
       DECLARE FUNCTION DialogUnitsToPixels (BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
       DECLARE FUNCTION DialogUnitsToPixelsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
@@ -269,6 +281,10 @@ TYPE CDialog
       DECLARE SUB ControlSetFont (BYVAL cId AS LONG, BYVAL hFont AS HFONT, BYVAL fRedraw AS BOOLEAN = TRUE)
       DECLARE SUB ControlCenterHoriz (BYVAL cId AS LONG)
       DECLARE SUB ControlCenterVert (BYVAL cId AS LONG)
+      DECLARE FUNCTION ControlGetCheck (BYVAL cId AS LONG) AS LONG
+      DECLARE SUB ControlSetCheck (BYVAL cId AS LONG, BYVAL checkState AS LONG)
+      DECLARE FUNCTION ControlSetIcon (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+      DECLARE FUNCTION ControlSetBitmap (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
 
       ' // Colors
       DECLARE FUNCTION DialogSetColor (BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
@@ -540,28 +556,35 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR SS_LEFT OR WS_GROUP OR SS_NOTIFY
       CASE "BITMAPLABEL"
          ' Adds an image label to the window.
-         ' You must delete the bitmap before the application ends.
          wsClassName = "Static"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_GROUP OR SS_BITMAP
          IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
          bSetFont = FALSE
       CASE "ICONLABEL"
          ' Adds an image label to the window.
-         ' You must delete the icon before the application ends.
          wsClassName = "Static"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_GROUP OR SS_ICON
          IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
          bSetFont = FALSE
       CASE "BITMAPBUTTON"
          ' Adds an image button to the window.
-         ' You must delete the bitmap before the application ends.
          wsClassName = "Button"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON OR BS_BITMAP
+         bSetFont = FALSE
       CASE "ICONBUTTON"
          ' Adds an image button to the window.
-         ' You must delete the icon before the application ends.
          wsClassName = "Button"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON OR BS_ICON
+         bSetFont = FALSE
+'      CASE "IMAGE", "IMAGEX"   ' // For compatibility with PowerBasic
+'         wsClassName = "Static"
+'         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_GROUP ' SS_BITMAP or SS_ICON must be specified
+'         IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
+'         bSetFont = FALSE
+'      CASE "IMGBUTTON", "IMGBUTTONX"   ' // For compatibility with PowerBasic
+'         wsClassName = "Button"
+'         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON ' BS_BITMAP or BS_ICON must be specified
+'         bSetFont = FALSE
       CASE "CUSTOMLABEL"
          ' Adds an ownerdraw label to the window.
          wsClassName = "Static"
@@ -720,6 +743,8 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          IF dwExStyle = -1 THEN dwExStyle = WS_EX_CLIENTEDGE
          wsClassName = "RichEdit50W"
          IF m_hRichEditLib = 0 THEN m_hRichEditLib = CAST(HMODULE, LoadLibraryW("MSFTEDIT.DLL"))
+      CASE ELSE
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_CHILD
    END SELECT
    ' // Don't allow negative values for the styles
    IF dwStyle = -1 THEN dwStyle = 0
@@ -799,51 +824,199 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          .SendMessageW hCtl, TB_SETBUTTONSIZE, 0, MAKELONG(nButtonWidth, nButtonHeight)
          ' // Send this message for backward compatibility
          .SendMessageW hCtl, TB_BUTTONSTRUCTSIZE, SIZEOF(TBBUTTON), 0
-      CASE "BITMAPLABEL"
-         ' // Loads the image
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszTitle, 1) = "#" THEN
-            wID = VAL(MID(wszTitle, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            hImage = .LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-         END IF
-         IF hImage THEN .SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))
-      CASE "ICONLABEL"
-         ' // Loads the image
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszTitle, 1) = "#" THEN
-            wID = VAL(MID(wszTitle, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            hImage = .LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-         END IF
-         IF hImage THEN .SendMessageW(hCtl, STM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))
-      CASE "BITMAPBUTTON"
-         ' // Loads the image
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszTitle, 1) = "#" THEN
-            wID = VAL(MID(wszTitle, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            hImage = .LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-         END IF
-         IF hImage THEN .SendMessageW(hCtl, BM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))
-      CASE "ICONBUTTON"
-         ' // Loads the image
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszTitle, 1) = "#" THEN
-            wID = VAL(MID(wszTitle, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            hImage = .LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-         END IF
-         IF hImage THEN .SendMessageW(hCtl, BM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))
    END SELECT
+
+   ' // Buttons with images (icon or bitmap)
+   SELECT CASE UCASE(wszClassName)
+      CASE "BITMAPLABEL"   'Ok
+         ' // Loads the bitmap from resource
+         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+         IF LEFT(wszTitle, 1) = "#" THEN
+            wID = VAL(MID(wszTitle, 2))
+            dwID = MAKELONG(wID, 0)
+            hImage = .LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+         ELSE
+            IF UCASE(RIGHT(wszTitle, 4)) = ".BMP" THEN
+               ' // Loads bitmap from file
+               hImage = .LoadImageW(NULL, wszTitle, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
+            ELSE
+               ' // Loads the bitmap from resource
+               hImage = .LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+            END IF
+         END IF
+         ' // Sets the image and deletes the old one
+         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
+      CASE "ICONLABEL"   ' Ok
+         ' // Loads the icon from resource
+         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+         IF LEFT(wszTitle, 1) = "#" THEN
+            wID = VAL(MID(wszTitle, 2))
+            dwID = MAKELONG(wID, 0)
+            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+         ELSE
+            ' // Loads the icon from file
+            IF UCASE(RIGHT(wszTitle, 4)) = ".ICO" THEN
+               hImage = .LoadImageW(NULL, wszTitle, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
+            ELSE
+               ' // Loads the icon from resource
+               hImage = .LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+            END IF
+         END IF
+         ' // Sets the image and deletes the old one
+         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
+      CASE "BITMAPBUTTON"  ' Ok
+         ' // Loads the bitmap from resource
+         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+         IF LEFT(wszTitle, 1) = "#" THEN
+            wID = VAL(MID(wszTitle, 2))
+            dwID = MAKELONG(wID, 0)
+            hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+         ELSE
+            ' // Loads the bitmap from file
+            IF UCASE(RIGHT(wszTitle, 4)) = ".BMP" THEN
+               hImage = LoadImageW(NULL, wszTitle, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
+            ELSE
+               ' // Loads the bitmap from resource
+               hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+            END IF
+         END IF
+         ' // Sets the image and deletes the old one
+         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
+      CASE "ICONBUTTON"   ' Ok
+         ' // Loads the icon from resource
+         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+         IF LEFT(wszTitle, 1) = "#" THEN
+            wID = VAL(MID(wszTitle, 2))
+            dwID = MAKELONG(wID, 0)
+            hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+         ELSE
+            ' // Loads the icon from file
+            IF UCASE(RIGHT(wszTitle, 4)) = ".ICO" THEN
+               hImage = LoadImageW(NULL, wszTitle, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
+            ELSE
+               ' // Loads the icon from resource
+               hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+            END IF
+         END IF
+         ' // Sets the image and deletes the old one
+         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
+'      CASE "IMAGE"   ' Ok
+'         ' // Label with an icon
+'         IF (dwStyle AND SS_ICON) = SS_ICON THEN
+'            ' // Loads the icon from resource
+'            DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+'            IF LEFT(wszTitle, 1) = "#" THEN
+'               wID = VAL(MID(wszTitle, 2))
+'               dwID = MAKELONG(wID, 0)
+'               hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+'            ELSE
+'               ' // Loads the icon from file
+'               IF UCASE(RIGHT(wszTitle, 4)) = ".ICO" THEN
+'                  hImage = LoadImageW(NULL, wszTitle, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
+'               ELSE
+'                  ' // Loads the icon from resource
+'                  hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+'               END IF
+'            END IF
+'            ' // Sets the image and deletes the old one
+'            IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
+'         ELSEIF (dwStyle AND SS_BITMAP) = SS_BITMAP THEN
+'            ' // Label with a bitmap
+'            ' // Loads the bitmap from resource
+'            DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+'            IF LEFT(wszTitle, 1) = "#" THEN
+'               wID = VAL(MID(wszTitle, 2))
+'               dwID = MAKELONG(wID, 0)
+'               hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+'            ELSE
+'               ' // Loads the bitmap from file
+'               IF UCASE(RIGHT(wszTitle, 4)) = ".BMP" THEN
+'                  hImage = LoadImageW(NULL, wszTitle, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
+'               ELSE
+'                  ' // Loads the bitmap from resource
+'                  hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+'               END IF
+'            END IF
+'            ' // Sets the image and deletes the old one
+'            IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
+'         END IF
+
+'      CASE "IMAGEX"   ' // label with an image
+'         ' // Label with an icon
+'         DIM hImage AS HANDLE
+'         IF (dwStyle AND SS_ICON) = SS_ICON THEN
+'            ' // Loads the icon from resource
+'            DIM wID AS WORD, dwID AS DWORD
+'            IF LEFT(wszTitle, 1) = "#" THEN
+'               wID = VAL(MID(wszTitle, 2))
+'               dwID = MAKELONG(wID, 0)
+'               hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+'            ELSE
+'               ' // Loads the icon from file
+'               IF UCASE(RIGHT(wszTitle, 4)) = ".ICO" THEN
+'                  hImage = LoadImageW(NULL, wszTitle, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
+'               ELSE
+'                  ' // Loads the icon from resource
+'                  hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+'               END IF
+'            END IF
+'            ' // Sets the image and deletes the old one
+'            IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
+'         ELSEIF (dwStyle AND SS_BITMAP) = SS_BITMAP THEN
+'            ' // Label with a bitmap
+'            ' // Loads the bitmap from resource
+'            DIM wID AS WORD, dwID AS DWORD
+'            IF LEFT(wszTitle, 1) = "#" THEN
+'               wID = VAL(MID(wszTitle, 2))
+'               dwID = MAKELONG(wID, 0)
+'               hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+'            ELSE
+'               ' // Loads the bitmap from file
+'               IF UCASE(RIGHT(wszTitle, 4)) = ".BMP" THEN
+'                  hImage = LoadImageW(NULL, wszTitle, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
+'               ELSE
+'                  ' // Loads the bitmap from resource
+'                  hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+'               END IF
+'            END IF
+'            ' // Sets the image and deletes the old one
+'            IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
+'         END IF
+
+'      IF (dwStyle AND SS_BITMAP) = SS_BITMAP THEN
+'         ' // Get the original bitmap dimensions
+'         DIM bmp AS BITMAP
+'         GetObject(hImage, SIZEOF(BITMAP), @bmp)
+'         ' // Create a compatible DC
+'         DIM hdc AS ..HDC = GetDC(hCtl)
+'         DIM hmemDC AS ..HDC = CreateCompatibleDC(hdc)
+'         ' // Get the dimensions of the label
+'         DIM rc AS RECT
+'         GetClientRect(hCtl, @rc)
+'         ' // Create a compatible bitmap
+'         DIM oldBmp AS HBITMAP
+'         DIM hResizedBitmap AS HBITMAP = CreateCompatibleBitmap(hDC, rc.right - rc.left, rc.bottom - rc.top)
+'         IF hResizedBitmap THEN oldBmp = SelectObject(hmemDC, hResizedBitmap)
+'         BitBlt(hMemDC, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hDC, 0, 0, SRCCOPY)
+'         SelectObject hmemDC, oldBmp
+'         ' // Sets the image and deletes the old one
+'         IF hResizedBitmap THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hResizedBitmap))))
+'         ' // Cleanup
+'         IF hmemDC THEN DeleteDC(hmemDC)
+'         IF hdc THEN ReleaseDC(hCtl, hdc)
+'      END IF
+
+'      IF (dwStyle AND SS_ICON) = SS_ICON THEN
+'         ' // Get the dimensions of the label
+'         DIM rc AS RECT
+'         GetClientRect(hCtl, @rc)
+'         DIM hdc AS ..HDC = GetDC(hCtl)
+'         DrawIconEx(hDC, x, y, hImage, rc.right - rc.left, rc.bottom - rc.top, 0, NULL, DI_IMAGE)
+'         IF hdc THEN ReleaseDC(hCtl, hdc)
+'      END IF
+         
+   END SELECT
+
    ' // Subclass the control if pWndProc is not null
    IF pWndProc <> NULL THEN
       IF uIdSubclass = &HFFFFFFFF THEN
@@ -2530,6 +2703,154 @@ PRIVATE SUB CDialog.ControlCenterVert (BYVAL cId AS LONG)
 END SUB
 ' ========================================================================================
 
+' ========================================================================================
+' Gets the check state of a radio button or check box. 
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlGetCheck (BYVAL cId AS LONG) AS LONG
+   DIM hCtrl AS HWND = GetDlgItem(m_hDlg, cId)
+   RETURN SendMessageW(hCtrl, BM_GETCHECK, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the check state of a radio button or check box.
+' ========================================================================================
+PRIVATE SUB CDialog.ControlSetCheck (BYVAL cId AS LONG, BYVAL checkState AS LONG)
+   DIM hCtrl AS HWND = GetDlgItem(m_hDlg, cId)
+   SendMessageW(hCtrl, BM_SETCHECK, checkState, 0)
+END SUB
+' ========================================================================================
+
+' ========================================================================================
+' Changes the icon displayed in an ICONLABEL or ICONBUTTON.
+' The old image handle is released.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetIcon (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   DIM wszClassName AS WSTRING * 260
+   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
+   IF hCtl = NULL THEN RETURN FALSE
+   GetClassName(hCtl, @wszClassName, 260)
+   wszClassName = UCASE(wszClassName)
+   SELECT CASE wszClassName
+      CASE "BUTTON"
+         ' // Loads the icon from resource
+         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+         IF LEFT(wszImage, 1) = "#" THEN
+            wID = VAL(MID(wszImage, 2))
+            dwID = MAKELONG(wID, 0)
+            hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+         ELSE
+            ' // Loads the icon from file
+            IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
+               hImage = LoadImageW(NULL, wszImage, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
+            ELSE
+               ' // Loads the icon from resource
+               hImage = LoadImageW(m_hInstance, wszImage, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+            END IF
+         END IF
+         ' // Sets the image and deletes the old one
+         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
+      CASE "STATIC"
+         ' // Loads the icon from resource
+         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+         IF LEFT(wszImage, 1) = "#" THEN
+            wID = VAL(MID(wszImage, 2))
+            dwID = MAKELONG(wID, 0)
+            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+         ELSE
+            ' // Loads the icon from file
+            IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
+               hImage = .LoadImageW(NULL, wszImage, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
+            ELSE
+               ' // Loads the icon from resource
+               hImage = .LoadImageW(m_hInstance, wszImage, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+            END IF
+         END IF
+         ' // Sets the image and deletes the old one
+         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
+   END SELECT
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the bitmap displayed in an BITMAPLABEL or BITMAPBUTTON controls.
+' The old image handle is released.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetBitmap (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   DIM wszClassName AS WSTRING * 260
+   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
+   IF hCtl = NULL THEN RETURN FALSE
+   GetClassName(hCtl, @wszClassName, 260)
+   wszClassName = UCASE(wszClassName)
+   SELECT CASE wszClassName
+      CASE "BUTTON"
+         ' // Loads the icon from resource
+         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+         IF LEFT(wszImage, 1) = "#" THEN
+            wID = VAL(MID(wszImage, 2))
+            dwID = MAKELONG(wID, 0)
+            hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+         ELSE
+            ' // Loads the icon from file
+            IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
+               hImage = LoadImageW(NULL, wszImage, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
+            ELSE
+               ' // Loads the icon from resource
+               hImage = LoadImageW(m_hInstance, wszImage, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+            END IF
+         END IF
+         ' // Sets the image and deletes the old one
+         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
+      CASE "STATIC"
+         ' // Loads the icon from resource
+         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+         IF LEFT(wszImage, 1) = "#" THEN
+            wID = VAL(MID(wszImage, 2))
+            dwID = MAKELONG(wID, 0)
+            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+         ELSE
+            ' // Loads the icon from file
+            IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
+               hImage = .LoadImageW(NULL, wszImage, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
+            ELSE
+               ' // Loads the icon from resource
+               hImage = .LoadImageW(m_hInstance, wszImage, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+            END IF
+         END IF
+         ' // Sets the image and deletes the old one
+         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
+   END SELECT
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes both the dialog icon in the caption, and the icon shown in the ALT+TAB task list.
+' The old image handle is released.
+' ========================================================================================
+PRIVATE SUB CDialog.DialogSetIcon (BYREF wszImage AS WSTRING)
+   ' // Loads the icon from resource
+   DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+   IF LEFT(wszImage, 1) = "#" THEN
+      wID = VAL(MID(wszImage, 2))
+      dwID = MAKELONG(wID, 0)
+      hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+   ELSE
+      ' // Loads the icon from file
+      IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
+         hImage = LoadImageW(NULL, wszImage, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
+      ELSE
+         ' // Loads the icon from resource
+         hImage = LoadImageW(m_hInstance, wszImage, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
+      END IF
+   END IF
+   ' // Sets the images and deletes the old ones
+   IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(m_hDlg, WM_SETICON, ICON_BIG, CAST(LPARAM, hImage))))
+   IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(m_hDlg, WM_SETICON, ICON_SMALL, CAST(LPARAM, hImage))))
+END SUB
+' =====================================================================================
+
+
 ' ########################################################################################
 '                                *** Desktop procedures ***
 ' ########################################################################################
@@ -3076,7 +3397,7 @@ END SUB
 ' ########################################################################################
 
 ' ========================================================================================
-' Makes a window scrollable by shrinking its cient area
+' Makes a window scrollable by shrinking its client area
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogSetViewPort (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
    ' // Data for optional scrollable dialogs
@@ -3148,7 +3469,7 @@ PRIVATE SUB CDialog.DialogOnVScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPA
       CASE SB_PAGEUP     : nInc = MIN(-1, -m_nVertInc)
       CASE SB_PAGEDOWN   : nInc = MAX(1, m_nVertInc)
       CASE SB_THUMBTRACK : nInc = HIWORD(wParam) - m_VScrollPos
-      CASE ELSE          : nInc = 0
+      lseLSE          : nInc = 0
    END SELECT
    nInc = MAX(-m_VScrollPos, MIN(nInc, m_VScrollMax - m_VScrollPos))
    IF nInc THEN

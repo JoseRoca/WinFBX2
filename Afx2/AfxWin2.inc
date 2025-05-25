@@ -25,25 +25,24 @@
 ' ########################################################################################
 
 #pragma once
+#if not defined(UNICODE)
+   #define UNICODE
+#endif
+#if not defined(_WIN32_WINNT)
+   #define _WIN32_WINNT &h0602
+#endif
+
 #INCLUDE ONCE "windows.bi"
-'#INCLUDE ONCE "win/commctrl.bi"
-'#INCLUDE ONCE "win/ole2.bi"
 #INCLUDE ONCE "win/psapi.bi"
 #INCLUDE ONCE "win/shlwapi.bi"
-'#INCLUDE ONCE "win/shlobj.bi"
-'#INCLUDE ONCE "win/KnownFolders.bi"
 #INCLUDE ONCE "win/commdlg.bi"
 #INCLUDE ONCE "win/cderr.bi"
-'#INCLUDE ONCE "crt/string.bi"
-'#INCLUDE ONCE "win/richedit.bi"
 #INCLUDE ONCE "Afx2/DWSTRING.inc"
-'#INCLUDE ONCE "Afx2/BSTRING.inc"
 #INCLUDE ONCE "Afx2/AfxDPIProcs2.inc"
-'#INCLUDE ONCE "Afx2/AfxFileProcs2.inc"
-'#INCLUDE ONCE "Afx2/AfxPath2.inc"
-'#INCLUDE ONCE "Afx2/AfxStrProcs2.inc"
 
 USING Afx2
+
+NAMESPACE Afx2
 
 ' ========================================================================================
 ' Enables visual styles without using a manifest in the application.
@@ -118,7 +117,7 @@ BYVAL dwMilliseconds AS DWORD, BYVAL uType AS UINT = MB_OK OR MB_SETFOREGROUND O
    DIM AS ANY PTR pLib = DyLibLoad("user32.dll")
    IF pLib = NULL THEN RETURN 0
    ' // Call the undocumented MessageBoxTimeoutW function
-   DIM pMessageBoxTimeout AS FUNCTION (BYVAL hwnd AS HWND, BYVAL pwszText AS LPWSTR, BYVAL pwszCaption AS LPWSTR, _
+   DIM pMessageBoxTimeout AS FUNCTION (BYVAL hwnd AS ..HWND, BYVAL pwszText AS LPWSTR, BYVAL pwszCaption AS LPWSTR, _
        BYVAL uType AS UINT, BYVAL wLanguageId AS WORD, BYVAL dwMilliseconds AS DWORD) AS LONG
    pMessageBoxTimeout = DyLibSymbol(pLib, "MessageBoxTimeoutW")
    IF pMessageBoxTimeout THEN FUNCTION = pMessageBoxTimeout(hwnd, pwszText, pwszCaption, uType, 0, dwMilliseconds)
@@ -305,6 +304,31 @@ PRIVATE FUNCTION AfxWindowsBitness () AS LONG
    DIM SysInfo AS SYSTEM_INFO
    GetNativeSystemInfo(@SysInfo)
    RETURN IIF(SysInfo.wProcessorArchitecture = PROCESSOR_ARCHITECTURE_AMD64, 64, 32)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves information about the current system.
+' ========================================================================================
+PRIVATE FUNCTION AfxGetSystemInfo (BYREF metricName AS STRING) AS LONG_PTR
+   DIM sysInfo AS SYSTEM_INFO
+   GetSystemInfo(@sysInfo)
+   SELECT CASE LCASE(metricName)
+      CASE "cpucount"
+         RETURN sysInfo.dwNumberOfProcessors
+      CASE "cpumask"
+         RETURN sysInfo.dwActiveProcessorMask
+      CASE "granularity"
+         RETURN sysInfo.dwAllocationGranularity
+      CASE "maxappaddr"
+         RETURN CAST(LONG_PTR, sysInfo.lpMaximumApplicationAddress)
+      CASE "minappaddr"
+         RETURN CAST(LONG_PTR, sysInfo.lpMinimumApplicationAddress)
+      CASE "pagesize"
+         RETURN sysInfo.dwPageSize
+      CASE ElsE
+         RETURN -1 ' Invalid metric name
+   END SELECT
 END FUNCTION
 ' ========================================================================================
 
@@ -705,7 +729,7 @@ END FUNCTION
 PRIVATE FUNCTION AfxControlRunDLL (BYVAL hwnd AS HWND, BYVAL hInst AS HINSTANCE, BYVAL cmd AS WSTRING PTR, BYVAL nCmdShow AS LONG) AS BOOLEAN
    DIM AS ANY PTR pLib = DyLibLoad("shell32.dll")
    IF pLib = 0 THEN EXIT FUNCTION
-   DIM pProc AS FUNCTION (BYVAL hwnd AS HWND, BYVAL hInst AS HINSTANCE, BYVAL cmd AS WSTRING PTR, BYVAL nCmdShow AS LONG) AS BOOLEAN
+   DIM pProc AS FUNCTION (BYVAL hwnd AS ..HWND, BYVAL hInst AS HINSTANCE, BYVAL cmd AS WSTRING PTR, BYVAL nCmdShow AS LONG) AS BOOLEAN
    pProc = DyLibSymbol(pLib, "Control_RunDLLW")
    IF pProc = 0 THEN EXIT FUNCTION
    FUNCTION = pProc(hwnd, hInst, cmd, nCmdShow)
@@ -755,11 +779,11 @@ END FUNCTION
 ' * Retrieves the Internet Explorer version (major.minor).
 ' ========================================================================================
 PRIVATE FUNCTION AfxGetInternetExplorerVersion () AS SINGLE
-   DIM hKey AS HKEY, wszData AS WSTRING * 1024, cbData AS DWORD = SIZEOF(wszData)
+   DIM hKey_ AS ..HKEY, wszData AS WSTRING * 1024, cbData AS DWORD = SIZEOF(wszData)
    IF RegOpenKeyExW(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Internet Explorer", 0, _
-                    KEY_QUERY_VALUE, @hKey) <> ERROR_SUCCESS THEN EXIT FUNCTION
-   RegQueryValueExW hKey, "Version", NULL, NULL, cast(BYTE PTR, @wszData), @cbData
-   RegCloseKey hKey
+                    KEY_QUERY_VALUE, @hKey_) <> ERROR_SUCCESS THEN EXIT FUNCTION
+   RegQueryValueExW hKey_, "Version", NULL, NULL, cast(BYTE PTR, @wszData), @cbData
+   RegCloseKey hKey_
    FUNCTION = VAL(wszData)
 END FUNCTION
 ' ========================================================================================
@@ -800,11 +824,11 @@ END FUNCTION
 ' DIM hwndBrowser AS HWND = AfxGetBrowserHandle("Chrome_WidgetWin_1")   ' // Chrome
 ' Note: No longer works. Maybe the name of the classes have changed.
 ' ========================================================================================
-PRIVATE FUNCTION AfxEnumThreadWndProc (BYVAL hwnd AS HWND, BYVAL lParam AS LPARAM) AS WINBOOL
+PRIVATE FUNCTION AfxEnumThreadWndProc (BYVAL hwnd AS ..HWND, BYVAL lPrm AS LPARAM) AS WINBOOL
    DIM dwStyle AS DWORD = GetWindowLongPtr(hwnd, GWL_STYLE)
    IF ((dwStyle AND (WS_POPUP OR WS_CHILD)) = 0) AND ((dwStyle AND WS_VISIBLE) <> 0) THEN
-      DIM phwndTop AS HWND PTR
-      CAST(LPARAM, phwndTop) = lParam
+      DIM phwndTop AS ..HWND PTR
+      CAST(LPARAM, phwndTop) = lPrm
       *phwndTop = hwnd
       RETURN FALSE
    END IF
@@ -824,6 +848,7 @@ END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Retrieves the top level window handle of Intenet Explorer.
+' Microsoft Edge uses the same class name than Chrome: Chrome_WidgetWin_1
 ' ========================================================================================
 PRIVATE FUNCTION AfxGetInternetExplorerHandle () AS HWND
    RETURN AfxGetBrowserHandle("IEFrame")
@@ -877,12 +902,12 @@ END FUNCTION
 ' Note: To display the old style dialog, pass -1 in the dwFlags parameter. (Crashes in Windows 10).
 ' ========================================================================================
 ' // Browse for folder dialog procedure
-PRIVATE FUNCTION AfxBrowseForFolderProc (BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LONG
+PRIVATE FUNCTION AfxBrowseForFolderProc (BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lPrm AS LPARAM) AS LONG
 
    DIM wszBuffer AS WSTRING * MAX_PATH
 
    IF uMsg = BFFM_INITIALIZED THEN
-      SendMessageW hwnd, BFFM_SETSELECTIONW, CTRUE, cast(LPARAM, lParam)
+      SendMessageW hwnd, BFFM_SETSELECTIONW, CTRUE, cast(LPARAM, lPrm)
    ELSEIF uMsg = BFFM_SELCHANGED THEN
       SHGetPathFromIDListW(cast(ITEMIDLIST PTR, wParam), @wszBuffer)
       IF wParam = 0 OR _ ' // No id number
@@ -935,11 +960,11 @@ END FUNCTION
 ' Returns TRUE on success or FALSE on failure.
 ' ========================================================================================
 PRIVATE FUNCTION AfxShowSysInfo (BYVAL hwnd AS HWND) AS BOOLEAN
-   DIM hKey AS HKEY, wszPath AS WSTRING * MAX_PATH, cbData AS DWORD = SIZEOF(wszPath)
+   DIM hKey_ AS ..HKEY, wszPath AS WSTRING * MAX_PATH, cbData AS DWORD = SIZEOF(wszPath)
    IF RegOpenKeyExW(HKEY_LOCAL_MACHINE, "Software\Microsoft\Shared Tools\MSInfo", 0, _
-                    KEY_QUERY_VALUE, @hKey) <> ERROR_SUCCESS THEN EXIT FUNCTION
-   RegQueryValueExW hKey, "Path", 0, 0, cast(LPBYTE, @wszPath), @cbData
-   RegCloseKey hKey
+                    KEY_QUERY_VALUE, @hKey_) <> ERROR_SUCCESS THEN EXIT FUNCTION
+   RegQueryValueExW hKey_, "Path", 0, 0, cast(LPBYTE, @wszPath), @cbData
+   RegCloseKey hKey_
    IF LEN(wszPath) = 0 THEN EXIT FUNCTION
    IF ShellExecuteW(hwnd, "open", @wszPath, NULL, NULL, SW_SHOWNORMAL) > 32 THEN FUNCTION = TRUE
 END FUNCTION
@@ -1679,8 +1704,8 @@ END FUNCTION
 ' The return value is a handle to the previous large or small icon, depending on the value of
 ' nIconType It is NULL if the window previously had no icon of the type indicated by nIconType.
 ' ========================================================================================
-PRIVATE FUNCTION AfxSetWindowIcon (BYVAL hwnd AS HWND, BYVAL nIconType AS LONG, BYVAL hIcon AS HICON) AS HICON
-   FUNCTION = CAST(HICON, SendMessageW(hwnd, WM_SETICON, nIconType, CAST(LPARAM, hIcon)))
+PRIVATE FUNCTION AfxSetWindowIcon (BYVAL hwnd AS HWND, BYVAL nIconType AS LONG, BYVAL hIcon_ AS ..HICON) AS HICON
+   FUNCTION = CAST(HICON, SendMessageW(hwnd, WM_SETICON, nIconType, CAST(LPARAM, hIcon_)))
 END FUNCTION
 ' ========================================================================================
 
@@ -1746,8 +1771,8 @@ END SUB
 ' ========================================================================================
 ' Retrieves the window's top-level parent or owner window.
 ' ========================================================================================
-PRIVATE FUNCTION AfxGetTopLevelWindow (BYVAL hwnd AS HWND) AS HWND
-   DIM hWndParent AS HWND, hWndTmp AS HWND
+PRIVATE FUNCTION AfxGetTopLevelWindow (BYVAL hwnd AS ..HWND) AS HWND
+   DIM hWndParent AS ..HWND, hWndTmp AS ..HWND
    IF IsWindow(hwnd) = NULL THEN EXIT FUNCTION
    hWndTmp = hwnd
    DO
@@ -1762,8 +1787,8 @@ END FUNCTION
 ' ========================================================================================
 ' Retrieves the window's top-level parent window.
 ' ========================================================================================
-PRIVATE FUNCTION AfxGetTopLevelParent (BYVAL hwnd AS HWND) AS HWND
-   DIM hWndParent AS HWND, hWndTmp AS HWND
+PRIVATE FUNCTION AfxGetTopLevelParent (BYVAL hwnd AS ..HWND) AS HWND
+   DIM hWndParent AS ..HWND, hWndTmp AS ..HWND
    IF IsWindow(hwnd) = NULL THEN EXIT FUNCTION
    hWndParent = hwnd
    DO
@@ -1805,9 +1830,9 @@ END FUNCTION
 ' // lParam = Address of variable with child window handle
 ' // Return value: CTRUE or FALSE
 
-PRIVATE FUNCTION AfxGetControlHandle_ChildEnumProc (BYVAL hwnd AS HWND, BYVAL lParam AS LPARAM) AS LONG
-   DIM pItem AS HWND PTR
-   CAST(LPARAM, pItem) = lParam
+PRIVATE FUNCTION AfxGetControlHandle_ChildEnumProc (BYVAL hwnd AS ..HWND, BYVAL lPrm AS LPARAM) AS LONG
+   DIM pItem AS ..HWND PTR
+   CAST(LPARAM, pItem) = lPrm
    IF GetDlgCtrlID(hwnd) = LOWORD(*pItem) THEN
       *pItem = hwnd
       EXIT FUNCTION
@@ -1815,10 +1840,10 @@ PRIVATE FUNCTION AfxGetControlHandle_ChildEnumProc (BYVAL hwnd AS HWND, BYVAL lP
    FUNCTION = CTRUE
 END FUNCTION
 
-PRIVATE FUNCTION AfxGetControlHandle (BYVAL hwnd AS HWND, BYVAL wCtrlID AS WORD) AS HWND
-   DIM hwndChild AS HWND
+PRIVATE FUNCTION AfxGetControlHandle (BYVAL hwnd AS ..HWND, BYVAL wCtrlID AS WORD) AS HWND
+   DIM hwndChild AS ..HWND
    hwnd = AfxGetFormHandle(hwnd)
-   hwndChild = CAST(HWND, CAST(DWORD_PTR, wCtrlID))
+   hwndChild = CAST(..HWND, CAST(DWORD_PTR, wCtrlID))
    EnumChildWindows(hwnd, @AfxGetControlHandle_ChildEnumProc, CAST(LPARAM, @hwndChild))
    IF hwndChild = wCtrlID THEN FUNCTION = NULL ELSE FUNCTION = hwndChild
 END FUNCTION
@@ -1835,15 +1860,15 @@ END FUNCTION
 ' // hwnd = Handle of top-level window
 ' // lParam = Address of variable for window handle
 
-PRIVATE FUNCTION AfxGetTopEnabledWindow_EnumWindowsProc (BYVAL hWnd AS HWND, BYVAL lParam AS LPARAM) AS LONG
-   DIM wszClassName AS WSTRING * MAX_PATH, phwndTop AS HWND PTR, dwProcessId  AS DWORD
+PRIVATE FUNCTION AfxGetTopEnabledWindow_EnumWindowsProc (BYVAL hWnd AS ..HWND, BYVAL lPrm AS LPARAM) AS LONG
+   DIM wszClassName AS WSTRING * MAX_PATH, phwndTop AS ..HWND PTR, dwProcessId  AS DWORD
    IF IsWindowEnabled(hwnd) THEN
       IF IsWindowVisible(hwnd) THEN
          GetClassNameW hwnd, @wszClassName, MAX_PATH
          IF wszClassName <> "tooltips_class32" THEN
             GetWindowThreadProcessId(hwnd, @dwProcessId)
             IF dwProcessId = GetCurrentProcessId THEN
-               CAST(LPARAM, phwndTop) = lParam
+               CAST(LPARAM, phwndTop) = lPrm
                *phwndTop = hwnd
                EXIT FUNCTION
             END IF
@@ -2445,7 +2470,7 @@ PRIVATE FUNCTION AfxCaptureDisplay () AS HBITMAP
    IF hMemDC = NULL THEN EXIT FUNCTION
    DIM hBitmap AS HBITMAP = CreateCompatibleBitmap(hScreenDC, cx, cy)
    IF hBitmap = NULL THEN EXIT FUNCTION
-   DIM hBmpOld AS HBITMAP = SelectObject(hMemDC, hBitmap)
+   DIM hBmpOld AS ..HBITMAP = SelectObject(hMemDC, hBitmap)
    ' // Note: CAPTUREBLT flag is required to capture layered windows
    BitBlt(hMemDC, 0, 0, cx, cy, hScreenDC, 0, 0, SRCCOPY OR CAPTUREBLT)
    SelectObject(hMemDC, hBmpOld)
@@ -2464,7 +2489,7 @@ END FUNCTION
 ' Return value: TRUE or FALSE.
 ' ========================================================================================
 PRIVATE FUNCTION AfxDrawBitmap (BYVAL hDC AS HDC, BYVAL xStart AS LONG, BYVAL yStart AS LONG, BYVAL hBitmap AS HBITMAP) AS BOOLEAN
-   DIM bm AS BITMAP, hMemDC AS HDC
+   DIM bm AS BITMAP, hMemDC AS ..HDC
    IF hDC = NULL OR hBitmap = NULL THEN EXIT FUNCTION
    hMemDC = CreateCompatibleDC(hDC)
    IF hMemDC = NULL THEN EXIT FUNCTION
@@ -2504,3 +2529,5 @@ PRIVATE FUNCTION AfxIsUserAnAdmin () AS BOOLEAN
    FreeSid(AdministratorsGroup)
 END FUNCTION
 ' ========================================================================================
+
+END NAMESPACE

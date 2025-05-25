@@ -1,19 +1,33 @@
 ' ########################################################################################
-' Microsoft Windows
-' File: AfxDPIProcs2.inc
-' Contents: Windows High DPI wrapper functions
+' Platform: Microsoft Windows
+' Filename: AfxLinkedLists.inc
+' Purpose:  Linked lists
 ' Compiler: Free Basic 32 & 64 bit
-' Copyright (c) 2025 José Roca. Freeware. Use at your own risk.
-' THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
-' EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
-' MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+' Copyright (c) 2025 José Roca
+'
+' License: Distributed under the MIT license.
+'
+' Permission is hereby granted, free of charge, to any person obtaining a copy of this
+' software and associated documentation files (the “Software”), to deal in the Software
+' without restriction, including without limitation the rights to use, copy, modify, merge,
+' publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+' persons to whom the Software is furnished to do so, subject to the following conditions:
+
+' The above copyright notice and this permission notice shall be included in all copies or
+' substantial portions of the Software.
+
+' THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+' INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+' PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+' FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+' OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
 #pragma once
-#INCLUDE ONCE "windows.bi"
+#include once "windows.bi"
 
 NAMESPACE Afx2
-
 
 ' ========================================================================================
 ' Macro for debug
@@ -121,7 +135,7 @@ END SUB
 ' ========================================================================================
 ' Implementation of an indexed double linked-list for the DWSTRING data type
 ' Usage example:
-' 'Function to Create and Return a Pointer to the List
+' ' Function to create and return a pointer to the list
 ' ----------------------------------------------------------------------------------------
 ' FUNCTION ProcessData () AS DWSTRING_INDEXED_LIST PTR
 '    DIM myList AS DWSTRING_INDEXED_LIST PTR = NEW DWSTRING_INDEXED_LIST
@@ -221,3 +235,70 @@ END FUNCTION
 
 END NAMESPACE
 
+
+'PRIVATE SUB DWSTRING_INDEXED_LIST.DeleteNode(BYVAL i AS LONG)
+'   IF i < 0 OR i >= count THEN EXIT SUB ' Out of bounds check
+
+'   DIM targetNode AS DWSTRING_INDEXED_NODE PTR = index(i)
+'   IF targetNode = NULL THEN EXIT SUB ' Safety check
+
+'   ' Adjust previous node's reference
+'   IF targetNode->pPrev <> NULL THEN
+'      targetNode->pPrev->pNext = targetNode->pNext
+'   ELSE
+'      head = targetNode->pNext ' If head is removed, update the list head
+'   END IF
+
+'   ' Adjust next node's reference
+'   IF targetNode->pNext <> NULL THEN
+'      targetNode->pNext->pPrev = targetNode->pPrev
+'   ELSE
+'      tail = targetNode->pPrev ' If tail is removed, update the list tail
+'   END IF
+
+'   ' Delete the node and update index
+'   Delete targetNode
+'   count -= 1
+
+'   ' Rebuild index array
+'   FOR j = i TO count - 1
+'      index(j) = index(j + 1)
+'   NEXT
+'   REDIM PRESERVE index(count - 1)
+'END SUB
+
+PRIVATE SUB DWSTRING_INDEXED_LIST.DeleteNodes(BYREF indexes() AS LONG)
+   IF UBOUND(indexes) < 0 THEN EXIT SUB ' No indexes provided
+
+   ' Sort indexes in descending order to avoid shifting issues
+   SORT indexes, TRUE ' Assuming a sorting function exists
+
+   FOR i AS LONG = LBOUND(indexes) TO UBOUND(indexes)
+      DIM targetIndex AS LONG = indexes(i)
+      IF targetIndex < 0 OR targetIndex >= count THEN CONTINUE FOR ' Out of bounds check
+
+      DIM targetNode AS DWSTRING_INDEXED_NODE PTR = index(targetIndex)
+      IF targetNode = NULL THEN CONTINUE FOR ' Safety check
+
+      ' Adjust previous node's reference
+      IF targetNode->pPrev <> NULL THEN
+         targetNode->pPrev->pNext = targetNode->pNext
+      ELSE
+         head = targetNode->pNext ' If head is removed, update the list head
+      END IF
+
+      ' Adjust next node's reference
+      IF targetNode->pNext <> NULL THEN
+         targetNode->pNext->pPrev = targetNode->pPrev
+      ELSE
+         tail = targetNode->pPrev ' If tail is removed, update the list tail
+      END IF
+
+      ' Delete the node
+      Delete targetNode
+   NEXT
+
+   ' Update count and rebuild index array
+   count -= (UBOUND(indexes) - LBOUND(indexes) + 1)
+   REDIM PRESERVE index(count - 1)
+END SUB

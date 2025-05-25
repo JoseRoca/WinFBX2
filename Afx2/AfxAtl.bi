@@ -35,6 +35,8 @@ CONST ATL_DLLNAME = "ATL.DLL"   ' --> change as needed
    #define AFX_BSTR WSTRING PTR
 #endif
 
+NAMESPaCE Afx2
+
 ' ########################################################################################
 ' Base types for declaring ABSTRACT interface methods in other types that inherit from
 ' these ones. Afx_IUnknown extends the built-in OBJECT type which provides run-time type
@@ -75,7 +77,7 @@ TYPE AFX_LPDISPATCH AS Afx_IDispatch PTR
 PRIVATE FUNCTION AtlAdvise (BYVAL pUnkCP AS IUnknown PTR, BYVAL pUnk AS IUnknown PTR, BYREF iid AS IID, BYREF pdw AS DWORD) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlAdvise AS FUNCTION (BYVAL pUnkCP AS IUnknown PTR, BYVAL pUnk AS IUnknown PTR, BYREF iid AS IID, BYREF pdw AS DWORD) AS HRESULT
+   DIM pAtlAdvise AS FUNCTION (BYVAL pUnkCP AS IUnknown PTR, BYVAL pUnk AS IUnknown PTR, BYREF iid AS ..IID, BYREF pdw AS DWORD) AS HRESULT
    pAtlAdvise = DyLibSymbol(pLib, "AtlAdvise")
    IF pAtlAdvise THEN FUNCTION = pAtlAdvise(pUnkCP, pUnk, iid, pdw)
    DyLibFree(pLib)
@@ -85,10 +87,10 @@ END FUNCTION
 ' ========================================================================================
 ' Attaches a previously created control to the specified window.
 ' ========================================================================================
-PRIVATE FUNCTION AtlAxAttachControl (BYVAL pControl AS IUnknown PTR, BYVAL hwnd AS HWND, BYVAL ppUnkContainer AS IUnknown PTR PTR) AS HRESULT
+PRIVATE FUNCTION AtlAxAttachControl (BYVAL pControl AS IUnknown PTR, BYVAL hwnd AS ..HWND, BYVAL ppUnkContainer AS IUnknown PTR PTR) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlAxAttachControl AS FUNCTION (BYVAL pControl AS IUnknown PTR, BYVAL hwnd AS HWND, BYVAL ppUnkContainer AS IUnknown PTR PTR) AS HRESULT
+   DIM pAtlAxAttachControl AS FUNCTION (BYVAL pControl AS IUnknown PTR, BYVAL hwnd AS ..HWND, BYVAL ppUnkContainer AS IUnknown PTR PTR) AS HRESULT
    pAtlAxAttachControl = DyLibSymbol(pLib, "AtlAxAttachControl")
    IF pAtlAxAttachControl THEN FUNCTION = pAtlAxAttachControl(pControl, hwnd, ppUnkContainer)
    DyLibFree(pLib)
@@ -98,10 +100,10 @@ END FUNCTION
 ' ========================================================================================
 ' Creates an ActiveX control, initializes it, and hosts it in the specified window.
 ' ========================================================================================
-PRIVATE FUNCTION AtlAxCreateControl (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR) AS HRESULT
+PRIVATE FUNCTION AtlAxCreateControl (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS ..HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlAxCreateControl AS FUNCTION (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR) AS HRESULT
+   DIM pAtlAxCreateControl AS FUNCTION (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS ..HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR) AS HRESULT
    pAtlAxCreateControl = DyLibSymbol(pLib, "AtlAxCreateControl")
    IF pAtlAxCreateControl THEN FUNCTION = pAtlAxCreateControl(pwszName, hwnd, pStream, ppUnkContainer)
    DyLibFree(pLib)
@@ -116,7 +118,7 @@ PRIVATE FUNCTION AtlAxCreateControlEx (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd
    BYVAL ppUnkControl AS IUnknown PTR PTR, BYVAL iidSink AS REFIID = @IID_NULL, BYVAL punkSink AS IUnknown PTR = NULL) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlAxCreateControlEx AS FUNCTION (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR, _
+   DIM pAtlAxCreateControlEx AS FUNCTION (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS ..HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR, _
       BYVAL ppUnkControl AS IUnknown PTR PTR, BYVAL iidSink AS REFIID = @IID_NULL, BYVAL punkSink AS IUnknown PTR = NULL) AS HRESULT
    pAtlAxCreateControlEx = DyLibSymbol(pLib, "AtlAxCreateControlEx")
    IF pAtlAxCreateControlEx THEN FUNCTION = pAtlAxCreateControlEx(pwszName, hwnd, pStream, ppUnkContainer, ppUnkControl, iidSink, punkSink)
@@ -127,10 +129,10 @@ END FUNCTION
 ' ========================================================================================
 ' Creates a licensed ActiveX control, initializes it, and hosts it in the specified window.
 ' ========================================================================================
-PRIVATE FUNCTION AtlAxCreateControlLic (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR, BYVAL bstrLic AS BSTR = NULL) AS HRESULT
+PRIVATE FUNCTION AtlAxCreateControlLic (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS ..HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR, BYVAL bstrLic AS BSTR = NULL) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlAxCreateControlLic AS FUNCTION (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR, BYVAL bstrLic AS BSTR) AS HRESULT
+   DIM pAtlAxCreateControlLic AS FUNCTION (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS ..HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR, BYVAL bstrLic AS BSTR) AS HRESULT
    pAtlAxCreateControlLic = DyLibSymbol(pLib, "AtlAxCreateControlLic")
    IF pAtlAxCreateControlLic THEN FUNCTION = pAtlAxCreateControlLic(pwszName, hwnd, pStream, ppUnkContainer, bstrLic)
    DyLibFree(pLib)
@@ -144,7 +146,7 @@ PRIVATE FUNCTION AtlAxCreateControlLicEx (BYVAL pwszName AS WSTRING PTR, BYVAL h
    BYVAL ppUnkControl AS IUnknown PTR PTR, BYVAL iidSink AS REFIID = @IID_NULL, BYVAL punkSink AS IUnknown PTR = NULL, BYVAL bstrLic AS BSTR = NULL) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlAxCreateControlLicEx AS FUNCTION (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR, _
+   DIM pAtlAxCreateControlLicEx AS FUNCTION (BYVAL pwszName AS WSTRING PTR, BYVAL hwnd AS ..HWND, BYVAL pStream AS IStream PTR, BYVAL ppUnkContainer AS IUnknown PTR PTR, _
       BYVAL ppUnkControl AS IUnknown PTR PTR, BYVAL iidSink AS REFIID = @IID_NULL, BYVAL punkSink AS IUnknown PTR = NULL, BYVAL bstrLic AS BSTR = NULL) AS HRESULT
    pAtlAxCreateControlLicEx = DyLibSymbol(pLib, "AtlAxCreateControlLicEx")
    IF pAtlAxCreateControlLicEx THEN FUNCTION = pAtlAxCreateControlLicEx(pwszName, hwnd, pStream, ppUnkContainer, ppUnkControl, iidSink, punkSink, bstrLic)
@@ -184,20 +186,20 @@ END FUNCTION
 ' Obtains a direct interface pointer to the control contained inside a specified window
 ' given its handle.
 ' ========================================================================================
-PRIVATE FUNCTION AtlAxGetControl OVERLOAD (BYVAL hwnd AS HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
+PRIVATE FUNCTION AtlAxGetControl OVERLOAD (BYVAL hwnd AS ..HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlAxGetControl AS FUNCTION (BYVAL hwnd AS HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
+   DIM pAtlAxGetControl AS FUNCTION (BYVAL hwnd AS ..HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
    pAtlAxGetControl = DyLibSymbol(pLib, "AtlAxGetControl")
    IF pAtlAxGetControl THEN FUNCTION = pAtlAxGetControl(hwnd, pUnk)
    DyLibFree(pLib)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION AtlAxGetControl OVERLOAD (BYVAL hwnd AS HWND) AS IUnknown PTR
+PRIVATE FUNCTION AtlAxGetControl OVERLOAD (BYVAL hwnd AS ..HWND) AS IUnknown PTR
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlAxGetControl AS FUNCTION (BYVAL hwnd AS HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
+   DIM pAtlAxGetControl AS FUNCTION (BYVAL hwnd AS ..HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
    pAtlAxGetControl = DyLibSymbol(pLib, "AtlAxGetControl")
    DIM pUnk AS IUnknown PTR
    IF pAtlAxGetControl THEN pAtlAxGetControl(hwnd, @pUnk)
@@ -210,10 +212,10 @@ END FUNCTION
 ' Obtains a direct interface pointer to the container for a specified window (if any),
 ' given its handle.
 ' ========================================================================================
-PRIVATE FUNCTION AtlAxGetHost (BYVAL hwnd AS HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
+PRIVATE FUNCTION AtlAxGetHost (BYVAL hwnd AS ..HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlAxGetHost AS FUNCTION (BYVAL hwnd AS HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
+   DIM pAtlAxGetHost AS FUNCTION (BYVAL hwnd AS ..HWND, BYVAL pUnk AS IUnknown PTR PTR) AS HRESULT
    pAtlAxGetHost = DyLibSymbol(pLib, "AtlAxGetHost")
    IF pAtlAxGetHost THEN FUNCTION = pAtlAxGetHost(hwnd, pUnk)
    DyLibFree(pLib)
@@ -250,12 +252,12 @@ END FUNCTION
 ' ========================================================================================
 ' Creates a device context for the device specified in the DVTARGETDEVICE structure.
 ' ========================================================================================
-PRIVATE FUNCTION AtlCreateTargetDC (BYVAL hdc AS HDC, BYVAL dv AS DVTARGETDEVICE PTR) AS HDC
+PRIVATE FUNCTION AtlCreateTargetDC (BYVAL hdc_ AS ..HDC, BYVAL dv AS DVTARGETDEVICE PTR) AS HDC
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlCreateTargetDC AS FUNCTION (BYVAL hdc AS HDC, BYVAL dv AS DVTARGETDEVICE PTR) AS HDC
+   DIM pAtlCreateTargetDC AS FUNCTION (BYVAL hdc_ AS ..HDC, BYVAL dv AS DVTARGETDEVICE PTR) AS HDC
    pAtlCreateTargetDC = DyLibSymbol(pLib, "AtlCreateTargetDC")
-   IF pAtlCreateTargetDC THEN FUNCTION = pAtlCreateTargetDC(hdc, dv)
+   IF pAtlCreateTargetDC THEN FUNCTION = pAtlCreateTargetDC(hdc_, dv)
    DyLibFree(pLib)
 END FUNCTION
 ' ========================================================================================
@@ -276,10 +278,10 @@ END FUNCTION
 ' ========================================================================================
 ' Releases the marshal data in the stream, then releases the stream pointer.
 ' ========================================================================================
-PRIVATE FUNCTION AtlDevModeW2A (BYVAL lpDevModeA AS LPDEVMODEA, BYVAL lpDevModeW AS LPDEVMODEW) AS LPDEVMODEA
+PRIVATE FUNCTION AtlDevModeW2A (BYVAL lpDevModeA AS DEVMODEA PTR, BYVAL lpDevModeW AS DEVMODEW PTR) AS DEVMODEA PTR
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlDevModeW2A AS FUNCTION (BYVAL lpDevModeA AS LPDEVMODEA, BYVAL lpDevModeW AS LPDEVMODEW) AS LPDEVMODEA
+   DIM pAtlDevModeW2A AS FUNCTION (BYVAL lpDevModeA AS DEVMODEA PTR, BYVAL lpDevModeW AS DEVMODEW PTR) AS DEVMODEA PTR
    pAtlDevModeW2A = DyLibSymbol(pLib, "AtlDevModeW2A")
    IF pAtlDevModeW2A THEN FUNCTION = pAtlDevModeW2A(lpDevModeA, lpDevModeW)
    DyLibFree(pLib)
@@ -329,10 +331,10 @@ END FUNCTION
 ' ========================================================================================
 ' Releases the marshal data in the stream, then releases the stream pointer.
 ' ========================================================================================
-PRIVATE FUNCTION AtlMarshalPtrInProc (BYVAL pUnk AS IUnknown PTR, BYVAL iid AS IID PTR, BYVAL pstm AS IStream PTR PTR) AS HRESULT
+PRIVATE FUNCTION AtlMarshalPtrInProc (BYVAL pUnk AS IUnknown PTR, BYVAL iid AS ..IID PTR, BYVAL pstm AS IStream PTR PTR) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlMarshalPtrInProc AS FUNCTION (BYVAL pUnk AS IUnknown PTR, BYVAL iid AS IID PTR, BYVAL pstm AS IStream PTR PTR) AS HRESULT
+   DIM pAtlMarshalPtrInProc AS FUNCTION (BYVAL pUnk AS IUnknown PTR, BYVAL iid AS ..IID PTR, BYVAL pstm AS IStream PTR PTR) AS HRESULT
    pAtlMarshalPtrInProc = DyLibSymbol(pLib, "AtlMarshalPtrInProc")
    IF pAtlMarshalPtrInProc THEN FUNCTION = pAtlMarshalPtrInProc(pUnk, iid, pstm)
    DyLibFree(pLib)
@@ -372,11 +374,11 @@ END FUNCTION
 ' pixels on the screen device.
 ' ========================================================================================
 PRIVATE FUNCTION AtlSetErrorInfo (BYVAL clsid AS CLSID PTR, BYVAL lpszDesc AS WSTRING PTR, BYVAL dwHelpID AS DWORD, _
-   BYVAL lpszHelpFile AS WSTRING PTR, BYVAL iid AS IID PTR, BYVAL hRes AS HRESULT, BYVAL hInst AS HINSTANCE) AS HRESULT
+   BYVAL lpszHelpFile AS WSTRING PTR, BYVAL iid AS ..IID PTR, BYVAL hRes AS HRESULT, BYVAL hInst AS HINSTANCE) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlSetErrorInfo AS FUNCTION (BYVAL clsid AS CLSID PTR, BYVAL lpszDesc AS WSTRING PTR, BYVAL dwHelpID AS DWORD, _
-      BYVAL lpszHelpFile AS WSTRING PTR, BYVAL iid AS IID PTR, BYVAL hRes AS HRESULT, BYVAL hInst AS HINSTANCE) AS HRESULT
+   DIM pAtlSetErrorInfo AS FUNCTION (BYVAL clsid AS ..CLSID PTR, BYVAL lpszDesc AS WSTRING PTR, BYVAL dwHelpID AS DWORD, _
+      BYVAL lpszHelpFile AS WSTRING PTR, BYVAL iid AS ..IID PTR, BYVAL hRes AS HRESULT, BYVAL hInst AS HINSTANCE) AS HRESULT
    pAtlSetErrorInfo = DyLibSymbol(pLib, "AtlSetErrorInfo")
    IF pAtlSetErrorInfo THEN FUNCTION = pAtlSetErrorInfo(clsid, lpszDesc, dwHelpID, lpszHelpFile, iid, hRes, hInst)
    DyLibFree(pLib)
@@ -386,10 +388,10 @@ END FUNCTION
 ' ========================================================================================
 ' Terminates the connection established through AtlAdvise.
 ' ========================================================================================
-PRIVATE FUNCTION AtlUnadvise (BYVAL pUnkCP AS IUnknown PTR, BYVAL iid AS IID PTR, BYVAL dw AS DWORD) AS HRESULT
+PRIVATE FUNCTION AtlUnadvise (BYVAL pUnkCP AS IUnknown PTR, BYVAL iid AS ..IID PTR, BYVAL dw AS DWORD) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlUnadvise AS FUNCTION (BYVAL pUnkCP AS IUnknown PTR, BYVAL iid AS IID PTR, BYVAL dw AS DWORD) AS HRESULT
+   DIM pAtlUnadvise AS FUNCTION (BYVAL pUnkCP AS IUnknown PTR, BYVAL iid AS ..IID PTR, BYVAL dw AS DWORD) AS HRESULT
    pAtlUnadvise = DyLibSymbol(pLib, "AtlUnadvise")
    IF pAtlUnadvise THEN FUNCTION = pAtlUnadvise(pUnkCP, iid, dw)
    DyLibFree(pLib)
@@ -399,10 +401,10 @@ END FUNCTION
 ' ========================================================================================
 ' Releases the marshal data in the stream, then releases the stream pointer.
 ' ========================================================================================
-PRIVATE FUNCTION AtlUnmarshalPtr (BYVAL pstm AS IStream PTR, BYVAL iid AS IID PTR, BYVAL ppUnk AS IUnknown PTR PTR) AS HRESULT
+PRIVATE FUNCTION AtlUnmarshalPtr (BYVAL pstm AS IStream PTR, BYVAL iid AS ..IID PTR, BYVAL ppUnk AS IUnknown PTR PTR) AS HRESULT
    DIM pLib AS ANY PTR = DyLibLoad(ATL_DLLNAME)
    IF pLib = NULL THEN RETURN FALSE
-   DIM pAtlUnmarshalPtr AS FUNCTION (BYVAL pstm AS IStream PTR, BYVAL iid AS IID PTR, BYVAL ppUnk AS IUnknown PTR PTR) AS HRESULT
+   DIM pAtlUnmarshalPtr AS FUNCTION (BYVAL pstm AS IStream PTR, BYVAL iid AS ..IID PTR, BYVAL ppUnk AS IUnknown PTR PTR) AS HRESULT
    pAtlUnmarshalPtr = DyLibSymbol(pLib, "AtlUnmarshalPtr")
    IF pAtlUnmarshalPtr THEN FUNCTION = pAtlUnmarshalPtr(pstm, iid, ppUnk)
    DyLibFree(pLib)
@@ -547,3 +549,5 @@ END TYPE
 #endif
 
 ' ########################################################################################
+
+END NAMESPACE

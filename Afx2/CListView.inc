@@ -24,13 +24,6 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
-
 #pragma once
 #include once "windows.bi"
 #include once "win/commctrl.bi"
@@ -79,17 +72,8 @@ Public:
    DECLARE FUNCTION GetColumnWidth (BYVAL iCol AS LONG) AS LONG
    DECLARE FUNCTION GetCountPerPage () AS LONG
    DECLARE FUNCTION GetEditControl () AS HWND
-   DECLARE FUNCTION GetEmptyText (BYREF wszText AS WSTRING, BYVAL cchText AS DWORD) AS BOOLEAN
    DECLARE FUNCTION GetExtendedListViewStyle () AS DWORD
    DECLARE FUNCTION GetFocusedGroup () AS LONG
-   DECLARE FUNCTION GetFooterInfo (BYREF vfi AS LVFOOTERINFO) AS BOOLEaN
-   DECLARE FUNCTION GetFooterInfo () AS LVFOOTERINFO
-   DECLARE FUNCTION GetFooterItem (BYVAL iItem AS LONG, BYREF fi AS LVFOOTERITEM) AS BOOLEAN
-   DECLARE FUNCTION GetFooterItem (BYVAL iItem AS UINT) AS LVFOOTERITEM
-   DECLARE FUNCTION GetFooterItemRect (BYVAL iItem AS UINT, BYREF rc AS RECT) AS BOOLEAN
-   DECLARE FUNCTION GetFooterItemRect (BYVAL iItem AS UINT) AS RECT
-   DECLARE FUNCTION GetFooterRect (BYREF rc AS RECT) AS BOOLEAN
-   DECLARE FUNCTION GetFooterRect () AS RECT
    DECLARE FUNCTION GetGroupCount () AS LONG
    DECLARE FUNCTION GetGroupHeaderImageList () AS HIMAGELIST
    DECLARE FUNCTION GetGroupInfo (BYVAL iGroupId AS LONG, BYREF grp AS LVGROUP) AS LONG
@@ -115,8 +99,6 @@ Public:
    DECLARE FUNCTION GetISearchString () AS DWSTRING
    DECLARE FUNCTION GetItem (BYREF item AS LVITEM) AS BOOLEAN
    DECLARE FUNCTION GetItemCount () AS LONG
-   DECLARE FUNCTION GetItemIndexRect (BYREF vii AS LVITEMINDEX, BYVAL iSubItem AS LONG, BYVAL code AS LONG, BYREF rc AS RECT) AS BOOLEAN
-   DECLARE FUNCTION GetItemIndexRect (BYREF vii AS LVITEMINDEX, BYVAL iSubItem AS LONG, BYVAL code AS LONG) AS RECT
    DECLARE FUNCTION GetItemPosition (BYVAL i AS LONG, BYREF pt AS POINT) AS BOOLEAN
    DECLARE FUNCTION GetItemPosition (BYVAL i AS LONG) AS POINT
    DECLARE FUNCTION GetItemRect (BYVAL i AS LONG, BYREF rc AS RECT, BYVAL code AS LONG) AS BOOLEAN
@@ -128,7 +110,6 @@ Public:
    DECLARE FUNCTION GetNextItem (BYVAL iStart AS LONG, BYVAL flags AS UINT) AS LONG
    DECLARE FUNCTION GetSelection () AS LONG
    DECLARE FUNCTION GetFocusedItem () AS LONG
-   DECLARE FUNCTION GetNextItemIndex (BYREF plvii AS LVITEMINDEX, BYVAL flags AS ..LPARAM) AS LONG
    DECLARE FUNCTION GetNumberOfWorkAreas () AS DWORD
    DECLARE FUNCTION GetOrigin (BYREF ptOrg AS POINT) AS BOOLEAN
    DECLARE FUNCTION GetOrigin () AS POINT
@@ -199,7 +180,6 @@ Public:
    DECLARE FUNCTION SetItem (BYREF item AS LVITEM) AS BOOLEAN
    DECLARE SUB SetItemCount (BYVAL cItems AS LONG)
    DECLARE SUB SetItemCountEx (BYVAL cItems AS LONG, BYVAL dwFlags AS LONG)
-   DECLARE FUNCTION SetItemIndexState (BYREF lvii AS LVITEMINDEX, BYVAL dwData AS UINT, BYVAL mask AS UINT) AS HRESULT
    DECLARE FUNCTION SetItemPosition (BYVAL i AS LONG, BYVAL x AS SHORT, BYVAL y AS SHORT) AS BOOLEAN
    DECLARE SUB SetItemPosition32 (BYVAL i AS LONG, BYVAL x AS LONG, BYVAL y AS LONG)
    DECLARE SUB SetItemState (BYVAL i AS LONG, BYVAL dwState AS DWORD, BYVAL mask AS DWORD)
@@ -243,6 +223,22 @@ Public:
    DECLARE FUNCTION ModifyHeaderFont (BYREF wszFaceName AS WSTRING, BYVAL lPointSize AS LONG, _
       BYVAL lWeight AS LONG, BYVAL bItalic AS BYTE, BYVAL bUnderline AS BYTE, BYVAL bStrikeOut AS BYTE, _
       BYVAL bCharSet AS BYTE) AS HFONT
+
+#if _WIN32_WINNT >= &h0600
+   DECLARE FUNCTION GetFooterInfo (BYREF vfi AS LVFOOTERINFO) AS BOOLEaN
+   DECLARE FUNCTION GetFooterInfo () AS LVFOOTERINFO
+   DECLARE FUNCTION GetFooterItem (BYVAL iItem AS LONG, BYREF fi AS LVFOOTERITEM) AS BOOLEAN
+   DECLARE FUNCTION GetFooterItem (BYVAL iItem AS UINT) AS LVFOOTERITEM
+   DECLARE FUNCTION GetFooterItemRect (BYVAL iItem AS UINT, BYREF rc AS RECT) AS BOOLEAN
+   DECLARE FUNCTION GetFooterItemRect (BYVAL iItem AS UINT) AS RECT
+   DECLARE FUNCTION GetItemIndexRect (BYREF vii AS LVITEMINDEX, BYVAL iSubItem AS LONG, BYVAL code AS LONG, BYREF rc AS RECT) AS BOOLEAN
+   DECLARE FUNCTION GetItemIndexRect (BYREF vii AS LVITEMINDEX, BYVAL iSubItem AS LONG, BYVAL code AS LONG) AS RECT
+   DECLARE FUNCTION GetNextItemIndex (BYREF plvii AS LVITEMINDEX, BYVAL flags AS ..LPARAM) AS LONG
+   DECLARE FUNCTION SetItemIndexState (BYREF lvii AS LVITEMINDEX, BYVAL dwData AS UINT, BYVAL mask AS UINT) AS HRESULT
+   DECLARE FUNCTION GetEmptyText (BYREF wszText AS WSTRING, BYVAL cchText AS DWORD) AS BOOLEAN
+   DECLARE FUNCTION GetFooterRect (BYREF rc AS RECT) AS BOOLEAN
+   DECLARE FUNCTION GetFooterRect () AS RECT
+#endif
 
 END TYPE
 ' ========================================================================================
@@ -502,14 +498,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the text meant for display when the list-view control appears empty.
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetEmptyText (BYREF wszText AS WSTRING, BYVAL cchText AS DWORD) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, LVM_GETEMPTYTEXT, cchText, CAST(LPARAM, @wszText))
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Gets the extended styles that are currently in use for a given list-view control.
 ' ========================================================================================
 PRIVATE FUNCTION CListView.GetExtendedListViewStyle () AS DWORD
@@ -522,66 +510,6 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CListView.GetFocusedGroup () AS LONG
    RETURN SendMessageW(m_hCtl, LVM_GETFOCUSEDGROUP, 0, 0)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Gets information on the footer of a specified list-view control.
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetFooterInfo (BYREF vfi AS LVFOOTERINFO) AS BOOLEaN
-   RETURN SendMessageW(m_hCtl, LVM_GETFOOTERINFO, 0, CAST(LPARAM, @vfi))
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetFooterInfo () AS LVFOOTERINFO
-   DIM vfi AS LVFOOTERINFO
-   SendMessageW(m_hCtl, LVM_GETFOOTERINFO, 0, CAST(LPARAM, @vfi))
-   RETURN vfi
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Gets information on a footer item for a specified list-view control.
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetFooterItem (BYVAL iItem AS LONG, BYREF fi AS LVFOOTERITEM) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, LVM_GETFOOTERITEM, iItem, CAST(LPARAM, @fi))
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetFooterItem (BYVAL iItem AS UINT) AS LVFOOTERITEM
-   DIM fi AS LVFOOTERITEM
-   SendMessageW(m_hCtl, LVM_GETFOOTERITEM, iItem, CAST(LPARAM, @fi))
-   RETURN fi
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Gets information on a footer item for a specified list-view control.
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetFooterItemRect (BYVAL iItem AS UINT, BYREF rc AS RECT) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, LVM_GETFOOTERITEMRECT, iItem, CAST(LPARAM, @rc))
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetFooterItemRect (BYVAL iItem AS UINT) AS RECT
-   DIM rc AS RECT
-   SendMessageW(m_hCtl, LVM_GETFOOTERITEMRECT, iItem, CAST(LPARAM, @rc))
-   RETURN rc
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Gets the coordinates of the footer for a specified list-view control.
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetFooterRect (BYREF rc AS RECT) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, LVM_GETFOOTERRECT, 0, CAST(LPARAM, @rc))
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetFooterRect () AS RECT
-   DIM rc AS RECT
-   SendMessageW(m_hCtl, LVM_GETFOOTERRECT, 0, CAST(LPARAM, @rc))
-   RETURN rc
 END FUNCTION
 ' ========================================================================================
 
@@ -785,23 +713,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Gets the bounding rectangle for all or part of a subitem in the current view of a
-' specified list-view control.
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetItemIndexRect (BYREF vii AS LVITEMINDEX, BYVAL iSubItem AS LONG, BYVAL code AS LONG, BYREF rc AS RECT) AS BOOLEAN
-   rc.Top = iSubItem : rc.Left = Code
-   RETURN SendMessageW(m_hCtl, LVM_GETITEMINDEXRECT, CAST(WPARAM, @vii), CAST(LPARAM, @rc))
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetItemIndexRect (BYREF vii AS LVITEMINDEX, BYVAL iSubItem AS LONG, BYVAL code AS LONG) AS RECT
-   dim rc AS RECT: rc.Top = iSubItem : rc.Left = Code
-   SendMessageW(m_hCtl, LVM_GETITEMINDEXRECT, CAST(WPARAM, @vii), CAST(LPARAM, @rc))
-   RETURN rc
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Gets the position of a list-view item.
 ' ========================================================================================
 PRIVATE FUNCTION CListView.GetItemPosition (BYVAL i AS LONG, BYREF pt AS POINT) AS BOOLEAN
@@ -899,15 +810,6 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CListView.GetFocusedItem () AS LONG
    RETURN SendMessageW(m_hCtl, LVM_GETNEXTITEM, -1, LVNI_ALL OR LVNI_FOCUSED)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
-' Gets the index of the item in a particular list-view control that has the specified
-' properties and relationship to another specific item.
-' ========================================================================================
-PRIVATE FUNCTION CListView.GetNextItemIndex (BYREF plvii AS LVITEMINDEX, BYVAL flags AS ..LPARAM) AS LONG
-   RETURN SendMessageW(m_hCtl, LVM_GETNEXTITEMINDEX, CAST(WPARAM, @plvii), flags)
 END FUNCTION
 ' ========================================================================================
 
@@ -1559,17 +1461,6 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the state of a specified list-view item.
-' ========================================================================================
-PRIVATE FUNCTION CListView.SetItemIndexState (BYREF lvii AS LVITEMINDEX, BYVAL dwData AS UINT, BYVAL mask AS UINT) AS HRESULT
-   DIM lvi AS LVITEM
-   lvi.stateMask = mask
-   lvi.state = dwData
-   RETURN SendMessageW(m_hCtl, LVM_SETITEMINDEXSTATE, CAST(WPARAM, @lvii), Cast(LPARAM, @lvi))
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Moves an item to a specified position in a list-view control (in icon or small icon view).
 ' ========================================================================================
 PRIVATE FUNCTION CListView.SetItemPosition (BYVAL i AS LONG, BYVAL x AS SHORT, BYVAL y AS SHORT) AS BOOLEAN
@@ -2072,6 +1963,113 @@ PRIVATE FUNCTION CListView.ModifyHeaderFont ( _
 
 END FUNCTION
 ' ========================================================================================
+
+#if _WIN32_WINNT >= &h0600
+' ========================================================================================
+' Gets information on the footer of a specified list-view control.
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetFooterInfo (BYREF vfi AS LVFOOTERINFO) AS BOOLEaN
+   RETURN SendMessageW(m_hCtl, LVM_GETFOOTERINFO, 0, CAST(LPARAM, @vfi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetFooterInfo () AS LVFOOTERINFO
+   DIM vfi AS LVFOOTERINFO
+   SendMessageW(m_hCtl, LVM_GETFOOTERINFO, 0, CAST(LPARAM, @vfi))
+   RETURN vfi
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets information on a footer item for a specified list-view control.
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetFooterItem (BYVAL iItem AS LONG, BYREF fi AS LVFOOTERITEM) AS BOOLEAN
+   RETURN SendMessageW(m_hCtl, LVM_GETFOOTERITEM, iItem, CAST(LPARAM, @fi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetFooterItem (BYVAL iItem AS UINT) AS LVFOOTERITEM
+   DIM fi AS LVFOOTERITEM
+   SendMessageW(m_hCtl, LVM_GETFOOTERITEM, iItem, CAST(LPARAM, @fi))
+   RETURN fi
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets information on a footer item for a specified list-view control.
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetFooterItemRect (BYVAL iItem AS UINT, BYREF rc AS RECT) AS BOOLEAN
+   RETURN SendMessageW(m_hCtl, LVM_GETFOOTERITEMRECT, iItem, CAST(LPARAM, @rc))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetFooterItemRect (BYVAL iItem AS UINT) AS RECT
+   DIM rc AS RECT
+   SendMessageW(m_hCtl, LVM_GETFOOTERITEMRECT, iItem, CAST(LPARAM, @rc))
+   RETURN rc
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets the bounding rectangle for all or part of a subitem in the current view of a
+' specified list-view control.
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetItemIndexRect (BYREF vii AS LVITEMINDEX, BYVAL iSubItem AS LONG, BYVAL code AS LONG, BYREF rc AS RECT) AS BOOLEAN
+   rc.Top = iSubItem : rc.Left = Code
+   RETURN SendMessageW(m_hCtl, LVM_GETITEMINDEXRECT, CAST(WPARAM, @vii), CAST(LPARAM, @rc))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetItemIndexRect (BYREF vii AS LVITEMINDEX, BYVAL iSubItem AS LONG, BYVAL code AS LONG) AS RECT
+   dim rc AS RECT: rc.Top = iSubItem : rc.Left = Code
+   SendMessageW(m_hCtl, LVM_GETITEMINDEXRECT, CAST(WPARAM, @vii), CAST(LPARAM, @rc))
+   RETURN rc
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets the index of the item in a particular list-view control that has the specified
+' properties and relationship to another specific item.
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetNextItemIndex (BYREF plvii AS LVITEMINDEX, BYVAL flags AS ..LPARAM) AS LONG
+   RETURN SendMessageW(m_hCtl, LVM_GETNEXTITEMINDEX, CAST(WPARAM, @plvii), flags)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the state of a specified list-view item.
+' ========================================================================================
+PRIVATE FUNCTION CListView.SetItemIndexState (BYREF lvii AS LVITEMINDEX, BYVAL dwData AS UINT, BYVAL mask AS UINT) AS HRESULT
+   DIM lvi AS LVITEM
+   lvi.stateMask = mask
+   lvi.state = dwData
+   RETURN SendMessageW(m_hCtl, LVM_SETITEMINDEXSTATE, CAST(WPARAM, @lvii), Cast(LPARAM, @lvi))
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets the text meant for display when the list-view control appears empty.
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetEmptyText (BYREF wszText AS WSTRING, BYVAL cchText AS DWORD) AS BOOLEAN
+   RETURN SendMessageW(m_hCtl, LVM_GETEMPTYTEXT, cchText, CAST(LPARAM, @wszText))
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets the coordinates of the footer for a specified list-view control.
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetFooterRect (BYREF rc AS RECT) AS BOOLEAN
+   RETURN SendMessageW(m_hCtl, LVM_GETFOOTERRECT, 0, CAST(LPARAM, @rc))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CListView.GetFooterRect () AS RECT
+   DIM rc AS RECT
+   SendMessageW(m_hCtl, LVM_GETFOOTERRECT, 0, CAST(LPARAM, @rc))
+   RETURN rc
+END FUNCTION
+' ========================================================================================
+
+#endif
 
 END NAMESPACE
 ' ########################################################################################

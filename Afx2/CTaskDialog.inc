@@ -24,18 +24,13 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
-
 #pragma once
 #include once "windows.bi"
 #include once "win/commctrl.bi"
 #include once "Afx2/CControl.inc"
 using Afx2
+
+#if _WIN32_WINNT >= &h0600
 
 NAMESPACE Afx2
 
@@ -264,3 +259,5 @@ END SUB
 ' ========================================================================================
 
 END NAMESPACE
+
+#endif

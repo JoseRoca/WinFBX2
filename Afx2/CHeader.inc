@@ -24,13 +24,6 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
-
 #pragma once
 #include once "windows.bi"
 #include once "win/commctrl.bi"
@@ -61,20 +54,15 @@ Public:
    DECLARE FUNCTION DeleteItem (BYVAL i AS DWORD) AS LONG
    DECLARE FUNCTION EditFilter (BYVAL i AS DWORD, BYVAL fDiscardChanges AS BOOLEAN) AS BOOLEAN
    DECLARE FUNCTION GetBitmapMargin () AS LONG
-   DECLARE FUNCTION GetFocusedItem () AS LONG
    DECLARE FUNCTION GetImageList () AS HIMAGELIST
    DECLARE FUNCTION GetItem (BYVAL iItem AS DWORD, BYREF hdi AS HDITEMW) AS BOOLEAN
    DECLARE FUNCTION GetItemCount () AS LONG
-   DECLARE FUNCTION GetItemDropDownRect (BYVAL iItem AS LONG, BYREF rc AS RECT) AS BOOLEAN
-   DECLARE FUNCTION GetItemDropDownRect (BYVAL iItem AS LONG) AS RECT
    DECLARE FUNCTION GetItemOrder (BYVAL nItem AS LONG) AS LONG
    DECLARE FUNCTION GetItemRect (BYVAL iItem AS LONG, BYREF rc AS RECT) AS BOOLEAN
    DECLARE FUNCTION GetItemRect (BYVAL iItem AS LONG) AS RECT
    DECLARE FUNCTION GetItemText (BYVAL nItem AS LONG, BYVAL pszText AS WSTRING PTR, BYVAL cchTextMax AS LONG) AS BOOLEAN
    DECLARE FUNCTION GetItemWidth (BYVAL nItem AS LONG) AS LONG
    DECLARE FUNCTION GetOrderArray (BYVAL iCount AS LONG, BYVAL lpiArray AS LONG PTR) AS LONG
-   DECLARE FUNCTION GetOverflowRect (BYREF rc AS RECT) AS BOOLEAN
-   DECLARE FUNCTION GetOverflowRect () AS RECT
    DECLARE FUNCTION GetStateImageList () AS HIMAGELIST
    DECLARE FUNCTION GetText (BYVAL iCol AS LONG, BYVAL cchTextMax AS LONG = 0) AS DWSTRING
    DECLARE FUNCTION HitTest (BYREF hdhti AS HDHITTESTINFO) AS LONG
@@ -85,7 +73,6 @@ Public:
    DECLARE FUNCTION OrderToIndex (BYVAL i AS LONG) AS LONG
    DECLARE FUNCTION SetBitmapMargin (BYVAL iWidth AS DWORD) AS LONG
    DECLARE FUNCTION SetFilterChangeTimeout (BYVAL i AS LONG) AS LONG
-   DECLARE FUNCTION SetFocusedItem (BYVAL iItem AS LONG) AS BOOLEAN
    DECLARE FUNCTION SetHotDivider (BYVAL fPos AS BOOLEAN, BYVAL dwInputValue AS LONG) AS LONG
    DECLARE FUNCTION SetImageList (BYVAL himl AS HIMAGELIST) AS HIMAGELIST
    DECLARE FUNCTION SetItem (BYVAL i AS DWORD, BYREF hdi AS HDITEMW) AS LONG
@@ -95,6 +82,15 @@ Public:
    DECLARE FUNCTION SetOrderArray (BYVAL iSize AS DWORD, BYVAL lpiArray AS LONG PTR) AS LONG
    DECLARE FUNCTION SetStateImageList (BYVAL himl AS HIMAGELIST) AS HIMAGELIST
    DECLARE FUNCTION SetText (BYVAL nItem AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+
+#if _WIN32_WINNT >= &h0600
+   DECLARE FUNCTION GetFocusedItem () AS LONG
+   DECLARE FUNCTION GetItemDropDownRect (BYVAL iItem AS LONG, BYREF rc AS RECT) AS BOOLEAN
+   DECLARE FUNCTION GetItemDropDownRect (BYVAL iItem AS LONG) AS RECT
+   DECLARE FUNCTION GetOverflowRect (BYREF rc AS RECT) AS BOOLEAN
+   DECLARE FUNCTION GetOverflowRect () AS RECT
+   DECLARE FUNCTION SetFocusedItem (BYVAL iItem AS LONG) AS BOOLEAN
+#endif
 
 END TYPE
 ' ========================================================================================
@@ -193,6 +189,7 @@ PRIVATE FUNCTION CHeader.GetBitmapMargin () AS LONG
 END FUNCTION
 ' ========================================================================================
 
+#if _WIN32_WINNT >= &h0600
 ' ========================================================================================
 ' Gets the item in a header control that has the focus.
 ' ========================================================================================
@@ -200,6 +197,7 @@ PRIVATE FUNCTION CHeader.GetFocusedItem () AS LONG
    RETURN SendMessageW(m_hCtl, HDM_GETFOCUSEDITEM, 0, 0)
 END FUNCTION
 ' ========================================================================================
+#endif
 
 ' ========================================================================================
 ' Gets the handle to the image list that has been set for an existing header control.
@@ -225,6 +223,7 @@ PRIVATE FUNCTION CHeader.GetItemCount () AS LONG
 END FUNCTION
 ' ========================================================================================
 
+#if _WIN32_WINNT >= &h0600
 ' ========================================================================================
 ' Gets the coordinates of the drop-down button for a specfied item in a header control.
 ' The header control must be of type HDF_SPLITBUTTON.
@@ -241,6 +240,7 @@ PRIVATE FUNCTION CHeader.GetItemDropDownRect (BYVAL iItem AS LONG) AS RECT
    RETURN rc
 END FUNCTION
 ' ========================================================================================
+#endif
 
 ' ========================================================================================
 ' Gets the bounding rectangle for a given item in a header control.
@@ -313,6 +313,7 @@ PRIVATE FUNCTION CHeader.GetOrderArray (BYVAL iCount AS LONG, BYVAL lpiArray AS 
 END FUNCTION
 ' ========================================================================================
 
+#if _WIN32_WINNT >= &h0600
 ' ========================================================================================
 ' Gets the coordinates of the drop-down overflow area for a specified header control.
 ' The header control must be of type HDF_SPLITBUTTON.
@@ -329,6 +330,7 @@ PRIVATE FUNCTION CHeader.GetOverflowRect () AS RECT
    RETURN rc
 END FUNCTION
 ' ========================================================================================
+#endif
 
 ' ========================================================================================
 ' Gets the handle to the image list that has been set for an existing header control state.
@@ -417,6 +419,7 @@ PRIVATE FUNCTION CHeader.SetFilterChangeTimeout (BYVAL i AS LONG) AS LONG
 END FUNCTION
 ' ========================================================================================
 
+#if _WIN32_WINNT >= &h0600
 ' ========================================================================================
 ' Sets the focus to a specified item in a header control.
 ' ========================================================================================
@@ -424,6 +427,7 @@ PRIVATE FUNCTION CHeader.SetFocusedItem (BYVAL iItem AS LONG) AS BOOLEAN
    RETURN SendMessageW(m_hCtl, HDM_SETFOCUSEDITEM, 0, iItem)
 END FUNCTION
 ' ========================================================================================
+#endif
 
 ' ========================================================================================
 ' Changes the color of a divider between header items to indicate the destination of an

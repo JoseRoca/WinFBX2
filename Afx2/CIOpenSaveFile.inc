@@ -13,8 +13,9 @@
 #include once "Afx2/AfxWin2.inc"
 USING Afx2
 
-NAMESPACE Afx2
+#if _WIN32_WINNT >= &h0600
 
+NAMESPACE Afx2
 
 ' ########################################################################################
 ' CFileDialogEvents class
@@ -54,7 +55,7 @@ END TYPE
 ' =====================================================================================
 ' Constructor
 ' =====================================================================================
-CONSTRUCTOR CFileDialogEvents (BYVAL xPos AS LONG, BYVAL yPos AS LONG)
+PRIVATE CONSTRUCTOR CFileDialogEvents (BYVAL xPos AS LONG, BYVAL yPos AS LONG)
    ' // Open file dialog coordinates
    m_xPos = xPos
    m_yPos = yPos
@@ -63,7 +64,7 @@ END CONSTRUCTOR
 ' =====================================================================================
 ' Destructor
 ' =====================================================================================
-DESTRUCTOR CFileDialogEvents
+PRIVATE DESTRUCTOR CFileDialogEvents
 END DESTRUCTOR
 ' =====================================================================================
 
@@ -71,7 +72,7 @@ END DESTRUCTOR
 ' ========================================================================================
 ' Returns pointers to the implemented classes and supported interfaces.
 ' ========================================================================================
-FUNCTION CFileDialogEvents.QueryInterface (BYVAL riid AS REFIID, BYVAL ppvObj AS LPVOID PTR) AS HRESULT
+PRIVATE FUNCTION CFileDialogEvents.QueryInterface (BYVAL riid AS REFIID, BYVAL ppvObj AS LPVOID PTR) AS HRESULT
    OutputDebugStringW("CFileDialogEvents.QueryInterface")
    IF ppvObj = NULL THEN RETURN E_INVALIDARG
    IF IsEqualIID(riid, @IID_IFileOpenDialog) OR _
@@ -89,7 +90,7 @@ END FUNCTION
 ' Increments the reference count for an interface on an object. This method should be called
 ' for every new copy of a pointer to an interface on an object.
 ' ========================================================================================
-FUNCTION CFileDialogEvents.AddRef () AS ULONG
+PRIVATE FUNCTION CFileDialogEvents.AddRef () AS ULONG
    refCount += 1
    OutputDebugStringW("CFileDialogEvents.AddRef " & ..WSTR(refCount))
    RETURN refCount
@@ -100,7 +101,7 @@ END FUNCTION
 ' Decrements the reference count for an interface on an object.
 ' If the count reaches 0, it deletes itself.
 ' ========================================================================================
-Function CFileDialogEvents.Release () as ULONG
+PRIVATE FUNCTION CFileDialogEvents.Release () AS ULONG
    refCount -= 1
    OutputDebugStringW("CFileDialogEvents.Release " & ..WSTR(refCount))
    IF refCount = 0 THEN
@@ -116,7 +117,7 @@ END FUNCTION
 ' Called just before the dialog is about to return with a result.
 ' When this method is called, the IFileDialog::GetResult and GetResults methods can be called.
 ' =====================================================================================
-FUNCTION CFileDialogEvents.OnFileOk (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+PRIVATE FUNCTION CFileDialogEvents.OnFileOk (BYVAL pfd AS IFileDialog PTR) AS HRESULT
    OutputDebugStringW("CFileDialogEvents.OnFileOk")
    RETURN S_OK
 END FUNCTION
@@ -125,7 +126,7 @@ END FUNCTION
 ' Called before OnFolderChange. This allows the implementer to stop navigation to a particular location.
 ' A pointer to an interface that represents the folder to which the dialog is about to navigate.
 ' =====================================================================================
-FUNCTION CFileDialogEvents.OnFolderChanging (BYVAL pfd AS IFileDialog PTR, BYVAL psiFolder AS IShellItem PTR) AS HRESULT
+PRIVATE FUNCTION CFileDialogEvents.OnFolderChanging (BYVAL pfd AS IFileDialog PTR, BYVAL psiFolder AS IShellItem PTR) AS HRESULT
    OutputDebugStringW("CFileDialogEvents.OnFolderChanging")
    RETURN S_OK
 END FUNCTION
@@ -134,7 +135,7 @@ END FUNCTION
 ' Called when the user navigates to a new folder.
 ' OnFolderChange is called when the dialog is opened.
 ' =====================================================================================
-FUNCTION CFileDialogEvents.OnFolderChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+PRIVATE FUNCTION CFileDialogEvents.OnFolderChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
    OutputDebugStringW("CFileDialogEvents.OnFolderChange")
    IF m_hOleWindow = NULL THEN
       ' // Before displaying the dialog get its coordinates
@@ -179,7 +180,7 @@ END FUNCTION
 ' =====================================================================================
 ' Called when the user changes the selection in the dialog's view.
 ' =====================================================================================
-FUNCTION CFileDialogEvents.OnSelectionChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+PRIVATE FUNCTION CFileDialogEvents.OnSelectionChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
    OutputDebugStringW("CFileDialogEvents.OnSelectionChange")
    RETURN S_OK
 END FUNCTION
@@ -187,7 +188,7 @@ END FUNCTION
 ' =====================================================================================
 ' Enables an application to respond to sharing violations that arise from Open or Save operations.
 ' =====================================================================================
-FUNCTION CFileDialogEvents.OnShareViolation (BYVAL pfd AS IFileDialog PTR, BYVAL psi AS IShellItem PTR, BYVAL pResponse AS FDE_SHAREVIOLATION_RESPONSE PTR) AS HRESULT
+PRIVATE FUNCTION CFileDialogEvents.OnShareViolation (BYVAL pfd AS IFileDialog PTR, BYVAL psi AS IShellItem PTR, BYVAL pResponse AS FDE_SHAREVIOLATION_RESPONSE PTR) AS HRESULT
    OutputDebugStringW("CFileDialogEvents.OnShareViolation")
    RETURN S_OK
 END FUNCTION
@@ -195,7 +196,7 @@ END FUNCTION
 ' =====================================================================================
 ' Called when the dialog is opened to notify the application of the initial chosen filetype.
 ' =====================================================================================
-FUNCTION CFileDialogEvents.OnTypeChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
+PRIVATE FUNCTION CFileDialogEvents.OnTypeChange (BYVAL pfd AS IFileDialog PTR) AS HRESULT
    OutputDebugStringW("CFileDialogEvents.OnTypeChange")
    RETURN S_OK
 END FUNCTION
@@ -203,7 +204,7 @@ END FUNCTION
 ' =====================================================================================
 ' Called from the save dialog when the user chooses to overwrite a file.
 ' =====================================================================================
-FUNCTION CFileDialogEvents.OnOverwrite (BYVAL pfd AS IFileDialog PTR, BYVAL psi AS IShellItem PTR, BYVAL pResponse AS FDE_OVERWRITE_RESPONSE PTR) AS HRESULT
+PRIVATE FUNCTION CFileDialogEvents.OnOverwrite (BYVAL pfd AS IFileDialog PTR, BYVAL psi AS IShellItem PTR, BYVAL pResponse AS FDE_OVERWRITE_RESPONSE PTR) AS HRESULT
    OutputDebugStringW("CFileDialogEvents.OnOverwrite")
    RETURN S_OK
 END FUNCTION
@@ -1050,7 +1051,8 @@ PRIVATE FUNCTION IDisplayOpenFile.StartVisualGroup (BYVAL dwIDCtl AS DWORD, BYVA
 END FUNCTION
 ' ========================================================================================
 
-
 ' ########################################################################################
 
 END NAMESPACE
+
+#endif

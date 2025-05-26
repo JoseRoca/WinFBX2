@@ -24,13 +24,6 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
-
 #pragma once
 #include once "windows.bi"
 #include once "win/commctrl.bi"

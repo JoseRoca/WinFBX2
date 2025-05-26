@@ -24,14 +24,6 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
-#pragma once
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
-
 #include once "Afx2/RGB_Colors.bi"
 #include once "windows.bi"
 #include once "win/commctrl.bi"
@@ -317,11 +309,17 @@ TYPE CDialog
       DECLARE FUNCTION DisplayGetBitsPerPixel () AS DWORD
       DECLARE FUNCTION DisplayGetFrequency () AS DWORD
 
-      ' // Additional functions
-      DECLARE FUNCTION ScaleRX () AS SINGLE
-      DECLARE FUNCTION ScaleRY () AS SINGLE
+      ' // Additional functions (High  DPI)
       DECLARE FUNCTION RxRatio () AS SINGLE
       DECLARE FUNCTION RyRatio () AS SINGLE
+      DECLARE FUNCTION ScaleX (BYVAL cx AS SINGLE) AS SINGLE
+      DECLARE FUNCTION ScaleY (BYVAL cy AS SINGLE) AS SINGLE
+      DECLARE FUNCTION UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
+      DECLARE FUNCTION UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
+      DECLARE FUNCTION ScaleRect (BYREF rc AS RECT) AS BOOLEAN
+      DECLARE FUNCTION UnScaleRect (BYREF rc AS RECT) AS BOOLEAN
+      DECLARE FUNCTION GetScaledRect (BYREF rc AS RECT) AS RECT
+      DECLARE FUNCTION GetUnScaledRect (BYREF rc AS RECT) AS RECT
 
       ' // Layout manager
       DECLARE FUNCTION ControlAnchor (BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
@@ -3061,19 +3059,7 @@ END FUNCTION
 ' ########################################################################################
 
 ' ========================================================================================
-' Retrieves the desktop horizontal scaling ratio.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.ScaleRX () AS SINGLE
-   RETURN m_rx
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Retrieves the desktop vertical scaling ratio.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.ScaleRY () AS SINGLE
-   RETURN m_ry
-END FUNCTION
-' ========================================================================================
+' Returns the DPI scaling ratios
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.rxRatio () AS SINGLE
    RETURN m_rx
@@ -3082,6 +3068,95 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ryRatio () AS SINGLE
    RETURN m_ry
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Scales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ScaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cx * (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Scales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ScaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cy * (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Unscales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cx / (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Unscales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cy / (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Scales a RECT structure in place
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ScaleRect (BYREF rc AS RECT) AS BOOLEAN
+   IF VARPTR(rc) = 0 THEN RETURN FALSE
+   rc.left   *= m_rx
+   rc.right  *= m_rx
+   rc.top    *= m_ry
+   rc.bottom *= m_ry
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Unscales a RECT structure in place
+' ========================================================================================
+PRIVATE FUNCTION CDialog.UnScaleRect (BYREF rc AS RECT) AS BOOLEAN
+   IF VARPTR(rc) = 0 THEN RETURN FALSE
+   rc.left   /= m_rx
+   rc.right  /= m_rx
+   rc.top    /= m_ry
+   rc.bottom /= m_ry
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Scales a RECT structure.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.GetScaledRect (BYREF rc AS RECT) AS RECT
+   IF VARPTR(rc) = 0 THEN EXIT FUNCTION
+   DIM rcCopy AS RECT = TYPE<RECT>(rc.left, rc.top, rc.right, rc.Bottom)
+   rc.left   *= m_rx
+   rc.right  *= m_rx
+   rc.top    *= m_ry
+   rc.bottom *= m_ry
+   RETURN rcCopy
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Unscales a RECT structure.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.GetUnScaledRect (BYREF rc AS RECT) AS RECT
+   IF VARPTR(rc) = 0 THEN EXIT FUNCTION
+   DIM rcCopy AS RECT = TYPE<RECT>(rc.left, rc.top, rc.right, rc.Bottom)
+   rc.left   /= m_rx
+   rc.right  /= m_rx
+   rc.top    /= m_ry
+   rc.bottom /= m_ry
+   RETURN rcCopy
 END FUNCTION
 ' ========================================================================================
 

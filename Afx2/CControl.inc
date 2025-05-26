@@ -24,23 +24,12 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
-
 #pragma once
 #include once "windows.bi"
 #include once "win/windowsx.bi"
 #include once "win/commctrl.bi"
 #include once "Afx2/DWSTRING.inc"
 #include once "Afx2/CDialog.inc"
-' // conflictin defines in windowsx.bi
-#undef DeleteBitmap
-#undef GetNextSibling
-#undef GetPrevSibling
 
 NAMESPACE Afx2
 
@@ -78,12 +67,18 @@ Public:
    DECLARE FUNCTION PixToDluRY (BYVAL hCtl AS HWND) AS SINGLE
    DECLARE FUNCTION PixToDluX (BYVAL hCtl AS HWND, BYVAL pix AS LONG) AS SINGLE
    DECLARE FUNCTION PixToDluY (BYVAL hCtl AS HWND, BYVAL pix AS LONG) AS SINGLE
-   DECLARE FUNCTION ScaleRX () AS SINGLE
-   DECLARE FUNCTION ScaleRY () AS SINGLE
+   DECLARE FUNCTION PixToDluRect (BYVAL hCtl AS HWND, BYREF rc AS RECT) AS BOOLEAN
+   ' // Pixels - High DPI
+   DECLARE FUNCTION rxRatio () AS SINGLE
+   DECLARE FUNCTION ryRatio () AS SINGLE
    DECLARE FUNCTION ScaleX (BYVAL cx AS SINGLE) AS SINGLE
    DECLARE FUNCTION ScaleY (BYVAL cy AS SINGLE) AS SINGLE
    DECLARE FUNCTION UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
    DECLARE FUNCTION UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DECLARE FUNCTION ScaleRect (BYREF rc AS RECT) AS BOOLEAN
+   DECLARE FUNCTION UnScaleRect (BYREF rc AS RECT) AS BOOLEAN
+   DECLARE FUNCTION GetScaledRect (BYREF rc AS RECT) AS RECT
+   DECLARE FUNCTION GetUnScaledRect (BYREF rc AS RECT) AS RECT
 
    DECLARE FUNCTION GetFileVersion (BYVAL pwszFileName AS WSTRING PTR) AS LONG
    DECLARE FUNCTION ComCtlVersion () AS LONG
@@ -323,6 +318,17 @@ PRIVATE FUNCTION CControl.PixToDluY (BYVAL hCtl AS HWND, BYVAL pix AS LONG) AS S
    RETURN pix * (8.0 / rc.bottom)
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+' Maps a RECT structure from pixels to dialog units in place.
+' ========================================================================================
+PRIVATE FUNCTION CControl.PixToDluRect (BYVAL hCtl AS HWND, BYREF rc AS RECT) AS BOOLEAN
+   IF VARPTR(rc) = 0 THEN RETURN FALSE
+   rc.left = this.PixToDluX(hCtl, rc.left)
+   rc.right = this.PixToDluX(hCtl, rc.right)
+   rc.top = this.PixToDluY(hCtl, rc.top)
+   rc.bottom = this.PixToDluY(hCtl, rc.bottom)
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' * Retrieves the conversion ratios from pixels to dialog units
@@ -343,22 +349,22 @@ END FUNCTION
 ' ========================================================================================
 ' Retrieves the desktop horizontal scaling ratio.
 ' ========================================================================================
-PRIVATE FUNCTION CControl.ScaleRX () AS SINGLE
+PRIVATE FUNCTION CControl.rxRatio () AS SINGLE
    DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   DIM rxRatio AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   DIM rx AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
    ReleaseDC HWND_DESKTOP, hDC
-   FUNCTION = rxRatio
+   RETURN rx
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
 ' Retrieves the desktop vertical scaling ratio.
 ' ========================================================================================
-PRIVATE FUNCTION CControl.ScaleRY () AS SINGLE
+PRIVATE FUNCTION CControl.ryRatio () AS SINGLE
    DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   DIM ryRatio AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   DIM ry AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
    ReleaseDC HWND_DESKTOP, hDC
-   FUNCTION = ryRatio
+   RETURN ry
 END FUNCTION
 ' ========================================================================================
 
@@ -399,6 +405,57 @@ PRIVATE FUNCTION CControl.UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
    DIM hDC AS HDC = GetDC(HWND_DESKTOP)
    FUNCTION = cy / (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
    ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Scales a RECT structure in place
+' ========================================================================================
+PRIVATE FUNCTION CControl.ScaleRect (BYREF rc AS RECT) AS BOOLEAN
+   IF VARPTR(rc) = 0 THEN RETURN FALSE
+   rc.left   *= this.rxRatio
+   rc.right  *= this.rxRatio
+   rc.top    *= this.ryRatio
+   rc.bottom *= this.ryRatio
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Unscales a RECT structure in place
+' ========================================================================================
+PRIVATE FUNCTION CControl.UnScaleRect (BYREF rc AS RECT) AS BOOLEAN
+   IF VARPTR(rc) = 0 THEN RETURN FALSE
+   rc.left   /= this.rxRatio
+   rc.right  /= this.rxRatio
+   rc.top    /= this.ryRatio
+   rc.bottom /= this.ryRatio
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Scales a RECT structure.
+' ========================================================================================
+PRIVATE FUNCTION CControl.GetScaledRect (BYREF rc AS RECT) AS RECT
+   IF VARPTR(rc) = 0 THEN EXIT FUNCTION
+   DIM rcCopy AS RECT = TYPE<RECT>(rc.left, rc.top, rc.right, rc.Bottom)
+   rc.left   *= this.rxRatio
+   rc.right  *= this.rxRatio
+   rc.top    *= this.ryRatio
+   rc.bottom *= this.ryRatio
+   RETURN rcCopy
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Unscales a RECT structure.
+' ========================================================================================
+PRIVATE FUNCTION CControl.GetUnScaledRect (BYREF rc AS RECT) AS RECT
+   IF VARPTR(rc) = 0 THEN EXIT FUNCTION
+   DIM rcCopy AS RECT = TYPE<RECT>(rc.left, rc.top, rc.right, rc.Bottom)
+   rc.left   /= this.rxRatio
+   rc.right  /= this.rxRatio
+   rc.top    /= this.ryRatio
+   rc.bottom /= this.ryRatio
+   RETURN rcCopy
 END FUNCTION
 ' ========================================================================================
 

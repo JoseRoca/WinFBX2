@@ -25,18 +25,19 @@
 ' ########################################################################################
 
 #pragma once
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
-
 #INCLUDE ONCE "windows.bi"
+#INCLUDE ONCE "win/commctrl.bi"
+#INCLUDE ONCE "win/ole2.bi"
 #INCLUDE ONCE "win/psapi.bi"
+#INCLUDE ONCE "win/shlobj.bi"
+#INCLUDE ONCE "win/shobjidl.bi"
 #INCLUDE ONCE "win/shlwapi.bi"
+#INCLUDE ONCE "win/KnownFolders.bi"
 #INCLUDE ONCE "win/commdlg.bi"
 #INCLUDE ONCE "win/cderr.bi"
+'#INCLUDE ONCE "Afx/AfxPath.inc"
+'#INCLUDE ONCE "Afx/AfxStr.inc"
+#INCLUDE ONCE "crt/string.bi"
 #INCLUDE ONCE "Afx2/DWSTRING.inc"
 #INCLUDE ONCE "Afx2/AfxDPIProcs2.inc"
 

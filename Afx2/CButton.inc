@@ -24,17 +24,12 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
-
 #pragma once
 #include once "windows.bi"
 #include once "win/commctrl.bi"
 #include once "Afx2/CControl.inc"
+' // conflicting define in windowsx.bi
+#undef DeleteBitmap
 using Afx2
 
 NAMESPACE Afx2
@@ -60,7 +55,6 @@ Public:
    DECLARE FUNCTION Disable () AS BOOLEAN
    DECLARE FUNCTION Enable () AS BOOLEAN
    DECLARE SUB Click ()
-   DECLARE SUB SetDontClick (BYVAL bState AS BOOLEAN)
    DECLARE FUNCTION GetTextLength () AS LONG
    DECLARE FUNCTION GetText () AS DWSTRING
    DECLARE FUNCTION SetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
@@ -88,13 +82,16 @@ Public:
    DECLARE FUNCTION GetIdealSize (BYREF tSize AS SIZE) AS BOOLEAN
    DECLARE FUNCTION GetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
    DECLARE FUNCTION SetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
+#if _WIN32_WINNT >= &h0600
    DECLARE FUNCTION SetDropDownState (BYVAL bDropDown AS BOOLEAN) AS BOOLEAN
-   DECLARE FUNCTION GetSplitInfo (BYREF pInfo AS BUTTON_SPLITINFO) AS BOOLEAN
-   DECLARE FUNCTION SetSplitInfo (BYREF pInfo AS BUTTON_SPLITINFO) AS BOOLEAN
+   DECLARE FUNCTION GetSplitInfo (BYREF info AS BUTTON_SPLITINFO) AS BOOLEAN
+   DECLARE FUNCTION SetSplitInfo (BYREF info AS BUTTON_SPLITINFO) AS BOOLEAN
+   DECLARE SUB SetDontClick (BYVAL bState AS BOOLEAN)
    DECLARE FUNCTION GetNoteLength () AS LONG
    DECLARE FUNCTION GetNote () AS DWSTRING
    DECLARE FUNCTION SetNote (BYREF pwsz AS WSTRING) AS BOOLEAN
    DECLARE FUNCTION SetElevationRequiredState (BYVAL bRequired AS BOOLEAN) AS LONG
+#endif
 
 END TYPE
 ' ========================================================================================
@@ -194,6 +191,8 @@ PRIVATE SUB CButton.Click ()
    SendMessageW(m_hCtl, BM_CLICK, 0, 0)
 END SUB
 ' ========================================================================================
+
+#if _WIN32_WINNT >= &h0600
 ' ========================================================================================
 ' Sets a flag on a radio button that controls the generation of BN_CLICKED messages when
 ' the button receives focus.
@@ -203,6 +202,8 @@ PRIVATE SUB CButton.SetDontClick (BYVAL bState AS BOOLEAN)
    SendMessageW(m_hCtl, BM_SETDONTCLICK, bState, 0)
 END SUB
 ' ========================================================================================
+#endif
+
 ' ========================================================================================
 ' Retrieves a handle to the image (icon or bitmap) associated with the button.
 ' ========================================================================================
@@ -397,7 +398,9 @@ PRIVATE FUNCTION CButton.GetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
    RETURN SendMessageW(m_hCtl, BCM_GETTEXTMARGIN, 0, CAST(LPARAM, @tMargin))
 END FUNCTION
 ' ========================================================================================
-' ========================================================================================
+
+#if _WIN32_WINNT >= &h0600
+ ' ========================================================================================
 ' Sets the drop down state for a specified button with style of BS_SPLITBUTTON.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.SetDropDownState (BYVAL bDropDown AS BOOLEAN) AS BOOLEAN
@@ -407,15 +410,15 @@ END FUNCTION
 ' ========================================================================================
 ' Sets information for a specified split button control.
 ' ========================================================================================
-PRIVATE FUNCTION CButton.SetSplitInfo (BYREF pInfo AS BUTTON_SPLITINFO) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, BCM_SETSPLITINFO, 0, CAST(LPARAM, @pInfo))
+PRIVATE FUNCTION CButton.SetSplitInfo (BYREF info AS BUTTON_SPLITINFO) AS BOOLEAN
+   RETURN SendMessageW(m_hCtl, BCM_SETSPLITINFO, 0, CAST(LPARAM, @info))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Gets information for a specified split button control.
 ' ========================================================================================
-PRIVATE FUNCTION CButton.GetSplitInfo (BYREF pInfo AS BUTTON_SPLITINFO) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, BCM_GETSPLITINFO, 0, CAST(LPARAM, @pInfo))
+PRIVATE FUNCTION CButton.GetSplitInfo (BYREF info AS BUTTON_SPLITINFO) AS BOOLEAN
+   RETURN SendMessageW(m_hCtl, BCM_GETSPLITINFO, 0, CAST(LPARAM, @info))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -451,6 +454,7 @@ PRIVATE FUNCTION CButton.SetElevationRequiredState (BYVAL bRequired AS BOOLEAN) 
    RETURN SendMessageW(m_hCtl, BCM_SETSHIELD, 0, bRequired)
 END FUNCTION
 ' ========================================================================================
+#endif
 
 ' ========================================================================================
 ' Changes the check state of a button control.

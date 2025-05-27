@@ -61,5 +61,5 @@ END FUNCTION
 Gets/sets a flag indicating if the dialog uses pixels (TRUE). If this flag is false, then the dialog uses dialog units.
 ```
 PROPERTY UsesPixels () AS BOOLEAN
+```
 ---
-

@@ -207,14 +207,6 @@ TYPE CDialog
       DECLARE FUNCTION DialogSend (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
       DECLARE SUB DialogSetIcon (BYREF wszImage AS WSTRING)
       DECLARE SUB DialogSetIconEx (BYVAL hIconBig AS HICON, BYVAL hIconSmall AS HICON)
-      DECLARE FUNCTION DialogUnitsToPixels (BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogUnitsToPixelsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
-      DECLARE FUNCTION DlgToPixRX () AS SINGLE
-      DECLARE FUNCTION DlgToPixRY () AS SINGLE
-      DECLARE FUNCTION PixelsToDialogUnits (BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
-      DECLARE FUNCTION PixelsToDialogUnitsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
-      DECLARE FUNCTION PixToDlgRX () AS SINGLE
-      DECLARE FUNCTION PixToDlgRY () AS SINGLE
       DECLARE FUNCTION DialogGetSize (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
       DECLARE FUNCTION DialogGetWidth () AS LONG
       DECLARE FUNCTION DialogGetHeight () AS LONG
@@ -275,6 +267,7 @@ TYPE CDialog
       DECLARE SUB ControlCenterVert (BYVAL cId AS LONG)
       DECLARE FUNCTION ControlGetCheck (BYVAL cId AS LONG) AS LONG
       DECLARE SUB ControlSetCheck (BYVAL cId AS LONG, BYVAL checkState AS LONG)
+      DECLARE FUNCTION ControlSetOption (BYVAL cId AS LONG, BYVAL minId AS LONG, BYVAL maxId AS LONG) AS BOOLEAN
       DECLARE FUNCTION ControlSetIcon (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
       DECLARE FUNCTION ControlSetBitmap (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
 
@@ -287,6 +280,9 @@ TYPE CDialog
       DECLARE FUNCTION IsDialogRepaintDisabled () AS BOOLEAN
       DECLARE SUB DialogDisableRepaintOnResize (BYVAL fRepaint AS BOOLEAN)
       DECLARE FUNCTION IsDialogRepaintDisabledOnResize () AS BOOLEAN
+
+      ' // Images
+      DECLARE FUNCTION FindResourceType (BYREF wszResourceName AS WSTRING) AS STRING
 
       ' // Desktop window
       DECLARE FUNCTION DesktopGetWindow () AS HWND
@@ -309,17 +305,25 @@ TYPE CDialog
       DECLARE FUNCTION DisplayGetBitsPerPixel () AS DWORD
       DECLARE FUNCTION DisplayGetFrequency () AS DWORD
 
-      ' // Additional functions (High  DPI)
+      ' // Conversion functions
+      DECLARE FUNCTION DialogUnitsToPixels (BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
+      DECLARE FUNCTION DialogUnitsToPixelsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+      DECLARE FUNCTION DluToPixRX () AS SINGLE
+      DECLARE FUNCTION DluToPixRY () AS SINGLE
+      DECLARE FUNCTION PixelsToDialogUnits (BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
+      DECLARE FUNCTION PixelsToDialogUnitsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+      DECLARE FUNCTION PixToDluRX () AS SINGLE
+      DECLARE FUNCTION PixToDluRY () AS SINGLE
+
+      ' // Scaling (High DPI)
       DECLARE FUNCTION RxRatio () AS SINGLE
       DECLARE FUNCTION RyRatio () AS SINGLE
       DECLARE FUNCTION ScaleX (BYVAL cx AS SINGLE) AS SINGLE
       DECLARE FUNCTION ScaleY (BYVAL cy AS SINGLE) AS SINGLE
       DECLARE FUNCTION UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
       DECLARE FUNCTION UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
-      DECLARE FUNCTION ScaleRect (BYREF rc AS RECT) AS BOOLEAN
-      DECLARE FUNCTION UnScaleRect (BYREF rc AS RECT) AS BOOLEAN
-      DECLARE FUNCTION GetScaledRect (BYREF rc AS RECT) AS RECT
-      DECLARE FUNCTION GetUnScaledRect (BYREF rc AS RECT) AS RECT
+      DECLARE FUNCTION ScaleRect (BYVAL rc AS RECT) AS RECT
+      DECLARE FUNCTION UnScaleRect (BYVAL rc AS RECT) AS RECT
 
       ' // Layout manager
       DECLARE FUNCTION ControlAnchor (BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
@@ -555,34 +559,58 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
       CASE "BITMAPLABEL"
          ' Adds an image label to the window.
          wsClassName = "Static"
-         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_GROUP OR SS_BITMAP
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR SS_BITMAP
          IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
+         ' // Make sure it has the SS_BITMAP style
+         dwStyle OR= SS_BITMAP
          bSetFont = FALSE
       CASE "ICONLABEL"
          ' Adds an image label to the window.
          wsClassName = "Static"
-         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_GROUP OR SS_ICON
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR SS_ICON
          IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
+         ' // Make sure it has the SS_ICON style
+         dwStyle OR= SS_ICON
          bSetFont = FALSE
-      CASE "BITMAPBUTTON"
+      CASE "BITMAPBUTTON", "BITMAPBUTTONX"
          ' Adds an image button to the window.
          wsClassName = "Button"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON OR BS_BITMAP
+         ' // Make sure it has the BS_BITMAP style
+         dwStyle OR= BS_BITMAP
          bSetFont = FALSE
-      CASE "ICONBUTTON"
+      CASE "ICONBUTTON", "ICONBUTTONX"
          ' Adds an image button to the window.
          wsClassName = "Button"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON OR BS_ICON
+         ' // Make sure it has the BS_ICON style
+         dwStyle OR= BS_ICON
          bSetFont = FALSE
-'      CASE "IMAGE", "IMAGEX"   ' // For compatibility with PowerBasic
-'         wsClassName = "Static"
-'         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_GROUP ' SS_BITMAP or SS_ICON must be specified
-'         IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
-'         bSetFont = FALSE
-'      CASE "IMGBUTTON", "IMGBUTTONX"   ' // For compatibility with PowerBasic
-'         wsClassName = "Button"
-'         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON ' BS_BITMAP or BS_ICON must be specified
-'         bSetFont = FALSE
+      CASE "IMGBUTTON", "IMGBUTTONX"   ' // For compatibility with PowerBasic
+         wsClassName = "Button"
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON ' BS_BITMAP or BS_ICON must be specified
+         bSetFont = FALSE
+      CASE "IMAGE"   ' // For compatibility with PowerBasic
+         ' Adds an image label to the window.
+         wsClassName = "Static"
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE ELSE dwStyle OR= WS_VISIBLE
+         IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
+         bSetFont = FALSE
+         '// Check the type if resource (icon or bitmap)
+'         DIM strType AS STRING = this.FindResourceType(wszTitle)
+'         DIM nType AS LONG
+'print strType; "---------------------"
+'         IF strType = "RT_ICON" THEN nType = SS_ICON ELSE IF strType = "RT_BITMAP" THEN nType = SS_BITMAP
+         ' // Add the style
+'         dwStyle OR= nType
+'++++++++
+      CASE "IMAGEX"   ' // For compatibility with PowerBasic
+         wsClassName = "Static"
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE ' SS_ICON must be specified
+         IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
+         ' // With this style, the image is stretched
+         dwStyle OR= SS_REALSIZECONTROL
+         bSetFont = FALSE
       CASE "CUSTOMLABEL"
          ' Adds an ownerdraw label to the window.
          wsClassName = "Static"
@@ -765,6 +793,7 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
    IF hCtl = NULL THEN EXIT FUNCTION
    ' // Set the font
    IF bSetFont THEN SendMessageW(hCtl, WM_SETFONT, SendMessageW(m_hDlg, WM_GETFONT, 0, 0), 0)
+
    SELECT CASE UCASE(wsClassName)
       CASE "BUTTON"
          IF (dwStyle AND BS_DEFPUSHBUTTON) = BS_DEFPUSHBUTTON THEN
@@ -826,193 +855,34 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
 
    ' // Buttons with images (icon or bitmap)
    SELECT CASE UCASE(wszClassName)
-      CASE "BITMAPLABEL"   'Ok
+      CASE "BITMAPBUTTON", "BITMAPBUTTONX", "IMGBUTTON", "IMGBUTTONX", "ICONBUTTON", "ICONBUTTONX"  ' Ok
+         DIM nType AS LONG = IMAGE_ICON
+         IF (dwStyle AND BS_BITMAP) = BS_BITMAP THEN nType = IMAGE_BITMAP
+         DIM AS LONG nWidth, nHeight
+         IF wszClassName = "IMGBUTTONX" OR wszClassName = "BITMAPBUTTONX" OR wszClassName = "ICONBUTTONX" THEN
+            DIM rc AS RECT
+            GetClientRect(hCtl, @rc)
+            nWidth = rc.right - rc.left
+            nHeight = rc.bottom -rc.top
+         END IF
          ' // Loads the bitmap from resource
          DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
          IF LEFT(wszTitle, 1) = "#" THEN
             wID = VAL(MID(wszTitle, 2))
             dwID = MAKELONG(wID, 0)
-            hImage = .LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            IF UCASE(RIGHT(wszTitle, 4)) = ".BMP" THEN
-               ' // Loads bitmap from file
-               hImage = .LoadImageW(NULL, wszTitle, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
-            ELSE
-               ' // Loads the bitmap from resource
-               hImage = .LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-            END IF
-         END IF
-         ' // Sets the image and deletes the old one
-         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
-      CASE "ICONLABEL"   ' Ok
-         ' // Loads the icon from resource
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszTitle, 1) = "#" THEN
-            wID = VAL(MID(wszTitle, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            ' // Loads the icon from file
-            IF UCASE(RIGHT(wszTitle, 4)) = ".ICO" THEN
-               hImage = .LoadImageW(NULL, wszTitle, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
-            ELSE
-               ' // Loads the icon from resource
-               hImage = .LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-            END IF
-         END IF
-         ' // Sets the image and deletes the old one
-         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
-      CASE "BITMAPBUTTON"  ' Ok
-         ' // Loads the bitmap from resource
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszTitle, 1) = "#" THEN
-            wID = VAL(MID(wszTitle, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+            hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), nType, nWidth, nHeight, LR_DEFAULTCOLOR)
          ELSE
             ' // Loads the bitmap from file
             IF UCASE(RIGHT(wszTitle, 4)) = ".BMP" THEN
-               hImage = LoadImageW(NULL, wszTitle, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
+               hImage = LoadImageW(NULL, wszTitle, nType, nWidth, nHeight, LR_LOADFROMFILE)
             ELSE
                ' // Loads the bitmap from resource
-               hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
+               hImage = LoadImageW(m_hInstance, wszTitle, nType, nWidth, nHeight, LR_DEFAULTCOLOR)
             END IF
          END IF
          ' // Sets the image and deletes the old one
-         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
-      CASE "ICONBUTTON"   ' Ok
-         ' // Loads the icon from resource
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszTitle, 1) = "#" THEN
-            wID = VAL(MID(wszTitle, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            ' // Loads the icon from file
-            IF UCASE(RIGHT(wszTitle, 4)) = ".ICO" THEN
-               hImage = LoadImageW(NULL, wszTitle, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
-            ELSE
-               ' // Loads the icon from resource
-               hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-            END IF
-         END IF
-         ' // Sets the image and deletes the old one
-         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
-'      CASE "IMAGE"   ' Ok
-'         ' // Label with an icon
-'         IF (dwStyle AND SS_ICON) = SS_ICON THEN
-'            ' // Loads the icon from resource
-'            DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-'            IF LEFT(wszTitle, 1) = "#" THEN
-'               wID = VAL(MID(wszTitle, 2))
-'               dwID = MAKELONG(wID, 0)
-'               hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-'            ELSE
-'               ' // Loads the icon from file
-'               IF UCASE(RIGHT(wszTitle, 4)) = ".ICO" THEN
-'                  hImage = LoadImageW(NULL, wszTitle, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
-'               ELSE
-'                  ' // Loads the icon from resource
-'                  hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-'               END IF
-'            END IF
-'            ' // Sets the image and deletes the old one
-'            IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
-'         ELSEIF (dwStyle AND SS_BITMAP) = SS_BITMAP THEN
-'            ' // Label with a bitmap
-'            ' // Loads the bitmap from resource
-'            DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-'            IF LEFT(wszTitle, 1) = "#" THEN
-'               wID = VAL(MID(wszTitle, 2))
-'               dwID = MAKELONG(wID, 0)
-'               hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-'            ELSE
-'               ' // Loads the bitmap from file
-'               IF UCASE(RIGHT(wszTitle, 4)) = ".BMP" THEN
-'                  hImage = LoadImageW(NULL, wszTitle, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
-'               ELSE
-'                  ' // Loads the bitmap from resource
-'                  hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-'               END IF
-'            END IF
-'            ' // Sets the image and deletes the old one
-'            IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
-'         END IF
+         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, nType, CAST(LPARAM, hImage))))
 
-'      CASE "IMAGEX"   ' // label with an image
-'         ' // Label with an icon
-'         DIM hImage AS HANDLE
-'         IF (dwStyle AND SS_ICON) = SS_ICON THEN
-'            ' // Loads the icon from resource
-'            DIM wID AS WORD, dwID AS DWORD
-'            IF LEFT(wszTitle, 1) = "#" THEN
-'               wID = VAL(MID(wszTitle, 2))
-'               dwID = MAKELONG(wID, 0)
-'               hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-'            ELSE
-'               ' // Loads the icon from file
-'               IF UCASE(RIGHT(wszTitle, 4)) = ".ICO" THEN
-'                  hImage = LoadImageW(NULL, wszTitle, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
-'               ELSE
-'                  ' // Loads the icon from resource
-'                  hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-'               END IF
-'            END IF
-'            ' // Sets the image and deletes the old one
-'            IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
-'         ELSEIF (dwStyle AND SS_BITMAP) = SS_BITMAP THEN
-'            ' // Label with a bitmap
-'            ' // Loads the bitmap from resource
-'            DIM wID AS WORD, dwID AS DWORD
-'            IF LEFT(wszTitle, 1) = "#" THEN
-'               wID = VAL(MID(wszTitle, 2))
-'               dwID = MAKELONG(wID, 0)
-'               hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-'            ELSE
-'               ' // Loads the bitmap from file
-'               IF UCASE(RIGHT(wszTitle, 4)) = ".BMP" THEN
-'                  hImage = LoadImageW(NULL, wszTitle, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
-'               ELSE
-'                  ' // Loads the bitmap from resource
-'                  hImage = LoadImageW(m_hInstance, wszTitle, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-'               END IF
-'            END IF
-'            ' // Sets the image and deletes the old one
-'            IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
-'         END IF
-
-'      IF (dwStyle AND SS_BITMAP) = SS_BITMAP THEN
-'         ' // Get the original bitmap dimensions
-'         DIM bmp AS BITMAP
-'         GetObject(hImage, SIZEOF(BITMAP), @bmp)
-'         ' // Create a compatible DC
-'         DIM hdc AS ..HDC = GetDC(hCtl)
-'         DIM hmemDC AS ..HDC = CreateCompatibleDC(hdc)
-'         ' // Get the dimensions of the label
-'         DIM rc AS RECT
-'         GetClientRect(hCtl, @rc)
-'         ' // Create a compatible bitmap
-'         DIM oldBmp AS HBITMAP
-'         DIM hResizedBitmap AS HBITMAP = CreateCompatibleBitmap(hDC, rc.right - rc.left, rc.bottom - rc.top)
-'         IF hResizedBitmap THEN oldBmp = SelectObject(hmemDC, hResizedBitmap)
-'         BitBlt(hMemDC, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hDC, 0, 0, SRCCOPY)
-'         SelectObject hmemDC, oldBmp
-'         ' // Sets the image and deletes the old one
-'         IF hResizedBitmap THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hResizedBitmap))))
-'         ' // Cleanup
-'         IF hmemDC THEN DeleteDC(hmemDC)
-'         IF hdc THEN ReleaseDC(hCtl, hdc)
-'      END IF
-
-'      IF (dwStyle AND SS_ICON) = SS_ICON THEN
-'         ' // Get the dimensions of the label
-'         DIM rc AS RECT
-'         GetClientRect(hCtl, @rc)
-'         DIM hdc AS ..HDC = GetDC(hCtl)
-'         DrawIconEx(hDC, x, y, hImage, rc.right - rc.left, rc.bottom - rc.top, 0, NULL, DI_IMAGE)
-'         IF hdc THEN ReleaseDC(hCtl, hdc)
-'      END IF
-         
    END SELECT
 
    ' // Subclass the control if pWndProc is not null
@@ -1815,7 +1685,7 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the conversion ratio from dialog units to pixels
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.DlgToPixRX () AS SINGLE
+PRIVATE FUNCTION CDialog.DluToPixRX () AS SINGLE
    DIM rc AS RECT
    rc.Right = 4 : rc.Bottom = 8
    DIM bResult AS BOOLEAN = MapDialogRect(m_hDlg, @rc)
@@ -1825,7 +1695,7 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the conversion ratio from dialog units to pixels
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.DlgToPixRY () AS SINGLE
+PRIVATE FUNCTION CDialog.DluToPixRY () AS SINGLE
    DIM rc AS RECT
    rc.Right = 4 : rc.Bottom = 8
    DIM bResult AS BOOLEAN = MapDialogRect(m_hDlg, @rc)
@@ -1865,7 +1735,7 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the conversion ratio from pixels to dialog units
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.PixToDlgRX () AS SINGLE
+PRIVATE FUNCTION CDialog.PixToDluRX () AS SINGLE
    DIM rc AS RECT
    rc.Right = 4 : rc.Bottom = 8
    MapDialogRect(m_hDlg, @rc)
@@ -1875,7 +1745,7 @@ END FUNCTION
 ' ========================================================================================
 ' * Retrieves the conversion ratio from pixels to dialog units
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.PixToDlgRY () AS SINGLE
+PRIVATE FUNCTION CDialog.PixToDluRY () AS SINGLE
    DIM rc AS RECT
    rc.Right = 4 : rc.Bottom = 8
    MapDialogRect(m_hDlg, @rc)
@@ -2719,6 +2589,14 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
+' Sets the Check State for an OPTION (radio) control, and unsets the Check State for other OPTION buttons in a group.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetOption (BYVAL cId AS LONG, BYVAL minId AS LONG, BYVAL maxId AS LONG) AS BOOLEAN
+   RETURN ..CheckRadioButton(GetDlgItem(m_hDlg, cId), minId, maxId, cId)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' Changes the icon displayed in an ICONLABEL or ICONBUTTON.
 ' The old image handle is released.
 ' ========================================================================================
@@ -2848,6 +2726,30 @@ PRIVATE SUB CDialog.DialogSetIcon (BYREF wszImage AS WSTRING)
 END SUB
 ' =====================================================================================
 
+' ########################################################################################
+'                                *** Image procedures ***
+' ########################################################################################
+
+PRIVATE FUNCTION CDialog.FindResourceType (BYREF wszResourceName AS WSTRING) AS STRING
+' wszResourceName = "#1001"
+DIM hRes AS HRSRC
+   IF LEFT(wszResourceName, 1) = "#" THEN
+      DIM wID AS WORD, dwID AS DWORD
+      wID = VAL(MID(wszResourceName, 2))
+      dwID = MAKELONG(wID, 0)
+'      hRes = FindResourceW(m_hInstance, MAKEINTRESOURCEW(dwID), CAST(LPCWSTR, RT_ICON))
+print hRes, HEX(GetLastError)   ' error 1814 - ERROR_RESOURCE_NAME_NOT_FOUND
+      IF FindResourceW(m_hInstance, MAKEINTRESOURCEW(dwID), CAST(LPCWSTR, RT_BITMAP)) THEN RETURN "RT_BITMAP"
+      IF FindResourceW(m_hInstance, MAKEINTRESOURCEW(dwID), CAST(LPCWSTR, RT_RCDATA)) THEN RETURN "RT_RCDATA"
+   ELSE
+print wszResourceName; "++++++++++++++"
+'      IF FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_ICON)) THEN RETURN "RT_ICON"
+      hRes = FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_ICON))
+print hRes, GetLastError
+      IF FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_BITMAP)) THEN RETURN "RT_BITMAP"
+      IF FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_RCDATA)) THEN RETURN "RT_RCDATA"
+   END IF
+END FUNCTION
 
 ' ########################################################################################
 '                                *** Desktop procedures ***
@@ -3062,12 +2964,12 @@ END FUNCTION
 ' Returns the DPI scaling ratios
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.rxRatio () AS SINGLE
-   RETURN m_rx
+   IF m_UsePixels THEN RETURN m_rx ELSE RETURN this.DluToPixRX
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ryRatio () AS SINGLE
-   RETURN m_ry
+   IF m_UsePixels THEN RETURN m_ry ELSE RETURN this.DluToPixRY
 END FUNCTION
 ' ========================================================================================
 
@@ -3075,18 +2977,14 @@ END FUNCTION
 ' Scales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ScaleX (BYVAL cx AS SINGLE) AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   FUNCTION = cx * (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
+   IF m_UsePixels THEN RETURN cx * m_rx ELSE RETURN cx * this.DluToPixRX
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Scales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ScaleY (BYVAL cy AS SINGLE) AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   FUNCTION = cy * (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
+   IF m_UsePixels THEN RETURN cy * m_ry ELSE RETURN cy * this.DluToPixRY
 END FUNCTION
 ' ========================================================================================
 
@@ -3094,71 +2992,51 @@ END FUNCTION
 ' Unscales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   FUNCTION = cx / (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
+   IF m_UsePixels THEN RETURN cx / m_rx ELSE RETURN cx / this.DluToPixRX
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Unscales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
-   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
-   FUNCTION = cy / (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
-   ReleaseDC HWND_DESKTOP, hDC
+   IF m_UsePixels THEN RETURN cy / m_ry ELSE RETURN cy / this.DluToPixRY
 END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Scales a RECT structure in place
+' Scales a RECT structure
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.ScaleRect (BYREF rc AS RECT) AS BOOLEAN
-   IF VARPTR(rc) = 0 THEN RETURN FALSE
-   rc.left   *= m_rx
-   rc.right  *= m_rx
-   rc.top    *= m_ry
-   rc.bottom *= m_ry
-   RETURN TRUE
+PRIVATE FUNCTION CDialog.ScaleRect (BYVAL rc AS RECT) AS RECT
+   IF m_UsePixels THEN
+      rc.left   *= m_rx
+      rc.right  *= m_rx
+      rc.top    *= m_ry
+      rc.bottom *= m_ry
+   ELSE
+      MapDialogRect(m_hDlg, @rc)
+   END IF
+   RETURN rc
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' Unscales a RECT structure in place
+' * Unscales a RECT structure.
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.UnScaleRect (BYREF rc AS RECT) AS BOOLEAN
-   IF VARPTR(rc) = 0 THEN RETURN FALSE
-   rc.left   /= m_rx
-   rc.right  /= m_rx
-   rc.top    /= m_ry
-   rc.bottom /= m_ry
-   RETURN TRUE
+PRIVATE FUNCTION CDialog.UnScaleRect (BYVAL rc AS RECT) AS RECT
+   IF m_UsePixels THEN
+      rc.left   /= m_rx
+      rc.right  /= m_rx
+      rc.top    /= m_ry
+      rc.bottom /= m_ry
+   ELSE
+      rc.left   /= this.DluToPixRX
+      rc.right  /= this.DluToPixRX
+      rc.top    /= this.DluToPixRY
+      rc.bottom /= this.DluToPixRY
+   END IF
+   RETURN rc
 END FUNCTION
 ' ========================================================================================
-' ========================================================================================
-' Scales a RECT structure.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.GetScaledRect (BYREF rc AS RECT) AS RECT
-   IF VARPTR(rc) = 0 THEN EXIT FUNCTION
-   DIM rcCopy AS RECT = TYPE<RECT>(rc.left, rc.top, rc.right, rc.Bottom)
-   rc.left   *= m_rx
-   rc.right  *= m_rx
-   rc.top    *= m_ry
-   rc.bottom *= m_ry
-   RETURN rcCopy
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Unscales a RECT structure.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.GetUnScaledRect (BYREF rc AS RECT) AS RECT
-   IF VARPTR(rc) = 0 THEN EXIT FUNCTION
-   DIM rcCopy AS RECT = TYPE<RECT>(rc.left, rc.top, rc.right, rc.Bottom)
-   rc.left   /= m_rx
-   rc.right  /= m_rx
-   rc.top    /= m_ry
-   rc.bottom /= m_ry
-   RETURN rcCopy
-END FUNCTION
-' ========================================================================================
+
 
 ' ########################################################################################
 '                               *** LAYOUT MANAGER ***

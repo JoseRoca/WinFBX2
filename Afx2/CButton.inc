@@ -81,7 +81,7 @@ Public:
    DECLARE SUB SetStyle (BYVAL dwStyle AS DWORD, BYVAL bRedraw AS BOOLEAN)
    DECLARE FUNCTION GetIdealSize (BYREF tSize AS SIZE) AS BOOLEAN
    DECLARE FUNCTION GetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
-   DECLARE FUNCTION SetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
+   DECLARE FUNCTION SetTextMargin (BYVAL tMargin AS RECT) AS BOOLEAN
 #if _WIN32_WINNT >= &h0600
    DECLARE FUNCTION SetDropDownState (BYVAL bDropDown AS BOOLEAN) AS BOOLEAN
    DECLARE FUNCTION GetSplitInfo (BYREF info AS BUTTON_SPLITINFO) AS BOOLEAN
@@ -384,18 +384,44 @@ PRIVATE FUNCTION CButton.GetImageList () AS BUTTON_IMAGELIST PTR
    RETURN pbuttonImagelist
 END FUNCTION
 ' ========================================================================================
-' ========================================================================================
-' Sets the margins for drawing text in a button control.
-' ========================================================================================
-PRIVATE FUNCTION CButton.SetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
-   RETURN SendMessageW(m_hCtl, BCM_SETTEXTMARGIN, 0, CAST(LPARAM, @tmargin))
-END FUNCTION
-' ========================================================================================
+
 ' ========================================================================================
 ' Retrieves the margins used to draw text in a button control.
 ' ========================================================================================
 PRIVATE FUNCTION CButton.GetTextMargin (BYREF tMargin AS RECT) AS BOOLEAN
+   IF VARPTR(tMargin)= 0 THEN RETURN FALSE
    RETURN SendMessageW(m_hCtl, BCM_GETTEXTMARGIN, 0, CAST(LPARAM, @tMargin))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the margins for drawing text in a button control.
+' ========================================================================================
+PRIVATE FUNCTION CButton.SetTextMargin (BYVAL tMargin AS RECT) AS BOOLEAN
+   RETURN SendMessageW(m_hCtl, BCM_SETTEXTMARGIN, 0, CAST(LPARAM, @tMargin))
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the check state of a button control.
+' ========================================================================================
+PRIVATE FUNCTION CButton.CheckDlgButton (BYVAL cIDButton AS LONG, BYVAL uCheck AS UINT) AS BOOLEAN
+   RETURN ..CheckDlgButton(GetParent(m_hCtl), cIDButton, uCheck)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Adds a check mark to (checks) a specified radio button in a group and removes a check mark
+' from (clears) all other radio buttons in the group.
+' ========================================================================================
+PRIVATE FUNCTION CButton.CheckRadioButton (BYVAL cIDFirstButton AS LONG, BYVAL cIDLastButton AS LONG, BYVAL cIDCheckButton AS LONG) AS BOOLEAN
+   RETURN ..CheckRadioButton(GetParent(m_hCtl), cIDFirstButton, cIDLastButton, cIDCheckButton)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Determines whether a button control is checked or whether a three-state button control is
+' checked, unchecked, or indeterminate.
+' ========================================================================================
+PRIVATE FUNCTION CButton.IsDlgButtonChecked (BYVAL cIDButton AS LONG) AS UINT
+   RETURN ..IsDlgButtonChecked(GetParent(m_hCtl), cIDButton)
 END FUNCTION
 ' ========================================================================================
 
@@ -455,29 +481,5 @@ PRIVATE FUNCTION CButton.SetElevationRequiredState (BYVAL bRequired AS BOOLEAN) 
 END FUNCTION
 ' ========================================================================================
 #endif
-
-' ========================================================================================
-' Changes the check state of a button control.
-' ========================================================================================
-PRIVATE FUNCTION CButton.CheckDlgButton (BYVAL cIDButton AS LONG, BYVAL uCheck AS UINT) AS BOOLEAN
-   RETURN ..CheckDlgButton(GetParent(m_hCtl), cIDButton, uCheck)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Adds a check mark to (checks) a specified radio button in a group and removes a check mark
-' from (clears) all other radio buttons in the group.
-' ========================================================================================
-PRIVATE FUNCTION CButton.CheckRadioButton (BYVAL cIDFirstButton AS LONG, BYVAL cIDLastButton AS LONG, BYVAL cIDCheckButton AS LONG) AS BOOLEAN
-   RETURN ..CheckRadioButton(GetParent(m_hCtl), cIDFirstButton, cIDLastButton, cIDCheckButton)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Determines whether a button control is checked or whether a three-state button control is
-' checked, unchecked, or indeterminate.
-' ========================================================================================
-PRIVATE FUNCTION CButton.IsDlgButtonChecked (BYVAL cIDButton AS LONG) AS UINT
-   RETURN ..IsDlgButtonChecked(GetParent(m_hCtl), cIDButton)
-END FUNCTION
-' ========================================================================================
 
 END NAMESPACE

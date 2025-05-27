@@ -76,8 +76,6 @@ FUNCTION GetUser (BYVAL idx AS LONG) AS LONG_PTR
 | Parameter | Description |
 | --------- | ----------- |
 | *idx* | The index number of the user data value to retrieve, in the range 0 to 19 inclusive. |
-
-```
 ---
 
 ### <a name="setuser"></a>SetUser

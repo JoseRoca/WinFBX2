@@ -65,6 +65,32 @@ FUNCTION CDialogOwnerPtr (BYVAL hwnd AS HWND) AS CDialog PTR
 | Parameter | Description |
 | --------- | ----------- |
 | *hwnd* | The handle of the window |
+
+---
+
+### <a name="comctlversion"></a>ComCtlVersion
+
+Returns the version of CommCtl32.dll multiplied by 100, e.g. 601 for version 6.01.
+```
+FUNCTION ComCtlVersion () AS LONG
+```
+---
+
+### <a name="getfileversion"></a>GetFileVersion
+
+Returns the version of specified file multiplied by 100, e.g. 601 for version 6.01.
+```
+FUNCTION GetFileVersion (BYVAL pwszFileName AS WSTRING PTR) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *pwszFileName* | The file name. |
+
+#### Usage example
+
+```
+DIM ver AS LONG = AfxGetFileVersion("COMCTL32.DLL")
+```
 ---
 
 ### <a name="getuser"></a>GetUser

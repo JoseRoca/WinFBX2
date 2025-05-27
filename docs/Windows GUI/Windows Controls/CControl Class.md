@@ -65,8 +65,6 @@ FUNCTION CDialogOwnerPtr (BYVAL hwnd AS HWND) AS CDialog PTR
 | Parameter | Description |
 | --------- | ----------- |
 | *hwnd* | The handle of the window |
-
-```
 ---
 
 ### <a name="getuser"></a>GetUser

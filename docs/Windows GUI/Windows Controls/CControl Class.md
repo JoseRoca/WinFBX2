@@ -13,7 +13,7 @@
 | [SetUser](#SetUser) | Sets a value in the user data area of the control. |
 | [UsesPixels](#UsesPixels) | Returns true if the dialog uses pixels |
 
-**Error functions
+**Error functions**
 
 | Name       | Description |
 | ---------- | ----------- |

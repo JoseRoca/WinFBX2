@@ -76,19 +76,19 @@ FUNCTION GetUser (BYVAL idx AS LONG) AS LONG_PTR
 | Parameter | Description |
 | --------- | ----------- |
 | *idx* | The index number of the user data value to retrieve, in the range 0 to 19 inclusive. |
+
 ---
 
 ### <a name="setuser"></a>SetUser
 
 Sets a value in the user data area of the control.
 ```
-FUNCTION GetUser (BYVAL idx AS LONG) AS LONG_PTR
+FUNCTION SetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
 ```
 | Parameter | Description |
 | --------- | ----------- |
 | *idx* | The index number of the user data value to set, in the range 0 to 19 inclusive. |
 
-```
 ---
 
 ### <a name="usespixels"></a>UsesPixels

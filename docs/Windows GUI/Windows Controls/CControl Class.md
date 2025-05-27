@@ -6,8 +6,7 @@
 
 | Name       | Description |
 | ---------- | ----------- |
-| [CDialogOwnerPtr](#CDialogOwnerPtr) | Returns a pointer to the CDialog class given the handle of the window created with it
-' or the handle of any of it's children |
+| [CDialogOwnerPtr](#CDialogOwnerPtr) | Returns a pointer to the CDialog class given the handle of the window created with it or the handle of any of it's children |
 | [ComCtlVersion](#ComCtlVersion) | Returns the version of CommCtl32.dll multiplied by 100, e.g. 582 for version 5.82. |
 | [GetFileVersion](#GetFileVersion) | Returns the version of specified file multiplied by 100, e.g. 601 for version 6.01. |
 | [GetUser](#GetUser) | Retrieves a value from the user data area of the control. |

@@ -6,6 +6,18 @@
 
 | Name       | Description |
 | ---------- | ----------- |
+| [CDialogOwnerPtr](#CDialogOwnerPtr) | Returns a pointer to the CDialog class given the handle of the window created with it
+' or the handle of any of it's children |
+| [ComCtlVersion](#ComCtlVersion) | Returns the version of CommCtl32.dll multiplied by 100, e.g. 582 for version 5.82. |
+| [GetFileVersion](#GetFileVersion) | Returns the version of specified file multiplied by 100, e.g. 601 for version 6.01. |
+| [GetUser](#GetUser) | Retrieves a value from the user data area of the control. |
+| [SetUser](#SetUser) | Sets a value in the user data area of the control. |
+| [UsesPixels](#UsesPixels) | Returns true if the dialog uses pixels |
+
+##Error functions
+
+| Name       | Description |
+| ---------- | ----------- |
 | [GetErrorInfo](#geterrorinfo) | Returns a localized description of the specified error code. |
 | [GetLastResult](#getlastresult) | Returns the last result code. |
 | [SetResult](#setresult) | Sets the last result code. |
@@ -45,4 +57,10 @@ END FUNCTION
 
 ---
 
+### <a name="UsesPixels"></a>UsesPixels
+
+Gets/sets a flag indicating if the dialog uses pixels (TRUE). If this flag is false, then the dialog uses dialog units.
+```
+PROPERTY UsesPixels () AS BOOLEAN
+---
 

@@ -6,12 +6,12 @@
 
 | Name       | Description |
 | ---------- | ----------- |
-| [CDialogOwnerPtr](#CDialogOwnerPtr) | Returns a pointer to the CDialog class given the handle of the window created with it or the handle of any of it's children |
-| [ComCtlVersion](#ComCtlVersion) | Returns the version of CommCtl32.dll multiplied by 100, e.g. 600 for version 6.0. |
-| [GetFileVersion](#GetFileVersion) | Returns the version of specified file multiplied by 100, e.g. 601 for version 6.01. |
-| [GetUser](#GetUser) | Retrieves a value from the user data area of the control. |
-| [SetUser](#SetUser) | Sets a value in the user data area of the control. |
-| [UsesPixels](#UsesPixels) | Returns true if the dialog uses pixels |
+| [CDialogOwnerPtr](#cdialogownerptr) | Returns a pointer to the CDialog class given the handle of the window created with it or the handle of any of it's children |
+| [ComCtlVersion](#comctlversion) | Returns the version of CommCtl32.dll multiplied by 100, e.g. 600 for version 6.0. |
+| [GetFileVersion](#getfileversion) | Returns the version of specified file multiplied by 100, e.g. 601 for version 6.01. |
+| [GetUser](#getuser) | Retrieves a value from the user data area of the control. |
+| [SetUser](#setuser) | Sets a value in the user data area of the control. |
+| [UsesPixels](#usespixels) | Returns true if the dialog uses pixels |
 
 **Error functions**
 
@@ -56,10 +56,50 @@ END FUNCTION
 
 ---
 
-### <a name="UsesPixels"></a>UsesPixels
+### <a name="cdialogownerptr"></a>CDialogOwnerPtr
+
+Returns a pointer to the CDialog class given the handle of the window created with it or the handle of any of it's children.
+```
+FUNCTION CDialogOwnerPtr (BYVAL hwnd AS HWND) AS CDialog PTR
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hwnd* | The handle of the window |
+
+```
+---
+
+### <a name="getuser"></a>GetUser
+
+Retrieves a value from the user data area of the control.
+```
+FUNCTION GetUser (BYVAL idx AS LONG) AS LONG_PTR
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *idx* | The index number of the user data value to retrieve, in the range 0 to 19 inclusive. |
+
+```
+---
+
+### <a name="setuser"></a>SetUser
+
+Sets a value in the user data area of the control.
+```
+FUNCTION GetUser (BYVAL idx AS LONG) AS LONG_PTR
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *idx* | The index number of the user data value to set, in the range 0 to 19 inclusive. |
+
+```
+---
+
+### <a name="usespixels"></a>UsesPixels
 
 Gets/sets a flag indicating if the dialog uses pixels (TRUE). If this flag is false, then the dialog uses dialog units.
 ```
 PROPERTY UsesPixels () AS BOOLEAN
+PROPERTY UsesPixels (BYVAL bUsePixels AS BOOLEAN)
 ```
 ---

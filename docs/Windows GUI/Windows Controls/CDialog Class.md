@@ -126,6 +126,13 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DisplayGetPixelsHeight](displaygetpixelsheight) | Returns the width, in pixels, of the current display device on the computer on which the calling thread is running. |
 | [DisplayGetBitsPerPixel](displaygetbitsperpixel) | Returns the color resolution, in bits per pixel, of the display device. |
 | [DisplayGetFrequency](displaygetfrequency) |Returns the frequency, in hertz (cycles per second), of the display device in a particular mode. |
+
+---
+
+# DPI scaling
+
+| Name       | Description |
+| ---------- | ----------- |
 | [rxRatio](rxratio) | Returns the horizontal DPI scaling ratio. |
 | [ryRatio](rxratio) | Returns the vertical DPI scaling ratio. |
 | [ScaleX](scalex) | Scales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop. |

@@ -96,6 +96,13 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [ControlGetCheck](#controlgetcheck) | Gets the check state of a radio button or check box. |
 | [ControlSetCheck](#controlsetcheck) | Sets the check state of a radio button or check box. |
 | [ControlSetOption](#controlsetoption) | Sets the check state for an Option (radio) control, and unsets the check state for other Option buttons in a group. |
+
+---
+
+# Images
+
+| Name       | Description |
+| ---------- | ----------- |
 | [ControlSetIcon](#controlseticon) | Changes the icon displayed in an image label or button. |
 | [ControlSetBitmap](#controlsetbitmap) | Changes the bitmap displayed in an image label or button. |
 | [DialogSetIcon](#dialogseticon) | Changes both the dialog icon in the caption, and the icon shown in the ALT+TAB task list. |

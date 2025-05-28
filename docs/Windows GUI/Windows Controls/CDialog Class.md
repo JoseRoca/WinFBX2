@@ -137,6 +137,30 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 
 ---
 
+# Layout manager
+
+| Name       | Description |
+| ---------- | ----------- |
+| [AdjustControls](#adjustcontrols) | Adjust the controls size and/or position. |
+| [ControlAnchor](#ControlAnchor) | Anchor the control. |
+| [GetAnchorItem](#getanchoritem) | Gets the anchor item. |
+
+---
+
+# Colors
+
+| Name       | Description |
+| ---------- | ----------- |
+| [ControlSetColor](#controlsetcolor) | Sets the colors of the control. |
+| [DialogSetColor](#dialogsetcolor) | Sets the background color of the dialog. |
+| [DialogDisableRepaintOnResize](#dialogdisablerepaintonresize) | Enable/disable dialog repainting during resizing. |
+| [DialogEnableRepaint](#dialogenablerepaint) | Enable/disable dialog repainting during resizing. |
+| [GetColorItem](#getcoloritem) | Gets the color item. |
+| [IsDialogRepaintDisabled](#isdialogrepaintdisabled) | Checks if repainting is enabled during resizing. |
+| [IsDialogRepaintDisabledOnResize](#isdialogrepaintdisabledonresize) | Checks if repainting is enabled during resizing. |
+
+---
+
 # <a name="constructor"></a>Constructor
 
 Creates instances of the `CDialog` class.

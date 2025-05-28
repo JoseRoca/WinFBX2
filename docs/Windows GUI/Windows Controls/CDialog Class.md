@@ -161,6 +161,18 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 
 ---
 
+# Keyboard accelerators
+
+| Name       | Description |
+| ---------- | ----------- |
+| [AccelHandle](#accelhandle) | Gets the accelerator table handle. |
+| [AccelAttach](#accelattach) | Attaches an accelerator table handle. |
+| [AddAccelerator](#addaccelerator) | Adds an accelerator key to the table. |
+| [CreateAcceleratorTable](#createacceleratortable) | Creates the accelerator table. |
+| [DestroyAcceleratorTable](#destroyacceleratortable) | Destroys the accelerator table. |
+
+---
+
 # <a name="constructor"></a>Constructor
 
 Creates instances of the `CDialog` class.

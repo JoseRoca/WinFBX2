@@ -101,6 +101,13 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DialogSetIcon](#dialogseticon) | Changes both the dialog icon in the caption, and the icon shown in the ALT+TAB task list. |
 | [FindResourceType](#findresourcetype) | Finds the resource type given it's identifier or name. |
 | [FindResourceType](#findresourcetype) | Finds the resource type given it's identifier or name. |
+
+---
+
+# Desktop procedures
+
+| Name       | Description |
+| ---------- | ----------- |
 | [DesktopGetWindow](#desktopgetwindow) | Retrieves a handle to the desktop window. |
 | [DesktopGetLoc](#desktopgetloc) | Retrieves the location of the work area on the primary display monitor. |
 | [DesktopGetLocX](#desktopgetlocx) | Retrieves the x coordinate of the work area on the primary display monitor. |
@@ -114,6 +121,13 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DesktopGetPPI](desktopgetppi) | Returns the number of pixels per logical inch along the screen width and height. |
 | [DesktopGetPPIX](desktopgetppix) | Returns the number of pixels per logical inch along the screen width. |
 | [DesktopGetPPIY](desktopgetppiy) | Returns the number of pixels per logical inch along the screen height. |
+
+---
+
+# Display procedures
+
+| Name       | Description |
+| ---------- | ----------- |
 | [DisplayGetPixelsWidth](displaygetpixelswidth) | Returns the width, in pixels, of the current display device on the computer on which the calling thread is running. |
 | [DisplayGetPixelsHeight](displaygetpixelsheight) | Returns the width, in pixels, of the current display device on the computer on which the calling thread is running. |
 | [DisplayGetBitsPerPixel](displaygetbitsperpixel) | Returns the color resolution, in bits per pixel, of the display device. |

@@ -104,6 +104,19 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [ControlGetCheck](#controlgetcheck) | Gets the check state of a radio button or check box. |
 | [ControlSetCheck](#controlsetcheck) | Sets the check state of a radio button or check box. |
 | [ControlSetOption](#controlsetoption) | Sets the check state for an Option (radio) control, and unsets the check state for other Option buttons in a group. |
+| [ControlSetIcon](#controlseticon) | Changes the icon displayed in an image label or button. |
+| [ControlSetBitmap](#controlsetbitmap) | Changes the bitmap displayed in an image label or button. |
+| [DialogSetIcon](#dialogseticon) | Changes both the dialog icon in the caption, and the icon shown in the ALT+TAB task list. |
+| [FindResourceType](#findresourcetype) | Finds the resource type given it's identifier or name. |
+| [FindResourceType](#findresourcetype) | Finds the resource type given it's identifier or name. |
+| [DesktopGetWindow](#desktopgetwindow) | Retrieves a handle to the desktop window. |
+| [DesktopGetLoc](#desktopgetloc) | Retrieves the location of the work area on the primary display monitor. |
+| [DesktopGetLocX](#desktopgetlocx) | Retrieves the x coordinate of the work area on the primary display monitor. |
+| [DesktopGetLocY](#desktopgetlocy) | Retrieves the y coordinate of the work area on the primary display monitor. |
+| [DesktopGetSize](#desktopgetsize) | Retrieves the size of the entire desktop, in pixels. |
+| [DesktopGetWidth](#desktopgetwidth) | Retrieves the width of the entire desktop, in pixels. |
+| [DesktopGetHeight](#desktopgetHeight) | Retrieves the height of the entire desktop, in pixels. |
+| [DesktopGetClient](#desktopgetclient) | Retrieves the size of the client area of the desktop, in pixels. |
 
 ---
 

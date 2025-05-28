@@ -122,6 +122,18 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DesktopGetPPI](desktopgetppi) | Returns the number of pixels per logical inch along the screen width and height. |
 | [DesktopGetPPIX](desktopgetppix) | Returns the number of pixels per logical inch along the screen width. |
 | [DesktopGetPPIY](desktopgetppiy) | Returns the number of pixels per logical inch along the screen height. |
+| [DisplayGetPixelsWidth](displaygetpixelswidth) | Returns the width, in pixels, of the current display device on the computer on which the calling thread is running. |
+| [DisplayGetPixelsHeight](displaygetpixelsheight) | Returns the width, in pixels, of the current display device on the computer on which the calling thread is running. |
+| [DisplayGetBitsPerPixel](displaygetbitsperpixel) | Returns the color resolution, in bits per pixel, of the display device. |
+| [DisplayGetFrequency](displaygetfrequency) |Returns the frequency, in hertz (cycles per second), of the display device in a particular mode. |
+| [rxRatio](rxratio) | Returns the horizontal DPI scaling ratio. |
+| [ryRatio](rxratio) | Returns the vertical DPI scaling ratio. |
+| [ScaleX](scalex) | Scales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop. |
+| [ScaleY](scaley) | Scales a vertical coordinate according the DPI (dots per pixel) being used by the desktop. |
+| [UnscaleX](unscalex) | Unscales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop. |
+| [UnscaleY](unscaley) | Unscales a vertical coordinate according the DPI (dots per pixel) being used by the desktop. |
+| [ScaleRect](scalerect) | Scales a RECT structure according the DPI (dots per pixel) being used by the desktop. |
+| [UnscaleRect](unscalerect) | Unscales a RECT structure according the DPI (dots per pixel) being used by the desktop. |
 
 ---
 

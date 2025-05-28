@@ -41,14 +41,6 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [IsDialogNonStable](#isdialognonstable) | Checks if the dialog is non stable. |
 | [DialogPost](#dialogpost) | Posts a message in the message queue. |
 | [DialogSend](#dialogsends) | Sends a message to the dialog. |
-| [DialogUnitsToPixels](#dialogunitstopixels) | Converts the specified dialog box units to screen units (pixels). |
-| [DialogUnitsToPixelsRatios](#dialogunitstopixelsratios) | Retrieves the conversion ratios from dialog units to pixels. |
-| [DluToPixRX](#dlutopixrx) | Retrieves the conversion ratios from dialog units to pixels. |
-| [DluToPixRX](#dlutopixrx) | Retrieves the conversion ratios from dialog units to pixels. |
-| [PixelsToDialogUnits](#pixelstodialogunits) | Converts the specified screen units (pixels) to dialog box units. |
-| [PixelsToDialogUnitsRatios](#pixelstodialogunitsratios) | Retrieves the conversion ratios from pixels to dialog units. |
-| [PixToDluRX](#pixtodlurx) | Retrieves the conversion ratio from pixels to dialog units. |
-| [PixToDluRY](#pixtodlury) | Retrieves the conversion ratio from pixels to dialog units. |
 | [DialogGetSize](#dialoggetsize) | Gets the width and height of the dialog. |
 | [DialogGetWidth](#dialoggetwidth) | Gets the width of the dialog. |
 | [DialogGetHeight](#dialoggetheight) | Gets the height of the dialog. |
@@ -126,6 +118,21 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DisplayGetPixelsHeight](displaygetpixelsheight) | Returns the width, in pixels, of the current display device on the computer on which the calling thread is running. |
 | [DisplayGetBitsPerPixel](displaygetbitsperpixel) | Returns the color resolution, in bits per pixel, of the display device. |
 | [DisplayGetFrequency](displaygetfrequency) |Returns the frequency, in hertz (cycles per second), of the display device in a particular mode. |
+
+---
+
+# Metric conversions
+
+| Name       | Description |
+| ---------- | ----------- |
+| [DialogUnitsToPixels](#dialogunitstopixels) | Converts the specified dialog box units to screen units (pixels). |
+| [DialogUnitsToPixelsRatios](#dialogunitstopixelsratios) | Retrieves the conversion ratios from dialog units to pixels. |
+| [DluToPixRX](#dlutopixrx) | Retrieves the conversion ratios from dialog units to pixels. |
+| [DluToPixRX](#dlutopixrx) | Retrieves the conversion ratios from dialog units to pixels. |
+| [PixelsToDialogUnits](#pixelstodialogunits) | Converts the specified screen units (pixels) to dialog box units. |
+| [PixelsToDialogUnitsRatios](#pixelstodialogunitsratios) | Retrieves the conversion ratios from pixels to dialog units. |
+| [PixToDluRX](#pixtodlurx) | Retrieves the conversion ratio from pixels to dialog units. |
+| [PixToDluRY](#pixtodlury) | Retrieves the conversion ratio from pixels to dialog units. |
 
 ---
 

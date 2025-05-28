@@ -14,6 +14,13 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [IsCustom](#iscustom) | Checks if it is a custom dialog. |
 | [UsesPixels](#usespixels) | Checks if the dialog uses pixels. |
 | [UsesUnits](#usesunits) | Checks if the dialog uses dialog units. |
+
+---
+
+# Dialog methods
+
+| Name       | Description |
+| ---------- | ----------- |
 | [DialogNew](#dialognew) | Creates a new dialog using dialog units. |
 | [DialogNewPixels](#dialognewpixels) | Creates a new dialog using pixels. |
 | [DialogShowModal](#dialogshowmodal) | Shows the dialog as modal. |
@@ -61,7 +68,7 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 
 ---
 
-# Control procedures
+# Control methods
 
 | Name       | Description |
 | ---------- | ----------- |
@@ -125,7 +132,7 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 
 ---
 
-# Desktop procedures
+# Desktop methods
 
 | Name       | Description |
 | ---------- | ----------- |
@@ -145,7 +152,7 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 
 ---
 
-# Display procedures
+# Display methods
 
 | Name       | Description |
 | ---------- | ----------- |

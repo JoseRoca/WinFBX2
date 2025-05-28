@@ -173,6 +173,28 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 
 ---
 
+# Scrollable dialogs
+
+| Name       | Description |
+| ---------- | ----------- |
+| [DialogSetViewPort](#dialogsetviewport) | Makes a dialog scrollable by shrinking its client area size. |
+| [IsDialogScrollable](#isdialogscrollable) | Flag indicating if a dialog is scrollable. |
+| [DialogResetScrollBars](#dialogresetscrollbars) | Resets the dikalog scrolling information. |
+| [DialogSetupScrollBars](#dialogsetupscrollbars) | Sets the dialog scroll information. |
+| [DialogOnVScroll](#dialogonvscroll) | Handles vertical scrollbar messages. |
+| [DialogOnHScroll](#dialogonhscroll) | Handles horizontañ scrollbar messages. |
+| [DialogOnSize](#dialogonsize) | Handles WM_SIZE messges. |
+
+---
+
+# Helper function
+
+| Name       | Description |
+| ---------- | ----------- |
+| [AfxCDialogPtr](#afxcdialogptr) | Returns a pointer to the CDialog class given the handle of the window created with it or the handle of any of it's children. |
+
+---
+
 # <a name="constructor"></a>Constructor
 
 Creates instances of the `CDialog` class.

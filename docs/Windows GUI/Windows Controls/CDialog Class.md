@@ -117,6 +117,11 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DesktopGetWidth](#desktopgetwidth) | Retrieves the width of the entire desktop, in pixels. |
 | [DesktopGetHeight](#desktopgetHeight) | Retrieves the height of the entire desktop, in pixels. |
 | [DesktopGetClient](#desktopgetclient) | Retrieves the size of the client area of the desktop, in pixels. |
+| [DesktopGetClientWidth](#desktopgetclientwidth) | Retrieves the width of the client area of the desktop, in pixels. |
+| [DesktopGetClientHeight](#desktopgetclientheight) | Retrieves the height of the client area of the desktop, in pixels. |
+| [DesktopGetPPI](desktopgetppi) | Returns the number of pixels per logical inch along the screen width and height. |
+| [DesktopGetPPIX](desktopgetppix) | Returns the number of pixels per logical inch along the screen width. |
+| [DesktopGetPPIY](desktopgetppiy) | Returns the number of pixels per logical inch along the screen height. |
 
 ---
 

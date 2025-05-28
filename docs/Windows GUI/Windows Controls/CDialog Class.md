@@ -9,7 +9,6 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [Constructor](#constructor) | Creates instances of the `CDialog` class. |
 | [RegisterClass](#registerclass) | Registers a window class. |
 | [DialogTemplate](#dialogtemplate) | Creates a dialog template in memory. |
-| [ControlAdd](#controladd) | Adds a control to the dialog. |
 | [hDialog](#hdialog) | Gets/sets the handle of the dialog. |
 | [IsModal](#ismodal) | Checks if the dialog is modal. |
 | [IsCustom](#iscustom) | Checks if it is a custom dialog. |
@@ -50,9 +49,6 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DialogGetClientWidth](#dialoggetclientwidth) | Gets the width of the the dialog's client area. |
 | [DialogGetClientHeight](#dialoggetclientheight) | Gets the height of the the dialog's client area. |
 | [DialogSetClient](#dialogsetclient) | Adjusts the bounding rectangle of the dialog based on the desired size of the client area. |
-| [DialogGetFont](#dialoggetfont) | Gets the handle of the font used by the dialog. |
-| [DialogGetFontFaceName](#dialoggetfontfacename) | Gets the face name of the font used by the dialog. |
-| [DialogGetFontPointSize](#dialoggetfontpointsize) | Gets the point size of the font used by the dialog. |
 | [DialogGetText](#dialoggettext) | Gets the text of the dialog caption. |
 | [DialogSetText](#dialogsettext) | Sets the text of the dialog caption. |
 | [DialogGetLoc](#dialoggetloc) | Gets the location of the top left corner of the window. |
@@ -60,6 +56,16 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DialogGetUser](#dialoggetuser) | Retrieves a value from the user data area of the dialog. |
 | [DialogSetUser](#dialogsetuser) | Sets a value in the user data area of a dialog. |
 | [DialogSetIconEx](#dialogseticonex) | Sets the big and small icons of the dialog. |
+| [CBGetDlgMsgResult](#cbgetdlgmsgresult) | Gets the return value of a message processed in the dialog box procedure. |
+| [CBSetDlgMsgResult](#cbsetdlgmsgresult) | Sets the return value of a message processed in the dialog box procedure. |
+
+---
+
+# Control procedures
+
+| Name       | Description |
+| ---------- | ----------- |
+| [ControlAdd](#controladd) | Adds a control to the dialog. |
 | [ControlSetFocus](#controlsetfocus) | Sets the focus in the specified control of a dialog box. |
 | [ControlDisable](#controldisable) | Disables the specified control. |
 | [ControlEnable](#controlenable) | Enables the specified control. |
@@ -73,14 +79,6 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [ControlKill](#controlkill) | Destroys the specified control. |
 | [ControlShowState](#controlshowstate) | Changes the visible state of a control. |
 | [ControlRedraw](#controlredraw) | Redraws the specified control. |
-| [FontNew](#fontnew) | Creates a logical font. |
-| [FontEnd](#fontend) | Destroys a font when it is no longer needed. |
-| [ControlGetFont](#controlgetfont) | Gets the handle of the font used by the control. |
-| [ControlSetFont](#controlsetfont) | Sets the font that a control is to use when drawing text. |
-| [ControlGetFontFaceName](#controlgetfontfacename) | Gets the face name of the font used by the control. |
-| [ControlGetFontPointSize](#controlgetfontpointsize) | Gets the point size of the font used by the control. |
-| [CBGetDlgMsgResult](#cbgetdlgmsgresult) | Gets the return value of a message processed in the dialog box procedure. |
-| [CBSetDlgMsgResult](#cbsetdlgmsgresult) | Sets the return value of a message processed in the dialog box procedure. |
 | [ControlPost](#controlpost) | Posts a message in the message queue. |
 | [ControlSend](#controlsend) | Sends the specified message to the specified control. |
 | [ControlGetSize](#controlgetsize) | Gets the width and height of the control. |
@@ -96,6 +94,22 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [ControlGetCheck](#controlgetcheck) | Gets the check state of a radio button or check box. |
 | [ControlSetCheck](#controlsetcheck) | Sets the check state of a radio button or check box. |
 | [ControlSetOption](#controlsetoption) | Sets the check state for an Option (radio) control, and unsets the check state for other Option buttons in a group. |
+
+---
+
+# Fonts
+
+| Name       | Description |
+| ---------- | ----------- |
+| [DialogGetFont](#dialoggetfont) | Gets the handle of the font used by the dialog. |
+| [DialogGetFontFaceName](#dialoggetfontfacename) | Gets the face name of the font used by the dialog. |
+| [DialogGetFontPointSize](#dialoggetfontpointsize) | Gets the point size of the font used by the dialog. |
+| [FontNew](#fontnew) | Creates a logical font. |
+| [FontEnd](#fontend) | Destroys a font when it is no longer needed. |
+| [ControlGetFont](#controlgetfont) | Gets the handle of the font used by the control. |
+| [ControlSetFont](#controlsetfont) | Sets the font that a control is to use when drawing text. |
+| [ControlGetFontFaceName](#controlgetfontfacename) | Gets the face name of the font used by the control. |
+| [ControlGetFontPointSize](#controlgetfontpointsize) | Gets the point size of the font used by the control. |
 
 ---
 

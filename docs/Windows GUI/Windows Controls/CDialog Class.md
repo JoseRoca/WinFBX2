@@ -1,4 +1,4 @@
-# CButton Class
+# CDialog Class
 
 Wrapper class on top of the `CreateDialogIndirectParamW` API function.
 

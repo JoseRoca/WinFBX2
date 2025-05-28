@@ -65,6 +65,18 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DialogSetText](#dialogsettext) | Sets the text of the dialog caption. |
 | [DialogGetLoc](#dialoggetloc) | Gets the location of the top left corner of the window. |
 | [DialogSetLoc](#dialogsetloc) | Sets the location of the top left corner of the window. |
+| [DialogGetUser](#dialoggetuser) | Retrieves a value from the user data area of the dialog. |
+| [DialogSetUser](#dialogsetuser) | Sets a value in the user data area of a dialog. |
+| [DialogSetIconEx](#dialogseticonex) | Sets the big and small icons of the dialog. |
+| [ControlSetFocus](#controlsetfocus) | Sets the focus in the specified control of a dialog box. |
+| [ControlDisable](#controldisable) | Disables the specified control. |
+| [ControlEnable](#controlenable) | Enables the specified control. |
+| [ControlGetLoc](#controlgetloc) | Gets the location of the top left corner of the window. |
+| [ControlSetLoc](#controlsetloc) | Sets the location of the top left corner of the window. |
+| [ControlGetText](#controlgettext) | Retrieves the text in a control or control caption. |
+| [ControlSetText](#sontrolsettext) | Sets the text in a control or control caption. |
+| [ControlHandle](#controlhandle) | Returns a window handle for the specified control ID. |
+| [ControlHide](#controlhide) | Hides the specified control. |
 
 ---
 

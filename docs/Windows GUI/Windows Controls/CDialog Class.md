@@ -77,6 +77,33 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [ControlSetText](#sontrolsettext) | Sets the text in a control or control caption. |
 | [ControlHandle](#controlhandle) | Returns a window handle for the specified control ID. |
 | [ControlHide](#controlhide) | Hides the specified control. |
+| [ControlNormalize](#controlmormalize) | Makes visible the specified control. |
+| [ControlKill](#controlkill) | Destroys the specified control. |
+| [ControlShowState](#controlshowstate) | Changes the visible state of a control. |
+| [ControlRedraw](#controlredraw) | Redraws the specified control. |
+| [FontNew](#fontnew) | Creates a logical font. |
+| [FontEnd](#fontend) | Destroys a font when it is no longer needed. |
+| [ControlGetFont](#controlgetfont) | Gets the handle of the font used by the control. |
+| [ControlSetFont](#controlsetfont) | Sets the font that a control is to use when drawing text. |
+| [ControlGetFontFaceName](#controlgetfontfacename) | Gets the face name of the font used by the control. |
+| [ControlGetFontPointSize](#controlgetfontpointsize) | Gets the point size of the font used by the control. |
+| [CBGetDlgMsgResult](#cbgetdlgmsgresult) | Gets the return value of a message processed in the dialog box procedure. |
+| [CBSetDlgMsgResult](#cbsetdlgmsgresult) | Sets the return value of a message processed in the dialog box procedure. |
+| [ControlPost](#controlpost) | Posts a message in the message queue. |
+| [ControlSend](#controlsend) | Sends the specified message to the specified control. |
+| [ControlGetSize](#controlgetsize) | Gets the width and height of the control. |
+| [ControlGetWidth](#controlgetwidth) | Gets the width of the control. |
+| [ControlGetHeight](#controlgetheight) | Gets the height of the control. |
+| [ControlSetSize](#controlsetsize) | Sets the width and height of the specified window. |
+| [ControlGetClient](#controlgetclient) | Retrieves the coordinates of the control's client area. |
+| [ControlGetClientWidth](#controlgetclientwidth) | Gets the width of the control's client area. |
+| [ControlGetClientHeight](#controlgetclientheight) | Gets the height of the control's client area. |
+| [ControlSetClient](#controlsetclient) | Adjusts the bounding rectangle of the dialog based on the desired size of the client area. |
+| [ControlCenterHoriz](#controlcenterhoriz) | Moves the control to the center of the dialog horizontally |
+| [ControlCenterVert](#controlcentervert) | Moves the control to the center of the dialog vertically. |
+| [ControlGetCheck](#controlgetcheck) | Gets the check state of a radio button or check box. |
+| [ControlSetCheck](#controlsetcheck) | Sets the check state of a radio button or check box. |
+| [ControlSetOption](#controlsetoption) | Sets the check state for an Option (radio) control, and unsets the check state for other Option buttons in a group. |
 
 ---
 

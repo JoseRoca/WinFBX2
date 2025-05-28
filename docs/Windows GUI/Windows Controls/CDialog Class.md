@@ -1,6 +1,6 @@
 # CDialog Class
 
-Wrapper class on top of the `CreateDialogIndirectParamW` API function.
+Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a dialog using a memory template.
 
 **Include file**: CDialog.inc.
 

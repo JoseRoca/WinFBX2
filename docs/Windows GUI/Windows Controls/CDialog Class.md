@@ -41,6 +41,30 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [IsDialogNonStable](#isdialognonstable) | Checks if the dialog is non stable. |
 | [DialogPost](#dialogpost) | Posts a message in the message queue. |
 | [DialogSend](#dialogsends) | Sends a message to the dialog. |
+| [DialogUnitsToPixels](#dialogunitstopixels) | Converts the specified dialog box units to screen units (pixels). |
+| [DialogUnitsToPixelsRatios](#dialogunitstopixelsratios) | Retrieves the conversion ratios from dialog units to pixels. |
+| [DluToPixRX](#dlutopixrx) | Retrieves the conversion ratios from dialog units to pixels. |
+| [DluToPixRX](#dlutopixrx) | Retrieves the conversion ratios from dialog units to pixels. |
+| [PixelsToDialogUnits](#pixelstodialogunits) | Converts the specified screen units (pixels) to dialog box units. |
+| [PixelsToDialogUnitsRatios](#pixelstodialogunitsratios) | Retrieves the conversion ratios from pixels to dialog units. |
+| [PixToDluRX](#pixtodlurx) | Retrieves the conversion ratio from pixels to dialog units. |
+| [PixToDluRY](#pixtodlury) | Retrieves the conversion ratio from pixels to dialog units. |
+| [DialogGetSize](#dialoggetsize) | Gets the width and height of the dialog. |
+| [DialogGetWidth](#dialoggetwidth) | Gets the width of the dialog. |
+| [DialogGetHeight](#dialoggetheight) | Gets the height of the dialog. |
+| [DialogSetSize](#dialogsetsize) | Sets the size of the dialog. |
+| [DialogGetBounds](#dialoggetbounds) | Retrieves the bounds of a window without the drop shadows. |
+| [DialogGetClient](#dialoggetclient) | Retrieves the coordinates of the dialog's client area. |
+| [DialogGetClientWidth](#dialoggetclientwidth) | Gets the width of the the dialog's client area. |
+| [DialogGetClientHeight](#dialoggetclientheight) | Gets the height of the the dialog's client area. |
+| [DialogSetClient](#dialogsetclient) | Adjusts the bounding rectangle of the dialog based on the desired size of the client area. |
+| [DialogGetFont](#dialoggetfont) | Gets the handle of the font used by the dialog. |
+| [DialogGetFontFaceName](#dialoggetfontfacename) | Gets the face name of the font used by the dialog. |
+| [DialogGetFontPointSize](#dialoggetfontpointsize) | Gets the point size of the font used by the dialog. |
+| [DialogGetText](#dialoggettext) | Gets the text of the dialog caption. |
+| [DialogSetText](#dialogsettext) | Sets the text of the dialog caption. |
+| [DialogGetLoc](#dialoggetloc) | Gets the location of the top left corner of the window. |
+| [DialogSetLoc](#dialogsetloc) | Sets the location of the top left corner of the window. |
 
 ---
 

@@ -39,7 +39,7 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DialogDisable](#dialogdisable) | Disables the dialog. |
 | [DialogEnable](#dialogenable) | Enables the dialog. |
 | [DialogRedraw](#dialogredraw) | Redraws the dialog. |
-| [ForceVisibleDisplay](#forcevisibledisplay) | Repositions the dialog if it is off-screen. |
+| [DialogForceVisibility](#dialogforcevisibility) | Repositions the dialog if it is off-screen. |
 | [DialogCenter](#dialogcenter) | Centers the dialog. |
 | [DialogStabilize](#dialogstabilize) | Makes a Dialog stabilized (non-closeable). |
 | [DialogNonStable](#dialognonstable) | Makes a Dialog non stable (closeable). |

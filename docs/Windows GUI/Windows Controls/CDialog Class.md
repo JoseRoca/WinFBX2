@@ -62,7 +62,6 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 | [DialogSetLoc](#dialogsetloc) | Sets the location of the top left corner of the window. |
 | [DialogGetUser](#dialoggetuser) | Retrieves a value from the user data area of the dialog. |
 | [DialogSetUser](#dialogsetuser) | Sets a value in the user data area of a dialog. |
-| [DialogSetIconEx](#dialogseticonex) | Sets the big and small icons of the dialog. |
 | [CBGetDlgMsgResult](#cbgetdlgmsgresult) | Gets the return value of a message processed in the dialog box procedure. |
 | [CBSetDlgMsgResult](#cbsetdlgmsgresult) | Sets the return value of a message processed in the dialog box procedure. |
 
@@ -124,11 +123,13 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 
 | Name       | Description |
 | ---------- | ----------- |
-| [ControlSetIcon](#controlseticon) | Changes the icon displayed in an image label or button. |
-| [ControlSetBitmap](#controlsetbitmap) | Changes the bitmap displayed in an image label or button. |
 | [DialogSetIcon](#dialogseticon) | Changes both the dialog icon in the caption, and the icon shown in the ALT+TAB task list. |
+| [DialogSetIconEx](#dialogseticonex) | Sets the big and small icons of the dialog. |
 | [FindResourceType](#findresourcetype) | Finds the resource type given it's identifier or name. |
-| [FindResourceType](#findresourcetype) | Finds the resource type given it's identifier or name. |
+| [ControlSetImage](#controlsetimage) | Changes the icon or bitmap displayed in an image label control. |
+| [ControlSetImageX](#controlsetimagex) | Changes the icon or bitmap displayed in an image label control. |
+| [ControlSetImgButton](#controlsetimagebutton) | Changes the bitmap displayed in an image button control. |
+| [ControlSetImgButtonX](#controlsetimagebuttonx) | Changes the bitmap displayed in an image button control. |
 
 ---
 

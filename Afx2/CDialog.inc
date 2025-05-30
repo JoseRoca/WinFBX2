@@ -74,25 +74,25 @@ USING Afx2
 NAMESPACE Afx2
 
 ' // Layout manager - Anchor flags
-ENUM AFX_ANCHORPOINT
-   AFX_ANCHOR_NONE =  0
-   AFX_ANCHOR_WIDTH
-   AFX_ANCHOR_RIGHT
-   AFX_ANCHOR_CENTER_HORZ
-   AFX_ANCHOR_HEIGHT
-   AFX_ANCHOR_HEIGHT_WIDTH
-   AFX_ANCHOR_HEIGHT_RIGHT
-   AFX_ANCHOR_BOTTOM
-   AFX_ANCHOR_BOTTOM_WIDTH
-   AFX_ANCHOR_BOTTOM_RIGHT
-   AFX_ANCHOR_CENTER_HORZ_BOTTOM
-   AFX_ANCHOR_CENTER_VERT
-   AFX_ANCHOR_CENTER_VERT_RIGHT
-   AFX_ANCHOR_CENTER
+ENUM ANCHORPOINT
+   ANCHOR_NONE =  0
+   ANCHOR_WIDTH
+   ANCHOR_RIGHT
+   ANCHOR_CENTER_HORZ
+   ANCHOR_HEIGHT
+   ANCHOR_HEIGHT_WIDTH
+   ANCHOR_HEIGHT_RIGHT
+   ANCHOR_BOTTOM
+   ANCHOR_BOTTOM_WIDTH
+   ANCHOR_BOTTOM_RIGHT
+   ANCHOR_CENTER_HORZ_BOTTOM
+   ANCHOR_CENTER_VERT
+   ANCHOR_CENTER_VERT_RIGHT
+   ANCHOR_CENTER
 END ENUM
 
 ' // Layout manager - Anchor properties
-TYPE AFX_ANCHORPROPERTY
+TYPE ANCHORPROPERTY
    hwndCtl AS HWND
    anchor  AS LONG
    rc      AS RECT
@@ -101,7 +101,7 @@ TYPE AFX_ANCHORPROPERTY
 END TYPE
 
 ' // Dialog and control colors
-TYPE AFX_DLGCOLORS
+TYPE DLGCOLORS
    hwnd AS ..HWND
    foreColor AS COLORREF
    backColor AS COLORREF
@@ -135,9 +135,9 @@ Private:
    m_hDefPushButton AS HWND                     ' // Handle of the default push button
    DIM m_rgUserData(0 TO 99) AS LONG_PTR        ' // User data
    ' // Layout manager
-   DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY     ' // Array of anchor property structures
+   DIM m_rgProps(ANY) AS ANCHORPROPERTY         ' // Array of anchor property structures
    ' // Dialog and controls colors
-   DIM m_rgColors(ANY) AS AFX_DLGCOLORS         ' // Array of colors structures
+   DIM m_rgColors(ANY) AS DLGCOLORS             ' // Array of colors structures
    ' // Accelerator table
    m_hAccel AS HACCEL                           ' // Accelerator table handle
    DIM m_rgAccelEntries(ANY) AS ACCEL           ' // Table of accelerator keys
@@ -3087,7 +3087,7 @@ PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hwndCtl AS HWND, BYVAL nAnchorMode
    DIM nItem AS LONG = this.GetAnchorItem(hwndCtl)
    ' // If it does not exist, make room for it
    IF nItem = -1 THEN
-      REDIM PRESERVE m_rgProps(UBOUND(m_rgProps) + 1) AS AFX_ANCHORPROPERTY
+      REDIM PRESERVE m_rgProps(UBOUND(m_rgProps) + 1) AS ANCHORPROPERTY
       nItem = UBOUND(m_rgProps)
    END IF
    m_rgProps(nItem).hwndCtl = hwndCtl
@@ -3101,7 +3101,7 @@ PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hwndCtl AS HWND, BYVAL nAnchorMode
    ' // Get the client coordinates of the parent window
    DIm rcParent AS RECT
    .GetClientRect(GetParent(hwndCtl), @rcParent)
-   m_rgProps(nItem).anchor    = MIN(MAX(nAnchorMode, AFX_ANCHOR_NONE), AFX_ANCHOR_CENTER)
+   m_rgProps(nItem).anchor    = MIN(MAX(nAnchorMode, ANCHOR_NONE), ANCHOR_CENTER)
    m_rgProps(nItem).rc.Left   = pt.x
    m_rgProps(nItem).rc.Top    = pt.y
    m_rgProps(nItem).rc.Right  = rcParent.Right - (rcCtl.Right - rcCtl.Left + pt.x)
@@ -3133,79 +3133,79 @@ PRIVATE FUNCTION CDialog.LayoutEnumChildProc (BYVAL hwndChild AS HWND, BYVAL lPa
    DIM pDlg AS CDialog PTR = CAST(CDialog PTR, lParam)
    DIM nItem AS LONG = pDlg->GetAnchorItem(hwndChild)
    IF nItem > -1 THEN
-      IF pDlg->m_rgProps(nItem).anchor > AFX_ANCHOR_NONE THEN
+      IF pDlg->m_rgProps(nItem).anchor > ANCHOR_NONE THEN
          GetWindowRect(hwndChild, @rcChild)
          nWidth = rcChild.Right - rcChild.Left
          nHeight = rcChild.Bottom - rcChild.Top
          GetClientRect(GetParent(hwndChild), @rcParent)
          x = 0: y = 0: xWidth = 0: yHeight = 0
          SELECT CASE pDlg->m_rgProps(nItem).anchor
-            CASE AFX_ANCHOR_NONE
+            CASE ANCHOR_NONE
                x = pDlg->m_rgProps(nItem).rc.Left
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
                yHeight = nHeight
-            CASE AFX_ANCHOR_WIDTH
+            CASE ANCHOR_WIDTH
                x = pDlg->m_rgProps(nItem).rc.Left
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
                yHeight = nHeight
-            CASE AFX_ANCHOR_RIGHT
+            CASE ANCHOR_RIGHT
                x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = nWidth
                yHeight = nHeight
-            CASE AFX_ANCHOR_CENTER_HORZ
+            CASE ANCHOR_CENTER_HORZ
                x = (rcParent.Right \ 2) + pDlg->m_rgProps(nItem).centerX
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = nWidth
                yHeight = nHeight
-            CASE AFX_ANCHOR_HEIGHT
+            CASE ANCHOR_HEIGHT
                x = pDlg->m_rgProps(nItem).rc.Left
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = nWidth
                yHeight = MAX(rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Top - pDlg->m_rgProps(nItem).rc.Bottom, 0)
-            CASE AFX_ANCHOR_HEIGHT_WIDTH
+            CASE ANCHOR_HEIGHT_WIDTH
                x = pDlg->m_rgProps(nItem).rc.Left
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
                yHeight = MAX(rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Top - pDlg->m_rgProps(nItem).rc.Bottom, 0)
-            CASE AFX_ANCHOR_HEIGHT_RIGHT
+            CASE ANCHOR_HEIGHT_RIGHT
                x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = nWidth
                yHeight = MAX(rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Top - pDlg->m_rgProps(nItem).rc.Bottom, 0)
-            CASE AFX_ANCHOR_BOTTOM
+            CASE ANCHOR_BOTTOM
                x = pDlg->m_rgProps(nItem).rc.Left
                y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
                xWidth = nWidth
                yHeight = nHeight
-            CASE AFX_ANCHOR_BOTTOM_WIDTH
+            CASE ANCHOR_BOTTOM_WIDTH
                x = pDlg->m_rgProps(nItem).rc.Left
                y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
                xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
                yHeight = nHeight
-            CASE AFX_ANCHOR_BOTTOM_RIGHT
+            CASE ANCHOR_BOTTOM_RIGHT
                x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
                y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
                xWidth = nWidth
                yHeight = nHeight
-            CASE AFX_ANCHOR_CENTER_HORZ_BOTTOM
+            CASE ANCHOR_CENTER_HORZ_BOTTOM
                x = (rcParent.Right \ 2) + pDlg->m_rgProps(nItem).centerX
                y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
                xWidth = nWidth
                yHeight = nHeight
-            CASE AFX_ANCHOR_CENTER_VERT
+            CASE ANCHOR_CENTER_VERT
                x = pDlg->m_rgProps(nItem).rc.Left
                y = (rcParent.Bottom - nHeight) \ 2
                xWidth = nWidth
                yHeight = nHeight
-            CASE AFX_ANCHOR_CENTER_VERT_RIGHT
+            CASE ANCHOR_CENTER_VERT_RIGHT
                x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
                y = (rcParent.Bottom - nHeight) \ 2
                xWidth = nWidth
                yHeight = nHeight
-            CASE AFX_ANCHOR_CENTER
+            CASE ANCHOR_CENTER
                x = (rcParent.Right \ 2) + pDlg->m_rgProps(nItem).centerX
                y = (rcParent.Bottom \ 2) + pDlg->m_rgProps(nItem).centerY
                xWidth = nWidth
@@ -3255,7 +3255,7 @@ PRIVATE FUNCTION CDialog.ControlSetColor (BYVAL hwnd AS ..HWND, BYVAL foreColor 
    DIM nItem AS LONG = this.GetColorItem(hwnd)
    ' // If it does not exist, make room for it
    IF nItem = -1 THEN
-      REDIM PRESERVE m_rgColors(UBOUND(m_rgColors) + 1) AS AFX_DLGCOLORS
+      REDIM PRESERVE m_rgColors(UBOUND(m_rgColors) + 1) AS DLGCOLORS
       nItem = UBOUND(m_rgColors)
    END IF
    m_rgColors(nItem).hwnd = hwnd

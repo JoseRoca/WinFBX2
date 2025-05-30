@@ -111,7 +111,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Returns true if it uses pixels
+' Returns true if the dialog uses pixels
 ' ========================================================================================
 PRIVATE PROPERTY CControl.UsesPixels () AS BOOLEAN
    RETURN m_UsePixels
@@ -125,7 +125,7 @@ END PROPERTY
 
 ' =====================================================================================
 ' * Retrieves a value from the user data area of the control.
-' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
+' idx = The index number of the user data value to retrieve, in the range 0 to 19 inclusive.
 ' =====================================================================================
 PRIVATE FUNCTION CControl.GetUser (BYVAL idx AS LONG) AS LONG_PTR
    IF idx < 0 OR idx > 19 THEN RETURN 0
@@ -135,7 +135,7 @@ END FUNCTION
 
 ' =====================================================================================
 ' * Sets a value in the user data area of the control.
-' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
+' idx = The index number of the user data value to set, in the range 0 to 19 inclusive.
 ' =====================================================================================
 PRIVATE SUB CControl.SetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
    IF idx > -1 AND idx < 20 THEN m_rgUserData(idx) = newValue
@@ -176,7 +176,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Returns the version of CommCtl32.dll multiplied by 100, e.g. 582 for version 5.82.
+' Returns the version of CommCtl32.dll multiplied by 100, e.g. 600 for version 6.0.
 ' ========================================================================================
 PRIVATE FUNCTION CControl.ComCtlVersion () AS LONG
    FUNCTION = this.GetFileVersion("COMCTL32.DLL")

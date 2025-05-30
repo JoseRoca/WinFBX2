@@ -112,248 +112,254 @@ END TYPE
 ' ========================================================================================
 TYPE CDialog
 
-   Private:
-      m_hDlg  AS HWND                              ' // Dialog handle
-      m_pCallback AS WNDPROC                       ' // Pointer to a subclassed user callback procedure
-      m_hInstance AS HINSTANCE                     ' // Instance handle
-      m_hRichEditLib AS HMODULE                    ' // Rich Edit module handle
-      m_ptSize AS LONG                             ' // Font point size
-      m_fontStyle AS BYTE                          ' // Font style
-      m_charset AS BYTE                            ' // Font character set
-      m_fontName AS WSTRING * 32                   ' // Font face name
-      m_IsModal AS BOOLEAN                         ' // Dialog is modal
-      m_IsCustom AS BOOLEAN                        ' // Dialog has a custom class
-      m_UsePixels AS BOOLEAN                       ' // Use pixels instead of dialog units
-      m_RepaintDisabled AS BOOLEAN                 ' // Repaint is disabled/enabled while resizing (true/false)
-      m_DisableRepaintOnResize AS BOOLEAN          ' // Repaint is enabled while resizing (true/false)
-      m_IsStabilized AS BOOLEAN                    ' // The dialog is stabilized(true) or is not stable (false)
-      m_wszClassName AS WSTRING * 256              ' // Class name
-      m_rx AS SINGLE = 1                           ' // DPI - Horizontal scaling ratio
-      m_ry AS SINGLE = 1                           ' // DPI - Vertical scaling ratio
-      m_DlgRetVal AS INT_PTR                       ' // To simulate EndDialog
-      m_hDefPushButton AS HWND                     ' // Handle of the default push button
-      DIM m_rgUserData(0 TO 99) AS LONG_PTR        ' // User data
-      ' // Layout manager
-      DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY     ' // Array of anchor property structures
-      ' // Dialog and controls colors
-      DIM m_rgColors(ANY) AS AFX_DLGCOLORS         ' // Array of colors structures
-      ' // Accelerator table
-      m_hAccel AS HACCEL                           ' // Accelerator table handle
-      DIM m_rgAccelEntries(ANY) AS ACCEL           ' // Table of accelerator keys
-      ' // Scrollable dialogs
-      m_IsDialogScrollable AS BOOLEAN              ' // Dialog scrollable -True of False
-      m_OrigClientRect AS RECT                     ' // Coordinates of the dialog's original client area
-      m_nHorzInc AS LONG                           ' // Horizontal increment
-      m_nVertInc AS LONG                           ' // Vertical increment
-      m_HScrollMax AS LONG                         ' // Maximum horizontal scroll value
-      m_VScrollMax AS LONG                         ' // Maximum vertical scroll value
-      m_HScrollPos AS LONG                         ' // Horizontal scroll position
-      m_VScrollPos AS LONG                         ' // Vertical scroll position
-      m_HorzUnits AS LONG                          ' // Amount, in device units, of horizontal scrolling
-      m_VertUnits AS LONG                          ' // Amount, in device units, of vertical scrolling
+Private:
 
-   Public:
-      DECLARE CONSTRUCTOR (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, _
-         BYVAL fontStyle AS BYTE = 0, BYVAL charset AS BYTE = DEFAULT_CHARSET) 
-      DECLARE DESTRUCTOR 
-      DECLARE FUNCTION RegisterClass (BYREF wszClassName AS CONST WSTRING) AS ATOM
-      DECLARE FUNCTION DialogTemplate (BYREF wszClassName AS WSTRING, BYREF wszTitle AS WSTRING, BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, _
-         BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS STRING
-      DECLARE FUNCTION DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
-         BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
-         BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
-      DECLARE FUNCTION DialogNew (BYREF wszClassName AS WSTRING, BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
-         BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
-         BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
-      DECLARE FUNCTION DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
-         BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
-         BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
-      DECLARE FUNCTION DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING = "", _
-         BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
-         BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
-      DECLARE FUNCTION DialogShowModeless (BYVAL pCallback AS ANY PTR = NULL) AS INT_PTR
-      DECLARE FUNCTION DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS INT_PTR
-      DECLARE FUNCTION DialogDoEvents (BYVAL dwMilliseconds AS DWORD = 1) AS BOOLEAN
-      DECLARE FUNCTION DialogEnd (BYVAL nResult AS LONG = 0) AS INT_PTR
-      DECLARE FUNCTION DialogEndResult () AS INT_PTR
-      DECLARE FUNCTION ControlAdd (BYREF wszClassName AS WSTRING, BYVAL cId AS LONG_PTR = 0, _
-         BYREF wszTitle AS WSTRING = "", BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
-         BYVAL dwStyle AS LONG = -1, BYVAL dwExStyle AS LONG = -1, BYVAL lpPAram AS LONG_PTR = 0, _
-         BYVAL pWndProc AS SUBCLASSPROC = NULL, BYVAL uIdSubclass AS UINT_PTR = &HFFFFFFFF, _
-         BYVAL dwRefData AS DWORD_PTR = NULL) AS HWND
-      DECLARE PROPERTY hDialog () AS HWND
-      DECLARE PROPERTY hDialog (BYVAL hDlg AS HWND)
-      DECLARE FUNCTION IsModal () AS BOOLEAN
-      DECLARE FUNCTION IsCustom () AS BOOLEAN
-      DECLARE FUNCTION UsesPixels () AS BOOLEAN
-      DECLARE FUNCTION UsesUnits () AS BOOLEAN
-      DECLARE FUNCTION FontNew (BYREF wszFaceName AS WSTRING, BYVAL lPointSize AS LONG, _
-         BYVAL lWeight AS LONG = 0, BYVAL bItalic AS UBYTE = FALSE, BYVAL bUnderline AS UBYTE = FALSE, _
-         BYVAL bStrikeOut AS UBYTE = FALSE, BYVAL bCharSet AS UBYTE = DEFAULT_CHARSET) AS HFONT
-      DECLARE SUB FontEnd (BYVAL hFont AS HFONT)
-      DECLARE FUNCTION GetDefId () AS INT_PTR
-      DECLARE FUNCTION SetDefId (BYVAL cId AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogReposition () AS BOOLEAN
-      DECLARE FUNCTION DialogShowState (BYVAL showState AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogMaximize () AS BOOLEAN
-      DECLARE FUNCTION DialogMinimize () AS BOOLEAN
-      DECLARE FUNCTION DialogHide () AS BOOLEAN
-      DECLARE FUNCTION DialogNormalize () AS BOOLEAN
-      DECLARE FUNCTION DialogDisable () AS BOOLEAN
-      DECLARE FUNCTION DialogEnable () AS BOOLEAN
-      DECLARE FUNCTION DialogRedraw () AS BOOLEAN
-      DECLARE SUB ForceVisibleDisplay
-      DECLARE FUNCTION DialogPost (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
-      DECLARE FUNCTION DialogSend (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
-      DECLARE SUB DialogSetIcon (BYREF wszImage AS WSTRING)
-      DECLARE SUB DialogSetIconEx (BYVAL hIconBig AS HICON, BYVAL hIconSmall AS HICON)
-      DECLARE FUNCTION DialogGetSize (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogGetWidth () AS LONG
-      DECLARE FUNCTION DialogGetHeight () AS LONG
-      DECLARE FUNCTION DialogSetSize (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogGetBounds () AS RECT
-      DECLARE FUNCTION DialogGetClient (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogGetClientWidth () AS LONG
-      DECLARE FUNCTION DialogGetClientHeight () AS LONG
-      DECLARE FUNCTION DialogSetClient (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogGetLoc (BYREF nLeft AS LONG, BYREF nTop AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogSetLoc (BYVAL nLeft AS LONG, BYVAL nTop AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogGetText () AS DWSTRING
-      DECLARE FUNCTION DialogSetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
-      DECLARE FUNCTION DialogGetUser (BYVAL idx AS LONG) AS LONG_PTR
-      DECLARE SUB DialogSetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
-      DECLARE FUNCTION DialogGetFont () AS HFONT
-      DECLARE FUNCTION DialogGetFontFaceName () AS DWSTRING
-      DECLARE FUNCTION DialogGetFontPointSize () AS LONG
-      DECLARE SUB DialogCenter(BYVAL hwndParent AS HWND = NULL)
-      DECLARE FUNCTION DialogStabilize () AS BOOLEAN
-      DECLARE FUNCTION DialogNonStable () AS BOOLEAN
-      DECLARE FUNCTION IsDialogStabilized () AS BOOLEAN
-      DECLARE FUNCTION IsDialogNonStable () AS BOOLEAN
+   m_hDlg  AS HWND                              ' // Dialog handle
+   m_pCallback AS WNDPROC                       ' // Pointer to a subclassed user callback procedure
+   m_hInstance AS HINSTANCE                     ' // Instance handle
+   m_hRichEditLib AS HMODULE                    ' // Rich Edit module handle
+   m_ptSize AS LONG                             ' // Font point size
+   m_fontStyle AS BYTE                          ' // Font style
+   m_charset AS BYTE                            ' // Font character set
+   m_fontName AS WSTRING * 32                   ' // Font face name
+   m_IsModal AS BOOLEAN                         ' // Dialog is modal
+   m_IsCustom AS BOOLEAN                        ' // Dialog has a custom class
+   m_UsePixels AS BOOLEAN                       ' // Use pixels instead of dialog units
+   m_RepaintDisabled AS BOOLEAN                 ' // Repaint is disabled/enabled while resizing (true/false)
+   m_DisableRepaintOnResize AS BOOLEAN          ' // Repaint is enabled while resizing (true/false)
+   m_IsStabilized AS BOOLEAN                    ' // The dialog is stabilized(true) or is not stable (false)
+   m_wszClassName AS WSTRING * 256              ' // Class name
+   m_rx AS SINGLE = 1                           ' // DPI - Horizontal scaling ratio
+   m_ry AS SINGLE = 1                           ' // DPI - Vertical scaling ratio
+   m_DlgRetVal AS INT_PTR                       ' // To simulate EndDialog
+   m_hDefPushButton AS HWND                     ' // Handle of the default push button
+   DIM m_rgUserData(0 TO 99) AS LONG_PTR        ' // User data
+   ' // Layout manager
+   DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY     ' // Array of anchor property structures
+   ' // Dialog and controls colors
+   DIM m_rgColors(ANY) AS AFX_DLGCOLORS         ' // Array of colors structures
+   ' // Accelerator table
+   m_hAccel AS HACCEL                           ' // Accelerator table handle
+   DIM m_rgAccelEntries(ANY) AS ACCEL           ' // Table of accelerator keys
+   ' // Scrollable dialogs
+   m_IsDialogScrollable AS BOOLEAN              ' // Dialog scrollable -True of False
+   m_OrigClientRect AS RECT                     ' // Coordinates of the dialog's original client area
+   m_nHorzInc AS LONG                           ' // Horizontal increment
+   m_nVertInc AS LONG                           ' // Vertical increment
+   m_HScrollMax AS LONG                         ' // Maximum horizontal scroll value
+   m_VScrollMax AS LONG                         ' // Maximum vertical scroll value
+   m_HScrollPos AS LONG                         ' // Horizontal scroll position
+   m_VScrollPos AS LONG                         ' // Vertical scroll position
+   m_HorzUnits AS LONG                          ' // Amount, in device units, of horizontal scrolling
+   m_VertUnits AS LONG                          ' // Amount, in device units, of vertical scrolling
 
-      ' // Dialog procedure callback
-      DECLARE FUNCTION CBGetDlgMsgResult () AS LONG_PTR
-      DECLARE FUNCTION CBSetDlgMsgResult (BYVAL result AS LONG_PTR) AS LONG_PTR
+Public:
 
-      ' // Control methods
-      DECLARE FUNCTION ControlDisable (BYVAL cId AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlEnable (BYVAL cId AS LONG) AS BOOLEAN
-      DECLARE SUB ControlSetFocus (BYVAL cId AS LONG)
-      DECLARE FUNCTION ControlGetLoc (BYVAL cId AS LONG, BYREF nLeft AS LONG, BYREF nTop AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlSetLoc (BYVAL cId AS LONG, BYVAL nLeft AS LONG, BYVAL nTop AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlGetText (BYVAL cId AS LONG) AS DWSTRING
-      DECLARE FUNCTION ControlSetText (BYVAL cId AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
-      DECLARE FUNCTION ControlHandle (BYVAL cId AS LONG) AS HWND
-      DECLARE FUNCTION ControlHide (BYVAL cId AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlNormalize (BYVAL cId AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlKill (BYVAL cId AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlRedraw (BYVAL cId AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlShowState (BYVAL cId AS LONG, BYVAL showState AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlPost (BYVAL cId AS LONG, BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
-      DECLARE FUNCTION ControlSend (BYVAL cId AS LONG, BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
-      DECLARE FUNCTION ControlGetSize (BYVAL cId AS LONG, BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlGetWidth (BYVAL cId AS LONG) AS LONG
-      DECLARE FUNCTION ControlGetHeight (BYVAL cId AS LONG) AS LONG
-      DECLARE FUNCTION ControlSetSize (BYVAL cId AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlGetClient (BYVAL cId AS LONG, BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlGetClientWidth (BYVAL cId AS LONG) AS LONG
-      DECLARE FUNCTION ControlGetClientHeight (BYVAL cId AS LONG) AS LONG
-      DECLARE FUNCTION ControlSetClient (BYVAL cId AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlGetFont (BYVAL cId AS LONG) AS HFONT
-      DECLARE FUNCTION ControlGetFontFaceName (BYVAL cId AS LONG) AS DWSTRING
-      DECLARE FUNCTION ControlGetFontPointSize (BYVAL cId AS LONG) AS LONG
-      DECLARE SUB ControlSetFont (BYVAL cId AS LONG, BYVAL hFont AS HFONT, BYVAL fRedraw AS BOOLEAN = TRUE)
-      DECLARE SUB ControlCenterHoriz (BYVAL cId AS LONG)
-      DECLARE SUB ControlCenterVert (BYVAL cId AS LONG)
-      DECLARE FUNCTION ControlGetCheck (BYVAL cId AS LONG) AS LONG
-      DECLARE SUB ControlSetCheck (BYVAL cId AS LONG, BYVAL checkState AS LONG)
-      DECLARE FUNCTION ControlSetOption (BYVAL cId AS LONG, BYVAL minId AS LONG, BYVAL maxId AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlSetIcon (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
-      DECLARE FUNCTION ControlSetBitmap (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   ' // Dialogs
+   DECLARE CONSTRUCTOR (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, _
+      BYVAL fontStyle AS BYTE = 0, BYVAL charset AS BYTE = DEFAULT_CHARSET) 
+   DECLARE DESTRUCTOR 
+   DECLARE FUNCTION RegisterClass (BYREF wszClassName AS CONST WSTRING) AS ATOM
+   DECLARE FUNCTION DialogTemplate (BYREF wszClassName AS WSTRING, BYREF wszTitle AS WSTRING, BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, _
+      BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS STRING
+   DECLARE FUNCTION DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
+      BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+      BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
+   DECLARE FUNCTION DialogNew (BYREF wszClassName AS WSTRING, BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
+      BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+      BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
+   DECLARE FUNCTION DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING, _
+      BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+      BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
+   DECLARE FUNCTION DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL hParent AS HWND = HWND_DESKTOP, BYREF wszTitle AS WSTRING = "", _
+      BYVAL x AS LONG = -1, BYVAL y AS LONG = -1, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+      BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
+   DECLARE FUNCTION DialogShowModeless (BYVAL pCallback AS ANY PTR = NULL) AS INT_PTR
+   DECLARE FUNCTION DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS INT_PTR
+   DECLARE FUNCTION DialogDoEvents (BYVAL dwMilliseconds AS DWORD = 1) AS BOOLEAN
+   DECLARE FUNCTION DialogEnd (BYVAL nResult AS LONG = 0) AS INT_PTR
+   DECLARE FUNCTION DialogEndResult () AS INT_PTR
+   DECLARE FUNCTION ControlAdd (BYREF wszClassName AS WSTRING, BYVAL cId AS LONG_PTR = 0, _
+      BYREF wszTitle AS WSTRING = "", BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
+      BYVAL dwStyle AS LONG = -1, BYVAL dwExStyle AS LONG = -1, BYVAL lpPAram AS LONG_PTR = 0, _
+      BYVAL pWndProc AS SUBCLASSPROC = NULL, BYVAL uIdSubclass AS UINT_PTR = &HFFFFFFFF, _
+      BYVAL dwRefData AS DWORD_PTR = NULL) AS HWND
+   DECLARE PROPERTY hDialog () AS HWND
+   DECLARE PROPERTY hDialog (BYVAL hDlg AS HWND)
+   DECLARE FUNCTION IsModal () AS BOOLEAN
+   DECLARE FUNCTION IsCustom () AS BOOLEAN
+   DECLARE FUNCTION UsesPixels () AS BOOLEAN
+   DECLARE FUNCTION UsesUnits () AS BOOLEAN
+   DECLARE FUNCTION DialogShowState (BYVAL showState AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DialogMaximize () AS BOOLEAN
+   DECLARE FUNCTION DialogMinimize () AS BOOLEAN
+   DECLARE FUNCTION DialogHide () AS BOOLEAN
+   DECLARE FUNCTION DialogNormalize () AS BOOLEAN
+   DECLARE FUNCTION DialogDisable () AS BOOLEAN
+   DECLARE FUNCTION DialogEnable () AS BOOLEAN
+   DECLARE FUNCTION DialogRedraw () AS BOOLEAN
+   DECLARE FUNCTION DialogPost (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
+   DECLARE FUNCTION DialogSend (BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
+   DECLARE FUNCTION DialogGetSize (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DialogGetWidth () AS LONG
+   DECLARE FUNCTION DialogGetHeight () AS LONG
+   DECLARE FUNCTION DialogSetSize (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DialogGetBounds () AS RECT
+   DECLARE FUNCTION DialogGetClient (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DialogGetClientWidth () AS LONG
+   DECLARE FUNCTION DialogGetClientHeight () AS LONG
+   DECLARE FUNCTION DialogSetClient (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DialogGetLoc (BYREF nLeft AS LONG, BYREF nTop AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DialogSetLoc (BYVAL nLeft AS LONG, BYVAL nTop AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DialogGetText () AS DWSTRING
+   DECLARE FUNCTION DialogSetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+   DECLARE FUNCTION DialogGetUser (BYVAL idx AS LONG) AS LONG_PTR
+   DECLARE SUB DialogSetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
+   DECLARE FUNCTION DialogGetFont () AS HFONT
+   DECLARE FUNCTION DialogGetFontFaceName () AS DWSTRING
+   DECLARE FUNCTION DialogGetFontPointSize () AS LONG
+   DECLARE SUB DialogCenter(BYVAL hwndParent AS HWND = NULL)
+   DECLARE FUNCTION DialogStabilize () AS BOOLEAN
+   DECLARE FUNCTION DialogNonStable () AS BOOLEAN
+   DECLARE FUNCTION IsDialogStabilized () AS BOOLEAN
+   DECLARE FUNCTION IsDialogNonStable () AS BOOLEAN
+   DECLARE FUNCTION DialogReposition () AS BOOLEAN
+   DECLARE SUB DialogForceVisibility
+   DECLARE FUNCTION GetDefId () AS INT_PTR
+   DECLARE FUNCTION SetDefId (BYVAL cId AS LONG) AS BOOLEAN
+   DECLARE FUNCTION FontNew (BYREF wszFaceName AS WSTRING, BYVAL lPointSize AS LONG, _
+      BYVAL lWeight AS LONG = 0, BYVAL bItalic AS UBYTE = FALSE, BYVAL bUnderline AS UBYTE = FALSE, _
+      BYVAL bStrikeOut AS UBYTE = FALSE, BYVAL bCharSet AS UBYTE = DEFAULT_CHARSET) AS HFONT
+   DECLARE SUB FontEnd (BYVAL hFont AS HFONT)
 
-      ' // Colors
-      DECLARE FUNCTION DialogSetColor (BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
-      DECLARE FUNCTION ControlSetColor (BYVAL hwnd AS HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
-      DECLARE FUNCTION ControlSetColor (BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
-      DECLARE FUNCTION GetColorItem (BYVAL hwnd AS HWND) AS LONG
-      DECLARE SUB DialogEnableRepaint (BYVAL fRepaint AS BOOLEAN)
-      DECLARE FUNCTION IsDialogRepaintDisabled () AS BOOLEAN
-      DECLARE SUB DialogDisableRepaintOnResize (BYVAL fRepaint AS BOOLEAN)
-      DECLARE FUNCTION IsDialogRepaintDisabledOnResize () AS BOOLEAN
+   ' // Control methods
+   DECLARE FUNCTION ControlDisable (BYVAL cId AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlEnable (BYVAL cId AS LONG) AS BOOLEAN
+   DECLARE SUB ControlSetFocus (BYVAL cId AS LONG)
+   DECLARE FUNCTION ControlGetLoc (BYVAL cId AS LONG, BYREF nLeft AS LONG, BYREF nTop AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlSetLoc (BYVAL cId AS LONG, BYVAL nLeft AS LONG, BYVAL nTop AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlGetText (BYVAL cId AS LONG) AS DWSTRING
+   DECLARE FUNCTION ControlSetText (BYVAL cId AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+   DECLARE FUNCTION ControlHandle (BYVAL cId AS LONG) AS HWND
+   DECLARE FUNCTION ControlHide (BYVAL cId AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlNormalize (BYVAL cId AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlKill (BYVAL cId AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlRedraw (BYVAL cId AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlShowState (BYVAL cId AS LONG, BYVAL showState AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlPost (BYVAL cId AS LONG, BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
+   DECLARE FUNCTION ControlSend (BYVAL cId AS LONG, BYVAL Msg AS UINT, BYVAL wPrm AS LONG_PTR, BYVAL lPrm AS LONG_PTR) AS BOOLEAN
+   DECLARE FUNCTION ControlGetSize (BYVAL cId AS LONG, BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlGetWidth (BYVAL cId AS LONG) AS LONG
+   DECLARE FUNCTION ControlGetHeight (BYVAL cId AS LONG) AS LONG
+   DECLARE FUNCTION ControlSetSize (BYVAL cId AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlGetClient (BYVAL cId AS LONG, BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlGetClientWidth (BYVAL cId AS LONG) AS LONG
+   DECLARE FUNCTION ControlGetClientHeight (BYVAL cId AS LONG) AS LONG
+   DECLARE FUNCTION ControlSetClient (BYVAL cId AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlGetFont (BYVAL cId AS LONG) AS HFONT
+   DECLARE FUNCTION ControlGetFontFaceName (BYVAL cId AS LONG) AS DWSTRING
+   DECLARE FUNCTION ControlGetFontPointSize (BYVAL cId AS LONG) AS LONG
+   DECLARE SUB ControlSetFont (BYVAL cId AS LONG, BYVAL hFont AS HFONT, BYVAL fRedraw AS BOOLEAN = TRUE)
+   DECLARE SUB ControlCenterHoriz (BYVAL cId AS LONG)
+   DECLARE SUB ControlCenterVert (BYVAL cId AS LONG)
+   DECLARE FUNCTION ControlGetCheck (BYVAL cId AS LONG) AS LONG
+   DECLARE SUB ControlSetCheck (BYVAL cId AS LONG, BYVAL checkState AS LONG)
+   DECLARE FUNCTION ControlSetOption (BYVAL cId AS LONG, BYVAL minId AS LONG, BYVAL maxId AS LONG) AS BOOLEAN
 
-      ' // Images
-      DECLARE FUNCTION FindResourceType (BYREF wszResourceName AS WSTRING) AS STRING
+   ' // Colors
+   DECLARE FUNCTION DialogSetColor (BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+   DECLARE FUNCTION ControlSetColor (BYVAL hwnd AS HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+   DECLARE FUNCTION ControlSetColor (BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+   DECLARE FUNCTION GetColorItem (BYVAL hwnd AS HWND) AS LONG
+   DECLARE SUB DialogEnableRepaint (BYVAL fRepaint AS BOOLEAN)
+   DECLARE FUNCTION IsDialogRepaintDisabled () AS BOOLEAN
+   DECLARE SUB DialogDisableRepaintOnResize (BYVAL fRepaint AS BOOLEAN)
+   DECLARE FUNCTION IsDialogRepaintDisabledOnResize () AS BOOLEAN
 
-      ' // Desktop window
-      DECLARE FUNCTION DesktopGetWindow () AS HWND
-      DECLARE FUNCTION DesktopGetLoc (BYREF x AS LONG, BYREF y AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DesktopGetLocX () AS LONG
-      DECLARE FUNCTION DesktopGetLocY () As LONG
-      DECLARE FUNCTION DesktopGetSize (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DesktopGetWidth () AS LONG
-      DECLARE FUNCTION DesktopGetHeight () AS LONG
-      DECLARE FUNCTION DesktopGetClient (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DesktopGetClientWidth () AS LONG
-      DECLARE FUNCTION DesktopGetClientHeight () AS LONG
-      DECLARE SUB DesktopGetPPI (BYREF xPPI AS LONG, BYREF yPPI AS LONG)
-      DECLARE FUNCTION DesktopGetPPIX () AS LONG
-      DECLARE FUNCTION DesktopGetPPIY () AS LONG
+   ' // Images
+   DECLARE SUB DialogSetIcon (BYREF wszImage AS WSTRING)
+   DECLARE SUB DialogSetIconEx (BYVAL hIconBig AS HICON, BYVAL hIconSmall AS HICON)
+   DECLARE FUNCTION FindResourceType (BYREF wszResourceName AS WSTRING) AS STRING
+   DECLARE FUNCTION ControlSetImage (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   DECLARE FUNCTION ControlSetImageX (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   DECLARE FUNCTION ControlSetImgButton (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   DECLARE FUNCTION ControlSetImgButtonX (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
 
-      ' // Display
-      DECLARE FUNCTION DisplayGetPixelsWidth () AS DWORD
-      DECLARE FUNCTION DisplayGetPixelsHeight () AS DWORD
-      DECLARE FUNCTION DisplayGetBitsPerPixel () AS DWORD
-      DECLARE FUNCTION DisplayGetFrequency () AS DWORD
+   ' // Desktop window
+   DECLARE FUNCTION DesktopGetWindow () AS HWND
+   DECLARE FUNCTION DesktopGetLoc (BYREF x AS LONG, BYREF y AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DesktopGetLocX () AS LONG
+   DECLARE FUNCTION DesktopGetLocY () As LONG
+   DECLARE FUNCTION DesktopGetSize (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DesktopGetWidth () AS LONG
+   DECLARE FUNCTION DesktopGetHeight () AS LONG
+   DECLARE FUNCTION DesktopGetClient (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DesktopGetClientWidth () AS LONG
+   DECLARE FUNCTION DesktopGetClientHeight () AS LONG
+   DECLARE SUB DesktopGetPPI (BYREF xPPI AS LONG, BYREF yPPI AS LONG)
+   DECLARE FUNCTION DesktopGetPPIX () AS LONG
+   DECLARE FUNCTION DesktopGetPPIY () AS LONG
 
-      ' // Conversion functions
-      DECLARE FUNCTION DialogUnitsToPixels (BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
-      DECLARE FUNCTION DialogUnitsToPixelsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
-      DECLARE FUNCTION DluToPixRX () AS SINGLE
-      DECLARE FUNCTION DluToPixRY () AS SINGLE
-      DECLARE FUNCTION PixelsToDialogUnits (BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
-      DECLARE FUNCTION PixelsToDialogUnitsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
-      DECLARE FUNCTION PixToDluRX () AS SINGLE
-      DECLARE FUNCTION PixToDluRY () AS SINGLE
+   ' // Display
+   DECLARE FUNCTION DisplayGetPixelsWidth () AS DWORD
+   DECLARE FUNCTION DisplayGetPixelsHeight () AS DWORD
+   DECLARE FUNCTION DisplayGetBitsPerPixel () AS DWORD
+   DECLARE FUNCTION DisplayGetFrequency () AS DWORD
 
-      ' // Scaling (High DPI)
-      DECLARE FUNCTION RxRatio () AS SINGLE
-      DECLARE FUNCTION RyRatio () AS SINGLE
-      DECLARE FUNCTION ScaleX (BYVAL cx AS SINGLE) AS SINGLE
-      DECLARE FUNCTION ScaleY (BYVAL cy AS SINGLE) AS SINGLE
-      DECLARE FUNCTION UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
-      DECLARE FUNCTION UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
-      DECLARE FUNCTION ScaleRect (BYVAL rc AS RECT) AS RECT
-      DECLARE FUNCTION UnScaleRect (BYVAL rc AS RECT) AS RECT
+   ' // Conversion functions
+   DECLARE FUNCTION DialogUnitsToPixels (BYVAL dluX AS LONG, BYVAL dluY AS LONG, BYREF pixelX AS LONG, BYREF pixelY AS LONG) AS BOOLEAN
+   DECLARE FUNCTION DialogUnitsToPixelsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+   DECLARE FUNCTION DluToPixRX () AS SINGLE
+   DECLARE FUNCTION DluToPixRY () AS SINGLE
+   DECLARE FUNCTION PixelsToDialogUnits (BYVAL pixelX AS LONG, BYVAL pixelY AS LONG, BYREF dluX AS LONG, BYREF dluY AS LONG) AS BOOLEAN
+   DECLARE FUNCTION PixelsToDialogUnitsRatios (BYREF ratioX AS SINGLE, BYREF ratioY AS SINGLE) AS BOOLEAN
+   DECLARE FUNCTION PixToDluRX () AS SINGLE
+   DECLARE FUNCTION PixToDluRY () AS SINGLE
 
-      ' // Layout manager
-      DECLARE FUNCTION ControlAnchor (BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlAnchor (BYVAL hCtl AS HWND, BYVAL nAnchorMode AS LONG) AS BOOLEAN
-      DECLARE FUNCTION ControlAnchor (BYVAL hParent AS HWND, BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
-      DECLARE FUNCTION GetAnchorItem (BYVAL hwndCtl AS HWND) AS LONG
-      DECLARE FUNCTION AdjustControls () AS BOOLEAN
+   ' // Scaling (High DPI)
+   DECLARE FUNCTION RxRatio () AS SINGLE
+   DECLARE FUNCTION RyRatio () AS SINGLE
+   DECLARE FUNCTION ScaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DECLARE FUNCTION ScaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DECLARE FUNCTION UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DECLARE FUNCTION UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DECLARE FUNCTION ScaleRect (BYVAL rc AS RECT) AS RECT
+   DECLARE FUNCTION UnScaleRect (BYVAL rc AS RECT) AS RECT
 
-      ' // Keyboard accelerators
-      DECLARE PROPERTY AccelHandle () AS ..HACCEL
-      DECLARE SUB AccelAttach (BYVAL hAccel AS ..HACCEL)
-      DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYVAL wKey AS WORD, BYVAL cmd AS WORD)
-      DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYREF wszKey AS WSTRING, BYVAL cmd AS WORD)
-      DECLARE FUNCTION CreateAcceleratorTable () AS ..HACCEL
-      DECLARE SUB DestroyAcceleratorTable
+   ' // Layout manager
+   DECLARE FUNCTION ControlAnchor (BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlAnchor (BYVAL hCtl AS HWND, BYVAL nAnchorMode AS LONG) AS BOOLEAN
+   DECLARE FUNCTION ControlAnchor (BYVAL hParent AS HWND, BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
+   DECLARE FUNCTION GetAnchorItem (BYVAL hwndCtl AS HWND) AS LONG
+   DECLARE FUNCTION AdjustControls () AS BOOLEAN
 
-      ' // Scrollable dialogs
-      DECLARE FUNCTION DialogSetViewPort (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
-      DECLARE FUNCTION IsDialogScrollable () AS BOOLEAN
-      DECLARE SUB DialogResetScrollBars
-      DECLARE SUB DialogSetupScrollBars
-      DECLARE SUB DialogOnVScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
-      DECLARE SUB DialogOnHScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
-      DECLARE SUB DialogOnSize (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
+   ' // Keyboard accelerators
+   DECLARE PROPERTY AccelHandle () AS ..HACCEL
+   DECLARE SUB AccelAttach (BYVAL hAccel AS ..HACCEL)
+   DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYVAL wKey AS WORD, BYVAL cmd AS WORD)
+   DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYREF wszKey AS WSTRING, BYVAL cmd AS WORD)
+   DECLARE FUNCTION CreateAcceleratorTable () AS ..HACCEL
+   DECLARE SUB DestroyAcceleratorTable
+
+   ' // Scrollable dialogs
+   DECLARE FUNCTION DialogSetViewPort (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
+   DECLARE FUNCTION IsDialogScrollable () AS BOOLEAN
+   DECLARE SUB DialogResetScrollBars
+   DECLARE SUB DialogSetupScrollBars
+   DECLARE SUB DialogOnVScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
+   DECLARE SUB DialogOnHScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
+   DECLARE SUB DialogOnSize (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM)
+
+   ' // Dialog procedure callback
+   DECLARE FUNCTION CBGetDlgMsgResult () AS LONG_PTR
+   DECLARE FUNCTION CBSetDlgMsgResult (BYVAL result AS LONG_PTR) AS LONG_PTR
 
 Private:
-      DECLARE STATIC FUNCTION CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
-      DECLARE STATIC FUNCTION CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
-      ' // Layout manager - Callback function to enumerate child windows
-      DECLARE STATIC FUNCTION LayoutEnumChildProc (BYVAL hwnd AS HWND, BYVAL lParam AS LPARAM) AS LONG
+
+   DECLARE STATIC FUNCTION CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+   DECLARE STATIC FUNCTION CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+   ' // Layout manager - Callback function to enumerate child windows
+   DECLARE STATIC FUNCTION LayoutEnumChildProc (BYVAL hwnd AS HWND, BYVAL lParam AS LPARAM) AS LONG
 
 END TYPE
 ' ========================================================================================
@@ -400,7 +406,7 @@ END DESTRUCTOR
 ' ========================================================================================
 
 ' ========================================================================================
-' Registers the window class.
+' Registers a window class.
 ' Parameter:
 ' - lpfnWndProc = Pointer to the window procedure.
 ' Return Value:
@@ -556,40 +562,16 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          ' Adds a label to the window.
          wsClassName = "Static"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR SS_LEFT OR WS_GROUP OR SS_NOTIFY
-      CASE "BITMAPLABEL"
-         ' Adds an image label to the window.
-         wsClassName = "Static"
-         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR SS_BITMAP
-         IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
-         ' // Make sure it has the SS_BITMAP style
-         dwStyle OR= SS_BITMAP
-         bSetFont = FALSE
-      CASE "ICONLABEL"
-         ' Adds an image label to the window.
-         wsClassName = "Static"
-         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR SS_ICON
-         IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
-         ' // Make sure it has the SS_ICON style
-         dwStyle OR= SS_ICON
-         bSetFont = FALSE
-      CASE "BITMAPBUTTON", "BITMAPBUTTONX"
-         ' Adds an image button to the window.
-         wsClassName = "Button"
-         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON OR BS_BITMAP
-         ' // Make sure it has the BS_BITMAP style
-         dwStyle OR= BS_BITMAP
-         bSetFont = FALSE
-      CASE "ICONBUTTON", "ICONBUTTONX"
-         ' Adds an image button to the window.
-         wsClassName = "Button"
-         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON OR BS_ICON
-         ' // Make sure it has the BS_ICON style
-         dwStyle OR= BS_ICON
-         bSetFont = FALSE
       CASE "IMGBUTTON", "IMGBUTTONX"   ' // For compatibility with PowerBasic
          wsClassName = "Button"
-         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON ' BS_BITMAP or BS_ICON must be specified
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_PUSHBUTTON ELSE dwStyle OR= WS_VISIBLE OR WS_TABSTOP
          bSetFont = FALSE
+         '// Check the type if resource (icon or bitmap)
+         DIM strType AS STRING = this.FindResourceType(wszTitle)
+         DIM nType AS LONG
+         IF strType = "RT_ICON" OR strType = "RT_GROUP_ICON" THEN nType = BS_ICON ELSE IF strType = "RT_BITMAP" THEN nType = BS_BITMAP
+         ' // Add the style
+         IF nType THEN dwStyle OR= nType
       CASE "IMAGE"   ' // For compatibility with PowerBasic
          ' Adds an image label to the window.
          wsClassName = "Static"
@@ -597,20 +579,24 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
          bSetFont = FALSE
          '// Check the type if resource (icon or bitmap)
-'         DIM strType AS STRING = this.FindResourceType(wszTitle)
-'         DIM nType AS LONG
-'print strType; "---------------------"
-'         IF strType = "RT_ICON" THEN nType = SS_ICON ELSE IF strType = "RT_BITMAP" THEN nType = SS_BITMAP
+         DIM strType AS STRING = this.FindResourceType(wszTitle)
+         DIM nType AS LONG
+         IF strType = "RT_ICON" OR strType = "RT_GROUP_ICON" THEN nType = SS_ICON ELSE IF strType = "RT_BITMAP" THEN nType = SS_BITMAP
          ' // Add the style
-'         dwStyle OR= nType
-'++++++++
+         IF nType THEN dwStyle OR= nType
       CASE "IMAGEX"   ' // For compatibility with PowerBasic
          wsClassName = "Static"
-         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE ' SS_ICON must be specified
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE ELSE dwStyle OR= WS_VISIBLE
          IF dwExStyle = -1 THEN dwExStyle = WS_EX_TRANSPARENT
          ' // With this style, the image is stretched
          dwStyle OR= SS_REALSIZECONTROL
          bSetFont = FALSE
+         '// Check the type if resource (icon or bitmap)
+         DIM strType AS STRING = this.FindResourceType(wszTitle)
+         DIM nType AS LONG
+         IF strType = "RT_ICON" OR strType = "RT_GROUP_ICON" THEN nType = SS_ICON ELSE IF strType = "RT_BITMAP" THEN nType = SS_BITMAP
+         ' // Add the style
+         IF nType THEN dwStyle OR= nType
       CASE "CUSTOMLABEL"
          ' Adds an ownerdraw label to the window.
          wsClassName = "Static"
@@ -852,14 +838,12 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          ' // Send this message for backward compatibility
          .SendMessageW hCtl, TB_BUTTONSTRUCTSIZE, SIZEOF(TBBUTTON), 0
    END SELECT
-
    ' // Buttons with images (icon or bitmap)
    SELECT CASE UCASE(wszClassName)
-      CASE "BITMAPBUTTON", "BITMAPBUTTONX", "IMGBUTTON", "IMGBUTTONX", "ICONBUTTON", "ICONBUTTONX"  ' Ok
-         DIM nType AS LONG = IMAGE_ICON
-         IF (dwStyle AND BS_BITMAP) = BS_BITMAP THEN nType = IMAGE_BITMAP
-         DIM AS LONG nWidth, nHeight
-         IF wszClassName = "IMGBUTTONX" OR wszClassName = "BITMAPBUTTONX" OR wszClassName = "ICONBUTTONX" THEN
+      CASE "IMGBUTTON", "IMGBUTTONX"
+         DIM AS LONG nType, nWidth, nHeight
+         IF (dwStyle AND BS_BITMAP) = BS_BITMAP THEN nType = IMAGE_BITMAP ELSE nType = IMAGE_ICON
+         IF wszClassName = "IMGBUTTONX" THEN
             DIM rc AS RECT
             GetClientRect(hCtl, @rc)
             nWidth = rc.right - rc.left
@@ -882,9 +866,8 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          END IF
          ' // Sets the image and deletes the old one
          IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, nType, CAST(LPARAM, hImage))))
-
    END SELECT
-
+   ' // --- Optional sunclassing ---
    ' // Subclass the control if pWndProc is not null
    IF pWndProc <> NULL THEN
       IF uIdSubclass = &HFFFFFFFF THEN
@@ -1129,7 +1112,7 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
          END IF
 
       CASE WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX, WM_CTLCOLORSTATIC
-         ' WM_CTLCOLORBTN does not color a button - use XPBUTTON
+         ' WM_CTLCOLORBTN does not colorize a button - use XPBUTTON
          ' wParam = HDC; lParam = Handle of the control.
          IF pDlg THEN
             IF pDlg->IsDialogRepaintDisabled = FALSE THEN
@@ -1502,7 +1485,7 @@ END FUNCTION
 ' result in a Windows program subsequently starting in an off-screen position (i.e. at a
 ' location that used to be visible) - and is now effectively invisible, preventing the
 ' user from closing it down or otherwise moving it back on-screen.
-' The ForceVisibleDisplay function can be called at program start-time right after the
+' The DialogForceVisibility method can be called at program start-time right after the
 ' main window has been created and positioned 'on-screen'. Should the window be positioned
 ' in an off-screen position, it is forced back onto the nearest display to its last
 ' position. The user will be unaware this is happening and won't even realise to thank you
@@ -1510,7 +1493,7 @@ END FUNCTION
 ' settings.
 ' Source: http://www.catch22.net/tuts/tips2
 ' ========================================================================================
-PRIVATE SUB CDialog.ForceVisibleDisplay
+PRIVATE SUB CDialog.DialogForceVisibility
    ' // Check if the specified window-rectangle is visible on any display
    DIM rc AS RECT
    GetWindowRect(m_hDlg, @rc)
@@ -1590,7 +1573,7 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' Make a Dialog stabilized (non-closeable).
+' Makes a Dialog stabilized (non-closeable).
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogStabilize () AS BOOLEAN
    ' // Get the system menu handle
@@ -1611,7 +1594,7 @@ PRIVATE FUNCTION CDialog.DialogStabilize () AS BOOLEAN
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' Make a Dialog non stable (closeable).
+' Makes a Dialog non stable (closeable).
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogNonStable () AS BOOLEAN
    GetSystemMenu(m_hDlg, TRUE)
@@ -1965,9 +1948,6 @@ PRIVATE FUNCTION CDialog.DialogGetFontFaceName () AS DWSTRING
    ' // Get the LOGFONTW structure
    DIM lfw AS LOGFONTW
    IF hCurFont THEN GetObjectW(hCurFont, SIZEOF(lfw), @lfw)
-   DIM hDc AS HDC = GetDC(m_hDlg)
-   DIM cyPixelsPerInch AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
-   ReleaseDC(m_hDlg, hDC)
    RETURN lfw.lfFaceName
 END FUNCTION
 ' ========================================================================================
@@ -2044,7 +2024,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' =====================================================================================
-' * Retrieves a value from the user data area of a CDialogEx.
+' * Retrieves a value from the user data area of the dialog.
 ' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
 ' =====================================================================================
 PRIVATE FUNCTION CDialog.DialogGetUser (BYVAL idx AS LONG) AS LONG_PTR
@@ -2054,7 +2034,7 @@ END FUNCTION
 ' =====================================================================================
 
 ' =====================================================================================
-' * Sets a value in the user data area of a CDialogEx.
+' * Sets a value in the user data area of a dialog.
 ' idx = The index number of the user data value to retrieve, in the range 0 to 99 inclusive.
 ' =====================================================================================
 PRIVATE SUB CDialog.DialogSetUser (BYVAL idx AS LONG, BYVAL newValue AS LONG_PTR)
@@ -2063,7 +2043,7 @@ END SUB
 ' =====================================================================================
 
 ' =====================================================================================
-' * Sets the big and small icons.
+' * Sets the big and small icons of the dialog.
 ' =====================================================================================
 PRIVATE SUB CDialog.DialogSetIconEx (BYVAL hIconBig AS HICON, BYVAL hIconSmall AS HICON)
    SendMessageW(m_hDlg, WM_SETICON, ICON_BIG, cast(LPARAM, hIconBig))
@@ -2081,7 +2061,7 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' * Disables the control.
+' * Disables the specified control.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlDisable (BYVAL cId AS LONG) AS BOOLEAN
    RETURN EnableWindow(GetDlgItem(m_hDlg, cId), FALSE)
@@ -2089,7 +2069,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Enables the control.
+' * Enables the specified control.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlEnable (BYVAL cId AS LONG) AS BOOLEAN
    RETURN EnableWindow(GetDlgItem(m_hDlg, cId), CTRUE)
@@ -2174,7 +2154,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Destroys the specified window.
+' * Destroys the specified control.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlKill (BYVAL cId AS LONG) AS BOOLEAN
    RETURN DestroyWindow(GetDlgItem(m_hDlg, cId))
@@ -2182,7 +2162,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Change the visible state of a control.
+' * Changes the visible state of a control.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlShowState (BYVAL cId AS LONG, BYVAL showState AS LONG) AS BOOLEAN
    RETURN ShowWindow(GetDlgItem(m_hDlg, cId), showState)
@@ -2589,116 +2569,17 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the Check State for an OPTION (radio) control, and unsets the Check State for other OPTION buttons in a group.
+' Sets the check state for an Option (radio) control, and unsets the check state for other Option buttons in a group.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlSetOption (BYVAL cId AS LONG, BYVAL minId AS LONG, BYVAL maxId AS LONG) AS BOOLEAN
    RETURN ..CheckRadioButton(GetDlgItem(m_hDlg, cId), minId, maxId, cId)
 END FUNCTION
 ' ========================================================================================
 
-' ========================================================================================
-' Changes the icon displayed in an ICONLABEL or ICONBUTTON.
-' The old image handle is released.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.ControlSetIcon (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
-   DIM wszClassName AS WSTRING * 260
-   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
-   IF hCtl = NULL THEN RETURN FALSE
-   GetClassNameW(hCtl, wszClassName, SIZEOF(wszClassName))
-   wszClassName = UCASE(wszClassName)
-   SELECT CASE wszClassName
-      CASE "BUTTON"
-         ' // Loads the icon from resource
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszImage, 1) = "#" THEN
-            wID = VAL(MID(wszImage, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            ' // Loads the icon from file
-            IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
-               hImage = LoadImageW(NULL, wszImage, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
-            ELSE
-               ' // Loads the icon from resource
-               hImage = LoadImageW(m_hInstance, wszImage, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-            END IF
-         END IF
-         ' // Sets the image and deletes the old one
-         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
-      CASE "STATIC"
-         ' // Loads the icon from resource
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszImage, 1) = "#" THEN
-            wID = VAL(MID(wszImage, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            ' // Loads the icon from file
-            IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
-               hImage = .LoadImageW(NULL, wszImage, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
-            ELSE
-               ' // Loads the icon from resource
-               hImage = .LoadImageW(m_hInstance, wszImage, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR)
-            END IF
-         END IF
-         ' // Sets the image and deletes the old one
-         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_ICON, CAST(LPARAM, hImage))))
-   END SELECT
-   RETURN TRUE
-END FUNCTION
-' ========================================================================================
 
-' ========================================================================================
-' Changes the bitmap displayed in an BITMAPLABEL or BITMAPBUTTON controls.
-' The old image handle is released.
-' ========================================================================================
-PRIVATE FUNCTION CDialog.ControlSetBitmap (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
-   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
-   IF hCtl = NULL THEN RETURN FALSE
-   DIM wszClassName AS WSTRING * 260
-   GetClassNameW(hCtl, wszClassName, SIZEOF(wszClassName))
-   wszClassName = UCASE(wszClassName)
-   SELECT CASE wszClassName
-      CASE "BUTTON"
-         ' // Loads the icon from resource
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszImage, 1) = "#" THEN
-            wID = VAL(MID(wszImage, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = LoadImageW(m_hInstance, MAKEINTRESOURCEW(dwID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            ' // Loads the icon from file
-            IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
-               hImage = LoadImageW(NULL, wszImage, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
-            ELSE
-               ' // Loads the icon from resource
-               hImage = LoadImageW(m_hInstance, wszImage, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-            END IF
-         END IF
-         ' // Sets the image and deletes the old one
-         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
-      CASE "STATIC"
-         ' // Loads the icon from resource
-         DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
-         IF LEFT(wszImage, 1) = "#" THEN
-            wID = VAL(MID(wszImage, 2))
-            dwID = MAKELONG(wID, 0)
-            hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-         ELSE
-            ' // Loads the icon from file
-            IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
-               hImage = .LoadImageW(NULL, wszImage, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)
-            ELSE
-               ' // Loads the icon from resource
-               hImage = .LoadImageW(m_hInstance, wszImage, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR)
-            END IF
-         END IF
-         ' // Sets the image and deletes the old one
-         IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, IMAGE_BITMAP, CAST(LPARAM, hImage))))
-   END SELECT
-   RETURN TRUE
-END FUNCTION
-' ========================================================================================
+' ########################################################################################
+'                                *** Image procedures ***
+' ########################################################################################
 
 ' ========================================================================================
 ' Changes both the dialog icon in the caption, and the icon shown in the ALT+TAB task list.
@@ -2726,30 +2607,173 @@ PRIVATE SUB CDialog.DialogSetIcon (BYREF wszImage AS WSTRING)
 END SUB
 ' =====================================================================================
 
-' ########################################################################################
-'                                *** Image procedures ***
-' ########################################################################################
-
+' =====================================================================================
+' Finds the resource type given it's identifier or name.
+' =====================================================================================
 PRIVATE FUNCTION CDialog.FindResourceType (BYREF wszResourceName AS WSTRING) AS STRING
-' wszResourceName = "#1001"
-DIM hRes AS HRSRC
    IF LEFT(wszResourceName, 1) = "#" THEN
       DIM wID AS WORD, dwID AS DWORD
       wID = VAL(MID(wszResourceName, 2))
       dwID = MAKELONG(wID, 0)
-'      hRes = FindResourceW(m_hInstance, MAKEINTRESOURCEW(dwID), CAST(LPCWSTR, RT_ICON))
-print hRes, HEX(GetLastError)   ' error 1814 - ERROR_RESOURCE_NAME_NOT_FOUND
+      IF FindResourceW(m_hInstance, MAKEINTRESOURCEW(dwID), CAST(LPCWSTR, RT_GROUP_ICON)) THEN RETURN "RT_GROUP_ICON"
+      IF FindResourceW(m_hInstance, MAKEINTRESOURCEW(dwID), CAST(LPCWSTR, RT_ICON)) THEN RETURN "RT_ICON"
       IF FindResourceW(m_hInstance, MAKEINTRESOURCEW(dwID), CAST(LPCWSTR, RT_BITMAP)) THEN RETURN "RT_BITMAP"
       IF FindResourceW(m_hInstance, MAKEINTRESOURCEW(dwID), CAST(LPCWSTR, RT_RCDATA)) THEN RETURN "RT_RCDATA"
    ELSE
-print wszResourceName; "++++++++++++++"
-'      IF FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_ICON)) THEN RETURN "RT_ICON"
-      hRes = FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_ICON))
-print hRes, GetLastError
+      IF FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_GROUP_ICON)) THEN RETURN "RT_GROUP_ICON"
+      IF FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_ICON)) THEN RETURN "RT_ICON"
       IF FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_BITMAP)) THEN RETURN "RT_BITMAP"
       IF FindResourceW(m_hInstance, wszResourceName, CAST(LPCWSTR, RT_RCDATA)) THEN RETURN "RT_RCDATA"
    END IF
 END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the icon or bitmap displayed in a label.
+' The size of the label is adjusted to the size of the image.
+' The old image handle is released.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetImage (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
+   IF hCtl = NULL THEN RETURN FALSE
+   '// Check the type if resource (icon or bitmap)
+   DIM strType AS STRING = this.FindResourceType(wszImage)
+   DIM nType AS LONG
+   IF strType = "RT_ICON" OR strType = "RT_GROUP_ICON" THEN nType = IMAGE_ICON ELSE IF strType = "RT_BITMAP" THEN nType = IMAGE_BITMAP
+   ' // Loads the image from resource
+   DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+   IF LEFT(wszImage, 1) = "#" THEN
+      wID = VAL(MID(wszImage, 2))
+      dwID = MAKELONG(wID, 0)
+      hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), nType, 0, 0, LR_DEFAULTCOLOR)
+   ELSE
+      ' // Loads the image from file
+      IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
+         hImage = .LoadImageW(NULL, wszImage, nType, 0, 0, LR_LOADFROMFILE)
+      ELSE
+         ' // Loads the icon from resource
+         hImage = .LoadImageW(m_hInstance, wszImage, nType, 0, 0, LR_DEFAULTCOLOR)
+      END IF
+   END IF
+   ' // Sets the image and deletes the old one
+   DIM h AS HANDLE
+   IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, nType, CAST(LPARAM, hImage))))
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the icon or bitmap displayed in a label
+' The size of the image is streched to fit the size of the control.
+' The old image handle is released.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetImageX (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
+   IF hCtl = NULL THEN RETURN FALSE
+   '// Check the type if resource (icon or bitmap)
+   DIM strType AS STRING = this.FindResourceType(wszImage)
+   DIM nType AS LONG
+   IF strType = "RT_ICON" OR strType = "RT_GROUP_ICON" THEN nType = IMAGE_ICON ELSE IF strType = "RT_BITMAP" THEN nType = IMAGE_BITMAP
+   ' // Loads the image from resource
+   DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+   DIM rc AS RECT
+   GetClientRect(hCtl, @rc)
+   DIM AS LONG nWidth, nHeight
+   nWidth = rc.right - rc.left
+   nHeight = rc.bottom -rc.top
+   IF LEFT(wszImage, 1) = "#" THEN
+      wID = VAL(MID(wszImage, 2))
+      dwID = MAKELONG(wID, 0)
+      hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), nType, nWidth, nHeight, LR_DEFAULTCOLOR)
+   ELSE
+      ' // Loads the image from file
+      IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
+         hImage = .LoadImageW(NULL, wszImage, nType, nWidth, nHeight, LR_LOADFROMFILE)
+      ELSE
+         ' // Loads the icon from resource
+         hImage = .LoadImageW(m_hInstance, wszImage, nType, nWidth, nHeight, LR_DEFAULTCOLOR)
+      END IF
+   END IF
+   ' // Sets the image and deletes the old one
+   DIM h AS HANDLE
+   IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, STM_SETIMAGE, nType, CAST(LPARAM, hImage))))
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the icon or bitmap displayed in a button.
+' The size of the button does not change; The image is clipped if it does nt fit in the button.
+' The old image handle is released.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetImgButton (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
+   IF hCtl = NULL THEN RETURN FALSE
+   '// Check the type if resource (icon or bitmap)
+   DIM strType AS STRING = this.FindResourceType(wszImage)
+   DIM nType AS LONG
+   IF strType = "RT_ICON" OR strType = "RT_GROUP_ICON" THEN nType = IMAGE_ICON ELSE IF strType = "RT_BITMAP" THEN nType = IMAGE_BITMAP
+   ' // Loads the image from resource
+   DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+   IF LEFT(wszImage, 1) = "#" THEN
+      wID = VAL(MID(wszImage, 2))
+      dwID = MAKELONG(wID, 0)
+      hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), nType, 0, 0, LR_DEFAULTCOLOR)
+   ELSE
+      ' // Loads the image from file
+      IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
+         hImage = .LoadImageW(NULL, wszImage, nType, 0, 0, LR_LOADFROMFILE)
+      ELSE
+         ' // Loads the icon from resource
+         hImage = .LoadImageW(m_hInstance, wszImage, nType, 0, 0, LR_DEFAULTCOLOR)
+      END IF
+   END IF
+   ' // Sets the image and deletes the old one
+   DIM h AS HANDLE
+   IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, nType, CAST(LPARAM, hImage))))
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the icon or bitmap displayed in a button.
+' The size of the button does not change; The image is clipped if it does nt fit in the button.
+' The old image handle is released.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetImgButtonX (BYVAL cId AS LONG, BYREF wszImage AS WSTRING) AS BOOLEAN
+   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cId)
+   IF hCtl = NULL THEN RETURN FALSE
+   '// Check the type if resource (icon or bitmap)
+   DIM strType AS STRING = this.FindResourceType(wszImage)
+   DIM nType AS LONG
+   IF strType = "RT_ICON" OR strType = "RT_GROUP_ICON" THEN nType = IMAGE_ICON ELSE IF strType = "RT_BITMAP" THEN nType = IMAGE_BITMAP
+   ' // Loads the image from resource
+   DIM hImage AS HANDLE, wID AS WORD, dwID AS DWORD
+   DIM rc AS RECT
+   GetClientRect(hCtl, @rc)
+   DIM AS LONG nWidth, nHeight
+   nWidth = rc.right - rc.left
+   nHeight = rc.bottom -rc.top
+   IF LEFT(wszImage, 1) = "#" THEN
+      wID = VAL(MID(wszImage, 2))
+      dwID = MAKELONG(wID, 0)
+      hImage = .LoadImageW(m_hInstance, CAST(LPCWSTR, CAST(ULONG_PTR, dwID)), nType, nWidth, nHeight, LR_DEFAULTCOLOR)
+   ELSE
+      ' // Loads the image from file
+      IF UCASE(RIGHT(wszImage, 4)) = ".ICO" THEN
+         hImage = .LoadImageW(NULL, wszImage, nType, nWidth, nHeight, LR_LOADFROMFILE)
+      ELSE
+         ' // Loads the icon from resource
+         hImage = .LoadImageW(m_hInstance, wszImage, nType, nWidth, nHeight, LR_DEFAULTCOLOR)
+      END IF
+   END IF
+   ' // Sets the image and deletes the old one
+   DIM h AS HANDLE
+   IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, nType, CAST(LPARAM, hImage))))
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+
 
 ' ########################################################################################
 '                                *** Desktop procedures ***
@@ -2765,7 +2789,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Retrieves the size of the work area on the primary display monitor. The work area is the
+' Retrieves the location of the work area on the primary display monitor. The work area is the
 ' portion of the screen not obscured by the system taskbar or by application desktop toolbars.
 ' The pvParam parameter must point to a RECT structure that receives the coordinates of the
 ' work area, expressed in physical pixel size. Any DPI virtualization mode of the caller has
@@ -2974,7 +2998,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Scales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
+' Scales a horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ScaleX (BYVAL cx AS SINGLE) AS SINGLE
    IF m_UsePixels THEN RETURN cx * m_rx ELSE RETURN cx * this.DluToPixRX
@@ -2989,7 +3013,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Unscales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
+' Unscales a horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.UnScaleX (BYVAL cx AS SINGLE) AS SINGLE
    IF m_UsePixels THEN RETURN cx / m_rx ELSE RETURN cx / this.DluToPixRX
@@ -3043,7 +3067,7 @@ END FUNCTION
 ' ########################################################################################
 
 ' ========================================================================================
-' Get the anchor item
+' Gets the anchor item
 ' Return Value: The array index on success, or -1 on failure.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.GetAnchorItem (BYVAL hwndCtl AS HWND) AS LONG
@@ -3207,10 +3231,11 @@ END FUNCTION
 ' ========================================================================================
 
 ' ########################################################################################
-'                          *** DIALOG AND CONTROS COLORS ***
+'                          *** DIALOG AND CONTROLS COLORS ***
 ' ########################################################################################
+
 ' ========================================================================================
-' Get the anchor item
+' Gets the color item
 ' Return Value: The array index on success, or -1 on failure.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.GetColorItem (BYVAL hwnd AS ..HWND) AS LONG
@@ -3222,7 +3247,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Set the colors of the control
+' Sets the colors of the control
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlSetColor (BYVAL hwnd AS ..HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
    IF IsWindow(hwnd) = FALSE THEN RETURN FALSE
@@ -3242,7 +3267,7 @@ PRIVATE FUNCTION CDialog.ControlSetColor (BYVAL hwnd AS ..HWND, BYVAL foreColor 
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' Set the colors of the control
+' Sets the colors of the control
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlSetColor (BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
    DIM hCtl AS HWND = GetDlgItem(m_hDlg, cID)
@@ -3251,7 +3276,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Set the colors of the control
+' Sets the background color of the dialog
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogSetColor (BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
    FUNCTION = this.ControlSetColor(m_hDlg, foreColor, backColor)
@@ -3266,7 +3291,7 @@ PRIVATE SUB CDialog.DialogEnableRepaint (BYVAL fRepaint AS BOOLEAN)
 END SUB
 ' ========================================================================================
 ' ========================================================================================
-' Check if repainting is enabled during resizing
+' Checks if repainting is enabled during resizing
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.IsDialogRepaintDisabled () AS BOOLEAN
    RETURN m_RepaintDisabled
@@ -3294,7 +3319,7 @@ END FUNCTION
 ' ########################################################################################
 
 ' =====================================================================================
-' Gets/Sets the accelerator table handle
+' Gets the accelerator table handle
 ' =====================================================================================
 PRIVATE PROPERTY CDialog.AccelHandle () AS ..HACCEL
    PROPERTY = m_hAccel
@@ -3350,7 +3375,7 @@ END SUB
 ' ########################################################################################
 
 ' ========================================================================================
-' Makes a window scrollable by shrinking its client area
+' Makes a dialog scrollable by shrinking its client area size
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogSetViewPort (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
    ' // Data for optional scrollable dialogs
@@ -3370,7 +3395,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Resets the window scrolling information
+' Resets the dialog scrolling information
 ' ========================================================================================
 PRIVATE SUB CDialog.DialogResetScrollBars
    ScrollWindow(m_hDlg, m_HScrollPos * m_HorzUnits, 0, NULL, NULL)
@@ -3383,7 +3408,7 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the scroll information
+' Sets the dialog scroll information
 ' ========================================================================================
 PRIVATE SUB CDialog.DialogSetupScrollBars
    DIM bMaximized AS LONG, tempRect AS RECT ', wp AS WINDOWPLACEMENT
@@ -3406,7 +3431,7 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' Handle vertical scrollbar messages
+' Handles vertical scrollbar messages
 ' WM_VSCROLL
 ' nScrollCode = (int) LOWORD(wParam); // scroll bar value
 ' nPos = (short int) HIWORD(wParam);  // scroll box position
@@ -3464,7 +3489,7 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' Handle WM_SIZE messges
+' Handles WM_SIZE messges
 ' WM_SIZE
 ' fwSizeType = wParam;      // resizing flag
 ' nWidth = LOWORD(lParam);  // width of client area
@@ -3490,7 +3515,7 @@ PRIVATE FUNCTION AfxCDialogPtr (BYVAL hwnd AS HWND) AS CDialog PTR
    IF hwnd = NULL THEN RETURN NULL
    DIM hRootOwner AS ..HWND = GetAncestor(hwnd, GA_ROOTOWNER)
    IF hRootOwner = NULL THEN RETURN NULL
-   RETURN CAST(CDialog PTR, .GetWindowLongPtrW(hRootOwner, DWLP_USER))
+   RETURN CAST(CDialog PTR, GetWindowLongPtrW(hRootOwner, DWLP_USER))
 END FUNCTION
 ' ========================================================================================
 

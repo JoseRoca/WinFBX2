@@ -169,7 +169,7 @@ END FUNCTION
 PRIVATE FUNCTION CButton.GetText () AS DWSTRING
    DIM nLen AS LONG = GetWindowTextLengthW(m_hCtl)
    DIM dwsText AS DWSTRING = WSPACE(nLen + 1)
-   ..GetWindowTextW(m_hCtl, dwsText, nLen +  1)
+   GetWindowTextW(m_hCtl, dwsText, nLen +  1)
    RETURN dwsText
 END FUNCTION
 ' ========================================================================================

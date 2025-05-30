@@ -301,10 +301,9 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CEdit.GetLine (BYVAL which AS DWORD) AS DWSTRING
    DIM buffer AS DWSTRING
-   DIM n AS LONG
    buffer = MKI(32765) + WSTRING(32765, 0)
-   n = SendMessageW(m_hCtl, EM_GETLINE, which, CAST(LPARAM, STRPTR(buffer)))
-   RETURN LEFT(buffer, n)
+   DIM nLen AS LONG = SendMessageW(m_hCtl, EM_GETLINE, which, CAST(LPARAM, STRPTR(buffer)))
+   RETURN LEFT(buffer, nLen)
 END FUNCTION
 ' ========================================================================================
 
@@ -421,7 +420,7 @@ END FUNCTION
 PRIVATE FUNCTION CEdit.GetText () AS DWSTRING
    DIM nLen AS LONG = GetWindowTextLengthW(m_hCtl)
    DIM dwsText AS DWSTRING = WSPACE(nLen + 1)
-   ..GetWindowTextW(m_hCtl, dwsText, nLen +  1)
+   GetWindowTextW(m_hCtl, dwsText, nLen +  1)
    RETURN dwsText
 END FUNCTION
 ' ========================================================================================
@@ -683,7 +682,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the text of an edit control.
+' * Sets the text of an edit control.
 ' Note: SetWindowText cannot change the text of a control in another application.
 ' ========================================================================================
 PRIVATE FUNCTION CEdit.SetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN

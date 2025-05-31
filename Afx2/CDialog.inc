@@ -1348,8 +1348,13 @@ END FUNCTION
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogEnd (BYVAL nResult AS LONG = 0) AS INT_PTR
    CDIALOG_DP("")
+   ' // Store the passed exit code
    m_DlgRetVal = nResult
+   '// Destro the dialog
    DestroyWindow(m_hDlg)
+   '// Exitthe message loop
+   PostQuitMessage(0)
+   ' // Return the exit code
    RETURN m_DlgRetVal
 END FUNCTION
 ' ========================================================================================

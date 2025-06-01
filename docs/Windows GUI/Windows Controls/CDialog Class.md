@@ -133,36 +133,6 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 
 ---
 
-# Desktop methods
-
-| Name       | Description |
-| ---------- | ----------- |
-| [DesktopGetWindow](#desktopgetwindow) | Retrieves a handle to the desktop window. |
-| [DesktopGetLoc](#desktopgetloc) | Retrieves the location of the work area on the primary display monitor. |
-| [DesktopGetLocX](#desktopgetlocx) | Retrieves the x coordinate of the work area on the primary display monitor. |
-| [DesktopGetLocY](#desktopgetlocy) | Retrieves the y coordinate of the work area on the primary display monitor. |
-| [DesktopGetSize](#desktopgetsize) | Retrieves the size of the entire desktop, in pixels. |
-| [DesktopGetWidth](#desktopgetwidth) | Retrieves the width of the entire desktop, in pixels. |
-| [DesktopGetHeight](#desktopgetHeight) | Retrieves the height of the entire desktop, in pixels. |
-| [DesktopGetClient](#desktopgetclient) | Retrieves the size of the client area of the desktop, in pixels. |
-| [DesktopGetClientWidth](#desktopgetclientwidth) | Retrieves the width of the client area of the desktop, in pixels. |
-| [DesktopGetClientHeight](#desktopgetclientheight) | Retrieves the height of the client area of the desktop, in pixels. |
-| [DesktopGetPPI](desktopgetppi) | Returns the number of pixels per logical inch along the screen width and height. |
-| [DesktopGetPPIX](desktopgetppix) | Returns the number of pixels per logical inch along the screen width. |
-| [DesktopGetPPIY](desktopgetppiy) | Returns the number of pixels per logical inch along the screen height. |
-
----
-
-# Display methods
-
-| Name       | Description |
-| ---------- | ----------- |
-| [DisplayGetPixelsWidth](displaygetpixelswidth) | Returns the width, in pixels, of the current display device on the computer on which the calling thread is running. |
-| [DisplayGetPixelsHeight](displaygetpixelsheight) | Returns the width, in pixels, of the current display device on the computer on which the calling thread is running. |
-| [DisplayGetBitsPerPixel](displaygetbitsperpixel) | Returns the color resolution, in bits per pixel, of the display device. |
-| [DisplayGetFrequency](displaygetfrequency) |Returns the frequency, in hertz (cycles per second), of the display device in a particular mode. |
-
----
 
 # Metric conversions
 

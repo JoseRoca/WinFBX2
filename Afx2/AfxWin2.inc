@@ -83,6 +83,7 @@ END FUNCTION
 
 ' ========================================================================================
 ' * Helper procedures to display feedback and errors
+' The Windows API MessageBox can be used instead.
 ' ========================================================================================
 PRIVATE FUNCTION AfxMsg OVERLOAD (BYREF wszText AS WSTRING, BYREF wszCaption AS WSTRING = "Message", BYVAL uType AS DWORD = 0) AS LONG
    RETURN MessageBoxW(GetActiveWindow, @wszText, @wszCaption, MB_APPLMODAL OR uType) 
@@ -98,6 +99,30 @@ END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE FUNCTION AfxMsg OVERLOAD (BYVAL hwnd AS HWND, BYREF pwszText AS WSTRING PTR, BYREF wszCaption AS WSTRING = "Message", BYVAL uType AS DWORD = 0) AS LONG
+   RETURN MessageBoxW(hWnd, pwszText, @wszCaption, MB_APPLMODAL OR uType) 
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+'PowerBasic's MsgBox has the style and c aption parameters reversed
+' ========================================================================================
+PRIVATE FUNCTION MsgBox OVERLOAD (BYREF wszText AS WSTRING, BYVAL uType AS DWORD = 0, BYREF wszCaption AS WSTRING = "Message") AS LONG
+   RETURN MessageBoxW(GetActiveWindow, @wszText, @wszCaption, MB_APPLMODAL OR uType) 
+END FUNCTION
+' ========================================================================================
+PRIVATE FUNCTION MsgBox OVERLOAD (BYVAL pwszText AS WSTRING PTR, BYVAL uType AS DWORD = 0, BYREF wszCaption AS WSTRING = "Message") AS LONG
+   RETURN MessageBoxW(GetActiveWindow, pwszText, @wszCaption, MB_APPLMODAL OR uType) 
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' PowerBasic has no parameter for the parent window.
+' ========================================================================================
+PRIVATE FUNCTION MsgBox OVERLOAD (BYVAL hwnd AS HWND, BYREF wszText AS WSTRING, BYVAL uType AS DWORD = 0, BYREF wszCaption AS WSTRING = "Message") AS LONG
+   RETURN MessageBoxW(hWnd, @wszText, @wszCaption, MB_APPLMODAL OR uType) 
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION MsgBox OVERLOAD (BYVAL hwnd AS HWND, BYREF pwszText AS WSTRING PTR, BYVAL uType AS DWORD = 0, BYREF wszCaption AS WSTRING = "Message") AS LONG
    RETURN MessageBoxW(hWnd, pwszText, @wszCaption, MB_APPLMODAL OR uType) 
 END FUNCTION
 ' ========================================================================================
@@ -124,6 +149,8 @@ BYVAL dwMilliseconds AS DWORD, BYVAL uType AS UINT = MB_OK OR MB_SETFOREGROUND O
    IF pMessageBoxTimeout THEN FUNCTION = pMessageBoxTimeout(hwnd, pwszText, pwszCaption, uType, 0, dwMilliseconds)
    DyLibFree(pLib)
 END FUNCTION
+' ========================================================================================
+#define MsgBoxTimeout AfxMsgTimeout
 ' ========================================================================================
 
 ' ========================================================================================
@@ -158,6 +185,9 @@ PRIVATE FUNCTION AfxCommand (BYVAL nIndex AS LONG = -1) AS DWSTRING
    RETURN dwsArgs
 END FUNCTION
 ' ========================================================================================
+' // Command is a FreeBasic reserved word, therefore we can't use it for the name of the macro.
+#define CommandLine AfxCommand
+' ========================================================================================
 
 ' ========================================================================================
 ' * Returns the description of the specified Windows error code.
@@ -174,6 +204,8 @@ PRIVATE FUNCTION AfxGetWinErrMsg (BYVAL dwError AS DWORD) AS DWSTRING
    END IF
    RETURN dwsMsg
 END FUNCTION
+' ========================================================================================
+#define WindowsGetErrorMessage AfxGetWinErrMsg
 ' ========================================================================================
 
 ' ========================================================================================
@@ -196,6 +228,8 @@ PRIVATE SUB AfxDoEvents (BYVAL hwnd AS HWND = NULL)
    WEND
 END SUB
 ' ========================================================================================
+#define WindowsDoEvents AfxDoEvents
+' ========================================================================================
 
 ' ========================================================================================
 ' * Processes pending Windows messages.
@@ -211,6 +245,8 @@ PRIVATE SUB AfxPumpMessages
       DispatchMessageW @uMsg
    WEND
 END SUB
+' ========================================================================================
+#define WindowsPumpMessages AfxPumpMessages
 ' ========================================================================================
 
 ' ========================================================================================
@@ -247,6 +283,8 @@ PRIVATE FUNCTION AfxWindowsVersion () AS LONG
    FreeLibrary hLib
 END FUNCTION
 ' ========================================================================================
+#define WindowsGetVersion AfxWindowsVersion
+' ========================================================================================
 
 ' ========================================================================================
 ' * Returns the Windows platform
@@ -265,6 +303,8 @@ PRIVATE FUNCTION AfxWindowsPlatform () AS LONG
    END IF
    FreeLibrary hLib
 END FUNCTION
+' ========================================================================================
+#define WindowsGetPlatform AfxWindowsPlatform
 ' ========================================================================================
 
 ' ========================================================================================
@@ -285,6 +325,8 @@ PRIVATE FUNCTION AfxWindowsBuild () AS LONG
    FreeLibrary hLib
 END FUNCTION
 ' ========================================================================================
+#define WindowsGetBuild AfxWindowsBuild
+' ========================================================================================
 
 ' ========================================================================================
 ' * Returns true if the Windows Platform is NT; false, otherwise.
@@ -296,6 +338,8 @@ PRIVATE FUNCTION AfxIsPlatformNT () AS BOOLEAN
    FUNCTION = (VER_PLATFORM_WIN32_NT = osvi.dwPlatformId)
 END FUNCTION
 ' ========================================================================================
+#define WindowsIsPlatformNT AfxIsPlatformNT
+' ========================================================================================
 
 ' ========================================================================================
 ' * Returns the bitness of the operating system.
@@ -306,6 +350,8 @@ PRIVATE FUNCTION AfxWindowsBitness () AS LONG
    GetNativeSystemInfo(@SysInfo)
    RETURN IIF(SysInfo.wProcessorArchitecture = PROCESSOR_ARCHITECTURE_AMD64, 64, 32)
 END FUNCTION
+' ========================================================================================
+#define WindowsGetBitness AfxWindowsBitness
 ' ========================================================================================
 
 ' ========================================================================================
@@ -332,6 +378,8 @@ PRIVATE FUNCTION AfxGetSystemInfo (BYREF metricName AS STRING) AS LONG_PTR
    END SELECT
 END FUNCTION
 ' ========================================================================================
+#define SystemGetInfo AfxGetSystemInfo
+' ========================================================================================
 
 ' ========================================================================================
 ' * Returns the version of specified file multiplied by 100, e.g. 601 for version 6.01.
@@ -353,6 +401,8 @@ PRIVATE FUNCTION AfxGetFileVersion (BYVAL pwszFileName AS WSTRING PTR) AS LONG
    HeapFree(GetProcessHeap, 0, pVerInfo)
 END FUNCTION
 ' ========================================================================================
+#define WindowsGetFileVersion AfxGetFileVersion
+' ========================================================================================
 
 ' ========================================================================================
 ' * Returns the version of CommCtl32.dll multiplied by 100, e.g. 582 for version 5.82.
@@ -360,6 +410,8 @@ END FUNCTION
 PRIVATE FUNCTION AfxComCtlVersion () AS LONG
    FUNCTION = AfxGetFileVersion("COMCTL32.DLL")
 END FUNCTION
+' ========================================================================================
+#define WindowsGetComCtlVersion AfxComCtlVersion
 ' ========================================================================================
 
 ' ========================================================================================
@@ -370,6 +422,8 @@ PRIVATE FUNCTION AfxGetWinDir () AS DWSTRING
    GetWindowsDirectoryW wszWinDir, SIZEOF(wszWinDir)
    RETURN wszWinDir
 END FUNCTION
+' ========================================================================================
+#define WindowsGetWinDir AfxGetWinDir
 ' ========================================================================================
 
 ' ========================================================================================
@@ -382,6 +436,8 @@ PRIVATE FUNCTION AfxGetUserName () AS DWSTRING
    RETURN buffer
 END FUNCTION
 ' ========================================================================================
+#define WindowsGetUserName AfxGetUserName
+' ========================================================================================
 
 ' ========================================================================================
 ' * Retrieves the computer name of the current system.
@@ -392,6 +448,8 @@ PRIVATE FUNCTION AfxGetComputerName () AS DWSTRING
    GetComputerNameW(buffer, @dwBufLen)
    RETURN buffer
 END FUNCTION
+' ========================================================================================
+#define WindowsGetComputerName AfxGetComputerName
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1145,6 +1203,17 @@ END FUNCTION
 ' ########################################################################################
 
 ' ========================================================================================
+' // For compatibility with PowerBasic
+' ========================================================================================
+#define WindowGetHandle(hWin, id) GetDlgItem(hWin, id)
+#define WindowGetID(hWin) GetDlgCtrlID(hWin)
+#define WindowGetParent(hWin) GetParent(hWin)
+#define WindowSetID(hWin, newID) SetWindowLongPtrW(hWin, GWLP_ID, newID)
+#define WindowGetUser(hWin) GetWindowLongPtrW(hWin, GWLP_USERDATA)
+#define WindowSetUser(hWin, newVal) SetWindowLongPtrW(hWin, GWLP_USERDATA, cast(LONG_PTR, newVal))
+' ========================================================================================
+
+' ========================================================================================
 ' * Gets the class name of the specified window
 ' ========================================================================================
 PRIVATE FUNCTION AfxGetWindowClassName (BYVAL hwnd AS HWND) AS DWSTRING
@@ -1152,6 +1221,8 @@ PRIVATE FUNCTION AfxGetWindowClassName (BYVAL hwnd AS HWND) AS DWSTRING
    GetClassNameW hwnd, wszClassName, SIZEOF(wszClassName)
    RETURN wszClassName
 END FUNCTION
+' ========================================================================================
+#define WindowGetClassName AfxGetWindowClassName
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1163,8 +1234,10 @@ PRIVATE FUNCTION AfxGetWindowText (BYVAL hwnd AS HWND) AS DWSTRING
    DIM nLen AS LONG = GetWindowTextLengthW(hwnd)
    DIM dwsText AS DWSTRING = WSPACE(nLen + 1)
    GetWindowTextW(hwnd, dwsText, nLen +  1)
-   RETURN dwsText
+   RETURN LEFT(dwsText, nLen)
 END FUNCTION
+' ========================================================================================
+#define WindowGetText AfxGetWindowText
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1174,6 +1247,8 @@ END FUNCTION
 PRIVATE FUNCTION AfxGetWindowTextLength (BYVAL hwnd AS HWND) AS LONG
    RETURN GetWindowTextLengthW(hwnd)
 END FUNCTION
+' ========================================================================================
+#define WindowGetTextLength AfxGetWindowTextLength
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1191,6 +1266,8 @@ PRIVATE FUNCTION AfxSetWindowText (BYVAL hwnd AS HWND, BYVAL pwszText AS WSTRING
    FUNCTION = SendMessageW(hwnd, WM_SETTEXT, 0, CAST(LPARAM, pwszText))
 END FUNCTION
 ' ========================================================================================
+#define WindowSetText AfxSetWindowText
+' ========================================================================================
 
 ' ========================================================================================
 ' Retrieves the window styles.
@@ -1199,6 +1276,8 @@ PRIVATE FUNCTION AfxGetWindowStyle (BYVAL hwnd AS HWND) AS DWORD
    FUNCTION = GetWindowLongPtrW(hwnd, GWL_STYLE)
 END FUNCTION
 ' ========================================================================================
+#define WindowGetStyle AfxGetWindowStyle
+' ========================================================================================
 
 ' ========================================================================================
 ' Retrieves the extended window styles.
@@ -1206,6 +1285,8 @@ END FUNCTION
 PRIVATE FUNCTION AfxGetWindowExStyle (BYVAL hwnd AS HWND) AS DWORD
    FUNCTION = GetWindowLongPtrW(hwnd, GWL_EXSTYLE)
 END FUNCTION
+' ========================================================================================
+#define WindowGetStyleXX AfxGetWindowExStyle
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1217,6 +1298,8 @@ PRIVATE FUNCTION AfxSetWindowStyle (BYVAL hwnd AS HWND, BYVAL dwStyle AS DWORD) 
    FUNCTION = dwOldStyle
 END FUNCTION
 ' ========================================================================================
+#define WindowSetStyle AfxSetWindowStyle
+' ========================================================================================
 
 ' ========================================================================================
 ' Sets the window extended styles
@@ -1226,6 +1309,8 @@ PRIVATE FUNCTION AfxSetWindowExStyle (BYVAL hwnd AS HWND, BYVAL dwExStyle AS DWO
    SetWindowLongPtrW(hwnd, GWL_EXSTYLE, dwExStyle)
    FUNCTION = dwOldExStyle
 END FUNCTION
+' ========================================================================================
+#define WindowSetStyleXX AfxSetWindowExStyle
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1241,6 +1326,8 @@ PRIVATE FUNCTION AfxAddWindowStyle (BYVAL hwnd AS HWND, BYVAL dwStyle AS DWORD) 
    FUNCTION = dwOldStyle
 END FUNCTION
 ' ========================================================================================
+#define WindowAddStyle AfxAddWindowStyle
+' ========================================================================================
 
 ' ========================================================================================
 ' Adds a new extended style to the specified window.
@@ -1254,6 +1341,8 @@ PRIVATE FUNCTION AfxAddWindowExStyle (BYVAL hwnd AS HWND, BYVAL dwExStyle AS DWO
    SetWindowLongPtrW(hwnd, GWL_EXSTYLE, dwOldExStyle OR dwExStyle)
    FUNCTION = dwOldExStyle
 END FUNCTION
+' ========================================================================================
+#define WindowAddStyleXX AfxAddWindowExStyle
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1269,6 +1358,8 @@ PRIVATE FUNCTION AfxRemoveWindowStyle (BYVAL hwnd AS HWND, BYVAL dwStyle AS DWOR
    FUNCTION = dwOldStyle
 END FUNCTION
 ' ========================================================================================
+#define WindowRemoveStyle AfxRemoveWindowStyle
+' ========================================================================================
 
 ' ========================================================================================
 ' Removes an extended style from the specified window.
@@ -1282,6 +1373,8 @@ PRIVATE FUNCTION AfxRemoveWindowExStyle (BYVAL hwnd AS HWND, BYVAL dwExStyle AS 
    SetWindowLongPtrW(hwnd, GWL_EXSTYLE, dwOldExStyle AND (NOT dwEXStyle))
    FUNCTION = dwOldEXStyle
 END FUNCTION
+' ========================================================================================
+#define WindowRemoveStyleXX AfxRemoveWindowExStyle
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1305,6 +1398,8 @@ PRIVATE FUNCTION AfxGetWindowRect (BYVAL hwnd AS HWND) AS RECT
    FUNCTION = rc
 END FUNCTION
 ' ========================================================================================
+#define WindowGetRect AfxGetWindowRect
+' ========================================================================================
 
 ' ========================================================================================
 ' Gets the width in pixels of a window.
@@ -1317,6 +1412,8 @@ PRIVATE FUNCTION AfxGetWindowWidth (BYVAL hwnd AS HWND) AS LONG
    FUNCTION = rc.Right - rc.Left
 END FUNCTION
 ' ========================================================================================
+#define WindowGetWidth AfxGetWindowWidth
+' ========================================================================================
 
 ' ========================================================================================
 ' Gets the height in pixels of a window.
@@ -1328,6 +1425,8 @@ PRIVATE FUNCTION AfxGetWindowHeight (BYVAL hwnd AS HWND) AS LONG
    GetWindowRect(hwnd, @rc)
    FUNCTION = rc.Bottom - rc.Top
 END FUNCTION
+' ========================================================================================
+#define WindowGetHeight AfxGetWindowHeight
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1354,6 +1453,8 @@ PRIVATE FUNCTION AfxGetWindowBounds (BYVAL hwnd AS HWND) AS RECT
    RETURN rc
 END FUNCTION
 ' ========================================================================================
+#define WindowGetWindowBounds AfxGetWindowBounds
+' ========================================================================================
 
 ' ========================================================================================
 ' Retrieves the coordinates of a window's client area. The client coordinates specify the
@@ -1369,6 +1470,8 @@ PRIVATE FUNCTION AfxGetWindowClientRect (BYVAL hwnd AS HWND) AS RECT
    FUNCTION = rc
 END FUNCTION
 ' ========================================================================================
+#define WindowGetClientRect AfxGetWindowClientRect
+' ========================================================================================
 
 ' ========================================================================================
 ' Gets the width in pixels of the client area of a window.
@@ -1380,6 +1483,8 @@ PRIVATE FUNCTION AfxGetWindowClientWidth (BYVAL hwnd AS HWND) AS LONG
    GetClientRect(hwnd, @rc)
    FUNCTION = rc.Right - rc.Left
 END FUNCTION
+' ========================================================================================
+#define WindowGetClientWidth AfxGetWindowClientWidth
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1393,32 +1498,7 @@ PRIVATE FUNCTION AfxGetWindowClientHeight (BYVAL hwnd AS HWND) AS LONG
    FUNCTION = rc.Bottom - rc.Top
 END FUNCTION
 ' ========================================================================================
-
-' ========================================================================================
-' Retrieves the coordinates of the work area on the primary display monitor expressed in
-' virtual screen coordinates. The work area is the portion of the screen not obscured by
-' the system taskbar or by application desktop toolbars. To get the work area of a monitor
-' other than the primary display monitor, call the GetMonitorInfo function.
-' ========================================================================================
-PRIVATE FUNCTION AfxGetWorkAreaRect () AS RECT
-   DIM rcWrk AS RECT
-   SystemParametersInfo(SPI_GETWORKAREA, 0, @rcWrk, 0)
-   FUNCTION = rcWrk
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION AfxGetWorkAreaWidth () AS LONG
-   DIM rcWrk AS RECT
-   SystemParametersInfo(SPI_GETWORKAREA, 0, @rcWrk, 0)
-   FUNCTION = rcWrk.Right - rcWrk.Left
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION AfxGetWorkAreaHeight () AS LONG
-   DIM rcWrk AS RECT
-   SystemParametersInfo(SPI_GETWORKAREA, 0, @rcWrk, 0)
-   FUNCTION = rcWrk.Bottom - rcWrk.Top
-END FUNCTION
+#define WindowGetClientHeight AfxGetWindowClientHeight
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1478,6 +1558,8 @@ PRIVATE SUB AfxCenterWindow (BYVAL hwnd AS HWND = NULL, BYVAL hwndParent AS HWND
 
 END SUB
 ' ========================================================================================
+#define WindowCenter AfxCenterWindow
+' ========================================================================================
 
 ' ========================================================================================
 ' Adjusts the bounding rectangle of a window based on the desired size of the client area.
@@ -1520,6 +1602,8 @@ PRIVATE SUB AfxSetWindowClientSize (BYVAL hwnd AS HWND, BYVAL nWidth AS LONG, BY
    SetWindowPos(hwnd, NULL, 0, 0, cx, cy, SWP_NOZORDER OR SWP_NOMOVE OR SWP_NOACTIVATE)
 
 END SUB
+' ========================================================================================
+#define WindowSetClientSize AfxSetWindowClientSize
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1579,6 +1663,8 @@ PRIVATE SUB AfxRedrawWindow (BYVAL hwnd AS HWND)
    UpdateWindow hwnd
 END SUB
 ' ========================================================================================
+#define WindowRedraw AfxRedrawWindow
+' ========================================================================================
 
 ' ========================================================================================
 ' Redraws the non-client area of the specified window.
@@ -1587,6 +1673,8 @@ END SUB
 PRIVATE FUNCTION AfxRedrawNonClientArea (BYVAL hwnd AS HWND) AS BOOLEAN
    FUNCTION = SetWindowPos(hwnd, 0, 0, 0, 0, 0, SWP_NOMOVE OR SWP_NOSIZE OR SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_FRAMECHANGED OR SWP_DRAWFRAME)
 END FUNCTION
+' ========================================================================================
+#define WindowRedrawNonClientArea AfxRedrawNonClientArea
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1602,6 +1690,8 @@ END FUNCTION
 PRIVATE FUNCTION AfxForwardSizeMessage (BYVAL hwnd AS HWND, BYVAL nResizeType AS DWORD, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS LRESULT
    FUNCTION = SendMessageW(hwnd, WM_SIZE, nResizeType, MAKELONG(nWidth, nHeight))
 END FUNCTION
+' ========================================================================================
+#define WindowForwardSizeMessage AfxForwardSizeMessage
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1619,6 +1709,8 @@ PRIVATE SUB AfxGetWindowLocation (BYVAL hwnd AS HWND, BYREF nLeft AS LONG, BYREF
    IF VARPTR(nTop) THEN nTop = rc.Top
 END SUB
 ' ========================================================================================
+#define WindowGetLocation AfxGetWindowLocation
+' ========================================================================================
 
 ' ========================================================================================
 ' Sets the location of the top left corner of the window, in pixels.
@@ -1628,6 +1720,8 @@ END SUB
 PRIVATE FUNCTION AfxSetWindowLocation (BYVAL hwnd AS HWND, BYVAL nLeft AS LONG, BYVAL nTop AS LONG) AS BOOLEAN
    FUNCTION = SetWindowPos(hwnd, 0, nLeft, nTop, 0, 0, SWP_NOSIZE OR SWP_NOZORDER)
 END FUNCTION
+' ========================================================================================
+#define WindowSetLocation AfxSetWindowLocation
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1646,6 +1740,8 @@ PRIVATE FUNCTION AfxGetWindowSize (BYVAL hwnd AS HWND, BYREF nWidth AS LONG, BYR
    IF VARPTR(nHeight) THEN nHeight = rc.Bottom - rc.Top
 END FUNCTION
 ' ========================================================================================
+#define WindowGetSize AfxGetWindowSize
+' ========================================================================================
 
 ' ========================================================================================
 ' Sets the size in pixels of the specified window.
@@ -1657,6 +1753,8 @@ END FUNCTION
 PRIVATE FUNCTION AfxSetWindowSize (BYVAL hwnd AS HWND, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
    FUNCTION = SetWindowPos(hwnd, NULL, 0, 0, nWidth, nHeight, SWP_NOZORDER OR SWP_NOMOVE)
 END FUNCTION
+' ========================================================================================
+#define WindowSetSize AfxSetWindowSize
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1694,6 +1792,8 @@ PRIVATE FUNCTION AfxShowWindowState (BYVAL hwnd AS HWND, BYVAL nShowState AS LON
    FUNCTION = ShowWindow(hwnd, nShowState)
 END FUNCTION
 ' ========================================================================================
+#define WindowShowState AfxShowWindowState
+' ========================================================================================
 
 ' ========================================================================================
 ' Associates a new icon with a window. The system displays the large icon in the
@@ -1708,6 +1808,8 @@ END FUNCTION
 PRIVATE FUNCTION AfxSetWindowIcon (BYVAL hwnd AS HWND, BYVAL nIconType AS LONG, BYVAL hIcon_ AS ..HICON) AS HICON
    FUNCTION = CAST(HICON, SendMessageW(hwnd, WM_SETICON, nIconType, CAST(LPARAM, hIcon_)))
 END FUNCTION
+' ========================================================================================
+#define AfxSetIcon AfxSetWindowIcon
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1768,6 +1870,8 @@ PRIVATE SUB AfxForceVisibleDisplay (BYVAL hwnd AS HWND)
    SetWindowPos(hwnd, 0, rc.left, rc.top, 0, 0, SWP_NOACTIVATE OR SWP_NOZORDER OR SWP_NOSIZE)
 END SUB
 ' ========================================================================================
+#define WindowForceVisibleDisplay AfxForceVisibleDisplay
+' ========================================================================================
 
 ' ========================================================================================
 ' Retrieves the window's top-level parent or owner window.
@@ -1783,6 +1887,8 @@ PRIVATE FUNCTION AfxGetTopLevelWindow (BYVAL hwnd AS ..HWND) AS HWND
    LOOP
    FUNCTION = hWndParent
 END FUNCTION
+' ========================================================================================
+#define WindowGetTopLevelWindow AfxGetTopLevelWindow
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1800,11 +1906,12 @@ PRIVATE FUNCTION AfxGetTopLevelParent (BYVAL hwnd AS ..HWND) AS HWND
    FUNCTION = hWndParent
 END FUNCTION
 ' ========================================================================================
+#define WindowGetTopLevelParent AfxGetTopLevelParent
+' ========================================================================================
 
 ' ========================================================================================
 ' Finds the handle of the top-level window or MDI child window that is the ancestor of the
 ' specified window handle. The reference handle is the handle of any control on the form.
-' Code borrowed from a function written by Dominic Mitchell for Phoenix.
 ' ========================================================================================
 PRIVATE FUNCTION AfxGetFormHandle (BYVAL hwnd AS HWND) AS HWND
    WHILE (GetWindowLongPtrW(hwnd, GWL_STYLE) AND WS_CHILD)
@@ -1813,6 +1920,8 @@ PRIVATE FUNCTION AfxGetFormHandle (BYVAL hwnd AS HWND) AS HWND
    WEND
    FUNCTION = hwnd
 END FUNCTION
+' ========================================================================================
+#define WindowGetFormHandle AfxGetFormHandle
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1848,6 +1957,8 @@ PRIVATE FUNCTION AfxGetControlHandle (BYVAL hwnd AS ..HWND, BYVAL wCtrlID AS WOR
    EnumChildWindows(hwnd, @AfxGetControlHandle_ChildEnumProc, CAST(LPARAM, @hwndChild))
    IF hwndChild = wCtrlID THEN FUNCTION = NULL ELSE FUNCTION = hwndChild
 END FUNCTION
+' ========================================================================================
+#define WindowGetControlHandle AfxGetControlHandle
 ' ========================================================================================
 
 ' ========================================================================================
@@ -1885,6 +1996,8 @@ PRIVATE FUNCTION AfxGetTopEnabledWindow () AS HWND
    FUNCTION = hwndTop
 END FUNCTION
 ' ========================================================================================
+#define WindowGetTopEnabled AfxGetTopEnabledWindow
+' ========================================================================================
 
 ' ========================================================================================
 ' Retrieves a window handle given it's process identifier
@@ -1910,6 +2023,216 @@ PRIVATE FUNCTION AfxGethWndFromPID (BYVAL PID AS DWORD) AS HWND
    WEND
 END FUNCTION
 ' ========================================================================================
+#define WindowGetHandleFromPID AfxGethWndFromPID
+' ========================================================================================
+
+
+' ########################################################################################
+'                                    *** DESKTOP ***
+' ########################################################################################
+
+' ========================================================================================
+' Retrieves a handle to the desktop window. The desktop window covers the entire screen.
+' The desktop window is the area on top of which other windows are painted.
+' ========================================================================================
+PRIVATE FUNCTION AfxGetDesktopWindow () AS HWND
+   RETURN GetDesktopWindow
+END FUNCTION
+' ========================================================================================
+#define DesktopGetWindow AfxGetDesktopWindow
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the location of the work area on the primary display monitor. The work area is the
+' portion of the screen not obscured by the system taskbar or by application desktop toolbars.
+' The pvParam parameter must point to a RECT structure that receives the coordinates of the
+' work area, expressed in physical pixel size. Any DPI virtualization mode of the caller has
+' no effect on this output.
+' ========================================================================================
+PRIVATE FUNCTION AfxGetDesktopLocation (BYREF x AS LONG, BYREF y AS LONG) AS BOOLEAN
+   IF VARPTR(x) = 0 OR VARPTR(y) = 0 THEN RETURN FALSE
+   DIM rc AS RECT
+   FUNCTION = SystemParametersInfo(SPI_GETWORKAREA, 0, @rc, 0)
+   x = rc.Left
+   y = rc.Top
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION AfxGetDesktopLocationX () AS LONG
+   DIM rc AS RECT
+   FUNCTION = SystemParametersInfo(SPI_GETWORKAREA, 0, @rc, 0)
+   RETURN rc.Left
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION AfxGetDesktopLocationY () AS LONG
+   DIM rc AS RECT
+   FUNCTION = SystemParametersInfo(SPI_GETWORKAREA, 0, @rc, 0)
+   RETURN rc.Right
+END FUNCTION
+' ========================================================================================
+#define DesktopGetLoc AfxGetDesktopLocation
+#define DesktopGetLocX AfxGetDesktopLocationX
+#define DesktopGetLocY AfxGetDesktopLocationY
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the size of the entire desktop, in pixels.
+' ========================================================================================
+PRIVAtE FUNCTION AfxGetDesktopSize (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
+   IF VARPTR(nWidth) = 0 OR VARPTR(nHeight) = 0 THEN RETURN FALSE
+   DIM hwndDesktop AS HWND = GetDesktopWindow
+   DIM rc AS RECT
+   DIM bRes AS BOOLEAN = GetWindowRect(hwndDesktop, @rc)
+   IF bRes = FALSE THEN RETURN FALsE
+   nWidth = rc.Right - rc.Left
+   nHeight = rc.Bottom - rc.Top
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVAtE FUNCTION AfxGetDesktopWidth () AS LONG
+   DIM hwndDesktop AS HWND = GetDesktopWindow
+   DIM rc AS RECT
+   DIM bRes AS BOOLEAN = GetWindowRect(hwndDesktop, @rc)
+   IF bRes = FALSE THEN RETURN 0
+   RETURN rc.Right - rc.Left
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVAtE FUNCTION AfxGetDesktopHeight () AS LONG
+   DIM hwndDesktop AS HWND = GetDesktopWindow
+   DIM rc AS RECT
+   DIM bRes AS BOOLEAN = GetWindowRect(hwndDesktop, @rc)
+   IF bRes = FALSE THEN RETURN 0
+   RETURN rc.Bottom - rc.Top
+END FUNCTION
+' ========================================================================================
+#define DesktopGetSize AfxGetDesktopSize
+#define DesktopGetWidth AfxGetDesktopWidth
+#define DesktopGetHeight AfxGetDesktopHeight
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the size of the client area of the desktop, in pixels.
+' ========================================================================================
+PRIVAtE FUNCTION AfxGetDesktopClientSize (BYREF nWidth AS LONG, BYREF nHeight AS LONG) AS BOOLEAN
+   IF VARPTR(nWidth) = 0 OR VARPTR(nHeight) = 0 THEN RETURN FALSE
+   DIM hwndDesktop AS HWND = GetDesktopWindow
+   DIM rc AS RECT
+   DIM bRes AS BOOLEAN = GetClientRect(hwndDesktop, @rc)
+   IF bRes = FALSE THEN RETURN FALsE
+   nWidth = rc.Right - rc.Left
+   nHeight = rc.Bottom - rc.Top
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVAtE FUNCTION AfxGetDesktopClientWidth () AS LONG
+   DIM hwndDesktop AS HWND = GetDesktopWindow
+   DIM rc AS RECT
+   DIM bRes AS BOOLEAN = GetClientRect(hwndDesktop, @rc)
+   IF bRes = FALSE THEN RETURN 0
+   RETURN rc.Right - rc.Left
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVAtE FUNCTION AfxGetDesktopClientHeight () AS LONG
+   DIM hwndDesktop AS HWND = GetDesktopWindow
+   DIM rc AS RECT
+   DIM bRes AS BOOLEAN = GetClientRect(hwndDesktop, @rc)
+   IF bRes = FALSE THEN RETURN 0
+   RETURN rc.Bottom - rc.Top
+END FUNCTION
+' ========================================================================================
+#define DesktopGetClient AfxGetDesktopClientSize
+#define DesktopGetClientWidth AfxGetDesktopClientWidth
+#define DesktopGetClientHeight AfxGetDesktopClientHeight
+' ========================================================================================
+
+' ========================================================================================
+' Returns the number of pixels per logical inch along the screen width and height.
+' In a system with multiple display monitors, this value is the same for all monitors.
+' Remarks: The resolution is always specified in pixels.  This procedure is particularly
+' useful in drawing items such as rulers and graphs to a "representative physical size".
+' There are 25.4 millimeters per inch, so just divide by 25.4 to convert from
+' pixels per inch to pixels per millimeter.
+' ========================================================================================
+PRIVATE SUB AfxGetDesktopPPI (BYREF xPPI AS LONG, BYREF yPPI AS LONG)
+   IF VARPTR(xPPI) = 0 OR VARPTR(yPPI) = 0 THEN EXIT SUB
+   DIM hDC As ..HDC
+   ' // Get the device context for the screen
+   hDC = GetDC(NULL)
+   ' // Retrieve horizontal and vertical PPI
+   xPPI = GetDeviceCaps(hDC, LOGPIXELSX)
+   yPPI = GetDeviceCaps(hDC, LOGPIXELSY)
+   ' // Release the device context
+   ReleaseDC(NULL, hDC)
+END SUB
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION AfxGetDesktopPPIX () AS LONG
+   DIM hDC As ..HDC
+   ' // Get the device context for the screen
+   hDC = GetDC(NULL)
+   ' // Retrieve horizontal and vertical PPI
+   DIM xPPI AS LONG = GetDeviceCaps(hDC, LOGPIXELSX)
+   ' // Release the device context
+   ReleaseDC(NULL, hDC)
+   RETURN xPPI
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION CAfxGetDesktopPPIY () AS LONG
+   DIM hDC As ..HDC
+   ' // Get the device context for the screen
+   hDC = GetDC(NULL)
+   ' // Retrieve horizontal and vertical PPI
+   DIM yPPI AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
+   ' // Release the device context
+   ReleaseDC(NULL, hDC)
+   RETURN yPPI
+END FUNCTION
+' ========================================================================================
+#define DesktopGetPPI AfxGetDesktopPPI
+#define DesktopGetPPIX AfxGetDesktopPPIX
+#define DesktopGetPPIY AfxGetDesktopPPIY
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the coordinates of the work area on the primary display monitor expressed in
+' virtual screen coordinates. The work area is the portion of the screen not obscured by
+' the system taskbar or by application desktop toolbars. To get the work area of a monitor
+' other than the primary display monitor, call the GetMonitorInfo function.
+' ========================================================================================
+PRIVATE FUNCTION AfxGetWorkAreaRect () AS RECT
+   DIM rcWrk AS RECT
+   SystemParametersInfo(SPI_GETWORKAREA, 0, @rcWrk, 0)
+   FUNCTION = rcWrk
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION AfxGetWorkAreaWidth () AS LONG
+   DIM rcWrk AS RECT
+   SystemParametersInfo(SPI_GETWORKAREA, 0, @rcWrk, 0)
+   FUNCTION = rcWrk.Right - rcWrk.Left
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION AfxGetWorkAreaHeight () AS LONG
+   DIM rcWrk AS RECT
+   SystemParametersInfo(SPI_GETWORKAREA, 0, @rcWrk, 0)
+   FUNCTION = rcWrk.Bottom - rcWrk.Top
+END FUNCTION
+' ========================================================================================
+#define DesktopGetWorkAreaRect AfxGetWorkAreaRect
+#define DesktopGetWorkAreaWidth AfxGetWorkAreaWidth
+#define DesktopGetWorkAreaHeight AfxGetWorkAreaHeight
+' ========================================================================================
+
+
+' ########################################################################################
+'                                    *** DISPLAY ***
+' ########################################################################################
 
 ' ========================================================================================
 ' Returns the width, in pixels, of the current display device on the computer on which the
@@ -1926,6 +2249,8 @@ PRIVATE FUNCTION AfxGetDisplayPixelsWidth () AS DWORD
    FUNCTION = dm.dmPelsWidth
 END FUNCTION
 ' ========================================================================================
+#define DisplayGetPixelsWidth AfxGetDisplayPixelsWidth
+' ========================================================================================
 ' ========================================================================================
 ' Returns the height, in pixels, of the current display device on the computer on which the
 ' calling thread is running.
@@ -1937,6 +2262,8 @@ PRIVATE FUNCTION AfxGetDisplayPixelsHeight () AS DWORD
    FUNCTION = dm.dmPelsHeight
 END FUNCTION
 ' ========================================================================================
+#define DisplayGetPixelsHeight AfxGetDisplayPixelsHeight
+' ========================================================================================
 ' ========================================================================================
 ' Returns the color resolution, in bits per pixel, of the display device.
 ' ========================================================================================
@@ -1946,6 +2273,8 @@ PRIVATE FUNCTION AfxGetDisplayBitsPerPixel () AS DWORD
    EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, @dm)
    FUNCTION = dm.dmBitsPerPel
 END FUNCTION
+' ========================================================================================
+#define DisplayGetBitsPerPixel AfxGetDisplayBitsPerPixel
 ' ========================================================================================
 ' ========================================================================================
 ' Returns the frequency, in hertz (cycles per second), of the display device in a
@@ -1957,6 +2286,8 @@ PRIVATE FUNCTION AfxGetDisplayFrequency () AS DWORD
    EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, @dm)
    FUNCTION = dm.dmDisplayFrequency
 END FUNCTION
+' ========================================================================================
+#define DisplayGetFrequency AfxGetDisplayFrequency
 ' ========================================================================================
 
 
@@ -2173,7 +2504,7 @@ END FUNCTION
 '   If the function succeeds, the return value is nonzero.
 '   If the function fails, the return value is zero.
 ' ========================================================================================
-PRIVATE FUNCTION AfxClearClipboard () AS LONG
+PRIVATE FUNCTION AfxClearClipboard () AS BOOLEAN
    ' // Opens the clipboard
    IF OpenClipboard(NULL) <> 0 THEN
       ' // Empties the clipboard
@@ -2182,6 +2513,8 @@ PRIVATE FUNCTION AfxClearClipboard () AS LONG
       CloseClipboard
    END IF
 END FUNCTION
+' ========================================================================================
+#define ClipboardReset AfxClearClipboard
 ' ========================================================================================
 
 ' ========================================================================================
@@ -2192,12 +2525,12 @@ END FUNCTION
 '   If the function succeeds, the return value is the handle to the data.
 '   If the function fails, the return value is NULL.
 ' ========================================================================================
-PRIVATE FUNCTION AfxGetClipboardData (BYVAL cfFormat AS DWORD) AS HGLOBAL
+PRIVATE FUNCTION AfxGetClipboardData (BYVAL uFormat AS DWORD) AS HGLOBAL
    DIM hSource AS HANDLE
    ' // Opens the clipboard
    IF OpenClipboard(NULL) <> 0 THEN
       ' // Retrieves data from the clipboard in the specified format
-      hSource = GetClipboardData(cfFormat)
+      hSource = GetClipboardData(uFormat)
       ' // Closes the clipboard
       CloseClipboard
       ' // Exits on failure
@@ -2239,6 +2572,8 @@ PRIVATE FUNCTION AfxGetClipboardData (BYVAL cfFormat AS DWORD) AS HGLOBAL
    FUNCTION = hDest
 END FUNCTION
 ' ========================================================================================
+#define ClipboardGetBitmap AfxGetClipboardData(CF_BITMAP)
+' ========================================================================================
 
 ' ========================================================================================
 ' Places a data object into the clipboard.
@@ -2263,18 +2598,21 @@ PRIVATE FUNCTION AfxSetClipboardData (BYVAL cfFormat AS DWORD, BYVAL hData AS HA
     END IF
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+#define ClipboardSetBitmap AfxSetClipboardData(CF_BITMAP)
+' ========================================================================================
 
 ' ========================================================================================
-' Returns an unicode text string from the clipboard.
+' Returns a text string from the clipboard in the specified format.
 ' ========================================================================================
-PRIVATE FUNCTION AfxGetClipboardText () AS DWSTRING
+PRIVATE FUNCTION AfxGetClipboardText (BYVAL uFormat AS UINT = CF_UNICODETEXT) AS DWSTRING
    DIM dwsText AS DWSTRING
    ' // Check if the required format is available
-   IF IsClipboardFormatAvailable(CF_UNICODETEXT) = 0 THEN RETURN ""
+   IF IsClipboardFormatAvailable(uFormat) = 0 THEN RETURN ""
    ' // Open the clipboard
    IF OpenClipboard(NULL) = 0 THEN RETURN ""
    ' // Get memory object of clipboard text
-   DIM hMem AS HANDLE = GetClipboardData(CF_UNICODETEXT)
+   DIM hMem AS HANDLE = GetClipboardData(uFormat)
    IF hMem = NULL THEN
       CloseClipboard
       RETURN ""
@@ -2295,6 +2633,10 @@ PRIVATE FUNCTION AfxGetClipboardText () AS DWSTRING
    RETURN dwsText
 END FUNCTION
 ' ========================================================================================
+#define ClipboardGetText AfxGetClipboardText(CF_TEXT)
+#define ClipboardGetOemText AfxGetClipboardText(CF_OEMTEXT)
+#define ClipboardGetUnicode AfxGetClipboardText(CF_UNICODETEXT)
+' ========================================================================================
 
 ' ========================================================================================
 ' Places an unicode text string into the clipboard.
@@ -2304,7 +2646,7 @@ END FUNCTION
 '   If the function succeeds, the return value is the handle to the data.
 '   If the function fails, the return value is NULL.
 ' ========================================================================================
-PRIVATE FUNCTION AfxSetClipboardText (BYREF wszText AS WSTRING) AS HANDLE
+PRIVATE FUNCTION AfxSetClipboardText (BYREF wszText AS WSTRING, BYVAL uFormat AS UINT = CF_UNICODETEXT) AS HANDLE
    ' // Opens the clipboard
    IF OpenClipboard(NULL) <> 0 THEN
       ' // Empties the clipboard
@@ -2319,7 +2661,7 @@ PRIVATE FUNCTION AfxSetClipboardText (BYREF wszText AS WSTRING) AS HANDLE
          ' // Unlocks the memory block
          GlobalUnlock hMem
          ' // Places the text in the clipboard
-         DIM hData AS HANDLE = SetClipboardData(CF_UNICODETEXT, hMem)
+         DIM hData AS HANDLE = SetClipboardData(uFormat, hMem)
          IF hData <> NULL THEN
             ' // Returns the handle of the data
             FUNCTION = hData
@@ -2332,6 +2674,11 @@ PRIVATE FUNCTION AfxSetClipboardText (BYREF wszText AS WSTRING) AS HANDLE
       CloseClipboard
    END IF
 END FUNCTION
+' ========================================================================================
+' ========================================================================================
+#define ClipboardSetText(txt) AfxSetClipboardText(txt, CF_TEXT)
+#define ClipboardSetOemText(txt) AfxSetClipboardText(txt, CF_OEMTEXT)
+#define ClipboardSetUnicode(txt) AfxSetClipboardText(txt, CF_UNICODETEXT)
 ' ========================================================================================
 
 

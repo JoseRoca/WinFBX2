@@ -24,17 +24,11 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
-
 #pragma once
 #include once "windows.bi"
 #INCLUDE ONCE "win/uxtheme.bi"
 #include once "Afx2/CDialog.inc"
+#include once "Afx2/AfxWin2.inc"
 using Afx2
 
 NAMESPACE Afx2

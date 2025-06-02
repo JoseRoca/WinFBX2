@@ -2572,6 +2572,7 @@ PRIVATE FUNCTION AfxGetClipboardData (BYVAL uFormat AS DWORD) AS HGLOBAL
    FUNCTION = hDest
 END FUNCTION
 ' ========================================================================================
+#define ClipboardGetData(fmt) AfxGetClipboardData(fmt)
 #define ClipboardGetBitmap AfxGetClipboardData(CF_BITMAP)
 ' ========================================================================================
 
@@ -2586,19 +2587,19 @@ END FUNCTION
 ' Remarks
 '   The application must not use the hData handle once it has called the AfxSetClipboardData function.
 ' ========================================================================================
-PRIVATE FUNCTION AfxSetClipboardData (BYVAL cfFormat AS DWORD, BYVAL hData AS HANDLE) AS HANDLE
+PRIVATE FUNCTION AfxSetClipboardData (BYVAL uFormat AS UINT, BYVAL hData AS HANDLE) AS HANDLE
    ' // Opens the clipboard
    IF OpenClipboard(NULL) <> 0 THEN
       ' // Empties the clipboard
       EmptyClipboard
       ' // Places the data object in the clipboard
-      FUNCTION = SetClipboardData(cfFormat, hData)
+      FUNCTION = SetClipboardData(uFormat, hData)
       ' // Closes the clipboard
       CloseClipboard
     END IF
 END FUNCTION
 ' ========================================================================================
-' ========================================================================================
+#define ClipboardSetData (fmt) AfxSetClipboardData(fmt)
 #define ClipboardSetBitmap AfxSetClipboardData(CF_BITMAP)
 ' ========================================================================================
 
@@ -2674,7 +2675,6 @@ PRIVATE FUNCTION AfxSetClipboardText (BYREF wszText AS WSTRING, BYVAL uFormat AS
       CloseClipboard
    END IF
 END FUNCTION
-' ========================================================================================
 ' ========================================================================================
 #define ClipboardSetText(txt) AfxSetClipboardText(txt, CF_TEXT)
 #define ClipboardSetOemText(txt) AfxSetClipboardText(txt, CF_OEMTEXT)

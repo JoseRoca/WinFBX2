@@ -143,7 +143,7 @@ Public:
    DECLARE FUNCTION AddColumn (BYVAL iCol AS LONG, BYREF wszText AS WSTRING, BYVAL nWidth AS LONG, BYVAL nFormat AS LONG = LVCFMT_LEFT) AS LONG
    DECLARE FUNCTION InsertGroup (BYVAL index AS LONG, BYREF grp AS LVGROUP) AS LONG
    DECLARE SUB InsertGroupSorted (BYREF structInsert AS LVINSERTGROUPSORTED)
-   DECLARE FUNCTION InsertItem (BYREF item AS LVITEM) AS LONG
+   DECLARE FUNCTION InsertItem (BYREF item AS LVITEMW) AS LONG
    DECLARE FUNCTION InsertItem (BYVAL iItem AS LONG, BYVAL iImage AS LONG, BYREF wszText AS WSTRING) AS LONG
    DECLARE FUNCTION AddItem (BYVAL iItem AS LONG, BYVAL iImage AS LONG, BYREF wszText AS WSTRING) AS LONG
    DECLARE FUNCTION AppendItem (BYVAL iImage AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
@@ -1116,9 +1116,9 @@ END SUB
 ' ========================================================================================
 ' Inserts a new item in a list-view control.
 ' ========================================================================================
-PRIVATE FUNCTION CListView.InsertItem (BYREF item AS LVITEM) AS LONG
+PRIVATE FUNCTION CListView.InsertItem (BYREF item AS LVITEMW) AS LONG
    IF VARPTR(item) = 0 THEN RETURN - 1
-   RETURN SendMessageW(m_hCtl, LVM_INSERTITEM, 0, CAST(LPARAM, @item))
+   RETURN SendMessageW(m_hCtl, LVM_INSERTITEMW, 0, CAST(LPARAM, @item))
 END FUNCTION
 ' ========================================================================================
 

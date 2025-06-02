@@ -181,14 +181,15 @@ Public:
    DECLARE FUNCTION DialogEndResult () AS INT_PTR
    DECLARE FUNCTION ControlAdd (BYREF wszClassName AS WSTRING, BYVAL cId AS LONG_PTR = 0, _
       BYREF wszTitle AS WSTRING = "", BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, BYVAL cx AS LONG = 0, BYVAL cy AS LONG = 0, _
-      BYVAL dwStyle AS LONG = -1, BYVAL dwExStyle AS LONG = -1, BYVAL lpPAram AS LONG_PTR = 0, _
+      BYVAL dwStyle AS LONG = -1, BYVAL dwExStyle AS LONG = -1, BYVAL lpParam AS LONG_PTR = 0, _
       BYVAL pWndProc AS SUBCLASSPROC = NULL, BYVAL uIdSubclass AS UINT_PTR = &HFFFFFFFF, _
       BYVAL dwRefData AS DWORD_PTR = NULL) AS HWND
    DECLARE PROPERTY hDialog () AS HWND
    DECLARE PROPERTY hDialog (BYVAL hDlg AS HWND)
    DECLARE FUNCTION IsModal () AS BOOLEAN
    DECLARE FUNCTION IsCustom () AS BOOLEAN
-   DECLARE FUNCTION UsesPixels () AS BOOLEAN
+   DECLARE PROPERTY UsesPixels () AS BOOLEAN
+   DECLARE PROPERTY UsesPixels (BYVAL fUsePixels AS BOOLEAN)
    DECLARE FUNCTION UsesUnits () AS BOOLEAN
    DECLARE FUNCTION DialogShowState (BYVAL showState AS LONG) AS BOOLEAN
    DECLARE FUNCTION DialogMaximize () AS BOOLEAN
@@ -317,8 +318,8 @@ Public:
    DECLARE SUB AccelAttach (BYVAL hAccel AS ..HACCEL)
    DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYVAL wKey AS WORD, BYVAL cmd AS WORD)
    DECLARE SUB AddAccelerator OVERLOAD (BYVAL fvirt AS UBYTE, BYREF wszKey AS WSTRING, BYVAL cmd AS WORD)
-   DECLARE FUNCTION CreateAcceleratorTable () AS ..HACCEL
-   DECLARE SUB DestroyAcceleratorTable
+   DECLARE FUNCTION CreateAccelTable () AS ..HACCEL
+   DECLARE SUB DestroyAccelTable
 
    ' // Scrollable dialogs
    DECLARE FUNCTION DialogSetViewPort (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG) AS BOOLEAN
@@ -347,6 +348,7 @@ END TYPE
 ' * Dialog constructor.
 ' ========================================================================================
 PRIVATE CONSTRUCTOR CDialog (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSize AS LONG = 9, BYVAL fontStyle AS BYTE = 0, BYVAL charset AS BYTE = DEFAULT_CHARSET) 
+   CDIALOG_DP("")
    ' // Store the passed parameters
    m_fontName = fontName
    m_ptSize = ptSize
@@ -377,6 +379,7 @@ END CONSTRUCTOR
 ' * Destructor
 ' ========================================================================================
 PRIVATE DESTRUCTOR CDialog
+   CDIALOG_DP("")
    ' // Destroy the accelerator table
    IF m_hAccel THEN ..DestroyAcceleratorTable(m_hAccel)
    ' // Free the Rich Edit library
@@ -894,9 +897,17 @@ END FUNCTION
 ' ========================================================================================
 ' Returns true if it uses pixels
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.UsesPixels () AS BOOLEAN
+PRIVATE PROPERTY CDialog.UsesPixels (BYVAL fUsePixels AS BOOLEAN)
+   m_UsePixels = fUsePixels
+END PROPERTY
+' ========================================================================================
+
+' ========================================================================================
+' Returns true if it uses pixels
+' ========================================================================================
+PRIVATE PROPERTY CDialog.UsesPixels () AS BOOLEAN
    RETURN m_UsePixels
-END FUNCTION
+END PROPERTY
 ' ========================================================================================
 
 ' ========================================================================================
@@ -981,8 +992,14 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, 
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
    IF m_hDlg THEN
-      SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
+'      SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
+      this.DialogSetClient(cx, cy)
       IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
+      IF (dwStyle AND DS_CENTER) = DS_CENTER THEN
+         this.DialogCenter   ' // Center the dialog
+      ELSEIF x = -1 AND y = -1 THEN
+         this.DialogCenter   ' // Center the dialog
+      END IF
    END IF
    ' // Set the default procedure callback
    SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LONG_PTR, PROCPTR(CDialog.CDialogProc)))
@@ -1013,8 +1030,14 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL h
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
    IF m_hDlg THEN
-      SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
+'      SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
+      this.DialogSetClient(cx, cy)
       IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
+      IF (dwStyle AND DS_CENTER) = DS_CENTER THEN
+         this.DialogCenter   ' // Center the dialog
+      ELSEIF x = -1 AND y = -1 THEN
+         this.DialogCenter   ' // Center the dialog
+      END IF
    END IF
    ' // Store a pointer to the class
    IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
@@ -1318,7 +1341,6 @@ PRIVATE FUNCTION CDialog.DialogShowModal (BYVAL pCallback AS ANY PTR = NULL) AS 
    ' // Enable the parent window (must be done in WM_CLOSE, before the dialog is destroyed)
 '   IF hParent THEN EnableWindow(hParent, TRUE)
    RETURN S_OK
-
 END FUNCTION
 ' ========================================================================================
 
@@ -1502,7 +1524,6 @@ END SUB
 ' Centers a window on the screen or over another window.
 ' It also ensures that the placement is done within the work area.
 ' Parameters:
-' - hwnd = Handle of the window.
 ' - hwndParent = [optional] Handle of the parent window.
 ' ========================================================================================
 PRIVATE SUB CDialog.DialogCenter (BYVAL hwndParent AS HWND = NULL)
@@ -1557,7 +1578,7 @@ END SUB
 ' ========================================================================================
 
 ' ========================================================================================
-' Makes a Dialog stabilized (non-closeable).
+' Makes a dialog stabilized (non-closeable).
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogStabilize () AS BOOLEAN
    ' // Get the system menu handle
@@ -1578,7 +1599,7 @@ PRIVATE FUNCTION CDialog.DialogStabilize () AS BOOLEAN
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' Makes a Dialog non stable (closeable).
+' Makes a dialog non stable (closeable).
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogNonStable () AS BOOLEAN
    GetSystemMenu(m_hDlg, TRUE)
@@ -1970,7 +1991,8 @@ END FUNCTION
 ' * Sets the text in a dialog or window caption.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.DialogSetText (BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
-   RETURN SendMessageW(m_hDlg, WM_SETTEXT, 0, CAST(LPARAM, pwszText))
+'   RETURN SendMessageW(m_hDlg, WM_SETTEXT, 0, CAST(LPARAM, pwszText))
+   RETURN SetWindowTextW(m_hDlg, pwszText)
 END FUNCTION
 ' ========================================================================================
 
@@ -2109,7 +2131,8 @@ END FUNCTION
 ' * Sets the text in a control or control caption.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlSetText (BYVAL cId AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
-   RETURN SendMessageW(GetDlgItem(m_hDlg, cID), WM_SETTEXT, 0, CAST(LPARAM, pwszText))
+'   RETURN SendMessageW(GetDlgItem(m_hDlg, cID), WM_SETTEXT, 0, CAST(LPARAM, pwszText))
+   RETURN SetWindowTextW(GetDlgItem(m_hDlg, cID), pwszText)
 END FUNCTION
 ' ========================================================================================
 
@@ -2367,7 +2390,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the width of the window.
+' * Gets the width of the control.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlGetWidth (BYVAL cId AS LONG) AS LONG
    ' // Get the dimensions of the window
@@ -2385,7 +2408,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' * Gets the height of the window.
+' * Gets the height of the control.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlGetHeight (BYVAL cId AS LONG) AS LONG
    ' // Get the dimensions of the window
@@ -2858,7 +2881,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Anchor the control
+' Anchors the control
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hwndCtl AS HWND, BYVAL nAnchorMode AS LONG) AS BOOLEAN
    IF .IsWindow(hwndCtl) = FALSE THEN RETURN FALSE
@@ -3132,9 +3155,9 @@ END SUB
 ' =====================================================================================
 ' Creates the accelerator table.
 ' =====================================================================================
-PRIVATE FUNCTION CDialog.CreateAcceleratorTable () AS ..HACCEL
+PRIVATE FUNCTION CDialog.CreateAccelTable () AS ..HACCEL
    IF UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) = -1 THEN RETURN NULL
-   IF m_hAccel THEN .DestroyAcceleratorTable(m_hAccel)
+   IF m_hAccel THEN ..DestroyAcceleratorTable(m_hAccel)
    m_hAccel = .CreateAcceleratorTableW(CAST(LPACCEL, @m_rgAccelEntries(0)), UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) + 1)
    RETURN m_hAccel
 END FUNCTION
@@ -3142,8 +3165,8 @@ END FUNCTION
 ' =====================================================================================
 ' Destroys the accelerator table.
 ' =====================================================================================
-PRIVATE SUB CDialog.DestroyAcceleratorTable
-   IF m_hAccel THEN .DestroyAcceleratorTable(m_hAccel)
+PRIVATE SUB CDialog.DestroyAccelTable
+   IF m_hAccel THEN ..DestroyAcceleratorTable(m_hAccel)
    IF UBOUND(m_rgAccelEntries) - LBOUND(m_rgAccelEntries) > -1 THEN ERASE m_rgAccelEntries
    m_hAccel = NULL
 END SUB

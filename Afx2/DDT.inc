@@ -27,6 +27,7 @@
 #pragma once
 #include once "Afx2/CDialog.inc"
 #include once "Afx2/AfxWin2.inc"
+#include once "Afx2/AfxCtl2.inc"
 using Afx2
 
 ' ========================================================================================
@@ -390,6 +391,53 @@ BYVAL dwRefData AS DWORD_PTR = NULL) AS HWND
    IF pDlg THEN RETURN pDlg->ControlAdd(wszClassName, cId, wszTitle, x, y, cx, cy, dwStyle, dwExStyle, _
       lpParam, pWndProc, uIdSubclass, dwRefData)
 END FUNCTION
+' ========================================================================================
+' // For compatibility with DDT
+#define ControlAddButton ControlAdd("Button")
+#define ControlAddCheckState ControlAdd("CheckState")
+#define ControlAddCheckBox ControlAdd("CheckBox")
+#define ControlAddFrame ControlAdd("GroupBox")
+#define ControlAddImage ControlAdd("Image")
+#define ControlAddImageX ControlAdd("ImageX")
+#define ControlAddImgButton ControlAdd("ImgButton")
+#define ControlAddImgButtonX ControlAdd("ImgButtonX")
+#define ControlAddLabel ControlAdd("Label")
+#define ControlAddLine ControlAdd("Line")
+#define ControlAddListBox ControlAdd("ListBox")
+#define ControlAddListView ControlAdd("ListView")
+#define ControlAddOption ControlAdd("Option")
+#define ControlAddProgressBar ControlAdd("ProgressBar")
+#define ControlAddScrollBar ControlAdd("ScrollBar")
+#define ControlAddStatusBar ControlAdd("StatusBar")
+#define ControlAddTab ControlAdd("Tab")
+#define ControlAddTextBox ControlAdd("TextBox")
+#define ControlAddToolBar ControlAdd("ToolBar")
+#define ControlAddTreeView ControlAdd("TreView")
+' // Additional controls
+#define ControlAddAnimate ControlAdd("Animate")
+#define ControlAddGroupBox ControlAdd("GroupBox")
+#define ControlAddComboBoxEx ControlAdd("ComboBoxEx")
+#define ControlAddHeader ControlAdd("Header")
+#define ControlAddRebar ControlAdd("Rebar")
+#define ControlAddDateTimePicker ControlAdd("DateTimePicker")
+#define ControlAddMonthCalendar ControlAdd("MonthCalendar")
+#define ControlAddIPAddress ControlAdd("IPAddress")
+#define ControlAddHotkey ControlAdd("HotKey")
+#define ControlAssSysLink ControlAdd("SysLink")
+#define ControlAddPager ControlAdd("Pager")
+#define ControlAddSizeBar ControlAdd("SizeBar")
+#define ControlAddTrackBar ControlAdd("TrackBar")
+#define ControlAddRichEdit ControlAdd("RichEdit")
+#define ControlAddHScrollBar ControlAdd("HScrollBar")
+#define ControlAddVScrollBar ControlAdd("VScrollBar")
+#define ControlAddRadioButton ControlAdd("RadioButton")
+#define ControlAddCustomButton ControlAdd("CustomButton")
+#define ControlAddButtonOwnerDraw ControlAdd("CustomButton")
+#define ControlAddCustomLabel ControlAdd("CustomLabel")
+#define ControlAddLabelOwnerdraw ControlAdd("CustomLabel")
+#define ControlAddFrameWindow ControlAdd("Frame")
+#define ControlAddEditMultiline ControlAdd("EditMultiline")
+#define ControlAddListBoxMultiSelect ControlAdd("ListBoxMultiSelect")
 ' ========================================================================================
 
 ' ========================================================================================

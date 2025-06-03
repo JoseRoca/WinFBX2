@@ -372,6 +372,8 @@ PRIVATE CONSTRUCTOR CDialog (BYREF fontName AS WSTRING = "Segoe UI", BYVAL ptSiz
    m_rx = (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
    m_ry = (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
    ReleaseDC NULL, hDC
+   ' // Initialize the COM library
+   CoInitialize NULL
 END CONSTRUCTOR
 ' ========================================================================================
 
@@ -384,6 +386,8 @@ PRIVATE DESTRUCTOR CDialog
    IF m_hAccel THEN ..DestroyAcceleratorTable(m_hAccel)
    ' // Free the Rich Edit library
    IF m_hRichEditLib THEN FreeLibrary m_hRichEditLib
+   ' // Uninitialize the COM library
+   CoUninitialize
 END DESTRUCTOR
 ' ========================================================================================
 
@@ -522,7 +526,7 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          IF dwStyle = BS_SPLITBUTTON THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_CENTER OR BS_VCENTER OR BS_SPLITBUTTON
          IF dwStyle = BS_DEFSPLITBUTTON THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_CENTER OR BS_VCENTER OR BS_DEFSPLITBUTTON
          #endif
-      CASE "CUSTOMBUTTON", "OWNERDRAWBUTTON"
+      CASE "CUSTOMBUTTON", "OWNERDRAWBUTTON", "BUTTONOWNERDRAW"
          ' Adds an ownerdraw button to the window.
          wsClassName = "Button"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_OWNERDRAW
@@ -536,7 +540,7 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          ' Adds a checkbox to the window.
          wsClassName = "Button"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_AUTOCHECKBOX OR BS_LEFT OR BS_VCENTER
-      CASE "CHECK3STATE"
+      CASE "CHECK3STATE", "CHECKSTATE"
          ' Adds a 3 state checkbox to the window.
          wsClassName = "Button"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR BS_AUTO3STATE OR BS_LEFT OR BS_VCENTER
@@ -579,7 +583,7 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          IF strType = "RT_ICON" OR strType = "RT_GROUP_ICON" THEN nType = SS_ICON ELSE IF strType = "RT_BITMAP" THEN nType = SS_BITMAP
          ' // Add the style
          IF nType THEN dwStyle OR= nType
-      CASE "CUSTOMLABEL"
+      CASE "CUSTOMLABEL", "LABELOWNERDRAW"
          ' Adds an ownerdraw label to the window.
          wsClassName = "Static"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_GROUP OR SS_OWNERDRAW

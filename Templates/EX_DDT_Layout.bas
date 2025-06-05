@@ -62,7 +62,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    DIM wszText AS WSTRING * 260
    FOR i AS LONG = 1 TO 9
       wszText = "Item " & RIGHT("00" & STR(i), 2)
-      ControlSend(hDlg, IDC_COMBOBOX, CB_ADDSTRING, 0, CAST(LPARAM, @wszText))
+      ComboBoxAdd(hDlg, IDC_COMBOBOX, @wszText)
    NEXT
 
    ' // Set control's colors

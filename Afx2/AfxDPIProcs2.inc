@@ -164,7 +164,7 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Retrieves and per-monitor DPI scaling behavior overrides of a child window in a dialog.
+' Retrieves per-monitor DPI scaling behavior and overrides of a child window in a dialog.
 ' ========================================================================================
 PRIVATE FUNCTION AfxGetDialogControlDpiChangeBehavior (BYVAL hwnd AS HWND) AS DIALOG_CONTROL_DPI_CHANGE_BEHAVIORS
    DIM pLib AS ANY PTR = DyLibLoad("user32.dll")

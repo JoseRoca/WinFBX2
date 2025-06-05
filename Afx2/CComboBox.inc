@@ -752,7 +752,7 @@ END TYPE
 ' of items remaining in the control. If iIndex is invalid, the message returns CB_ERR.
 ' ========================================================================================
 PRIVATE FUNCTION CComboBoxEx.DeleteItem (BYVAL nIndex AS LONG) AS LONG
-   RETURN SendMessageW(m_hCtl, CBEM_DELETEITEM, cast(WPARAM, nIndex), 0)
+   RETURN SendMessageW(m_hCtl, CBEM_DELETEITEM, nIndex, 0)
 END FUNCTION
 ' ========================================================================================
 

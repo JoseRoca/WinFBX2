@@ -3253,7 +3253,8 @@ PRIVATE SUB CDialog.DialogOnVScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPA
       CASE SB_PAGEUP     : nInc = MIN(-1, -m_nVertInc)
       CASE SB_PAGEDOWN   : nInc = MAX(1, m_nVertInc)
       CASE SB_THUMBTRACK : nInc = HIWORD(wParam) - m_VScrollPos
-      lseLSE          : nInc = 0
+      CASE ELSE
+         nInc = 0
    END SELECT
    nInc = MAX(-m_VScrollPos, MIN(nInc, m_VScrollMax - m_VScrollPos))
    IF nInc THEN
@@ -3282,7 +3283,8 @@ PRIVATE SUB CDialog.DialogOnHScroll (BYVAL wParam AS WPARAM, BYVAL lParam AS LPA
       CASE SB_PAGEUP     : nInc = -m_HorzUnits
       CASE SB_PAGEDOWN   : nInc = m_HorzUnits
       CASE SB_THUMBTRACK : nInc = HIWORD(wParam) - m_HScrollPos
-      CASE ELSE          : nInc = 0
+      CASE ELSE
+         nInc = 0
    END SELECT
    nInc = MAX(-m_HScrollPos, MIN(nInc, m_HScrollMax - m_HScrollPos))
    IF nInc THEN

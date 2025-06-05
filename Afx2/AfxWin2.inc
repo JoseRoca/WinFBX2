@@ -35,8 +35,6 @@
 #INCLUDE ONCE "win/KnownFolders.bi"
 #INCLUDE ONCE "win/commdlg.bi"
 #INCLUDE ONCE "win/cderr.bi"
-'#INCLUDE ONCE "Afx/AfxPath.inc"
-'#INCLUDE ONCE "Afx/AfxStr.inc"
 #INCLUDE ONCE "crt/string.bi"
 #INCLUDE ONCE "Afx2/DWSTRING.inc"
 #INCLUDE ONCE "Afx2/AfxDPIProcs2.inc"

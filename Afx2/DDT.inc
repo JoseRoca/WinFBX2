@@ -396,6 +396,7 @@ END FUNCTION
 #define ControlAddButton ControlAdd("Button")
 #define ControlAddCheckState ControlAdd("CheckState")
 #define ControlAddCheckBox ControlAdd("CheckBox")
+#define ControlAddComboBox ControlAdd("ComboBox")
 #define ControlAddFrame ControlAdd("GroupBox")
 #define ControlAddImage ControlAdd("Image")
 #define ControlAddImageX ControlAdd("ImageX")

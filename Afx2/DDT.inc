@@ -1191,6 +1191,105 @@ PRIVATE FUNCTION IsDialogRepaintDisabledOnResize (BYVAL hDlg AS HWND) AS BOOLEAN
 END FUNCTION
 ' ========================================================================================
 
+' ########################################################################################
+'                                 *** COMBOBOX ***
+' ########################################################################################
+
+' ========================================================================================
+PRIVATE FUNCTION ComboboxAdd (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_ADDSTRING, 0, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxDelete (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_DELETESTRING, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxFind (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start aS LONG = item
+   IF item = 1 THEN start = 2
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, CB_FINDSTRING, start - 2, CAST(LPARAM, pwszText))
+   RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start aS LONG = item
+   IF item = 1 THEN start = 2
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, CB_FINDSTRINGEXACT, start - 2, CAST(LPARAM, pwszText))
+   RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_GETCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxGetSelCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   DIM item AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
+   IF item <> CB_ERR THEN RETURN 1 ELSE RETURN 0
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0) + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
+   DIM selItem AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
+   IF selItem + 1 = item THEN RETURN TRUE ELSE RETURN FALSE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS DWSTRING
+   DIM selItem AS LONG, itemText AS WSTRING * MAX_PATH
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, item - 1, cast(LPARAM, @itemText))
+   IF res <> CB_ERR THEN RETURN itemText
+   selItem = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
+   IF selItem >= 0 THEN SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, selItem, cast(LPARAM, @itemText))
+   RETURN itemText
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxInsert (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item < 1 THEN RETURN CB_ERR
+   RETURN SendDlgItemMessageW(hDlg, id, CB_INSERTSTRING, item - 1, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE SUB ComboBoxReset (BYVAL hDlg AS HWND, BYVAL id AS LONG)
+   SendDlgItemMessageW hDlg, id, CB_RESETCONTENT, 0, 0
+END SUB
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, item - 1, 0) + 1
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+PRIVATE FUNCTION ComboboxSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+   SendDlgItemMessageW(hDlg, id, CB_DELETESTRING, item - 1, 0)
+   SendDlgItemMessageW(hDlg, id, CB_INSERTSTRING, item - 1, cast(LPARAM, pwszText))
+   RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboboxUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, -1, 0)
+END FUNCTION
+' ========================================================================================
+
+
+' ########################################################################################
+'                                 *** ACCELERATORS ***
+' ########################################################################################
+
 ' =====================================================================================
 ' Gets the accelerator table handle
 ' =====================================================================================
@@ -1235,6 +1334,10 @@ PRIVATE SUB DestroyAccelTable (BYVAL hDlg AS HWND)
    IF pDlg THEN pDlg->DestroyAccelTable
 END SUB
 ' =====================================================================================
+
+' ########################################################################################
+'                              *** DPI AND CONVERSIONS ***
+' ########################################################################################
 
 ' ========================================================================================
 ' Returns the DPI scaling ratios

@@ -9,7 +9,7 @@ DECLARE FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
 END WinMain(GetModuleHandleW(NULL), NULL, COMMAND(), SW_NORMAL)
 
 ' // Forward declaration
-DECLARE FUNCTION DlgProc(BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD, BYVAL lParam AS LPARAM) AS INT_PTR
+DEclaRE FUNCTION DlgProc(BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD, BYVAL lParam AS LPARAM) AS INT_PTR
 
 ' // Control identifiers
 ENUM
@@ -34,7 +34,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog
-   DIM hDlg AS HWND = DialogNewPixels(0, "DDT - Colors and Layout Demo",,, 450, 180, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNewPixels(0, "Colors and Layout Demo",,, 450, 180, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Set the dialog's backgroung color
    DialogSetColor(hDlg, -1, RGB_GOLD)
@@ -62,7 +62,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    DIM wszText AS WSTRING * 260
    FOR i AS LONG = 1 TO 9
       wszText = "Item " & RIGHT("00" & STR(i), 2)
-      ComboBoxAdd(hDlg, IDC_COMBOBOX, @wszText)
+      ComboboxAdd(hDlg, IDC_COMBOBOX, wszText)
    NEXT
 
    ' // Set control's colors

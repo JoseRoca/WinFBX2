@@ -1247,12 +1247,20 @@ END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 PRIVATE FUNCTION ComboboxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS DWSTRING
-   DIM selItem AS LONG, itemText AS WSTRING * MAX_PATH
-   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, item - 1, cast(LPARAM, @itemText))
-   IF res <> CB_ERR THEN RETURN itemText
-   selItem = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
-   IF selItem >= 0 THEN SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, selItem, cast(LPARAM, @itemText))
-   RETURN itemText
+   DIM ItemText AS DWSTRING
+   DIM cbLen AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETLBTEXTLEN, item - 1, 0)
+   IF cbLen < 1 THEN
+      DIM selItem AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
+      IF selItem >= 0 THEN
+         cbLen = SendDlgItemMessageW(hDlg, id, CB_GETLBTEXTLEN, selItem, 0)
+         itemText = WSPACE(cbLen + 1)
+         SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, selItem, cast(LPARAM, STRPTR(itemText)))
+      END IF
+   ELSE
+      itemText = WSPACE(cbLen + 1)
+      SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, item - 1, cast(LPARAM, STRPTR(itemText)))
+   END IF
+   RETURN LEFT(itemText, cbLen)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================

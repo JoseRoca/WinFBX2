@@ -24,12 +24,12 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
-#include once "Afx2/RGB_Colors.bi"
 #include once "windows.bi"
 #include once "win/commctrl.bi"
 #include once "win/uxtheme.bi"
 #include once "win/richedit.bi"
 #include once "Afx2/DWSTRING.inc"
+#include once "Afx2/RGB_Colors.bi"
 USING Afx2
 
 ' // For compatibility with the Power Basic syntax
@@ -305,6 +305,8 @@ Public:
    DECLARE FUNCTION UnScaleY (BYVAL cy AS SINGLE) AS SINGLE
    DECLARE FUNCTION ScaleRect (BYVAL rc AS RECT) AS RECT
    DECLARE FUNCTION UnScaleRect (BYVAL rc AS RECT) AS RECT
+   DECLARE FUNCTION SetWindowPosForDPI (BYVAL hwnd AS HWND, BYVAL hWndInsertAfter AS HWND, BYVAL x AS LONG, BYVAL y AS LONG, BYVAL cx AS LONG, BYVAL cy AS LONG, BYVAL uFlags AS UINT = SWP_NOZORDER) AS BOOLEAN
+   DECLARE FUNCTION MoveWindowForDPI (BYVAL hwnd AS HWND, BYVAL x AS LONG, BYVAL y AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG, BYVAL bRepaint AS BOOLEAN) AS BOOLEAN
 
    ' // Layout manager
    DECLARE FUNCTION ControlAnchor (BYVAL cID AS LONG, BYVAL nAnchorMode AS LONG) AS BOOLEAN
@@ -2787,7 +2789,7 @@ END FUNCTION
 
 
 ' ########################################################################################
-'                                  *** DPI Ratios ***
+'                                  *** DPI procedures ***
 ' ########################################################################################
 
 ' ========================================================================================
@@ -2864,6 +2866,23 @@ PRIVATE FUNCTION CDialog.UnScaleRect (BYVAL rc AS RECT) AS RECT
       rc.bottom /= this.DluToPixRY
    END IF
    RETURN rc
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the size, position, and Z order of a child, pop-up, or top-level window.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.SetWindowPosForDPI (BYVAL hwnd AS HWND, BYVAL hWndInsertAfter AS HWND, BYVAL x AS LONG, BYVAL y AS LONG, _
+   BYVAL cx AS LONG, BYVAL cy AS LONG, BYVAL uFlags AS UINT = SWP_NOZORDER) AS BOOLEAN
+   RETURN ..SetWindowPos(hwnd, hWndInsertAfter, this.ScaleX(x), this.ScaleY(y), this.ScaleX(cx), this.ScaleY(cy), uFlags)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the position and dimensions of the specified window.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.MoveWindowForDPI (BYVAL hwnd AS HWND, BYVAL x AS LONG, BYVAL y AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG, BYVAL bRepaint AS BOOLEAN) AS BOOLEAN
+   RETURN ..MoveWindow(hwnd, this.ScaleX(x), this.ScaleY(y), this.ScaleX(nWidth), this.ScaleY(nHeight), bRepaint)
 END FUNCTION
 ' ========================================================================================
 

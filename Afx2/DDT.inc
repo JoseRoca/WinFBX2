@@ -62,6 +62,21 @@ PRIVATE FUNCTION GetCDialogPtr (BYVAL hwnd AS HWND) AS CDialog PTR
    RETURN CAST(CDialog PTR, GetWindowLongPtrW(hRootOwner, DWLP_USER))
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+' Returns a pointer to the CDialog class given the handle of the window created with it
+' or the handle of any of it's children.
+' ========================================================================================
+PRIVATE FUNCTION IsWin OVERLOAD (BYVAL hDlg AS HWND) AS BOOLEAN
+   IF hDlg = NULL THEN RETURN FALSE
+   RETURN IsWindow(hDlg)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION IsWin OVERLOAD (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS BOOLEAN
+   IF hDlg = NULL THEN RETURN FALSE
+   RETURN IsWindow(GetDlgItem(hDlg, id))
+END FUNCTION
+' ========================================================================================
 
 ' ========================================================================================
 ' Creates a dialog box using a memory template
@@ -405,6 +420,7 @@ END FUNCTION
 #define ControlAddLabel ControlAdd("Label")
 #define ControlAddLine ControlAdd("Line")
 #define ControlAddListBox ControlAdd("ListBox")
+#define ControlAddListBoxMultiSelect ControlAdd("ListBoxMultiSelect")
 #define ControlAddListView ControlAdd("ListView")
 #define ControlAddOption ControlAdd("Option")
 #define ControlAddProgressBar ControlAdd("ProgressBar")
@@ -1196,26 +1212,26 @@ END FUNCTION
 ' ########################################################################################
 
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxAdd (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+PRIVATE FUNCTION ComboBoxAdd (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    RETURN SendDlgItemMessageW(hDlg, id, CB_ADDSTRING, 0, CAST(LPARAM, pwszText))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxDelete (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
+PRIVATE FUNCTION ComboBoxDelete (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
    RETURN SendDlgItemMessageW(hDlg, id, CB_DELETESTRING, item - 1, 0)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxFind (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+PRIVATE FUNCTION ComboBoxFind (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    IF item <= 0 THEN RETURN 0
    DIM start aS LONG = item
    IF item = 1 THEN start = 2
    DIM res AS LONG = SendDlgItemMessageW(hDlg, id, CB_FINDSTRING, start - 2, CAST(LPARAM, pwszText))
-   RETURN res + 1
+   IF item = 1 THEN RETURN res ELSE RETURN res + 1
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+PRIVATE FUNCTION ComboBoxFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    IF item <= 0 THEN RETURN 0
    DIM start aS LONG = item
    IF item = 1 THEN start = 2
@@ -1224,7 +1240,7 @@ PRIVATE FUNCTION ComboboxFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL 
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+PRIVATE FUNCTION ComboBoxGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
    RETURN SendDlgItemMessageW(hDlg, id, CB_GETCOUNT, 0, 0)
 END FUNCTION
 ' ========================================================================================
@@ -1235,18 +1251,18 @@ PRIVATE FUNCTION ComboBoxGetSelCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS L
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+PRIVATE FUNCTION ComboBoxGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
    RETURN SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0) + 1
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
+PRIVATE FUNCTION ComboBoxGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
    DIM selItem AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
    IF selItem + 1 = item THEN RETURN TRUE ELSE RETURN FALSE
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS DWSTRING
+PRIVATE FUNCTION ComboBoxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS DWSTRING
    DIM ItemText AS DWSTRING
    DIM cbLen AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETLBTEXTLEN, item - 1, 0)
    IF cbLen < 1 THEN
@@ -1264,7 +1280,7 @@ PRIVATE FUNCTION ComboboxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL it
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxInsert (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+PRIVATE FUNCTION ComboBoxInsert (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
    IF item < 1 THEN RETURN CB_ERR
    RETURN SendDlgItemMessageW(hDlg, id, CB_INSERTSTRING, item - 1, CAST(LPARAM, pwszText))
 END FUNCTION
@@ -1275,23 +1291,165 @@ PRIVATE SUB ComboBoxReset (BYVAL hDlg AS HWND, BYVAL id AS LONG)
 END SUB
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
+PRIVATE FUNCTION ComboBoxSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
    RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, item - 1, 0) + 1
 END FUNCTION
 ' ========================================================================================
-
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+PRIVATE FUNCTION ComboBoxSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
    SendDlgItemMessageW(hDlg, id, CB_DELETESTRING, item - 1, 0)
    SendDlgItemMessageW(hDlg, id, CB_INSERTSTRING, item - 1, cast(LPARAM, pwszText))
    RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, item - 1, 0)
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ComboboxUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+PRIVATE FUNCTION ComboBoxUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
    RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, -1, 0)
 END FUNCTION
 ' ========================================================================================
+
+
+' ########################################################################################
+'                                   *** LISTBOX ***
+' ########################################################################################
+
+' ========================================================================================
+PRIVATE FUNCTION ListBoxAdd (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LB_ADDSTRING, 0, CAST(LPARAM, pwszText)) + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListBoxDelete (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LB_DELETESTRING, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListBoxFind (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start aS LONG = item
+   IF item = 1 THEN start = 2
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, LB_FINDSTRING, start - 2, CAST(LPARAM, pwszText))
+   IF item = 1 THEN RETURN res ELSE RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListBoxFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start aS LONG = item
+   IF item = 1 THEN start = 2
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, LB_FINDSTRINGEXACT, start - 2, CAST(LPARAM, pwszText))
+   RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets the number of items in a list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LB_GETCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets the total number of selected items in a multiple-selection list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetSelCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LB_GETSELCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' The listbox is searched to find the first selected item. If the item parameter is included,
+' searching starts at that position to facilitate retrieving multiple selected items.
+' If item is omitted, the search starts at the first data item. The index number of the
+' selected item is returned as the result of the function. If no item is selected, the
+' value -1 is returned.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS LONG
+   DIM hCtl AS HWND = GetDlgItem(hDlg, id)
+   IF (GetWindowLongPtrW(hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      ' // Search for the first selected item starting from startIndex (zero-based)
+      DIM nCount AS LONG = SendMessageW(hCtl, LB_GETCOUNT, 0, 0)
+      IF item = 0 THEN item = 1
+      FOR selectedIndex AS LONG = item - 1 TO nCount - 1
+         IF SendMessageW(hCtl, LB_GETSEL, item, 0) <> 0 THEN
+            RETURN item + 1   ' one-based inxdes
+         END IF
+      NEXT
+      ' // If no item is selected, return 0
+      RETURN 0
+   ELSE
+      '// Single slection listbox
+      RETURN SendMessageW(hCtl, IIF((GetWindowLong(hCtl, GWL_STYLE) AND LBS_MULTIPLESEL), LB_GETCARETINDEX, LB_GETCURSEL), 0, 0) + 1
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Checks if the item is selected or not.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LB_GETSEL, item - 1, 0) > 0
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets a string from a list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS DWSTRING
+   DIM nLen AS LONG, buffer AS DWSTRING
+   IF item = 0 THEN item = ListBoxGetSelect(hDlg, id, 0)
+   nLen = SendDlgItemMessageW(hDlg, id, LB_GETTEXTLEN, item - 1, 0)
+   SendDlgItemMessageW hDlg, id, LB_GETTEXT, item - 1, CAST(LPARAM, STRPTR(buffer))
+   RETURN LEFT(buffer, nLen)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Removes all items from a list box.
+' ========================================================================================
+PRIVATE SUB ListBoxReset (BYVAL hDlg AS HWND, BYVAL id AS LONG)
+   SendDlgItemMessageW hDlg, id, LB_RESETCONTENT, 0, 0
+END SUB
+' ========================================================================================
+' ========================================================================================
+' * Selects the specified string in a list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL index AS LONG = 0) AS LONG
+   DIM hCtl AS HWND = GetDlgItem(hDlg, id)
+   IF (GetWindowLongPtrW(hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      IF index = 0 THEN RETURN SendMessageW(hCtl, LB_SETSEL, CTRUE, index) + 1
+      RETURN SendMessageW(hCtl, LB_SETSEL, CTRUE, index - 1) + 1
+   ELSE
+      '// Single slection listbox
+      IF index = 0 THEN RETURN SendMessageW(hCtl, LB_SETSEL, CTRUE, index) + 1
+      RETURN SendMessageW(hCtl, LB_SETCURSEL, index - 1, 0) + 1
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListBoxSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+   '// Delete the string
+   DIM lRes AS LONG = SendDlgItemMessageW(hDlg, id, LB_DELETESTRING, item - 1, 0)
+   IF lRes = LB_ERR THEN RETURN lRes
+   ' // Insert the new string
+   SendDlgItemMessageW(hDlg, id, LB_INSERTSTRING, item - 1, cast(LPARAM, pwszText))
+   IF item = LB_ERR OR item = LB_ERRSPACE THEN RETURN item
+   DIM hCtl AS HWND = GetDlgItem(hDlg, id)
+   RETURN SendMessageW(hCtl, IIF((GetWindowLongPtrW(hCtl, GWL_STYLE) AND LBS_MULTIPLESEL), LB_SETSEL, LB_SETCURSEL), item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Unselects the specified string in a multiple-selection list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS LONG
+   IF (GetWindowLongPtrW(GetDlgItem(hDlg, id), GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      RETURN SendDlgItemMessageW(hDlg, id, LB_SETSEL, FALSE, item - 1)
+   ELSE
+      ' // Single selection listbox
+      RETURN SendDlgItemMessageW(hDlg, id, LB_SETCURSEL, -1, 0)
+   END IF
+END FUNCTION
+' ========================================================================================
+
+'+++++++++++++++++
 
 
 ' ########################################################################################
@@ -1350,13 +1508,13 @@ END SUB
 ' ========================================================================================
 ' Returns the DPI scaling ratios
 ' ========================================================================================
-PRIVATE FUNCTION rxRatio (BYVAL hDlg AS HWND) AS SINGLE
+PRIVATE FUNCTION rxRatioForDpi (BYVAL hDlg AS HWND) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->rxRatio
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-PRIVATE FUNCTION ryRatio (BYVAL hDlg AS HWND) AS SINGLE
+PRIVATE FUNCTION ryRatioForDpi (BYVAL hDlg AS HWND) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->ryRatio
 END FUNCTION
@@ -1365,7 +1523,7 @@ END FUNCTION
 ' ========================================================================================
 ' Scales a horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
-PRIVATE FUNCTION ScaleX (BYVAL hDlg AS HWND, BYVAL cx AS SINGLE) AS SINGLE
+PRIVATE FUNCTION ScaleXForDpi (BYVAL hDlg AS HWND, BYVAL cx AS SINGLE) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->ScaleX(cx)
 END FUNCTION
@@ -1373,7 +1531,7 @@ END FUNCTION
 ' ========================================================================================
 ' Scales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
-PRIVATE FUNCTION ScaleY (BYVAL hDlg AS HWND, BYVAL cy AS SINGLE) AS SINGLE
+PRIVATE FUNCTION ScaleYForDpi (BYVAL hDlg AS HWND, BYVAL cy AS SINGLE) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->ScaleY(cy)
 END FUNCTION
@@ -1382,7 +1540,7 @@ END FUNCTION
 ' ========================================================================================
 ' Unscales a horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
-PRIVATE FUNCTION UnScaleX (BYVAL hDlg AS HWND, BYVAL cx AS SINGLE) AS SINGLE
+PRIVATE FUNCTION UnScaleXForDpi (BYVAL hDlg AS HWND, BYVAL cx AS SINGLE) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->UnScaleX(cx)
 END FUNCTION
@@ -1390,7 +1548,7 @@ END FUNCTION
 ' ========================================================================================
 ' Unscales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
-PRIVATE FUNCTION UnScaleY (BYVAL hDlg AS HWND, BYVAL cy AS SINGLE) AS SINGLE
+PRIVATE FUNCTION UnScaleYForDpi (BYVAL hDlg AS HWND, BYVAL cy AS SINGLE) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->UnScaleY(cy)
 END FUNCTION
@@ -1399,7 +1557,7 @@ END FUNCTION
 ' ========================================================================================
 ' Scales a RECT structure
 ' ========================================================================================
-PRIVATE FUNCTION ScaleRect (BYVAL hDlg AS HWND, BYVAL rc AS RECT) AS RECT
+PRIVATE FUNCTION ScaleRectForDpi (BYVAL hDlg AS HWND, BYVAL rc AS RECT) AS RECT
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->ScaleRect(rc)
 END FUNCTION
@@ -1407,9 +1565,35 @@ END FUNCTION
 ' ========================================================================================
 ' * Unscales a RECT structure.
 ' ========================================================================================
-PRIVATE FUNCTION UnScaleRect (BYVAL hDlg AS HWND, BYVAL rc AS RECT) AS RECT
+PRIVATE FUNCTION UnScaleRectForDpi (BYVAL hDlg AS HWND, BYVAL rc AS RECT) AS RECT
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->UnScaleRect(rc)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the size, position, and Z order of a child, pop-up, or top-level window.
+' ========================================================================================
+PRIVATE FUNCTION SetWindowPosForDPI OVERLOAD (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL hWndInsertAfter AS HWND, BYVAL x AS LONG, BYVAL y AS LONG, _
+   BYVAL cx AS LONG, BYVAL cy AS LONG, BYVAL uFlags AS UINT = SWP_NOZORDER) AS BOOLEAN
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN RETURN pDlg->SetWindowPosForDPI(GetDlgItem(hDlg, cID), hWndInsertAfter, x, y, cx, cy, uFlags)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION SetWindowPosForDPI OVERLOAD (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL x AS LONG, BYVAL y AS LONG, _
+   BYVAL cx AS LONG, BYVAL cy AS LONG, BYVAL uFlags AS UINT = SWP_NOZORDER) AS BOOLEAN
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN RETURN pDlg->SetWindowPosForDPI(GetDlgItem(hDlg, cID), NULL, x, y, cx, cy, uFlags)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Changes the position and dimensions of the specified window.
+' ========================================================================================
+PRIVATE FUNCTION MoveWindowForDPI (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL x AS LONG, BYVAL y AS LONG, BYVAL nWidth AS LONG, BYVAL nHeight AS LONG, BYVAL bRepaint AS BOOLEAN) AS BOOLEAN
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN RETURN pDlg->MoveWindowForDPI(GetDlgItem(hDlg, cID), x, y, nWidth, nHeight, bRepaint)
 END FUNCTION
 ' ========================================================================================
 

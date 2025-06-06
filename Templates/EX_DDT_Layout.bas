@@ -88,7 +88,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    ' // Message handler loop
 '   DO
 '      DialogDoEvents
-'   LOOP WHILE IsWindow(hDlg)
+'   LOOP WHILE IsWin(hDlg)
 
    FUNCTION = DialogEndResult(hDlg)
 

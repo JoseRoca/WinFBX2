@@ -9,7 +9,7 @@ DECLARE FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
 END WinMain(GetModuleHandleW(NULL), NULL, COMMAND(), SW_NORMAL)
 
 ' // Forward declaration
-DEclaRE FUNCTION DlgProc(BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD, BYVAL lParam AS LPARAM) AS INT_PTR
+DECLARE FUNCTION DlgProc(BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD, BYVAL lParam AS LPARAM) AS INT_PTR
 
 ' // Control identifiers
 ENUM
@@ -34,7 +34,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog
-   DIM hDlg AS HWND = DialogNewPixels(0, "Colors and Layout Demo",,, 450, 180, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNewPixels(0, "DDT - Colors and Layout Demo",,, 450, 180, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Set the dialog's backgroung color
    DialogSetColor(hDlg, -1, RGB_GOLD)
@@ -62,7 +62,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    DIM wszText AS WSTRING * 260
    FOR i AS LONG = 1 TO 9
       wszText = "Item " & RIGHT("00" & STR(i), 2)
-      ComboboxAdd(hDlg, IDC_COMBOBOX, wszText)
+      ComboBoxAdd(hDlg, IDC_COMBOBOX, @wszText)
    NEXT
 
    ' // Set control's colors
@@ -72,12 +72,12 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    ControlSetColor(hDlg, IDC_GROUPBOX, RGB_WHITE, RGB_RED)
 
    ' // Anchor the controls
-   ControlAnchor(hDlg, IDC_EDIT1, ANCHOR_WIDTH)
-   ControlAnchor(hDlg, IDC_EDIT2, ANCHOR_HEIGHT_WIDTH)
-   ControlAnchor(hDlg, IDCANCEL, ANCHOR_BOTTOM_RIGHT)
-   ControlAnchor(hDlg, IDC_LABEL, ANCHOR_BOTTOM)
-   ControlAnchor(hDlg, IDC_GROUPBOX, ANCHOR_HEIGHT_RIGHT)
-   ControlAnchor(hDlg, IDC_COMBOBOX, ANCHOR_RIGHT)
+   ControlAnchor(hDlg, IDC_EDIT1, AFX_ANCHOR_WIDTH)
+   ControlAnchor(hDlg, IDC_EDIT2, AFX_ANCHOR_HEIGHT_WIDTH)
+   ControlAnchor(hDlg, IDCANCEL, AFX_ANCHOR_BOTTOM_RIGHT)
+   ControlAnchor(hDlg, IDC_LABEL, AFX_ANCHOR_BOTTOM)
+   ControlAnchor(hDlg, IDC_GROUPBOX, AFX_ANCHOR_HEIGHT_RIGHT)
+   ControlAnchor(hDlg, IDC_COMBOBOX, AFX_ANCHOR_RIGHT)
 
    ' // Display and activate the dialog as modal
    DialogShowModal hDlg, @DlgProc

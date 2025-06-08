@@ -1159,9 +1159,16 @@ END FUNCTION
 ' ========================================================================================
 ' Sets the colors of the control
 ' ========================================================================================
-PRIVATE FUNCTION ControlSetColor (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+PRIVATE FUNCTION ControlSetColor OVERLOAD (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->ControlSetColor(cID, foreColor, backColor)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ControlSetColor OVERLOAD (BYVAL hCtl AS HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(AfxGetFormHandle(hCtl))
+print  pDlg; "-------------------------"
+   IF pDlg THEN RETURN pDlg->ControlSetColor(hCtl, foreColor, backColor)
 END FUNCTION
 ' ========================================================================================
 
@@ -1207,299 +1214,6 @@ PRIVATE FUNCTION IsDialogRepaintDisabledOnResize (BYVAL hDlg AS HWND) AS BOOLEAN
 END FUNCTION
 ' ========================================================================================
 
-' ########################################################################################
-'                                 *** COMBOBOX ***
-' ########################################################################################
-
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxAdd (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, CB_ADDSTRING, 0, CAST(LPARAM, pwszText))
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxDelete (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, CB_DELETESTRING, item - 1, 0)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxFind (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
-   IF item <= 0 THEN RETURN 0
-   DIM start aS LONG = item
-   IF item = 1 THEN start = 2
-   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, CB_FINDSTRING, start - 2, CAST(LPARAM, pwszText))
-   IF item = 1 THEN RETURN res ELSE RETURN res + 1
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
-   IF item <= 0 THEN RETURN 0
-   DIM start aS LONG = item
-   IF item = 1 THEN start = 2
-   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, CB_FINDSTRINGEXACT, start - 2, CAST(LPARAM, pwszText))
-   RETURN res + 1
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, CB_GETCOUNT, 0, 0)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxGetSelCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
-   DIM item AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
-   IF item <> CB_ERR THEN RETURN 1 ELSE RETURN 0
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0) + 1
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
-   DIM selItem AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
-   IF selItem + 1 = item THEN RETURN TRUE ELSE RETURN FALSE
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS DWSTRING
-   DIM ItemText AS DWSTRING
-   DIM cbLen AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETLBTEXTLEN, item - 1, 0)
-   IF cbLen < 1 THEN
-      DIM selItem AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
-      IF selItem >= 0 THEN
-         cbLen = SendDlgItemMessageW(hDlg, id, CB_GETLBTEXTLEN, selItem, 0)
-         itemText = WSPACE(cbLen + 1)
-         SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, selItem, cast(LPARAM, STRPTR(itemText)))
-      END IF
-   ELSE
-      itemText = WSPACE(cbLen + 1)
-      SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, item - 1, cast(LPARAM, STRPTR(itemText)))
-   END IF
-   RETURN LEFT(itemText, cbLen)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxInsert (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
-   IF item < 1 THEN RETURN CB_ERR
-   RETURN SendDlgItemMessageW(hDlg, id, CB_INSERTSTRING, item - 1, CAST(LPARAM, pwszText))
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE SUB ComboBoxReset (BYVAL hDlg AS HWND, BYVAL id AS LONG)
-   SendDlgItemMessageW hDlg, id, CB_RESETCONTENT, 0, 0
-END SUB
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, item - 1, 0) + 1
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
-   SendDlgItemMessageW(hDlg, id, CB_DELETESTRING, item - 1, 0)
-   SendDlgItemMessageW(hDlg, id, CB_INSERTSTRING, item - 1, cast(LPARAM, pwszText))
-   RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, item - 1, 0)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ComboBoxUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, -1, 0)
-END FUNCTION
-' ========================================================================================
-
-
-' ########################################################################################
-'                                   *** LISTBOX ***
-' ########################################################################################
-
-' ========================================================================================
-PRIVATE FUNCTION ListBoxAdd (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, LB_ADDSTRING, 0, CAST(LPARAM, pwszText)) + 1
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ListBoxDelete (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, LB_DELETESTRING, item - 1, 0)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ListBoxFind (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
-   IF item <= 0 THEN RETURN 0
-   DIM start aS LONG = item
-   IF item = 1 THEN start = 2
-   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, LB_FINDSTRING, start - 2, CAST(LPARAM, pwszText))
-   IF item = 1 THEN RETURN res ELSE RETURN res + 1
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ListBoxFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
-   IF item <= 0 THEN RETURN 0
-   DIM start aS LONG = item
-   IF item = 1 THEN start = 2
-   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, LB_FINDSTRINGEXACT, start - 2, CAST(LPARAM, pwszText))
-   RETURN res + 1
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Gets the number of items in a list box.
-' ========================================================================================
-PRIVATE FUNCTION ListBoxGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, LB_GETCOUNT, 0, 0)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Gets the total number of selected items in a multiple-selection list box.
-' ========================================================================================
-PRIVATE FUNCTION ListBoxGetSelCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
-   RETURN SendDlgItemMessageW(hDlg, id, LB_GETSELCOUNT, 0, 0)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' The listbox is searched to find the first selected item. If the item parameter is included,
-' searching starts at that position to facilitate retrieving multiple selected items.
-' If item is omitted, the search starts at the first data item. The index number of the
-' selected item is returned as the result of the function. If no item is selected, the
-' value -1 is returned.
-' ========================================================================================
-PRIVATE FUNCTION ListBoxGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS LONG
-   DIM hCtl AS HWND = GetDlgItem(hDlg, id)
-   IF (GetWindowLongPtrW(hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
-      ' // Multiple-selection listbox
-      ' // Search for the first selected item starting from startIndex (zero-based)
-      DIM nCount AS LONG = SendMessageW(hCtl, LB_GETCOUNT, 0, 0)
-      IF item = 0 THEN item = 1
-      FOR selectedIndex AS LONG = item - 1 TO nCount - 1
-         IF SendMessageW(hCtl, LB_GETSEL, item, 0) <> 0 THEN
-            RETURN item + 1   ' one-based inxdes
-         END IF
-      NEXT
-      ' // If no item is selected, return 0
-      RETURN 0
-   ELSE
-      '// Single slection listbox
-      RETURN SendMessageW(hCtl, IIF((GetWindowLong(hCtl, GWL_STYLE) AND LBS_MULTIPLESEL), LB_GETCARETINDEX, LB_GETCURSEL), 0, 0) + 1
-   END IF
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Checks if the item is selected or not.
-' ========================================================================================
-PRIVATE FUNCTION ListBoxGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
-   RETURN SendDlgItemMessageW(hDlg, id, LB_GETSEL, item - 1, 0) > 0
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Gets a string from a list box.
-' ========================================================================================
-PRIVATE FUNCTION ListBoxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS DWSTRING
-   DIM nLen AS LONG, buffer AS DWSTRING
-   IF item = 0 THEN item = ListBoxGetSelect(hDlg, id, 0)
-   nLen = SendDlgItemMessageW(hDlg, id, LB_GETTEXTLEN, item - 1, 0)
-   SendDlgItemMessageW hDlg, id, LB_GETTEXT, item - 1, CAST(LPARAM, STRPTR(buffer))
-   RETURN LEFT(buffer, nLen)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' Removes all items from a list box.
-' ========================================================================================
-PRIVATE SUB ListBoxReset (BYVAL hDlg AS HWND, BYVAL id AS LONG)
-   SendDlgItemMessageW hDlg, id, LB_RESETCONTENT, 0, 0
-END SUB
-' ========================================================================================
-' ========================================================================================
-' * Selects the specified string in a list box.
-' ========================================================================================
-PRIVATE FUNCTION ListBoxSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL index AS LONG = 0) AS LONG
-   DIM hCtl AS HWND = GetDlgItem(hDlg, id)
-   IF (GetWindowLongPtrW(hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
-      ' // Multiple-selection listbox
-      IF index = 0 THEN RETURN SendMessageW(hCtl, LB_SETSEL, CTRUE, index) + 1
-      RETURN SendMessageW(hCtl, LB_SETSEL, CTRUE, index - 1) + 1
-   ELSE
-      '// Single slection listbox
-      IF index = 0 THEN RETURN SendMessageW(hCtl, LB_SETSEL, CTRUE, index) + 1
-      RETURN SendMessageW(hCtl, LB_SETCURSEL, index - 1, 0) + 1
-   END IF
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ListBoxSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
-   '// Delete the string
-   DIM lRes AS LONG = SendDlgItemMessageW(hDlg, id, LB_DELETESTRING, item - 1, 0)
-   IF lRes = LB_ERR THEN RETURN lRes
-   ' // Insert the new string
-   SendDlgItemMessageW(hDlg, id, LB_INSERTSTRING, item - 1, cast(LPARAM, pwszText))
-   IF item = LB_ERR OR item = LB_ERRSPACE THEN RETURN item
-   DIM hCtl AS HWND = GetDlgItem(hDlg, id)
-   RETURN SendMessageW(hCtl, IIF((GetWindowLongPtrW(hCtl, GWL_STYLE) AND LBS_MULTIPLESEL), LB_SETSEL, LB_SETCURSEL), item - 1, 0)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-' * Unselects the specified string in a multiple-selection list box.
-' ========================================================================================
-PRIVATE FUNCTION ListBoxUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS LONG
-   IF (GetWindowLongPtrW(GetDlgItem(hDlg, id), GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
-      ' // Multiple-selection listbox
-      RETURN SendDlgItemMessageW(hDlg, id, LB_SETSEL, FALSE, item - 1)
-   ELSE
-      ' // Single selection listbox
-      RETURN SendDlgItemMessageW(hDlg, id, LB_SETCURSEL, -1, 0)
-   END IF
-END FUNCTION
-' ========================================================================================
-
-'+++++++++++++++++
-
-
-' ########################################################################################
-'                                 *** ACCELERATORS ***
-' ########################################################################################
-
-' =====================================================================================
-' Gets the accelerator table handle
-' =====================================================================================
-PRIVATE FUNCTION AccelHandle (BYVAL hDlg AS HWND) AS HACCEL
-   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
-   IF pDlg THEN RETURN pDlg->AccelHandle
-END FUNCTION
-' =====================================================================================
-' =====================================================================================
-PRIVATE SUB AccelAttach (BYVAL hDlg AS HWND, BYVAL hAccel AS HACCEL)
-   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
-   IF pDlg THEN pDlg->AccelAttach(hAccel)
-END SUB
-' =====================================================================================
-' =====================================================================================
-' Adds an accelerator key to the table.
-' =====================================================================================
-PRIVATE SUB AddAccelerator OVERLOAD (BYVAL hDlg AS HWND, BYVAL fvirt AS UBYTE, BYVAL wKey AS WORD, BYVAL cmd AS WORD)
-   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
-   IF pDlg THEN pDlg->AddAccelerator(fvirt, wKey, cmd)
-END SUB
-' =====================================================================================
-' =====================================================================================
-PRIVATE SUB AddAccelerator OVERLOAD (BYVAL hDlg AS HWND, BYVAL fvirt AS UBYTE, BYREF wszKey AS WSTRING, BYVAL cmd AS WORD)
-   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
-   IF pDlg THEN pDlg->AddAccelerator(fvirt, wszKey, cmd)
-END SUB
-' =====================================================================================
-' =====================================================================================
-' Creates the accelerator table.
-' =====================================================================================
-PRIVATE FUNCTION CreateAccelTable (BYVAL hDlg AS HWND) AS HACCEL
-   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
-   IF pDlg THEN RETURN pDlg->CreateAccelTable
-END FUNCTION
-' =====================================================================================
-' =====================================================================================
-' Destroys the accelerator table.
-' =====================================================================================
-PRIVATE SUB DestroyAccelTable (BYVAL hDlg AS HWND)
-   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
-   IF pDlg THEN pDlg->DestroyAccelTable
-END SUB
-' =====================================================================================
 
 ' ########################################################################################
 '                              *** DPI AND CONVERSIONS ***
@@ -1523,7 +1237,7 @@ END FUNCTION
 ' ========================================================================================
 ' Scales a horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
-PRIVATE FUNCTION ScaleXForDpi (BYVAL hDlg AS HWND, BYVAL cx AS SINGLE) AS SINGLE
+PRIVATE FUNCTION ScaleForDpiX (BYVAL hDlg AS HWND, BYVAL cx AS SINGLE) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->ScaleX(cx)
 END FUNCTION
@@ -1531,7 +1245,7 @@ END FUNCTION
 ' ========================================================================================
 ' Scales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
-PRIVATE FUNCTION ScaleYForDpi (BYVAL hDlg AS HWND, BYVAL cy AS SINGLE) AS SINGLE
+PRIVATE FUNCTION ScaleForDpiY (BYVAL hDlg AS HWND, BYVAL cy AS SINGLE) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->ScaleY(cy)
 END FUNCTION
@@ -1540,7 +1254,7 @@ END FUNCTION
 ' ========================================================================================
 ' Unscales a horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
-PRIVATE FUNCTION UnScaleXForDpi (BYVAL hDlg AS HWND, BYVAL cx AS SINGLE) AS SINGLE
+PRIVATE FUNCTION UnScaleForDpiX (BYVAL hDlg AS HWND, BYVAL cx AS SINGLE) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->UnScaleX(cx)
 END FUNCTION
@@ -1548,7 +1262,7 @@ END FUNCTION
 ' ========================================================================================
 ' Unscales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
 ' ========================================================================================
-PRIVATE FUNCTION UnScaleYForDpi (BYVAL hDlg AS HWND, BYVAL cy AS SINGLE) AS SINGLE
+PRIVATE FUNCTION UnScaleForDpiY (BYVAL hDlg AS HWND, BYVAL cy AS SINGLE) AS SINGLE
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->UnScaleY(cy)
 END FUNCTION
@@ -1695,6 +1409,1162 @@ PRIVATE FUNCTION PixToDluRY (BYVAL hDlg AS HWND) AS SINGLE
    RETURN 8.0 / rc.bottom
 END FUNCTION
 ' ========================================================================================
+
+' ########################################################################################
+'                                 *** COMBOBOX ***
+' ########################################################################################
+
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxAdd (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_ADDSTRING, 0, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxDelete (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_DELETESTRING, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxFind (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start AS LONG = item
+   IF item = 1 THEN start = 2
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, CB_FINDSTRING, start - 2, CAST(LPARAM, pwszText))
+   IF item = 1 THEN RETURN res ELSE RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start aS LONG = item
+   IF item = 1 THEN start = 2
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, CB_FINDSTRINGEXACT, start - 2, CAST(LPARAM, pwszText))
+   RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_GETCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxGetSelCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   DIM item AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
+   IF item <> CB_ERR THEN RETURN 1 ELSE RETURN 0
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0) + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
+   DIM selItem AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
+   IF selItem + 1 = item THEN RETURN TRUE ELSE RETURN FALSE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS DWSTRING
+   DIM ItemText AS DWSTRING
+   DIM cbLen AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETLBTEXTLEN, item - 1, 0)
+   IF cbLen < 1 THEN
+      DIM selItem AS LONG = SendDlgItemMessageW(hDlg, id, CB_GETCURSEL, 0, 0)
+      IF selItem >= 0 THEN
+         cbLen = SendDlgItemMessageW(hDlg, id, CB_GETLBTEXTLEN, selItem, 0)
+         itemText = WSPACE(cbLen + 1)
+         SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, selItem, cast(LPARAM, STRPTR(itemText)))
+      END IF
+   ELSE
+      itemText = WSPACE(cbLen + 1)
+      SendDlgItemMessageW(hDlg, id, CB_GETLBTEXT, item - 1, cast(LPARAM, STRPTR(itemText)))
+   END IF
+   RETURN LEFT(itemText, cbLen)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxInsert (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item < 1 THEN RETURN CB_ERR
+   RETURN SendDlgItemMessageW(hDlg, id, CB_INSERTSTRING, item - 1, CAST(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE SUB ComboBoxReset (BYVAL hDlg AS HWND, BYVAL id AS LONG)
+   SendDlgItemMessageW hDlg, id, CB_RESETCONTENT, 0, 0
+END SUB
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, item - 1, 0) + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+   SendDlgItemMessageW(hDlg, id, CB_DELETESTRING, item - 1, 0)
+   SendDlgItemMessageW(hDlg, id, CB_INSERTSTRING, item - 1, cast(LPARAM, pwszText))
+   RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, CB_SETCURSEL, -1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' COMBOBOX GET USER hDlg, id&, item& TO datav&
+' Each item in a COMBOBOX may have a long integer user value associated with it at the
+' discretion of the programmer. This user value is retrieved with ComboBoxBoxGetUser.
+' The numeric value item specifies which user value is requested, 1 for the first item,
+' 2 for the second item, etc. ComboBox user values are assigned with the ComboBoxSetUser function.
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxBoxGetUser (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LPARAM
+   DIM value AS LPARAM
+   RETURN SendDlgItemMessageW(hDlg, id, CB_GETITEMDATA, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ComboBoxSetUser (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL value AS LPARAM) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, CB_SETITEMDATA, item - 1, value)
+END FUNCTION
+' ========================================================================================
+
+
+' ########################################################################################
+'                                   *** LISTBOX ***
+' ########################################################################################
+
+' ========================================================================================
+PRIVATE FUNCTION ListBoxAdd (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LB_ADDSTRING, 0, CAST(LPARAM, pwszText)) + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListBoxDelete (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LB_DELETESTRING, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListBoxFind (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start AS LONG = item
+   IF item = 1 THEN start = 2
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, LB_FINDSTRING, start - 2, CAST(LPARAM, pwszText))
+   IF item = 1 THEN RETURN res ELSE RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListBoxFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start aS LONG = item
+   IF item = 1 THEN start = 2
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, LB_FINDSTRINGEXACT, start - 2, CAST(LPARAM, pwszText))
+   RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets the number of items in a list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LB_GETCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets the total number of selected items in a multiple-selection list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetSelCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LB_GETSELCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' The listbox is searched to find the first selected item. If the item parameter is included,
+' searching starts at that position to facilitate retrieving multiple selected items.
+' If item is omitted, the search starts at the first data item. The index number of the
+' selected item is returned as the result of the function. If no item is selected, the
+' value -1 is returned.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS LONG
+   DIM hCtl AS HWND = GetDlgItem(hDlg, id)
+   IF (GetWindowLongPtrW(hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      ' // Search for the first selected item starting from startIndex (zero-based)
+      DIM nCount AS LONG = SendMessageW(hCtl, LB_GETCOUNT, 0, 0)
+      IF item = 0 THEN item = 1
+      FOR selectedIndex AS LONG = item - 1 TO nCount - 1
+         IF SendMessageW(hCtl, LB_GETSEL, item, 0) <> 0 THEN
+            RETURN item + 1   ' one-based inxdes
+         END IF
+      NEXT
+      ' // If no item is selected, return 0
+      RETURN 0
+   ELSE
+      '// Single slection listbox
+      RETURN SendMessageW(hCtl, IIF((GetWindowLong(hCtl, GWL_STYLE) AND LBS_MULTIPLESEL), LB_GETCARETINDEX, LB_GETCURSEL), 0, 0) + 1
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Checks if the item is selected or not.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LB_GETSEL, item - 1, 0) > 0
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets a string from a list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS DWSTRING
+   DIM nLen AS LONG, buffer AS DWSTRING
+   IF item = 0 THEN item = ListBoxGetSelect(hDlg, id, 0)
+   nLen = SendDlgItemMessageW(hDlg, id, LB_GETTEXTLEN, item - 1, 0)
+   SendDlgItemMessageW hDlg, id, LB_GETTEXT, item - 1, CAST(LPARAM, STRPTR(buffer))
+   RETURN LEFT(buffer, nLen)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Removes all items from a list box.
+' ========================================================================================
+PRIVATE SUB ListBoxReset (BYVAL hDlg AS HWND, BYVAL id AS LONG)
+   SendDlgItemMessageW hDlg, id, LB_RESETCONTENT, 0, 0
+END SUB
+' ========================================================================================
+' ========================================================================================
+' * Selects the specified string in a list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL index AS LONG = 0) AS LONG
+   DIM hCtl AS HWND = GetDlgItem(hDlg, id)
+   IF (GetWindowLongPtrW(hCtl, GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      IF index = 0 THEN RETURN SendMessageW(hCtl, LB_SETSEL, CTRUE, index) + 1
+      RETURN SendMessageW(hCtl, LB_SETSEL, CTRUE, index - 1) + 1
+   ELSE
+      '// Single slection listbox
+      IF index = 0 THEN RETURN SendMessageW(hCtl, LB_SETSEL, CTRUE, index) + 1
+      RETURN SendMessageW(hCtl, LB_SETCURSEL, index - 1, 0) + 1
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListBoxSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+   '// Delete the string
+   DIM lRes AS LONG = SendDlgItemMessageW(hDlg, id, LB_DELETESTRING, item - 1, 0)
+   IF lRes = LB_ERR THEN RETURN lRes
+   ' // Insert the new string
+   SendDlgItemMessageW(hDlg, id, LB_INSERTSTRING, item - 1, cast(LPARAM, pwszText))
+   IF item = LB_ERR OR item = LB_ERRSPACE THEN RETURN item
+   DIM hCtl AS HWND = GetDlgItem(hDlg, id)
+   RETURN SendMessageW(hCtl, IIF((GetWindowLongPtrW(hCtl, GWL_STYLE) AND LBS_MULTIPLESEL), LB_SETSEL, LB_SETCURSEL), item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Unselects the specified string in a multiple-selection list box.
+' ========================================================================================
+PRIVATE FUNCTION ListBoxUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG = 0) AS LONG
+   IF (GetWindowLongPtrW(GetDlgItem(hDlg, id), GWL_STYLE) AND LBS_EXTENDEDSEL) = LBS_EXTENDEDSEL THEN
+      ' // Multiple-selection listbox
+      RETURN SendDlgItemMessageW(hDlg, id, LB_SETSEL, FALSE, item - 1)
+   ELSE
+      ' // Single selection listbox
+      RETURN SendDlgItemMessageW(hDlg, id, LB_SETCURSEL, -1, 0)
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' LISTBOX GET USER hDlg, id&, item& TO datav&
+' Each item in a ListBox may have a long integer user value associated with it at the
+' discretion of the programmer. This user value is retrieved with ListBoxGetUser.The numeric
+' value item specifies which user value is requested, 1 for the first item, 2 for the second
+' item, etc. ListBox user values are assigned with the ListBoxSetUser function. 
+' ========================================================================================
+PRIVATE FUNCTION ListBoxGetUser (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LPARAM
+   DIM value AS LPARAM
+   RETURN SendDlgItemMessageW(hDlg, id, LB_GETITEMDATA, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListBoxSetUser (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL value AS LPARAM) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LB_SETITEMDATA, item - 1, value)
+END FUNCTION
+' ========================================================================================
+
+
+' ########################################################################################
+'                                   *** LISTVIEW ***
+' ########################################################################################
+
+' ========================================================================================
+' * Removes a column from a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewDeleteColumn (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL iCol AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_DELETECOLUMN, iCol, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Removes an item from a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewDeleteItem (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_DELETEITEM, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Searches for a list-view item with the specified partial text.
+' ========================================================================================
+PRIVATE FUNCTION ListViewFind (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start AS LONG = item
+   IF item = 1 THEN start = 0
+   DIM lvf AS LVFINDINFOW
+   lvf.flags = LVFI_STRING OR LVFI_PARTIAL
+   lvf.psz = pwszText
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, LVM_FINDITEMW, start - 1, CAST(LPARAM, @lvf))
+   RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Searches for a list-view item with the specified text.
+' ========================================================================================
+PRIVATE FUNCTION ListViewFindExact (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   IF item <= 0 THEN RETURN 0
+   DIM start AS LONG = item
+   IF item = 1 THEN start = 0
+   DIM lvf AS LVFINDINFOW
+   lvf.flags = LVFI_STRING
+   lvf.psz = pwszText
+   DIM res AS LONG = SendDlgItemMessageW(hDlg, id, LVM_FINDITEMW, start - 1, CAST(LPARAM, @lvf))
+   RETURN res + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Adjusts the width of the specified column to fir the width of the data items displayed in that column.
+' ========================================================================================
+PRIVATE FUNCTION ListViewFitContent (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL col AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETCOLUMNWIDTH, col - 1, LVSCW_AUTOSIZE)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Automatically sizes the column to fit the header text. If you use this value with the
+' last column, its width is set to fill the remaining width of the list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewFitHeader (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL col AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETCOLUMNWIDTH, col - 1, LVSCW_AUTOSIZE_USEHEADER)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets the width of a list-view control's column.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetColumn (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL col AS LONG) AS LONG
+   DIM lvCol AS LVCOLUMN
+   lvCol.mask = LVCF_WIDTH
+   IF SendDlgItemMessageW(hDlg, id, LVM_GETCOLUMN, col, CAST(LPARAM, @lvCol)) = FALSE THEN RETURN FALSE
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN
+      IF pDlg->UsesPixels = FALSE THEN RETURN lvCol.cx * PixToDluRX(hDlg)
+   END IF
+   RETURN lvCol.cx
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Gets the number of items in a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_GETITEMCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Gets the display mode of a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetMode (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS DWORD
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_GETVIEW, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Determines the number of selected items in a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetSelCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS UINT
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_GETSELECTEDCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' The LISTVIEW is interrogated to determine the next primary data item which is currently selected.
+' Should have been caled GetNextSelectedItem.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LONG
+    Return SendDlgItemMessageW(hDlg, id, LVM_GETNEXTITEM, item - 1, LVNI_SELECTED) + 1
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Assigns an image list to a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewSetImageList (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL himl AS HIMAGELIST, BYVAL nImageList AS LONG) AS HIMAGELIST
+   RETURN CAST(HIMAGELIST, SendDlgItemMessageW(hDlg, id, LVM_SETIMAGELIST, nImageList, CAST(LPARAM, himl)))
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' * Checks if a item is selected.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL col AS LONG) AS BOOLEAN
+   DIM lvi As LVITEMW
+   lvi.mask = LVIF_STATE
+   lvi.stateMask = LVIS_SELECTED
+   lvi.iItem = item - 1 ' Convert to zero-based index
+   lvi.iSubItem = col - 1 ' Convert to zero-based index
+   IF SendDlgItemMessageW(hDlg, id, LVM_GETITEM, 0, cast(LPARAM, @lvi)) = FALSE THEN RETURN FALSE
+   RETURN (lvi.state AND LVIS_SELECTED) = LVIS_SELECTED
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Gets the extended styles that are currently in use for a given list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetStyleXX (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS DWORD
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_GETEXTENDEDLISTVIEWSTYLE, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Get the text of the specified iten.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL col AS LONG) AS DWSTRING
+   DIM dwsText AS DWSTRING
+   dwsText = WSPACE(MAX_PATH + 1)
+   DIM lvi AS LVITEMW
+   lvi.mask = LVIF_TEXT
+   lvi.iItem = item - 1
+   lvi.iSubItem = col - 1
+   lvi.cchTextMax = MAX_PATH
+   lvi.pszText = STRPTR(dwsText)
+   DIM cbLen AS LONG = SendDlgItemMessageW(hDlg, id, LVM_GETITEMTEXTW, 0, cast(LPARAM, @lvi))
+   RETURN LEFT(dwsText, cbLen)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Inserts a new column in a list-view control. Same as AddColumn.
+' ========================================================================================
+PRIVATE FUNCTION ListViewInsertColumn (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL col AS LONG, _
+BYVAL pwszText AS WSTRING PTR, BYVAL nWidth AS LONG, BYVAL nFormat AS LONG = LVCFMT_LEFT) AS LONG
+   DIM lvc AS LVCOLUMNW
+   lvc.mask = LVCF_FMT OR LVCF_WIDTH OR LVCF_TEXT OR LVCF_SUBITEM
+   lvc.fmt = nFormat
+   lvc.pszText = pwszText
+   lvc.cx = nWidth
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_INSERTCOLUMNW, col, CAST(LPARAM, @lvc))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Inserts a new item in a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewInsertItem (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL image AS LONG, BYVAL pwszText AS WSTRING PTR) AS LONG
+   DIM lvi AS LVITEMW
+   lvi.mask = LVIF_TEXT
+   lvi.pszText = pwszText
+   lvi.iItem = item
+   lvi.iImage = image
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_INSERTITEMW, item, cast(LPARAM, @lvi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Removes all items from a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewReset (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_DELETEALLITEMS, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' The string data item specified by item&/col& is chosen as selected text for the LISTVIEW
+' control and the item is highlighted. 
+' ========================================================================================
+PRIVATE FUNCTION ListViewSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL Item AS LONG, BYVAL col AS LONG = 1) AS BOOLEAN
+   DIM lvi AS LVITEM
+   lvi.stateMask = LVIF_STATE
+   lvi.state = LVIS_SELECTED
+   lvi.stateMask = LVIS_SELECTED
+   lvi.state = LVIS_SELECTED
+   lvi.iItem = Item - 1 ' Convert to zero-based index
+   lvi.iSubItem = col - 1 ' Convert to zero-based index
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETITEMSTATE, item -1, cast(LPARAM, @lvi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Used to change the width of a column in report view or the width of all columns in list-view mode.
+' ========================================================================================
+PRIVATE FUNCTION ListViewSetColumn (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL col AS LONG, BYVAL nWidth AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETCOLUMNWIDTH, col - 1, MAKELONG(nWidth, 0))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the header text of the specified column.
+' ========================================================================================
+PRIVATE FUNCTION ListViewSetHeader (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL col AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+   DIM lvCol AS LVCOLUMNW
+   lvCol.mask = LVCF_TEXT
+   lvCol.pszText = pwszText
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETCOLUMNW, col - 1, cast(LPARAM, @lvCol))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' The image specified by NumExpr (1=first, 2=second, etc.) is displayed next to the item
+' specified by item. If no IMAGELIST is attached to the LISTVIEW, nothing is displayed.
+' ========================================================================================
+PRIVATE FUNCTION ListViewSetImage (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL imageIndex AS LONG) AS BOOLEAN
+   DIM lvi AS LVITEMW
+   lvi.mask = LVIF_IMAGE
+   lvi.iItem = item - 1 ' Convert to zero-based index
+   lvi.iImage = imageIndex - 1 ' Convert to zero-based index
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETITEMW, 0, cast(LPARAM, @lvi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' The image specified by statusImageIndex (1=first, 2=second, etc.) is displayed as a
+' secondary "status" image next to the primary image. If statusImageIndex evaluates to zero,
+' no secondary image is displayed. A secondary image is usually used to specify item status,
+' with an image such as a check mark. Secondary images are generally not displayed in either
+' of the icon modes. If no Status Image List is attached to the LISTVIEW (using the
+'LISTVIEW IMAGELIST statement), nothing is displayed. A maximum of 15 status images are
+' supported, so statusImageIndex must evaluate in the range of 1-15.
+' Note: We don't need to substract 1 to statusImageIndex because LVIS_STATEIMAGEMASK
+' uses a bit-shifted index (index << 12), where:
+' 0 means no image.
+' 1 represents the first image in the status ImageList.
+' 2 represents the second image, and so on.
+' Unlike regular iImage values (which are zero-based), state images use a one-based index.
+' Therefore, you do NOT need to subtract 1, because 0 is reserved for "no image."
+' ========================================================================================
+PRIVATE FUNCTION ListViewSetImage2 (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL statusImageIndex AS LONG) AS BOOLEAN
+   DIM lvi AS LVITEMW
+   lvi.mask = LVIF_STATE
+   lvi.iItem = item - 1 ' Convert to zero-based index
+   lvi.stateMask = LVIS_STATEIMAGEMASK
+   lvi.state = (statusImageIndex Shl 12) ' Apply bit-shifted image index
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETITEMW, 0, cast(LPARAM, @lvi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the display mode of a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewSetMode (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL nMode AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETVIEW, nMode, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' The overlay image specified by NumExpr (1=first, 2=second, etc.) is displayed on top of
+' the image specified by item&.  If NumExpr evaluates to zero, or if no IMAGELIST is attached
+' to the LISTVIEW, no overlay is displayed.
+' ========================================================================================
+PRIVATE FUNCTION ListViewSetOverlay (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL overlayIndex AS LONG) AS LONG
+   DIM lvi AS LVITEMW
+   lvi.mask = LVIF_STATE
+   lvi.iItem = item - 1 ' Convert to zero-based index
+   lvi.stateMask = LVIS_OVERLAYMASK
+   lvi.state = overlayIndex Shl 8 ' Apply bit-shifted overlay index
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETVIEW, 0, cast(LPARAM, @lvi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets extended styles for list-view controls
+' ========================================================================================
+PRIVATE SUB ListViewSetStyleXX (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL dwExStyle AS DWORD)
+   SendDlgItemMessageW hDlg, id, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, dwExStyle
+END SUB
+' ========================================================================================
+' ========================================================================================
+' Changes the text of a list-view item or subitem.
+' ========================================================================================
+PRIVATE SUB ListViewSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL col AS LONG, BYVAL pwszText AS WSTRING PTR)
+   DIM lvi AS LVITEMW
+   lvi.iSubItem = col
+   lvi.pszText = pwszText
+   SendDlgItemMessageW hDlg, id, LVM_SETITEMTEXTW, item, cast(LPARAM, @lvi)
+END SUB
+' ========================================================================================
+' ========================================================================================
+' Unselects an item or all items in a ListView.
+' To unselect all items pass item = 0.
+' ========================================================================================
+PRIVATE FUNCTION ListViewUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL col AS LONG = 1) AS BOOLEAN
+   DIM lvi AS LVITEM
+   lvi.mask = LVIF_STATE
+   lvi.stateMask = LVIS_SELECTED
+   lvi.state = 0   ' Unselect the item
+   lvi.iItem = item - 1 ' Convert to zero-based index
+   lvi.iSubItem = col - 1 ' Convert to zero-based index
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETITEMSTATE, item - 1, cast(LPARAM, @lvi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Ensures that a list-view item is either entirely visible, scrolling the
+' list-view control if necessary.
+' ========================================================================================
+PRIVATE FUNCTION ListViewVisible (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_ENSUREVISIBLE, item - 1, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Each row in a ListView may have a long integer user value associated with it at the
+' discretion of the programmer. This user value is retrieved with ListViewGetUser. The
+' numeric value item specifies which user value is requested, 1 for the first row, 2 for
+' the second row, etc.  The returned user value is assigned to the long integer variable
+' specified by datav&. ListView user values are assigned with the ListViewSetUser statement.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetUser (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG) AS LPARAM
+   DIM lvi AS LVITEMW
+   lvi.mask = LVIF_PARAM ' Retrieve only the user-defined value
+   lvi.iItem = item - 1 ' Convert to zero-based index
+   SendDlgItemMessageW(hDlg, id, LVM_GETITEMW, 0, Cast(LPARAM, @lvi))
+   RETURN lvi.lParam
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ListViewSetUser (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL value AS LPARAM) AS BOOLEAN
+   DIM lvi AS LVITEMW
+   lvi.mask = LVIF_PARAM ' Retrieve only the user-defined value
+   lvi.iItem = item - 1 ' Convert to zero-based index
+   lvi.lParam = value
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETITEMW, 0, cast(LPARAM, @lvi))
+END FUNCTION
+' ========================================================================================
+
+' *** ListView header functions ***
+' ========================================================================================
+' * Gets the handle to the header control used by a list-view control.
+' Should have been called ListViewGetHeaderText.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetHeader (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL col AS LONG) AS DWSTRING
+   IF col < 1 THEN RETURN ""
+   DIM wszText AS WSTRING * MAX_PATH + 1
+   DIM hHeader AS HWND = cast(HWND, SendDlgItemMessageW(hDlg, id, LVM_GETHEADER, 0, 0))
+   IF hHeader = NULL THEN RETURN ""
+   DIM hdi AS HDITEMW
+   hdi.mask = HDI_TEXT
+   hdi.cchTextMax = MAX_PATH
+   hdi.pszText = @wszText
+   SendMessageW(hHeader, HDM_GETITEMW, col - 1, cast(LPARAM, @hdi))
+   RETURN wszText
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' * Gets the handle to the header control used by a list-view control.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetHeaderHWND (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS HWND
+   RETURN cast(HWND, SendDlgItemMessageW(hDlg, id, LVM_GETHEADER, 0, 0))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets the identifiers of the header control of the listview.
+' ========================================================================================
+PRIVATE FUNCTION ListViewGetHeaderID (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL idx AS LONG) AS LONG
+   DIM hHeader AS HWND, hdi AS HDITEMW
+   hHeader = cast(HWND, SendDlgItemMessageW(hDlg, id, LVM_GETHEADER, 0, 0))
+   IF hHeader = NULL THEN RETURN 0
+   hdi.mask = HDI_LPARAM   ' Request the identifier (lParam)
+   IF SendDlgItemMessageW(hDlg, id, HDM_GETITEM, idx, cast(LPARAM, @hdi)) THEN RETURN hdi.lParam
+END FUNCTION
+' ========================================================================================
+
+' *** Additional Header functions ***
+' ========================================================================================
+' Retrieves the count of the items in a header control.
+' ========================================================================================
+PRIVATE FUNCTION HeaderGetCount (BYVAL hHeader AS HWND, BYVAL id AS LONG) AS LONG
+    RETURN SendDlgItemMessageW(hHeader, id, HDM_GETITEMCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves an HD_ITEMW structure which describes an item in a Header Control. Index& defines
+' the item to be retrieved (1=first, 2=second, etc.). ItemPtr is the address of an HD_ITEMW
+' structure to be filled.
+' ========================================================================================
+PRIVATE FUNCTION HeaderGetItem (BYVAL hHeader AS HWND, BYVAL id AS LONG, BYVAL index AS LONG, BYVAL itemPtr AS HD_ITEMW PTR) AS BOOLEAN
+   IF itemPtr = NULL THEN RETURN FALSE
+   itemPtr->mask = HDI_TEXT OR HDI_FORMAT OR HDI_WIDTH ' Specify what to retrieve
+   RETURN SendDlgItemMessageW(hHeader, id, HDM_GETITEMW, index - 1, cast(LPARAM, itemPtr))
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' A window message specified by Msg& is sent to the HEADER control, along with message
+' dependent parameters (if any). 
+' ========================================================================================
+PRIVATE FUNCTION HeaderSend (BYVAL hHeader AS HWND, BYVAL id AS LONG, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD, BYVAL lParam AS LPARAM) AS INT_PTR
+   RETURN SendDlgItemMessageW(hHeader, id, uMsg, wParam, lParam)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the attributes of the specified item in a Header Control. Index defines the item to
+' be set (1=first, 2=second, etc.). ItemPtr is the address of an HD_ITEMW structure which
+' defines the attributes.
+' ========================================================================================
+PRIVATE FUNCTION HeaderSetItem (BYVAL hHeader AS HWND, BYVAL id AS LONG, BYVAL index AS LONG, BYVAL itemPtr AS HDITEMW PTR) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hHeader, id, HDM_SETITEMW, index - 1, cast(LPARAM, itemPtr))
+END FUNCTION
+' ========================================================================================
+
+
+' ########################################################################################
+'                                   *** TREEVIEW ***
+' ########################################################################################
+
+' ========================================================================================
+' Removes an item and all its children from a treeview control.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewDelete (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_DELETEITEM, 0, CAST(LPARAM, hItem))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Returns TRUE if the bold attribute is set, or FALSE otherwise.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetBold (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS BOOLEAN
+   DIM dwState AS DWORD = SendDlgItemMessageW(hDlg, id, TVM_GETITEMSTATE, cast(WPARAM, hItem), TVIS_BOLD)
+   RETURN (dwState AND TVIS_BOLD) = TVIS_BOLD
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Returns TRUE if the item is checked, or FALSE otherwise.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetCheck (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS BOOLEAN
+   DIM dwState AS DWORD = SendDlgItemMessageW(hDlg, id, TVM_GETITEMSTATE, cast(WPARAM, hItem), cast(LPARAM, TVIS_STATEIMAGEMASK)) SHR 12
+   RETURN (dwState = 1)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves the first child item of the specified treeview item.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetChild (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS HTREEITEM
+   RETURN cast(HTREEITEM, SendDlgItemMessageW(hDlg, id, TVM_GETNEXTITEM, TVGN_CHILD, cast(LPARAM, hItem)))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves a count of the items in a treeview control.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS UINT
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_GETCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Checks if the data item is expanded.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetExpanded (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS BOOLEAN
+   DIM dwState AS UINT = SendDlgItemMessageW(hDlg, id, TVM_GETITEMSTATE, cast(WPARAM, hItem), TVIS_EXPANDED)
+   IF (dwState AND TVIS_EXPANDED) = TVIS_EXPANDED THEN RETURN TRUE
+   RETURN FALSE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves the next sibling item of a specified item in a treeview control.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetNext (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS HTREEITEM
+   RETURN CAST(HTREEITEM, SendDlgItemMessageW(hDlg, id, TVM_GETNEXTITEM, TVGN_NEXT, CAST(LPARAM, hItem)))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves the parent item of the specified treeview item.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetParent (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS HTREEITEM
+   RETURN CAST(HTREEITEM, SendDlgItemMessageW(hDlg, id, TVM_GETNEXTITEM, TVGN_PARENT, CAST(LPARAM, hItem)))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetPrevious (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS HTREEITEM
+   RETURN CAST(HTREEITEM, SendDlgItemMessageW(hDlg, id, TVM_GETNEXTITEM, TVGN_PREVIOUS, CAST(LPARAM, hItem)))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves the topmost or very first item of the treeview control.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetRoot (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS HTREEITEM
+   RETURN CAST(HTREEITEM, SendDlgItemMessageW(hDlg, id, TVM_GETNEXTITEM, TVGN_ROOT, NULL))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves the currently selected item in a treeview control.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS HTREEITEM
+   RETURN CAST(HTREEITEM, SendDlgItemMessageW(hDlg, id, TVM_GETNEXTITEM, TVGN_CARET, NULL))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Gets the text of the specified item.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS DWSTRING
+   DIM tvi As TVITEMW
+   DIM textBuffer AS WSTRING * MAX_PATH
+   tvi.mask = TVIF_TEXT
+   tvi.pszText = @textBuffer
+   tvi.cchTextMax = MAX_PATH
+   tvi.hItem = hItem
+   SendDlgItemMessageW(hDlg, id, TVM_GETITEMW, 0, cast(LPARAM, @tvi))
+   RETURN textBuffer
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Each item in a Treeview may have a long integer user value associated with it at the
+' discretion of the programmer. This user value is assigned with TreeViewSetUser and retrieved
+' with TreeViewGetUser. The parameter hItem specifies the handle of the user item to be accessed.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewGetUser (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS LPARAM
+   DIM tvi As TVITEMW
+   tvi.mask = TVIF_PARAM   ' Retrieve only the user-defined value
+   tvi.hItem = hItem
+   SendDlgItemMessageW(hDlg, id, TVM_GETITEMW, 0, cast(LPARAM, @tvi))
+   RETURN tvi.lParam   ' Return the user value
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION TreeViewSetUser (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM, BYVAL value AS LPARAM) AS BOOLEAN
+   DIM tvi As TVITEMW
+   tvi.mask = TVIF_PARAM   ' Retrieve only the user-defined value
+   tvi.hItem = hItem
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_SETITEMW, 0, cast(LPARAM, @tvi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Inserts a new item in a treeview control.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewInsert (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hParent AS HTREEITEM, BYVAL hInsertAfter AS HTREEITEM, _
+BYVAL iImage AS LONG = 0, BYVAL iSelectedImage AS LONG = 0, BYVAL pwszText AS WSTRING PTR) AS HTREEITEM
+   DIM tvinsert AS TVINSERTSTRUCTW
+   tvinsert.hParent             = hParent
+   tvinsert.hInsertAfter        = hInsertAfter
+   tvinsert.Item.mask           = TVIF_TEXT OR TVIF_IMAGE OR TVIF_SELECTEDIMAGE
+   tvinsert.Item.iImage         = iImage
+   tvinsert.Item.iSelectedImage = iSelectedImage
+   tvinsert.Item.lParam         = 0
+   tvinsert.Item.pszText        = pwszText
+   IF pwszText <> LPSTR_TEXTCALLBACK THEN
+      tvinsert.Item.cchTextMax  = LEN(*pwszText)
+   END IF
+   RETURN CAST(HTREEITEM, SendDlgItemMessageW(hDlg, id, TVM_INSERTITEMW, 0, cast(LPARAM, @tvinsert)))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Deletes all items from a treeview control.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewReset (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_DELETEITEM, 0, cast(LPARAM, TVI_ROOT))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Selects the specified treeview item, scrolls the item into view, or redraws the item in
+' the style used to indicate the target of a drag-and-drop operation.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_SELECTITEM, TVGN_CARET, CAST(LPARAM, hItem))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Unselects all items.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewUnSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_SELECTITEM, 0, NULL)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets/unsets the bold attribute of the specified item.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewSetBold (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM, BYVAL flag AS BOOLEAN) AS BOOLEAN
+   DIM tvi AS TVITEMW
+   tvi.mask = TVIF_STATE ' Specify that we're modifying the state
+   tvi.hItem = hItem
+   tvi.stateMask = TVIS_BOLD ' Mask for bold state
+   IF flag THEN tvi.state = TVIS_BOLD
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_SETITEMW, 0, cast(LPARAM, @tvi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the item's state image to "checked" or "unchecked."
+' ========================================================================================
+PRIVATE FUNCTION TreeViewSetCheck (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM, BYVAL flag AS BOOLEAN) AS BOOLEAN
+   DIM tvi As TVITEMW
+   tvi.mask = TVIF_STATE ' Specify that we're modifying the state
+   tvi.hItem = hItem
+   tvi.stateMask = TVIS_STATEIMAGEMASK ' Mask for checkbox state
+   IF flag THEN tvi.state = (2 SHL 12) ELSE tvi.state = (1 SHL 12)
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_SETITEMW, 0, cast(LPARAM, @tvi))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' The expanded attribute for the data item specified by hItem is set based upon the value
+' of the flag& parameter.  If flag& is true (non-zero), it is displayed in expanded format,
+' with its child items visible.  If flag& is false (zero), it is displayed in collapsed format.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewSetExpanded (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM, BYVAL flag AS BOOLEAN) AS BOOLEAN
+   DIM expandFlag AS LONG
+   IF flag THEN expandFlag = TVE_EXPAND ELSE expandFlag = TVE_COLLAPSE
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_EXPAND, expandFlag, cast(LPARAM, hItem))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the normal or state image list for a treeview control and redraws the control
+' using the new images. The tree-view control will not destroy the image list specified
+' with this message. Your application must destroy the image list when it is no longer needed.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewSetImageList (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL himl AS HIMAGELIST, BYVAL iImage AS LONG) AS HIMAGELIST
+   RETURN cast(HIMAGELIST, SendDlgItemMessageW(hDlg, id, TVM_SETIMAGELIST, iImage, cast(LPARAM, himl)))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the text of the specified item.
+' ========================================================================================
+PRIVATE FUNCTION TreeViewSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+   DIM tvi AS TVITEMW
+   tvi.hitem = hItem
+   tvi.mask = TVIF_TEXT
+   tvi.psztext = pwszText
+   tvi.cchtextmax = LEN(*pwszText)
+   RETURN SendDlgItemMessageW(hDlg, id, TVM_SETITEMW, 0, cast(LPARAM, @tvi))
+END FUNCTION
+' ========================================================================================
+
+
+' ########################################################################################
+'                                 *** PROGRESS BAR ***
+' ########################################################################################
+
+' ========================================================================================
+' Retrieves the current position of the progress bar.
+' ========================================================================================
+PRIVATE FUNCTION ProgressBarGetPos (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS UINT
+   RETURN SendDlgItemMessageW(hDlg, id, PBM_GETPOS, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves the current range of a given progress bar control.
+' ========================================================================================
+PRIVATE FUNCTION ProgressBarGetRange (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS PBRANGE
+   DIM pbr AS PBRANGE
+   SendDlgItemMessageW(hDlg, id, PBM_GETRANGE, 0, cast(LPARAM, @pbr))
+   RETURN pbr
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the current position for a progress bar and redraws the bar to reflect the new position.
+' - nNewPos: Signed integer that becomes the new position.
+' Returns the previous position.
+' ========================================================================================
+PRIVATE FUNCTION ProgressBarSetPos (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL newPos AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, PBM_SETPOS, newPos, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the current position for a progress bar and redraws the bar to reflect the new position.
+' The minimum range value must not be negative. By default, the minimum value is zero.
+' The maximum range value must be greater than the minimum range value. By default, the
+' maximum range value is 100.
+' Returns the previous range values if successful, or zero otherwise. The LOWORD specifies
+' the previous minimum value, and the HIWORD specifies the previous maximum value.
+' ========================================================================================
+PRIVATE FUNCTION ProgressBarSetRange (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL minRange AS WORD, BYVAL maxRange AS WORD) AS DWORD
+   RETURN SendDlgItemMessageW(hDlg, id, PBM_SETRANGE, 0, MAKELONG(minRange, maxRange))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Specifies the step increment for a progress bar. The step increment is the amount by
+' which the progress bar increases its current position whenever it receives a PBM_STEPIT
+' message. By default, the step increment is set to 10.
+' Return value: Returns the previous step increment.
+' ========================================================================================
+PRIVATE FUNCTION ProgressBarSetStep (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL stepInc AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, PBM_SETSTEP, stepInc, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Advances the current position for a progress bar by the step increment and redraws the
+' bar to reflect the new position. An application sets the step increment by sending the
+' PBM_SETSTEP message. Return value: Returns the previous position.
+' Remarks: When the position exceeds the maximum range value, this message resets the
+' current position so that the progress indicator starts over again from the beginning.
+' ========================================================================================
+PRIVATE FUNCTION ProgressBarStep (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS LONG
+   RETURN SendDlgItemMessageW(hDlg, id, PBM_STEPIT, 0, 0)
+END FUNCTION
+' ========================================================================================
+
+
+' ########################################################################################
+'                                      *** TOOLBAR ***
+' ########################################################################################
+
+' ========================================================================================
+' Adds or inserts a button to a toolbar.
+' Returns TRUE if successful, or FALSE otherwise.
+' ========================================================================================
+PRIVATE FUNCTION ToolBarAddButton (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL image AS LONG, BYVAL cmd AS LONG, _
+BYVAL style AS UBYTE, BYVAL pwszText AS WSTRING PTR, BYVAL item AS LONG = 0) AS BOOLEAN
+   DIM fsState AS UBYTE = TBSTATE_ENABLED
+   DIM idxString AS INT_PTR
+   IF pwszText <> NULL THEN idxString = IIF(LEN(*pwszText) = 0, -1, CAST(INT_PTR, pwszText))
+#ifdef __FB_64BIT__
+   DIM tbb AS TBBUTTON = (image - 1, cmd, fsState, style, {0, 0, 0, 0, 0, 0}, 0, idxString)
+#else
+   DIM tbb AS TBBUTTON = (image - 1, cmd, fsState, style, {0, 0}, 0, idxString)
+#endif
+   IF item = 0 THEN
+      RETURN SendDlgItemMessageW(hDlg, id, TB_ADDBUTTONSW, 1, CAST(LPARAM, @tbb))
+   ELSE
+      RETURN SendDlgItemMessageW(hDlg, id, TB_INSERTBUTTONW, item - 1, CAST(LPARAM, @tbb))
+   END IF
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Inserts a separator in a toolbar.
+' Returns TRUE if successful, or FALSE otherwise.
+' ========================================================================================
+PRIVATE FUNCTION ToolBarAddSeparator (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL size AS LONG, _
+   BYVAL cmd AS LONG = 0, BYVAL item AS LONG) AS BOOLEAN
+#ifdef __FB_64BIT__
+   DIM tbb AS TBBUTTON = (size, cmd, TBSTATE_ENABLED, BTNS_SEP, {0, 0, 0, 0, 0, 0}, 0, -1)
+#else
+   DIM tbb AS TBBUTTON = (size, cmd, TBSTATE_ENABLED, BTNS_SEP, {0, 0}, 0, -1)
+#endif
+   DIM message as LONG
+   IF item = 0 THEN
+      message = TB_ADDBUTTONSW   ' Append separator at the end
+   ELSE
+      message = TB_INSERTBUTTONW   ' Insert separator at a specified position
+      item -= 1
+   END IF
+   RETURN SendDlgItemMessageW(hDlg, id, message, 1, cast(LPARAM, @tbb))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Deletes a button from the toolbar.
+' Returns TRUE if successful, or FALSE otherwise.
+' ========================================================================================
+PRIVATE FUNCTION ToolBarDeleteButton (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL byCmd AS BOOLEAN = FALSE) AS BOOLEAN
+   DIM res AS LONG
+   IF byCmd THEN
+      ' Find the button by command ID
+      DIM tbb AS TBBUTTON
+      DIM count AS LONG = SendDlgItemMessageW(hDlg, id, TB_BUTTONCOUNT, 0, 0)
+      FOR i AS LONG = 0 TO count - 1
+         IF SendDlgItemMessageW(hDlg, id, TB_GETBUTTON, i, cast(LPARAM, @tbb)) <> 0 THEN
+            IF tbb.idCommand = item THEN
+               res = SendDlgItemMessageW(hDlg, id, TB_DELETEBUTTON, i, 0)
+               EXIT FOR
+            END IF
+         END IF
+      NEXT
+   ELSE
+      ' Delete by position (adjusting for PowerBasic's one-based indexing)
+      res = SendDlgItemMessageW(hDlg, id, TB_DELETEBUTTON, item - 1, 0)
+   END IF
+   RETURN res
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' PowerBasic uses the less explicit GetCount instead of GetButtonCount.
+' ========================================================================================
+PRIVATE FUNCTION ToolBarGetCount (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS DWORD
+   RETURN SendDlgItemMessageW(hDlg, id, TB_BUTTONCOUNT, 0, 0)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Retrieves information about the state of the specified button in a toolbar, such as
+' whether it is enabled, pressed, or checked.
+' ========================================================================================
+PRIVATE FUNCTION ToolBarGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL byCmd AS BOOLEAN = FALSE) AS LONG
+   DIM state AS LONG
+   IF byCmd THEN
+      ' Find the button by command ID
+      DIM tbb AS TBBUTTON
+      DIM count AS LONG = SendDlgItemMessageW(hDlg, id, TB_BUTTONCOUNT, 0, 0)
+      FOR i AS LONG = 0 TO count - 1
+         IF SendDlgItemMessageW(hDlg, id, TB_GETBUTTON, i, cast(LPARAM, @tbb)) <> 0 THEN
+            IF tbb.idCommand = item THEN
+               state = SendDlgItemMessageW(hDlg, id, TB_GETSTATE, tbb.idCommand, 0)
+               EXIT FOR
+            END IF
+         END IF
+      NEXT
+   ELSE
+      ' Retrieve state by position (adjusting for PowerBasic's one-based indexing)
+      state = SendDlgItemMessageW(hDLg, id, TB_GETSTATE, item - 1, 0)
+   END IF
+   RETURN state
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the image list that the toolbar will use to display buttons that are in their
+' default state. Returns the handle to the image list previously used to display buttons
+' in their default state, or NULL if no image list was previously set.
+' ========================================================================================
+PRIVATE FUNCTION ToolBarSetImageList (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL himlNew AS HIMAGELIST) AS HIMAGELIST
+   FUNCTION = cast(HIMAGELIST, SendDlgItemMessageW(hDlg, id, TB_SETIMAGELIST, 0, cast(LPARAM, himlNew)))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the state for the specified button in a toolbar.
+' Returns TRUE if successful, or FALSE otherwise.
+' ========================================================================================
+PRIVATE FUNCTION ToolBarSetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL state AS LONG, BYVAL byCmd AS BOOLEAN = FALSE) AS BOOLEAN
+   DIM res AS LONG
+   IF byCmd THEN
+      ' Find the button by command ID
+      DIM tbb AS TBBUTTON
+      DIM count AS LONG = SendDlgItemMessageW(hDlg, id, TB_BUTTONCOUNT, 0, 0)
+      FOR i AS LONG = 0 TO count - 1
+         IF SendDlgItemMessageW(hDlg, id, TB_GETBUTTON, i, cast(LPARAM, @tbb)) <> 0 THEN
+            IF tbb.idCommand = item THEN
+               res = SendDlgItemMessageW(hDlg, id, TB_SETSTATE, tbb.idCommand, state)
+               EXIT FOR
+            END IF
+         END IF
+      NEXT
+   ELSE
+      ' Set state by position (adjusting for PowerBasic's one-based indexing)
+      res = SendDlgItemMessageW(hDLg, id, TB_SETSTATE, item - 1, state)
+   END IF
+   RETURN res
+END FUNCTION
+' ========================================================================================
+
+
+' ########################################################################################
+'                                 *** ACCELERATORS ***
+' ########################################################################################
+
+' =====================================================================================
+' Gets the accelerator table handle
+' =====================================================================================
+PRIVATE FUNCTION AccelHandle (BYVAL hDlg AS HWND) AS HACCEL
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN RETURN pDlg->AccelHandle
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+PRIVATE SUB AccelAttach (BYVAL hDlg AS HWND, BYVAL hAccel AS HACCEL)
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN pDlg->AccelAttach(hAccel)
+END SUB
+' =====================================================================================
+' =====================================================================================
+' Adds an accelerator key to the table.
+' =====================================================================================
+PRIVATE SUB AddAccelerator OVERLOAD (BYVAL hDlg AS HWND, BYVAL fvirt AS UBYTE, BYVAL wKey AS WORD, BYVAL cmd AS WORD)
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN pDlg->AddAccelerator(fvirt, wKey, cmd)
+END SUB
+' =====================================================================================
+' =====================================================================================
+PRIVATE SUB AddAccelerator OVERLOAD (BYVAL hDlg AS HWND, BYVAL fvirt AS UBYTE, BYREF wszKey AS WSTRING, BYVAL cmd AS WORD)
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN pDlg->AddAccelerator(fvirt, wszKey, cmd)
+END SUB
+' =====================================================================================
+' =====================================================================================
+' Creates the accelerator table.
+' =====================================================================================
+PRIVATE FUNCTION CreateAccelTable (BYVAL hDlg AS HWND) AS HACCEL
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN RETURN pDlg->CreateAccelTable
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Destroys the accelerator table.
+' =====================================================================================
+PRIVATE SUB DestroyAccelTable (BYVAL hDlg AS HWND)
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN pDlg->DestroyAccelTable
+END SUB
+' =====================================================================================
 
 END NAMESPACE
 

@@ -2518,6 +2518,64 @@ END FUNCTION
 
 
 ' ########################################################################################
+'                                    *** STATUSBAR ***
+' ########################################################################################
+
+' ========================================================================================
+' Sets the number of parts in a status window and the coordinate of the right edge of each part.
+' - numParts: Number of parts to set (cannot be greater than 256).
+' - [...] [=widths]: A variable number or arguments; each argument specifies the position, 
+'   in client coordinates, of the right edge of the corresponding part. If an element is -1,
+'   the right edge of the corresponding part extends to the border of the window.
+' Returns TRUE if successful, or FALSE otherwise.
+' ========================================================================================
+PRIVATE FUNCTION StatusBarSetParts CDECL (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL numParts AS DWORD, ...) AS BOOLEAN
+   DIM Parts(numParts - 1) AS LONG
+   DIM args AS cva_list
+   cva_start(args, numParts)
+   ' Convert sizes into absolute positions
+   FOR i AS LONG = 0 TO numParts - 1
+      DIM size AS LONG = cva_arg(args, LONG)
+      IF size > 0 THEN ScaleForDpiX(hDlg, size)
+      IF i = 0 Then
+         Parts(i) = size
+      ELSE
+         IF size < 1 THEN
+            Parts(i) = -1 ' Extend to right border
+         ELSE
+            Parts(i) = Parts(i - 1) + size
+         END IF
+      END IF
+   NEXT
+   cva_end(args)
+   RETURN SendDlgItemMessageW(hDlg, id, SB_SETPARTS, numParts, cast(LPARAM, @Parts(0)))
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the text in the specified part of a status window.
+' - nPart: The one-based index of the part to set. If it is set to SB_SIMPLEID, the status
+'   window is assumed to be a simple mode status bar; that is, a status bar with only one part.
+' - pwszText: Pointer to a null-terminated string that specifies the text to set. If nPart is
+'   SBT_OWNERDRAW, this parameter represents 32 bits of data. The parent window must interpret
+'   the data and draw the text when it receives the WM_DRAWITEM message.
+' - uType:
+'   0	: The text is drawn with a border to appear lower than the plane of the window.
+'   SBT_NOBORDERS    : The text is drawn without borders.
+'   SBT_OWNERDRAW    : The text is drawn by the parent window.
+'                      Note  A simple mode status bar does not support owner drawing.
+'   SBT_POPOUT       : The text is drawn with a border to appear higher than the plane of the window.
+'   SBT_RTLREADING   : The text will be displayed in the opposite direction to the text in the parent window.
+'   SBT_NOTABPARSING : Tab characters are ignored.
+' Returns TRUE if successful, or FALSE otherwise.
+' ========================================================================================
+PRIVATE FUNCTION StatusBarSetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL style AS LONG, BYVAL pwszText AS WSTRING PTR) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, SB_SETTEXTW, cast(WPARAM, (item - 1) OR style), cast(LPARAM, pwszText))
+END FUNCTION
+' ========================================================================================
+
+
+' ########################################################################################
 '                                 *** ACCELERATORS ***
 ' ########################################################################################
 
@@ -2565,6 +2623,171 @@ PRIVATE SUB DestroyAccelTable (BYVAL hDlg AS HWND)
    IF pDlg THEN pDlg->DestroyAccelTable
 END SUB
 ' =====================================================================================
+
+
+' ########################################################################################
+'                                  *** IMAGE LISTS ***
+' ########################################################################################
+
+' =====================================================================================
+' Creates a new image list.
+' =====================================================================================
+PRIVATE FUNCTION ImageListNewBitmap (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG, BYVAL depth AS LONG, BYVAL initial AS LONG) AS HIMAGELIST
+   DIM flags AS LONG = ILC_COLOR
+   ' Set color depth
+   SELECT CASE depth
+     CASE  4: flags = ILC_COLOR4
+     CASE  8: flags = ILC_COLOR8
+     CASE 16: flags = ILC_COLOR16
+     CASE 24: flags = ILC_COLOR24
+     CASE 32: flags = ILC_COLOR32
+   END SELECT
+   ' Create the ImageList
+   RETURN ImageList_Create(nWidth, nHeight, flags, initial, 0)
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+PRIVATE FUNCTION ImageListNewIcon (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG, BYVAL depth AS LONG, BYVAL initial AS LONG) AS HIMAGELIST
+   DIM flags AS LONG = ILC_COLOR
+   ' Set color depth
+   SELECT CASE depth
+     CASE  4: flags = ILC_COLOR4
+     CASE  8: flags = ILC_COLOR8
+     CASE 16: flags = ILC_COLOR16
+     CASE 24: flags = ILC_COLOR24
+     CASE 32: flags = ILC_COLOR32
+   END SELECT
+   ' Enable transparency support
+   flags = flags OR ILC_MASK
+   ' Create the ImageList
+   RETURN ImageList_Create(nWidth, nHeight, flags, initial, 0)
+END FUNCTION
+' =====================================================================================
+
+' =====================================================================================
+' Adds an image or images to an image list.
+' =====================================================================================
+PRIVATE FUNCTION ImageListAddBitmap OVERLOAD (BYVAL hLst AS HIMAGELIST, BYVAL hBmp AS HBITMAP, BYVAL hMsk AS HBITMAP = NULL) AS LONG
+   IF hLst = NULL THEN RETURN 0
+   DIM index AS LONG = ImageList_Add(hLst, hBmp, hMsk)
+   ' Convert API return value (-1 for failure) to PowerBasic-style (0 for failure)
+   IF index = -1 THEN index = 0
+   RETURN index
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+PRIVATE FUNCTION ImageListAddBitmap OVERLOAD (BYVAL hLst As HIMAGELIST, BYREF bmpName AS WSTRING, BYREF mskName AS WSTRING = "") AS LONG
+   IF hLst = NULL THEN RETURN 0
+   DIM hBmp As HBITMAP
+   DIM hMsk As HBITMAP
+   DIM index As Long
+   ' Determine if bmpName is a resource or file
+   IF LEFT(bmpName, 1) = "#" THEN
+      ' Load from resource
+      hBmp = LoadImageW(GetModuleHandle(NULL), @bmpName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION)
+   ELSEIF INSTR(bmpName, ".") THEN
+      ' Load from file
+      hBmp = LoadImageW(NULL, @bmpName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE OR LR_CREATEDIBSECTION)
+   ELSE
+      hBmp = LoadImageW(GetModuleHandle(NULL), @bmpName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION)
+   END IF
+   IF hBmp = NULL THEN RETURN 0
+   ' Load mask if provided
+   IF mskName <> "" THEN
+      IF LEFT(mskName, 1) = "#" THEN
+         hMsk = LoadImageW(GetModuleHandle(NULL), @mskName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION)
+      ELSEIF INSTR(mskName, ".") THEN
+         ' Load from file
+         hBmp = LoadImageW(NULL, @mskName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE OR LR_CREATEDIBSECTION)
+      ELSE
+         hMsk = LoadImageW(GetModuleHandle(NULL), @mskName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION)
+      END IF
+   END IF
+   ' Add bitmap to ImageList
+   index = ImageList_Add(hLst, hBmp, hMsk)
+   ' Convert API return value (-1 for failure) to PowerBasic-style (0 for failure)
+   If index = -1 Then index = 0
+   ' Cleanup loaded bitmaps
+   DeleteObject(hBmp)
+   IF hMsk Then DeleteObject(hMsk)
+   RETURN index
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Adds an icon an image list.
+' =====================================================================================
+PRIVATE FUNCTION ImageListAddIcon OVERLOAD (BYVAL hLst AS HIMAGELIST, BYVAL hIcon AS HICON) AS LONG
+   IF hLst = NULL OR hIcon = NULL THEN RETURN 0
+   DIM index AS LONG = ImageList_AddIcon(hLst, hIcon)
+   ' Convert API return value (-1 for failure) to PowerBasic-style (0 for failure)
+   IF index = -1 THEN index = 0
+   RETURN index
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+PRIVATE FUNCTION ImageListAddIcon OVERLOAD (BYVAL hLst AS HIMAGELIST, BYREF icnName AS WSTRING) AS LONG
+   IF hLst = NULL THEN RETURN 0
+   DIM hIcon AS HICON
+   DIM index AS LONG
+   ' Determine if icnName is a resource or file
+   IF LEFT(icnName, 1) = "#" THEN
+      ' Load from resource
+      hIcon = LoadImageW(GetModuleHandle(NULL), icnName, IMAGE_ICON, 0, 0, LR_SHARED)
+   ELSEIF INSTR(icnName, ".") THEN
+      ' Load from file
+      hIcon = LoadImageW(NULL, icnName, IMAGE_ICON, 0, 0, LR_LOADFROMFILE OR LR_SHARED)
+   ELSE
+      hIcon = LoadImageW(GetModuleHandle(NULL), icnName, IMAGE_ICON, 0, 0, LR_SHARED)
+   END IF
+   ' Validate icon handle
+   IF hIcon = NULL THEN RETURN 0
+   ' Add icon to ImageList
+   index = ImageList_AddIcon(hLst, hIcon)
+   ' Convert API return value (-1 for failure) to PowerBasic-style (0 for failure)
+   IF index = -1 THEN index = 0
+    ' Cleanup loaded icon
+   DestroyIcon(hIcon)
+   RETURN index
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Adds an image or images to an image list, generating a mask from the specified bitmap.
+' =====================================================================================
+PRIVATE FUNCTION ImageListAddMasked (BYVAL hLst AS HIMAGELIST, BYVAL hBmp AS HBITMAP, BYVAL rgbColor AS COLORREF) AS LONG
+   IF hLst = NULL OR hBmp = NULL THEN RETURN 0
+   DIM index AS LONG = ImageList_AddMasked(hLst, hBmp, rgbColor)
+   ' Convert API return value (-1 for failure) to PowerBasic-style (0 for failure)
+   IF index = -1 THEN index = 0
+   RETURN index
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Retrieves the number of images in an image list.
+' =====================================================================================
+PRIVATE FUNCTION ImageListGetCount (BYVAL hLst AS HIMAGELIST) AS LONG
+   IF hLst = NULL THEN RETURN 0
+   RETURN ImageList_GetImageCount(hLst)
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Destroys an image list.
+' =====================================================================================
+PRIVATE FUNCTION ImageListKill (BYVAL hLst AS HIMAGELIST) AS BOOLEAN
+   IF hLst = NULL THEN RETURN FALSE
+   RETURN ImageList_Destroy(hLst)
+END FUNCTION
+' =====================================================================================
+' =====================================================================================
+' Adds a specified image to the list of images to be used as overlay masks. An image list
+' can have up to four overlay masks in version 4.70 and earlier and up to 15 in version 4.71.
+' The function assigns an overlay mask index to the specified image.
+' =====================================================================================
+PRIVATE FUNCTION ImageListSetOverlay (BYVAL hLst AS HIMAGELIST, BYVAL image AS LONG, BYVAL overlay AS LONG) AS BOOLEAN
+   IF hLst = NULL THEN RETURN FALSE
+   RETURN ImageList_SetOverlayImage(hLst, image, overlay)
+END FUNCTION
+' =====================================================================================
+
 
 END NAMESPACE
 

@@ -1157,22 +1157,6 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
-' Sets the colors of the control
-' ========================================================================================
-PRIVATE FUNCTION ControlSetColor OVERLOAD (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
-   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
-   IF pDlg THEN RETURN pDlg->ControlSetColor(cID, foreColor, backColor)
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
-PRIVATE FUNCTION ControlSetColor OVERLOAD (BYVAL hCtl AS HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
-   DIM pDlg AS CDialog PTR = GetCDialogPtr(AfxGetFormHandle(hCtl))
-print  pDlg; "-------------------------"
-   IF pDlg THEN RETURN pDlg->ControlSetColor(hCtl, foreColor, backColor)
-END FUNCTION
-' ========================================================================================
-
-' ========================================================================================
 ' Sets the background color of the dialog
 ' ========================================================================================
 PRIVATE FUNCTION DialogSetColor (BYVAL hDlg AS HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
@@ -1211,6 +1195,40 @@ END SUB
 PRIVATE FUNCTION IsDialogRepaintDisabledOnResize (BYVAL hDlg AS HWND) AS BOOLEAN
    DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
    IF pDlg THEN RETURN pDlg->IsDialogRepaintDisabledOnResize
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the colors of the control
+' ========================================================================================
+PRIVATE FUNCTION ControlSetColor OVERLOAD (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN RETURN pDlg->ControlSetColor(cID, foreColor, backColor)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ControlSetColor OVERLOAD (BYVAL hCtl AS HWND, BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(AfxGetFormHandle(hCtl))
+   IF pDlg THEN RETURN pDlg->ControlSetColor(hCtl, foreColor, backColor)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Gets the control's user data
+' ========================================================================================
+PRIVATE FUNCTION ControlGetUser (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL index AS LONG) AS LONG_PTR
+   IF index < 0 or index > 9 THEN RETURN 0
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN RETURN pDlg->ControlGetUser(cID, index)
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the control's user data
+' ========================================================================================
+PRIVATE FUNCTION ControlSetUser (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL index AS LONG, BYVAL userValue AS LONG_PTR) AS BOOLEAN
+   IF index < 0 or index > 9 THEN RETURN FALSE
+   DIM pDlg AS CDialog PTR = GetCDialogPtr(hDlg)
+   IF pDlg THEN RETURN pDlg->ControlSetUser(cID, index, userValue)
 END FUNCTION
 ' ========================================================================================
 

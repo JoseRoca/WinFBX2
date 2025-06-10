@@ -74,25 +74,25 @@ USING Afx2
 NAMESPACE Afx2
 
 ' // Layout manager - Anchor flags
-ENUM ANCHORPOINT
-   ANCHOR_NONE =  0
-   ANCHOR_WIDTH
-   ANCHOR_RIGHT
-   ANCHOR_CENTER_HORZ
-   ANCHOR_HEIGHT
-   ANCHOR_HEIGHT_WIDTH
-   ANCHOR_HEIGHT_RIGHT
-   ANCHOR_BOTTOM
-   ANCHOR_BOTTOM_WIDTH
-   ANCHOR_BOTTOM_RIGHT
-   ANCHOR_CENTER_HORZ_BOTTOM
-   ANCHOR_CENTER_VERT
-   ANCHOR_CENTER_VERT_RIGHT
-   ANCHOR_CENTER
+ENUM AFX_ANCHORPOINT
+   AFX_ANCHOR_NONE =  0
+   AFX_ANCHOR_WIDTH
+   AFX_ANCHOR_RIGHT
+   AFX_ANCHOR_CENTER_HORZ
+   AFX_ANCHOR_HEIGHT
+   AFX_ANCHOR_HEIGHT_WIDTH
+   AFX_ANCHOR_HEIGHT_RIGHT
+   AFX_ANCHOR_BOTTOM
+   AFX_ANCHOR_BOTTOM_WIDTH
+   AFX_ANCHOR_BOTTOM_RIGHT
+   AFX_ANCHOR_CENTER_HORZ_BOTTOM
+   AFX_ANCHOR_CENTER_VERT
+   AFX_ANCHOR_CENTER_VERT_RIGHT
+   AFX_ANCHOR_CENTER
 END ENUM
 
 ' // Layout manager - Anchor properties
-TYPE ANCHORPROPERTY
+TYPE AFX_ANCHORPROPERTY
    hwndCtl AS HWND
    anchor  AS LONG
    rc      AS RECT
@@ -101,10 +101,16 @@ TYPE ANCHORPROPERTY
 END TYPE
 
 ' // Dialog and control colors
-TYPE DLGCOLORS
+TYPE AFX_DLGCOLORS
    hwnd AS ..HWND
    foreColor AS COLORREF
    backColor AS COLORREF
+END TYPE
+
+' // Controls user data
+TYPE AFX_CTLUSERDATA
+   hCtl AS HWND
+   Values (0 TO 9) AS LONG_PTR
 END TYPE
 
 ' ========================================================================================
@@ -135,12 +141,14 @@ Private:
    m_hDefPushButton AS HWND                     ' // Handle of the default push button
    DIM m_rgUserData(0 TO 99) AS LONG_PTR        ' // User data
    ' // Layout manager
-   DIM m_rgProps(ANY) AS ANCHORPROPERTY         ' // Array of anchor property structures
+   DIM m_rgProps(ANY) AS AFX_ANCHORPROPERTY     ' // Array of anchor property structures
    ' // Dialog and controls colors
-   DIM m_rgColors(ANY) AS DLGCOLORS             ' // Array of colors structures
+   DIM m_rgColors(ANY) AS AFX_DLGCOLORS         ' // Array of colors structures
    ' // Accelerator table
    m_hAccel AS HACCEL                           ' // Accelerator table handle
    DIM m_rgAccelEntries(ANY) AS ACCEL           ' // Table of accelerator keys
+   ' // Controls user data
+   DIM m_rgCtrlUserData(ANY) AS AFX_CTLUSERDATA
    ' // Scrollable dialogs
    m_IsDialogScrollable AS BOOLEAN              ' // Dialog scrollable -True of False
    m_OrigClientRect AS RECT                     ' // Coordinates of the dialog's original client area
@@ -266,6 +274,9 @@ Public:
    DECLARE FUNCTION ControlGetCheck (BYVAL cId AS LONG) AS LONG
    DECLARE SUB ControlSetCheck (BYVAL cId AS LONG, BYVAL checkState AS LONG)
    DECLARE FUNCTION ControlSetOption (BYVAL cId AS LONG, BYVAL minId AS LONG, BYVAL maxId AS LONG) AS BOOLEAN
+   DECLARE FUNCTION GetUserDataItem (BYVAL cid AS LONG) AS LONG
+   DECLARE FUNCTION ControlSetUser (BYVAL cid AS LONG, BYVAL index AS LONG, BYVAL userValue AS LONG_PTR) AS BOOLEAN
+   DECLARE FUNCTION ControlGetUser (BYVAL cid AS LONG, BYVAL index AS LONG) AS LONG_PTR
 
    ' // Colors
    DECLARE FUNCTION DialogSetColor (BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
@@ -653,7 +664,7 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
       CASE "LISTVIEW", "SYSLISTVIEW32"
          ' Adds a list view control to the window.
          wsClassName = "SysListView32"
-         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_CLIPCHILDREN OR WS_TABSTOP OR LVS_REPORT OR LVS_SHOWSELALWAYS OR LVS_SHAREIMAGELISTS OR LVS_AUTOARRANGE OR LVS_EDITLABELS OR LVS_ALIGNTOP
+         IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR WS_TABSTOP OR LVS_REPORT OR LVS_SHOWSELALWAYS OR LVS_SHAREIMAGELISTS OR LVS_AUTOARRANGE OR LVS_EDITLABELS OR LVS_ALIGNTOP
          IF dwExStyle = -1 THEN dwExStyle = WS_EX_CLIENTEDGE
       CASE "TOOLBAR", "TOOLBARWINDOW32"
          ' Adds a toolbar control to the window.
@@ -2912,7 +2923,7 @@ PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hwndCtl AS HWND, BYVAL nAnchorMode
    DIM nItem AS LONG = this.GetAnchorItem(hwndCtl)
    ' // If it does not exist, make room for it
    IF nItem = -1 THEN
-      REDIM PRESERVE m_rgProps(UBOUND(m_rgProps) + 1) AS ANCHORPROPERTY
+      REDIM PRESERVE m_rgProps(UBOUND(m_rgProps) + 1) AS AFX_ANCHORPROPERTY
       nItem = UBOUND(m_rgProps)
    END IF
    m_rgProps(nItem).hwndCtl = hwndCtl
@@ -2926,7 +2937,7 @@ PRIVATE FUNCTION CDialog.ControlAnchor (BYVAL hwndCtl AS HWND, BYVAL nAnchorMode
    ' // Get the client coordinates of the parent window
    DIm rcParent AS RECT
    .GetClientRect(GetParent(hwndCtl), @rcParent)
-   m_rgProps(nItem).anchor    = MIN(MAX(nAnchorMode, ANCHOR_NONE), ANCHOR_CENTER)
+   m_rgProps(nItem).anchor    = MIN(MAX(nAnchorMode, AFX_ANCHOR_NONE), AFX_ANCHOR_CENTER)
    m_rgProps(nItem).rc.Left   = pt.x
    m_rgProps(nItem).rc.Top    = pt.y
    m_rgProps(nItem).rc.Right  = rcParent.Right - (rcCtl.Right - rcCtl.Left + pt.x)
@@ -2958,79 +2969,79 @@ PRIVATE FUNCTION CDialog.LayoutEnumChildProc (BYVAL hwndChild AS HWND, BYVAL lPa
    DIM pDlg AS CDialog PTR = CAST(CDialog PTR, lParam)
    DIM nItem AS LONG = pDlg->GetAnchorItem(hwndChild)
    IF nItem > -1 THEN
-      IF pDlg->m_rgProps(nItem).anchor > ANCHOR_NONE THEN
+      IF pDlg->m_rgProps(nItem).anchor > AFX_ANCHOR_NONE THEN
          GetWindowRect(hwndChild, @rcChild)
          nWidth = rcChild.Right - rcChild.Left
          nHeight = rcChild.Bottom - rcChild.Top
          GetClientRect(GetParent(hwndChild), @rcParent)
          x = 0: y = 0: xWidth = 0: yHeight = 0
          SELECT CASE pDlg->m_rgProps(nItem).anchor
-            CASE ANCHOR_NONE
+            CASE AFX_ANCHOR_NONE
                x = pDlg->m_rgProps(nItem).rc.Left
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
                yHeight = nHeight
-            CASE ANCHOR_WIDTH
+            CASE AFX_ANCHOR_WIDTH
                x = pDlg->m_rgProps(nItem).rc.Left
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
                yHeight = nHeight
-            CASE ANCHOR_RIGHT
+            CASE AFX_ANCHOR_RIGHT
                x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = nWidth
                yHeight = nHeight
-            CASE ANCHOR_CENTER_HORZ
+            CASE AFX_ANCHOR_CENTER_HORZ
                x = (rcParent.Right \ 2) + pDlg->m_rgProps(nItem).centerX
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = nWidth
                yHeight = nHeight
-            CASE ANCHOR_HEIGHT
+            CASE AFX_ANCHOR_HEIGHT
                x = pDlg->m_rgProps(nItem).rc.Left
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = nWidth
                yHeight = MAX(rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Top - pDlg->m_rgProps(nItem).rc.Bottom, 0)
-            CASE ANCHOR_HEIGHT_WIDTH
+            CASE AFX_ANCHOR_HEIGHT_WIDTH
                x = pDlg->m_rgProps(nItem).rc.Left
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
                yHeight = MAX(rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Top - pDlg->m_rgProps(nItem).rc.Bottom, 0)
-            CASE ANCHOR_HEIGHT_RIGHT
+            CASE AFX_ANCHOR_HEIGHT_RIGHT
                x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
                y = pDlg->m_rgProps(nItem).rc.Top
                xWidth = nWidth
                yHeight = MAX(rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Top - pDlg->m_rgProps(nItem).rc.Bottom, 0)
-            CASE ANCHOR_BOTTOM
+            CASE AFX_ANCHOR_BOTTOM
                x = pDlg->m_rgProps(nItem).rc.Left
                y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
                xWidth = nWidth
                yHeight = nHeight
-            CASE ANCHOR_BOTTOM_WIDTH
+            CASE AFX_ANCHOR_BOTTOM_WIDTH
                x = pDlg->m_rgProps(nItem).rc.Left
                y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
                xWidth = MAX(rcParent.Right - pDlg->m_rgProps(nItem).rc.Left - pDlg->m_rgProps(nItem).rc.Right, 0)
                yHeight = nHeight
-            CASE ANCHOR_BOTTOM_RIGHT
+            CASE AFX_ANCHOR_BOTTOM_RIGHT
                x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
                y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
                xWidth = nWidth
                yHeight = nHeight
-            CASE ANCHOR_CENTER_HORZ_BOTTOM
+            CASE AFX_ANCHOR_CENTER_HORZ_BOTTOM
                x = (rcParent.Right \ 2) + pDlg->m_rgProps(nItem).centerX
                y = rcParent.Bottom - pDlg->m_rgProps(nItem).rc.Bottom - nHeight
                xWidth = nWidth
                yHeight = nHeight
-            CASE ANCHOR_CENTER_VERT
+            CASE AFX_ANCHOR_CENTER_VERT
                x = pDlg->m_rgProps(nItem).rc.Left
                y = (rcParent.Bottom - nHeight) \ 2
                xWidth = nWidth
                yHeight = nHeight
-            CASE ANCHOR_CENTER_VERT_RIGHT
+            CASE AFX_ANCHOR_CENTER_VERT_RIGHT
                x = rcParent.Right - nWidth - pDlg->m_rgProps(nItem).rc.Right
                y = (rcParent.Bottom - nHeight) \ 2
                xWidth = nWidth
                yHeight = nHeight
-            CASE ANCHOR_CENTER
+            CASE AFX_ANCHOR_CENTER
                x = (rcParent.Right \ 2) + pDlg->m_rgProps(nItem).centerX
                y = (rcParent.Bottom \ 2) + pDlg->m_rgProps(nItem).centerY
                xWidth = nWidth
@@ -3080,7 +3091,7 @@ PRIVATE FUNCTION CDialog.ControlSetColor (BYVAL hwnd AS ..HWND, BYVAL foreColor 
    DIM nItem AS LONG = this.GetColorItem(hwnd)
    ' // If it does not exist, make room for it
    IF nItem = -1 THEN
-      REDIM PRESERVE m_rgColors(UBOUND(m_rgColors) + 1) AS DLGCOLORS
+      REDIM PRESERVE m_rgColors(UBOUND(m_rgColors) + 1) AS AFX_DLGCOLORS
       nItem = UBOUND(m_rgColors)
    END IF
    m_rgColors(nItem).hwnd = hwnd
@@ -3138,6 +3149,51 @@ END FUNCTION
 ' ========================================================================================
 
 ' ########################################################################################
+
+' ========================================================================================
+' Gets the control user data item
+' Return Value: The array index on success, or -1 on failure.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.GetUserDataItem (BYVAL cID AS LONG) AS LONG
+   FUNCTION = -1
+   Dim hCtl AS HWND = GetDlgItem(m_hDlg, cID)
+   FOR i AS LONG = 0 TO UBOUND(m_rgCtrlUserData)
+      IF m_rgCtrlUserData(i).hCtl = hCtl THEN FUNCTION = i : EXIT FOR
+   NEXT
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the control's user data
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlSetUser (BYVAL cID AS LONG, BYVAL index AS LONG, BYVAL userValue AS LONG_PTR) AS BOOLEAN
+   IF index < 0 OR index > 9 THEN RETURN FALSE
+   DIM hCtl AS HWND = GetDlgItem(m_hDlg, CID)
+   IF IsWindow(hCtl) = FALSE THEN RETURN FALSE
+   ' // Check if the element already exists
+   DIM nItem AS LONG = this.GetUserDataItem(cID)
+   ' // If it does not exist, make room for it
+   IF nItem = -1 THEN
+      REDIM PRESERVE m_rgCtrlUserData(UBOUND(m_rgCtrlUserData) + 1) AS AFX_CTLUSERDATA
+      nItem = UBOUND(m_rgCtrlUserData)
+   END IF
+   m_rgCtrlUserData(nItem).hCtl = hCtl
+   m_rgCtrlUserData(nItem).Values(index) = userValue
+   RETURN TRUE
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Sets the colors of the control
+' ========================================================================================
+PRIVATE FUNCTION CDialog.ControlGetUser (BYVAL cID AS LONG, BYVAL index AS LONG) AS LONG_PTR
+   IF index < 0 OR index > 9 THEN RETURN FALSE
+   DIM hCtl AS HWND = GetDlgItem(m_hDlg, cID)
+   DIM nItem AS LONG = this.GetUserDataItem(cID)
+print niTem, index
+   IF nItem > -1 THEN RETURN m_rgCtrlUserData(nItem).Values(index)
+END FUNCTION
+' ========================================================================================
+
 
 ' ########################################################################################
 '                           *** KEYBOARD ACCELERATORS ***

@@ -1008,15 +1008,14 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, 
    DIM sTemplate AS STRING = this.DialogTemplate("", wszTitle, x, y, cx * m_rx, cy * m_ry, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
-   IF m_hDlg THEN
-'      SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
-      this.DialogSetClient(cx, cy)
-      IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
-      IF (dwStyle AND DS_CENTER) = DS_CENTER THEN
-         this.DialogCenter   ' // Center the dialog
-      ELSEIF x = -1 AND y = -1 THEN
-         this.DialogCenter   ' // Center the dialog
-      END IF
+   IF m_hDlg = NULL THEN RETURN NULL
+'   SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
+   this.DialogSetClient(cx, cy)
+   IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
+   IF (dwStyle AND DS_CENTER) = DS_CENTER THEN
+      this.DialogCenter   ' // Center the dialog
+   ELSEIF x = -1 AND y = -1 THEN
+      this.DialogCenter   ' // Center the dialog
    END IF
    ' // Set the default procedure callback
    SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LONG_PTR, PROCPTR(CDialog.CDialogProc)))
@@ -1046,15 +1045,14 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL h
    DIM sTemplate AS STRING = this.DialogTemplate(wszClassName, wszTitle, x, y, cx * m_rx, cy * m_ry, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
-   IF m_hDlg THEN
-'      SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
-      this.DialogSetClient(cx, cy)
-      IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
-      IF (dwStyle AND DS_CENTER) = DS_CENTER THEN
-         this.DialogCenter   ' // Center the dialog
-      ELSEIF x = -1 AND y = -1 THEN
-         this.DialogCenter   ' // Center the dialog
-      END IF
+   IF m_hDlg = NULL THEN RETURN NULL
+'   SetWindowPos (m_hDlg, NULL, x, y, cx * m_rx, cy * m_ry, SWP_NOZORDER OR SWP_NOACTIVATE OR SWP_NOMOVE)
+   this.DialogSetClient(cx, cy)
+   IF x = -1 AND y = -1 THEN this.DialogCenter   ' // Center the dialog
+   IF (dwStyle AND DS_CENTER) = DS_CENTER THEN
+      this.DialogCenter   ' // Center the dialog
+   ELSEIF x = -1 AND y = -1 THEN
+      this.DialogCenter   ' // Center the dialog
    END IF
    ' // Store a pointer to the class
    IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
@@ -3384,9 +3382,6 @@ PRIVATE SUB CDialog.DialogOnSize (BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM
 END SUB
 ' ========================================================================================
 
-' ########################################################################################
-
-END NAMESPACE
 
 ' ########################################################################################
 
@@ -3401,5 +3396,143 @@ PRIVATE FUNCTION AfxCDialogPtr (BYVAL hwnd AS HWND) AS CDialog PTR
    RETURN CAST(CDialog PTR, GetWindowLongPtrW(hRootOwner, DWLP_USER))
 END FUNCTION
 ' ========================================================================================
+
+' ########################################################################################
+
+' ########################################################################################
+'                                *** INPUT BOX DIALOG ***
+' ########################################################################################
+
+' ========================================================================================
+' Input box dialog
+' Parameters:
+' - hParent = Handle of the parent window
+' - x, y = The location on the screen to display the dialog. If both are 0, the dialog
+'   is centered on the screen.
+' - cwsCaption = Caption of the window
+' - cwsPrompt = Prompt string
+' - cwsText = Text to edit
+' - nLen = [opt] Maximum length of the string to edit (default = 260 characters)
+' - bPassword = [opt] TRUE or FALSE. Default FALSE. Displays all characters as an
+'     asterisk (*) as they are typed into the edit control.
+'   Note: The maximum length is 2048 characters.
+' ========================================================================================
+' Forward declaration of the callback function
+DECLARE FUNCTION AfxInputBoxWindowProc (BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+' ========================================================================================
+PRIVATE FUNCTION AfxInputBox (BYVAL hParent AS HWND = NULL, BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, _
+BYREF wszCaption AS WSTRING = "", BYREF wszPrompt AS WSTRING = "", BYREF wszText AS WSTRING = "", _
+BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
+
+   ' // Create the dialog
+   DIM dwStyle AS DWORD = WS_VISIBLE OR WS_CAPTION OR WS_POPUPWINDOW
+   DIM dwExStyle AS DWORD = WS_EX_DLGMODALFRAME OR WS_EX_CONTROLPARENT
+   DIM pDlg AS CDialog = CDialog("Segoe UI", 9)
+   ' // We can't use hParent with DialogNewPixels
+   DIM hInputBox AS HWND = pDlg.DialogNewPixels(0, wszCaption, x, y, 346, 115, dwStyle, dwExStyle)
+   ' // Center the dialog
+   IF x = 0 AND y = 0 THEN pDlg.DialogCenter(hParent)
+   ' // Add a label control
+   pDlg.ControlAdd("Label", -1, wszPrompt, 21, 10, 300, 19)
+   ' // Add a TextBox control
+   dwStyle = WS_VISIBLE OR WS_TABSTOP OR ES_LEFT OR ES_AUTOHSCROLL
+   IF bPassWord THEN dwStyle = dwStyle OR ES_PASSWORD
+   DIM hEdit AS HWND = pDlg.ControlAdd("Edit", 101, "", 21, 33, 300, 19, dwStyle)
+   ' // Add the buttons
+   DIM hOkButton AS HWND = pDlg.ControlAdd("Button", IDOK, "&Ok", 21, 72, 75, 25, BS_DEFPUSHBUTTON)
+'   SetDefId hInputBox, IDOK
+   DIM hCancelButton AS HWND = pDlg.ControlAdd("Button", IDCANCEL, "&Cancel", 246, 72, 75, 25)
+
+   ' // Localized strings. In the resource file of user32.dll, the OK button has
+   ' // IDS_OK (801) as the identifier and the Cancel button IDS_CANCEL (801).
+   DIM hUser32Instance AS HINSTANCE = GetModuleHandleW("user32.dll")
+   DIM wszOk AS WSTRING * 260
+   DIM cbLen AS LONG = LoadStringW(hUser32Instance, 800, @wszOk, SIZEOF(wszOk))
+   IF cbLen THEN wszOk = "&" & wszOk : SendMessageW(hOkButton, WM_SETTEXT, 0, cast(LPARAM, @wszOk))
+   DIM wszCancel AS WSTRING * 260
+   cbLen = LoadStringW(hUser32Instance, 801, @wszCancel, SIZEOF(wszCancel))
+   IF cbLen THEN wszCancel = "&" & wszCancel : SendMessageW(hCancelButton, WM_SETTEXT, 0, cast(LPARAM, @wszCancel))
+
+   ' // Set the text and the limit
+   IF nLen = 0 THEN nLen = 260
+   IF nLen < 1 OR nLen > 2048 THEN nLen = 2048
+   SendMessageW hEdit, EM_LIMITTEXT, nLen, 0
+   DIM dwsText AS DWSTRING = wszText
+   IF LEN(dwsText) > nLen THEN dwsText = LEFT(dwsText, nLen)
+   SendMessageW(hEdit, WM_SETTEXT, 0, cast(LPARAM, *dwsText))
+   SendMessageW(hEdit, EM_SETSEL, 0, -1)
+
+   ' // Disable the parent to make it modal
+   IF hParent THEN EnableWindow hParent, FALSE
+   ' // Display the dialog as modeless
+   pDlg.DialogShowModeless(@AfxInputBoxWindowProc)
+   ' // Pointer to the allocated string to return the result
+   DIM wszOut AS WSTRING * 2049
+'   SendMessageW(hInputBox, WM_USER + 1, CAST(WPARAM, @wszOut), 0)
+   pDlg.DialogSetUser(0, cast(LONG_PTR, @wszOut))
+
+   ' // Message handler loop
+   DIM uMsg AS tagMsg
+   WHILE GetMessage(@uMsg, NULL, 0, 0)
+      IF uMsg.message = WM_KEYDOWN And uMsg.wParam = VK_RETURN Then
+         ' // Trigger the OK button manually
+         SendMessageW(hInputBox, WM_COMMAND, IDOK, Cast(LPARAM, hOkButton))
+      ELSE
+         IF IsDialogMessage(hInputBox, @uMsg) = 0 THEN
+            TranslateMessage @uMsg
+            DispatchMessage @uMsg
+         END IF
+      END IF
+   WEND
+   ' // Enable the parent dialog
+   IF hParent THEN
+      EnableWindow hParent, TRUE
+      SetForegroundWindow hParent
+   END IF
+   ' // Return the output string
+   RETURN wszOut
+
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Input box callback function.
+' ========================================================================================
+PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+
+   SELECT CASE uMsg
+      CASE WM_INITDIALOG
+         FUNCTION = TRUE
+
+      CASE WM_COMMAND
+         SELECT CASE CBCTL(wParam, lParam)
+            CASE IDCANCEL
+               ' // If ESC key pressed, close the application by sending an WM_CLOSE message
+               IF CBCTLMSG(wParam, lParam) = BN_CLICKED THEN
+                  SendMessageW(hDlg, WM_CLOSE, 0, 0)
+               END IF
+            CASE IDOK
+               IF CBCTLMSG(wParam, lParam) = BN_CLICKED THEN
+                  DIM nLen AS LONG = SendMessageW(GetDlgItem(hDlg, 101), WM_GETTEXTLENGTH, 0, 0)
+                  IF nLen > 2048 THEN nLen = 2048
+                  DIM pDlg AS CDialog PTR = AfxCDialogPtr(hDlg)
+                  IF pDlg THEN
+                     DIM pText AS LONG_PTR = pDlg->DialogGetUser(0)
+                     nLen = SendMessageW(GetDlgItem(hDlg, 101), WM_GETTEXT, nLen + 1, cast(..LPARAM, pText))
+                  END IF
+                  SendMessageW(hDlg, WM_CLOSE, 0, 0)
+               END IF
+         END SELECT
+
+      CASE WM_CLOSE
+         ' // End the application
+         DIM pDlg AS CDialog PTR = AfxCDialogPtr(hDlg)
+         IF pDlg THEN pDlg->DialogEnd(1)
+   END SELECT
+
+END FUNCTION
+' ========================================================================================
+
+END NAMESPACE
 
 ' ########################################################################################

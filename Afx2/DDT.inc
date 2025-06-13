@@ -2806,6 +2806,5 @@ PRIVATE FUNCTION ImageListSetOverlay (BYVAL hLst AS HIMAGELIST, BYVAL image AS L
 END FUNCTION
 ' =====================================================================================
 
-
 END NAMESPACE
 

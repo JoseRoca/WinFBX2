@@ -3462,14 +3462,14 @@ BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
    SendMessageW(hEdit, WM_SETTEXT, 0, cast(LPARAM, *dwsText))
    SendMessageW(hEdit, EM_SETSEL, 0, -1)
 
-   ' // Disable the parent to make it modal
-   IF hParent THEN EnableWindow hParent, FALSE
+   ' // Store the parent handle in the dialog user data
+   pDlg.DialogSetUser(0, cast(LONG_PTR, hParent))
    ' // Display the dialog as modeless
    pDlg.DialogShowModeless(@AfxInputBoxWindowProc)
    ' // Pointer to the allocated string to return the result
    DIM wszOut AS WSTRING * 2049
-'   SendMessageW(hInputBox, WM_USER + 1, CAST(WPARAM, @wszOut), 0)
-   pDlg.DialogSetUser(0, cast(LONG_PTR, @wszOut))
+   ' // Store it in the dialog user data
+   pDlg.DialogSetUser(1, cast(LONG_PTR, @wszOut))
 
    ' // Message handler loop
    DIM uMsg AS tagMsg
@@ -3484,11 +3484,6 @@ BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
          END IF
       END IF
    WEND
-   ' // Enable the parent dialog
-   IF hParent THEN
-      EnableWindow hParent, TRUE
-      SetForegroundWindow hParent
-   END IF
    ' // Return the output string
    RETURN wszOut
 
@@ -3502,6 +3497,11 @@ PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, 
 
    SELECT CASE uMsg
       CASE WM_INITDIALOG
+         DIM pDlg AS CDialog PTR = AfxCDialogPtr(hDlg)
+         IF pDlg THEN
+            DIM hParent AS HWND = cast(HWND, pDlg->DialogGetUser(0))
+            IF hParent THEN EnableWindow(hParent, FALSE)
+         END IF
          FUNCTION = TRUE
 
       CASE WM_COMMAND
@@ -3517,7 +3517,7 @@ PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, 
                   IF nLen > 2048 THEN nLen = 2048
                   DIM pDlg AS CDialog PTR = AfxCDialogPtr(hDlg)
                   IF pDlg THEN
-                     DIM pText AS LONG_PTR = pDlg->DialogGetUser(0)
+                     DIM pText AS LONG_PTR = pDlg->DialogGetUser(1)
                      IF pText THEN nLen = SendMessageW(GetDlgItem(hDlg, 101), WM_GETTEXT, nLen + 1, cast(..LPARAM, pText))
                   END IF
                   SendMessageW(hDlg, WM_CLOSE, 0, 0)
@@ -3527,7 +3527,13 @@ PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, 
       CASE WM_CLOSE
          ' // End the application
          DIM pDlg AS CDialog PTR = AfxCDialogPtr(hDlg)
-         IF pDlg THEN pDlg->DialogEnd(1)
+         IF pDlg THEN
+            ' // Enable the parent before destroying the dialog
+            DIM hParent AS HWND = cast(HWND, pDlg->DialogGetUser(0))
+            IF hParent THEN EnableWindow(hParent, CTRUE)
+            ' // Destroy the dialog
+            pDlg->DialogEnd(1)
+         END IF
    END SELECT
 
 END FUNCTION

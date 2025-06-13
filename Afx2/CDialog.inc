@@ -3518,7 +3518,7 @@ PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, 
                   DIM pDlg AS CDialog PTR = AfxCDialogPtr(hDlg)
                   IF pDlg THEN
                      DIM pText AS LONG_PTR = pDlg->DialogGetUser(0)
-                     nLen = SendMessageW(GetDlgItem(hDlg, 101), WM_GETTEXT, nLen + 1, cast(..LPARAM, pText))
+                     IF pText THEN nLen = SendMessageW(GetDlgItem(hDlg, 101), WM_GETTEXT, nLen + 1, cast(..LPARAM, pText))
                   END IF
                   SendMessageW(hDlg, WM_CLOSE, 0, 0)
                END IF

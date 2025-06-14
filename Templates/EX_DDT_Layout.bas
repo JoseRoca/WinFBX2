@@ -29,16 +29,16 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
                   BYVAL nCmdShow AS LONG) AS LONG
 
    ' // Set process DPI aware
-   AfxSetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE)
+   SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE)
    ' // Enable visual styles
    AfxEnableVisualStyles
 
    ' // Create a new dialog
-   DIM hDlg AS HWND = DialogNewPixels(0, "DDT - Colors and Layout Demo",,, 450, 180, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNewPixels(0, "DDT with FreeBasic - Colors and Layout Demo",,, 450, 180, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Set the dialog's backgroung color
    DialogSetColor(hDlg, -1, RGB_GOLD)
-'   DialogDisableRepaintOnResize(TRUE)    ' // optional: disable repaint on resizing
+   ' DialogDisableRepaintOnResize(hDlg, TRUE)    ' // optional: disable repaint on resizing
 
    ' // Set icons
    DIM AS HICON hIconBig, hIconSmall
@@ -55,7 +55,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    SetWindowTheme(ControlHandle(hDlg, IDC_GROUPBOX), "", "")
 
    ControlAddButton, hDlg, IDCANCEL, "&Close", 245, 140, 75, 23
-   ControlAddLabel, hDlg, IDC_LABEL, "Label", 50, 140, 75, 23
+   ControlAddLabel, hDlg, IDC_LABEL, "Label", 15, 140, 75, 23
    ' // Add a combobox control
    ControlAddComboBox, hDlg, IDC_COMBOBOX, "", 345, 30, 80, 100
    ' // Fill the control with some data

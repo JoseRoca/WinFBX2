@@ -28,6 +28,7 @@
 #include once "Afx2/CDialog.inc"
 #include once "Afx2/AfxWin2.inc"
 #include once "Afx2/AfxCtl2.inc"
+#include once "AfxMenuProcs2.inc"
 using Afx2
 
 ' ========================================================================================

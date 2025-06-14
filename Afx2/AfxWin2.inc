@@ -37,7 +37,7 @@
 #INCLUDE ONCE "win/cderr.bi"
 #INCLUDE ONCE "crt/string.bi"
 #INCLUDE ONCE "Afx2/DWSTRING.inc"
-#INCLUDE ONCE "Afx2/AfxDPIProcs2.inc"
+#INCLUDE ONCE "Afx2/AfxExt.bi"   ' // extension headers
 
 USING Afx2
 
@@ -1195,6 +1195,7 @@ PRIVATE FUNCTION AfxExtractResourceToFile (BYVAL hInstance AS HINSTANCE, BYREF w
 
 END FUNCTION
 ' ========================================================================================
+
 
 ' ########################################################################################
 '                                      *** WINDOW ***
@@ -2873,6 +2874,299 @@ PRIVATE FUNCTION AfxIsUserAnAdmin () AS BOOLEAN
       FUNCTION = IsMember
    END IF
    FreeSid(AdministratorsGroup)
+END FUNCTION
+' ========================================================================================
+
+
+' ########################################################################################
+'                              *** DPI RELATED PROCEDURES ***
+' ########################################################################################
+
+' ========================================================================================
+' Sets the process-default DPI awareness to system-DPI awareness. This is equivalent to calling
+' SetProcessDpiAwarenessContext with a DPI_AWARENESS_CONTEXT value of DPI_AWARENESS_CONTEXT_SYSTEM_AWARE.
+' Note: SetProcessDPIAware is subject to a possible race condition if a DLL caches dpi
+' settings during initialization. For this reason, it is recommended that dpi-aware be set
+' through the application (.exe) manifest rather than by calling SetProcessDPIAware.
+' Return value: TRUE on success; FALSE on failure.
+' ========================================================================================
+PRIVATE FUNCTION AfxSetProcessDPIAware () AS BOOLEAN
+   DIM AS ANY PTR pLib = DyLibLoad("user32.dll")
+   IF pLib = 0 THEN RETURN FALSE
+   DIM pProc AS FUNCTION () AS LONG
+   pProc = DyLibSymbol(pLib, "SetProcessDPIAware")
+   IF pProc = 0 THEN RETURN FALSE
+   FUNCTION = pProc()
+   DyLibFree(pLib)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Determines whether the current process is dots per inch (dpi) aware such that it adjusts
+' the sizes of UI elements to compensate for the dpi setting.
+' Return value: TRUE or FALSE
+' [IsProcessDPIAware is available for use in the operating systems specified in the
+' Requirements section. It may be altered or unavailable in subsequent versions.
+' Instead, use GetProcessDPIAwareness.]
+' ========================================================================================
+PRIVATE FUNCTION AfxIsProcessDPIAware () AS BOOLEAN
+   DIM AS ANY PTR pLib = DyLibLoad("user32.dll")
+   IF pLib = 0 THEN RETURN FALSE
+   DIM pProc AS FUNCTION () AS LONG
+   pProc = DyLibSymbol(pLib, "IsProcessDPIAware")
+   IF pProc = 0 THEN RETURN FALSE
+   FUNCTION = pProc()
+   DyLibFree(pLib)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the value of the UseDpiScaling setting (Vista/Windows 7+).
+' Returns TRUE if the OS uses DPI scaling; FALSE otherwise.
+' ========================================================================================
+PRIVATE FUNCTION AfxUseDpiScaling () AS BOOLEAN
+   DIM hkRes AS HKEY, dwType AS DWORD, dwData AS DWORD, cbData AS DWORD
+   IF RegOpenKeyExW(HKEY_CURRENT_USER, "Software\Microsoft\Windows\DWM", 0, KEY_QUERY_VALUE, @hkRes) = ERROR_SUCCESS THEN
+      IF hkRes THEN
+         cbData = SIZEOF(cbData)
+         DIM hr AS LONG = RegQueryValueExW(hkRes, "UseDpiScaling", 0, @dwType, CPTR(BYTE PTR, @dwData), @cbData)
+         RegCloseKey hkRes
+         IF hr = ERROR_SUCCESS THEN FUNCTION = (dwData <> 0)
+      END IF
+   END IF
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the number of pixels per logical inch along the screen width of the desktop
+' window. In a system with multiple display monitors, this value is the same for all monitors.
+' ========================================================================================
+PRIVATE FUNCTION AfxLogPixelsX () AS LONG
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   DIM dpiX AS LONG = GetDeviceCaps(hDC, LOGPIXELSX)
+   ReleaseDC HWND_DESKTOP, hDC
+   RETURN dpiX
+END FUNCTION
+' ========================================================================================
+#define AfxGetDpi AfxLogPixelsX
+#define AfxGetDpiX AfxLogPixelsX
+
+' ========================================================================================
+' Retrieves the number of pixels per logical inch along the screen height of the desktop
+' window. In a system with multiple display monitors, this value is the same for all monitors.
+' ========================================================================================
+PRIVATE FUNCTION AfxLogPixelsY () AS LONG
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   DIM dpiY AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
+   ReleaseDC HWND_DESKTOP, hDC
+   RETURN dpiY
+END FUNCTION
+' ========================================================================================
+#define AfxGetDpiY AfxLogPixelsY
+
+' ========================================================================================
+' Retrieves the desktop horizontal scaling ratio.
+' ========================================================================================
+PRIVATE FUNCTION AfxScaleRatioX () AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   DIM rxRatio AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+   RETURN rxRatio
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Retrieves the desktop vertical scaling ratio.
+' ========================================================================================
+PRIVATE FUNCTION AfxScaleRatioY () AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   DIM ryRatio AS SINGLE = (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+   RETURN ryRatio
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Scales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION AfxScaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cx * (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Scales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION AfxScaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cy * (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Unscales an horizontal coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION AfxUnscaleX (BYVAL cx AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cx / (GetDeviceCaps(hDC, LOGPIXELSX) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Unscales a vertical coordinate according the DPI (dots per pixel) being used by the desktop.
+' ========================================================================================
+PRIVATE FUNCTION AfxUnscaleY (BYVAL cy AS SINGLE) AS SINGLE
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   FUNCTION = cy / (GetDeviceCaps(hDC, LOGPIXELSY) / 96)
+   ReleaseDC HWND_DESKTOP, hDC
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Determines if screen resolution meets minimum requirements.
+' Parameters:
+' - cxMin = Minimum screen resolution width in pixels.
+' - cxMin = Minimum screen resolution height in pixels.
+' Return value: TRUE or FALSE.
+' ========================================================================================
+PRIVATE FUNCTION AfxIsResolutionAtLeast (BYVAL cxMin AS LONG, BYVAL cyMin AS LONG) AS BOOLEAN
+   DIM ScreenWidth AS LONG = GetSystemMetrics(SM_CXSCREEN)
+   DIM ScreenHeight AS LONG = GetSystemMetrics(SM_CYSCREEN)
+   IF (cxMin <= ScreenWidth) AND (cyMin <= ScreenHeight) THEN FUNCTION = TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Determines if screen resolution meets minimum requirements in relative pixels,
+' e.g. for a screen resolution of 1920x1080 pixels and a DPI of 192 (scaling ratio = 2),
+' the maximum relative pixels for a DPI aware application is 960x540.
+' - cxMin = Minimum screen resolution width in relative pixels.
+' - cxMin = Minimum screen resolution height in relative pixels.
+' Return value: TRUE or FALSE.
+' ========================================================================================
+PRIVATE FUNCTION AfxIsDPIResolutionAtLeast (BYVAL cxMin AS LONG, BYVAL cyMin AS LONG) AS BOOLEAN
+   ' // Get de DPI values used by the desktop window
+   DIM hDC AS HDC = GetDC(HWND_DESKTOP)
+   DIM dpiX AS LONG = GetDeviceCaps(hDC, LOGPIXELSX)
+   DIM dpiY AS LONG = GetDeviceCaps(hDC, LOGPIXELSY)
+   ReleaseDC HWND_DESKTOP, hDC
+   ' // Scale the values
+   cxMin = cxMin * dpiX / 96
+   cyMin = cyMin * dpiX / 96
+   ' // Calculate the width and height of the primary display monitor, in pixels
+   DIM ScreenWidth AS LONG = GetSystemMetrics(SM_CXSCREEN)
+   DIM ScreenHeight AS LONG = GetSystemMetrics(SM_CYSCREEN)
+   IF (cxMin <= ScreenWidth) AND (cyMin <= ScreenHeight) THEN FUNCTION = TRUE
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Returns the logical width of the monitor that the window is currently displayed on.
+' If the application to which the window belongs is not DPI aware, a monitor with a
+' width resolution of 1920 pixels in a computer using 192 DPI, will return 960 pixels.
+' ========================================================================================
+PRIVATE FUNCTION AfxGetMonitorLogicalWidth (BYVAL hwnd AS HWND = NULL) AS DWORD
+   ' // Get the monitor that the window is currently displayed on
+   IF hwnd = NULL THEN hwnd = GetDesktopWindow
+   DIM hMonitor AS HMONITOR = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
+   ' // Get the logical width of the monitor.
+   DIM miex AS MONITORINFOEXW
+   miex.cbSize = SIZEOF(miex)
+   GetMonitorInfoW(hMonitor, CAST(LPMONITORINFO, @miex))
+   RETURN (miex.rcMonitor.right  - miex.rcMonitor.left)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Returns the logical height of the monitor that the window is currently displayed on.
+' If the application to which the window belongs is not DPI aware, a monitor with an
+' height resolution of 1080 pixels in a computer using 192 DPI, will return 540 pixels.
+' ========================================================================================
+PRIVATE FUNCTION AfxGetMonitorLogicalHeight (BYVAL hwnd AS HWND = NULL) AS DWORD
+   ' // Get the monitor that the window is currently displayed on
+   IF hwnd = NULL THEN hwnd = GetDesktopWindow
+   DIM hMonitor AS HMONITOR = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
+   ' // Get the logical width of the monitor.
+   DIM miex AS MONITORINFOEXW
+   miex.cbSize = SIZEOF(miex)
+   GetMonitorInfoW(hMonitor, CAST(LPMONITORINFO, @miex))
+   RETURN (miex.rcMonitor.bottom - miex.rcMonitor.top)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Returns the horizontal scaling of the monitor that the window is currently displayed on.
+' If the application to which the window belongs is not DPI aware, a computer using
+' 192 DPI, will return an scaling ratio of 2.
+' ========================================================================================
+PRIVATE FUNCTION AfxGetMonitorHorizontalScaling (BYVAL hwnd AS HWND = NULL) AS DWORD
+   ' // Get the monitor that the window is currently displayed on
+   IF hwnd = NULL THEN hwnd = GetDesktopWindow
+   DIM hMonitor AS HMONITOR = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
+   ' // Get the logical width and height of the monitor.
+   DIM miex AS MONITORINFOEXW
+   miex.cbSize = sizeof(miex)
+   GetMonitorInfoW(hMonitor, CAST(LPMONITORINFO, @miex))
+   DIM cxLogical AS LONG = (miex.rcMonitor.right  - miex.rcMonitor.left)
+   DIM cyLogical AS LONG = (miex.rcMonitor.bottom - miex.rcMonitor.top)
+   ' // Get the physical width and height of the monitor.
+   DIM dm AS DEVMODEW
+   dm.dmSize = sizeof(dm)
+   dm.dmDriverExtra = 0
+   EnumDisplaySettingsW(miex.szDevice, ENUM_CURRENT_SETTINGS, @dm)
+   DIM cxPhysical AS LONG = dm.dmPelsWidth
+   DIM cyPhysical as LONG = dm.dmPelsHeight
+   ' // Calculate the scaling factor.
+   DIM horzScale AS DOUBLE = cxPhysical / cxLogical
+   DIM vertScale AS DOUBLE = cyPhysical / cyLogical
+   RETURN horzScale
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Returns the vertical scaling of the monitor that the window is currently displayed on.
+' If the application to which the window belongs is not DPI aware, a computer using
+' 192 DPI, will return an scaling ratio of 2.
+' ========================================================================================
+PRIVATE FUNCTION AfxGetMonitorVerticalScaling (BYVAL hwnd AS HWND = NULL) AS DWORD
+   ' // Get the monitor that the window is currently displayed on
+   IF hwnd = NULL THEN hwnd = GetDesktopWindow
+   DIM hMonitor AS HMONITOR = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
+   ' // Get the logical width and height of the monitor.
+   DIM miex AS MONITORINFOEXW
+   miex.cbSize = sizeof(miex)
+   GetMonitorInfoW(hMonitor, CAST(LPMONITORINFO, @miex))
+   DIM cxLogical AS LONG = (miex.rcMonitor.right  - miex.rcMonitor.left)
+   DIM cyLogical AS LONG = (miex.rcMonitor.bottom - miex.rcMonitor.top)
+   ' // Get the physical width and height of the monitor.
+   DIM dm AS DEVMODEW
+   dm.dmSize = sizeof(dm)
+   dm.dmDriverExtra = 0
+   EnumDisplaySettingsW(miex.szDevice, ENUM_CURRENT_SETTINGS, @dm)
+   DIM cxPhysical AS LONG = dm.dmPelsWidth
+   DIM cyPhysical as LONG = dm.dmPelsHeight
+   ' // Calculate the scaling factor.
+   DIM horzScale AS DOUBLE = cxPhysical / cxLogical
+   DIM vertScale AS DOUBLE = cyPhysical / cyLogical
+   RETURN vertScale
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Loads a specified icon resource with a client-specified system metric.
+' See: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775701(v=vs.85).aspx
+' ========================================================================================
+PRIVATE FUNCTION AfxLoadIconMetric (BYVAL hinst AS HINSTANCE, BYVAL pszName AS PCWSTR, BYVAL lims AS LONG, BYVAL phico AS HICON PTR) AS HRESULT
+   DIM AS ANY PTR pLib = DyLibLoad("comctl32.dll")
+   IF pLib = NULL THEN EXIT FUNCTION
+   DIM pLoadIconMetric AS FUNCTION (BYVAL hinst AS HINSTANCE, BYVAL pszName AS PCWSTR, BYVAL lims AS LONG, BYVAL phico AS HICON PTR) AS HRESULT
+   pLoadIconMetric = DyLibSymbol(pLib, "LoadIconMetric")
+   IF pLoadIconMetric THEN FUNCTION = pLoadIconMetric(hinst, pszName, lims, phico)
+   DyLibFree(pLib)
 END FUNCTION
 ' ========================================================================================
 

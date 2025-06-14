@@ -52,14 +52,11 @@ using Afx2
 NAMESPACE DDT
 
 ' ========================================================================================
-' Returns a pointer to the CDialog class given the handle of the window created with it
-' or the handle of any of it's children.
+' Returns a pointer to the CDialog class given the handle of the dialog created with it.
 ' ========================================================================================
-PRIVATE FUNCTION GetCDialogPtr (BYVAL hwnd AS HWND) AS CDialog PTR
-   IF hwnd = NULL THEN RETURN NULL
-   DIM hRootOwner AS ..HWND = GetAncestor(hwnd, GA_ROOTOWNER)
-   IF hRootOwner = NULL THEN RETURN NULL
-   RETURN CAST(CDialog PTR, GetWindowLongPtrW(hRootOwner, DWLP_USER))
+PRIVATE FUNCTION GetCDialogPtr (BYVAL hDlg AS HWND) AS CDialog PTR
+   IF hDlg = NULL THEN RETURN NULL
+   RETURN cast(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================

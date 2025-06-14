@@ -113,6 +113,9 @@ TYPE AFX_CTLUSERDATA
    Values (0 TO 9) AS LONG_PTR
 END TYPE
 
+' Forward declaration of the callback function
+DECLARE FUNCTION AfxInputBoxWindowProc (BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+
 ' ========================================================================================
 ' CDialog class
 ' ========================================================================================
@@ -350,7 +353,7 @@ Public:
 Private:
 
    DECLARE STATIC FUNCTION CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
-   DECLARE STATIC FUNCTION CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+'   DECLARE STATIC FUNCTION CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
    ' // Layout manager - Callback function to enumerate child windows
    DECLARE STATIC FUNCTION LayoutEnumChildProc (BYVAL hwnd AS HWND, BYVAL lParam AS LPARAM) AS LONG
 
@@ -399,6 +402,8 @@ PRIVATE DESTRUCTOR CDialog
    IF m_hAccel THEN ..DestroyAcceleratorTable(m_hAccel)
    ' // Free the Rich Edit library
    IF m_hRichEditLib THEN FreeLibrary m_hRichEditLib
+   ' // Unregister the class name
+   IF LEN(m_wszClassName) THEN UnregisterClassW(m_wszClassName, m_hInstance)
    ' // Uninitialize the COM library
    CoUninitialize
 END DESTRUCTOR
@@ -426,7 +431,7 @@ PRIVATE FUNCTION CDialog.RegisterClass (BYREF wszClassName AS CONST WSTRING) AS 
    WITH wcexw
       .cbSize        = SIZEOF(wcexw)
       .style         = 0
-      .lpfnWndProc   = PROCPTR(CDialog.CCustomDialogProc)
+      .lpfnWndProc   = PROCPTR(CDialog.CDialogProc)
       .cbClsExtra    = 0
       .cbWndExtra    = DLGWINDOWEXTRA
       .hInstance     = m_hInstance
@@ -1065,120 +1070,235 @@ END FUNCTION
 ' Internal dialog callback procedure used if the user does not specify a callback
 ' in the ShowDialogModal or ShowDialogModeless methods. Classic dialogs (#32770).
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+'PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
 
-   ' // Can't use a static variable or we will get a mess if we create another instance of the dialog
-'   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
-   DIM pDlg AS CDialog PTR = CAST(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
+'   ' // Can't use a static variable or we will get a mess if we create another instance of the dialog
+''   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
+'   DIM pDlg AS CDialog PTR = CAST(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
 
-   SELECT CASE uMsg
+'   SELECT CASE uMsg
 
-      CASE WM_INITDIALOG
-         CDIALOG_DP("WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
-'         pDlg = CAST(CDIALOG PTR, lParam)
-'         CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
+'      CASE WM_INITDIALOG
+'         CDIALOG_DP("WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
+''         pDlg = CAST(CDIALOG PTR, lParam)
+''         CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
 
-      CASE WM_SYSCOMMAND
-         CDIALOG_DP("WM_SYSCOMMAND")
-         ' // Trap the SC_CLOSE message sent by Alt+F4 and the X-button
-         IF pDlg THEN
-         ' // Abort the action
-            IF (wParam AND &hFFF0) = SC_CLOSE AND pDlg->IsDialogStabilized = TRUE THEN RETURN TRUE
-         END IF
+'      CASE WM_SYSCOMMAND
+'         CDIALOG_DP("WM_SYSCOMMAND")
+'         ' // Trap the SC_CLOSE message sent by Alt+F4 and the X-button
+'         IF pDlg THEN
+'         ' // Abort the action
+'            IF (wParam AND &hFFF0) = SC_CLOSE AND pDlg->IsDialogStabilized = TRUE THEN RETURN TRUE
+'         END IF
 
-      CASE WM_CLOSE
-         CDIALOG_DP("WM_CLOSE")
-         ' // If it is a child dialog, enable its parent before it is destroyed
-         DIM hParent AS HWND = GetParent(hDlg)
-         IF hParent <> HWND_DESKTOP THEN
-            IF IsWindowEnabled(hParent) = FALSE THEN EnableWindow(hParent, TRUE)
-         END IF
+'      CASE WM_CLOSE
+'         CDIALOG_DP("WM_CLOSE")
+'         ' // If it is a child dialog, enable its parent before it is destroyed
+'         DIM hParent AS HWND = GetParent(hDlg)
+'         IF hParent <> HWND_DESKTOP THEN
+'            IF IsWindowEnabled(hParent) = FALSE THEN EnableWindow(hParent, TRUE)
+'         END IF
 
-      CASE WM_DESTROY
-         CDIALOG_DP("WM_DESTROY")
+'      CASE WM_DESTROY
+'         CDIALOG_DP("WM_DESTROY")
 
-      CASE WM_ENTERSIZEMOVE
-         CDIALOG_DP("WM_ENTERSIZEMOVE")
-         IF pDlg THEN
-            IF pDlg->IsDialogRepaintDisabledOnResize = TRUE THEN
-               pDlg->DialogEnableRepaint(FALSE)
-            ELSE
-               pDlg->DialogEnableRepaint(TRUE)
-            END IF
-         END IF
+'      CASE WM_ENTERSIZEMOVE
+'         CDIALOG_DP("WM_ENTERSIZEMOVE")
+'         IF pDlg THEN
+'            IF pDlg->IsDialogRepaintDisabledOnResize = TRUE THEN
+'               pDlg->DialogEnableRepaint(FALSE)
+'            ELSE
+'               pDlg->DialogEnableRepaint(TRUE)
+'            END IF
+'         END IF
 
-      CASE WM_EXITSIZEMOVE
-         CDIALOG_DP("WM_EXITSIZEMOVE")
-         IF pDlg THEN
-            pDlg->DialogEnableRepaint(TRUE)
-            ' // Redraw the dialog
-            pDlg->DialogRedraw
-         END IF
+'      CASE WM_EXITSIZEMOVE
+'         CDIALOG_DP("WM_EXITSIZEMOVE")
+'         IF pDlg THEN
+'            pDlg->DialogEnableRepaint(TRUE)
+'            ' // Redraw the dialog
+'            pDlg->DialogRedraw
+'         END IF
 
-      CASE WM_CTLCOLORDLG
-         ' wParam = HDC; lParam = Handle of the dialog
-         IF pDlg THEN
-            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
-               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
-               IF nItem >= 0 THEN
-'                  OutputDebugStringW("WM_CTLCOLORDLG")
-                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
-                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
-               END IF
-            END IF
-         END IF
+'      CASE WM_CTLCOLORDLG
+'         ' wParam = HDC; lParam = Handle of the dialog
+'         IF pDlg THEN
+'            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
+'               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+'               IF nItem >= 0 THEN
+''                  OutputDebugStringW("WM_CTLCOLORDLG")
+'                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+'                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+'               END IF
+'            END IF
+'         END IF
 
-      CASE WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX, WM_CTLCOLORSTATIC
-         ' WM_CTLCOLORBTN does not colorize a button - use XPBUTTON
-         ' wParam = HDC; lParam = Handle of the control.
-         IF pDlg THEN
-            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
-               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
-               IF nItem >= 0 THEN
-'                  OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
-                  SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
-                  SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
-                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
-                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
-               END IF
-            END IF
-         END IF
+'      CASE WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX, WM_CTLCOLORSTATIC
+'         ' WM_CTLCOLORBTN does not colorize a button - use XPBUTTON
+'         ' wParam = HDC; lParam = Handle of the control.
+'         IF pDlg THEN
+'            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
+'               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+'               IF nItem >= 0 THEN
+''                  OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
+'                  SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
+'                  SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+'                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+'                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+'               END IF
+'            END IF
+'         END IF
 
-      CASE WM_SIZE
-'          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
-         ' // Adjust anchored controls and redraw the dialog
-         IF pDlg THEN
-            IF wParam = SIZE_RESTORED OR wParam = SIZE_MAXIMIZED THEN
-               IF pDlg->AdjustControls THEN pDlg->DialogRedraw
-            END IF
-            ' // Scrollable dialogs - Setup scrollbars
-            IF pDlg->IsDialogScrollable THEN
-               pDlg->DialogResetScrollbars
-               pDlg->DialogSetupScrollbars
-            END IF
-         END IF
+'      CASE WM_SIZE
+''          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
+'         ' // Adjust anchored controls and redraw the dialog
+'         IF pDlg THEN
+'            IF wParam = SIZE_RESTORED OR wParam = SIZE_MAXIMIZED THEN
+'               IF pDlg->AdjustControls THEN pDlg->DialogRedraw
+'            END IF
+'            ' // Scrollable dialogs - Setup scrollbars
+'            IF pDlg->IsDialogScrollable THEN
+'               pDlg->DialogResetScrollbars
+'               pDlg->DialogSetupScrollbars
+'            END IF
+'         END IF
 
-      CASE WM_HSCROLL
-         ' // Horizontal scrollbar
-         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnHScroll(wParam, lParam)
-      CASE WM_VSCROLL
-         ' // Vertical scrollbar
-         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnVScroll(wParam, lParam)
+'      CASE WM_HSCROLL
+'         ' // Horizontal scrollbar
+'         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnHScroll(wParam, lParam)
+'      CASE WM_VSCROLL
+'         ' // Vertical scrollbar
+'         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnVScroll(wParam, lParam)
 
-   END SELECT
+'   END SELECT
 
-   ' // Forward the messages to the user-defined callback procedure
-   IF pDlg THEN RETURN CallWindowProcW(CAST(WNDPROC, pDlg->m_pCallback), hDlg, uMsg, wParam, lParam)
-   RETURN FALSE
+'   ' // Forward the messages to the user-defined callback procedure
+'   IF pDlg THEN RETURN CallWindowProcW(CAST(WNDPROC, pDlg->m_pCallback), hDlg, uMsg, wParam, lParam)
+'   RETURN FALSE
 
-END FUNCTION
+'END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
 ' Internal custom dialog callback procedure used if the user does not specify a callback
 ' in the ShowDialogModal or ShowDialogModeless methods. Custom dialogs.
 ' ========================================================================================
-PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+'PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
+
+'   ' // Can't use a static variable or we will get a mess if we create another instance of the dialog
+''   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
+'   DIM pDlg AS CDialog PTR = CAST(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
+
+'   SELECT CASE uMsg
+
+'      CASE WM_INITDIALOG
+'         CDIALOG_DP("WM_INITDIALOG " & WSTR(hDlg) & " - " & WSTR(wParam) & " - " & WSTR(lParam))
+''         pDlg = CAST(CDIALOG PTR, lParam)
+'         ' // We will use pDlg to get data of the class, such colors
+''         CDIALOG_DP("WM_INITDIALOG - pCallback = " & WSTR(pDlg->m_pCallback))
+
+'      CASE WM_SYSCOMMAND
+'         CDIALOG_DP("WM_SYSCOMMAND")
+'         ' // Trap the SC_CLOSE message sent by Alt+F4 and the X-button
+'         IF pDlg THEN
+'         ' // Abort the action
+'            IF (wParam AND &hFFF0) = SC_CLOSE AND pDlg->IsDialogStabilized = TRUE THEN RETURN TRUE
+'         END IF
+
+'      CASE WM_CLOSE
+'         CDIALOG_DP("WM_CLOSE")
+'         ' // If it is a child dialog, enable its parent before it is destroyed
+'         DIM hParent AS HWND = GetParent(hDlg)
+'         IF hParent <> HWND_DESKTOP THEN
+'            IF IsWindowEnabled(hParent) = FALSE THEN EnableWindow(hParent, TRUE)
+'         END IF
+
+'      CASE WM_DESTROY
+'         CDIALOG_DP("WM_DESTROY")
+
+'      CASE WM_ENTERSIZEMOVE
+'         CDIALOG_DP("WM_ENTERSIZEMOVE")
+'         IF pDlg THEN
+'            IF pDlg->IsDialogRepaintDisabledOnResize = TRUE THEN
+'               pDlg->DialogEnableRepaint(FALSE)
+'            ELSE
+'               pDlg->DialogEnableRepaint(TRUE)
+'            END IF
+'         END IF
+
+'      CASE WM_EXITSIZEMOVE
+'         CDIALOG_DP("WM_EXITSIZEMOVE")
+'         IF pDlg THEN
+'            pDlg->DialogEnableRepaint(TRUE)
+'            ' // Redraw the dialog
+'            pDlg->DialogRedraw
+'         END IF
+
+'      CASE WM_CTLCOLORDLG
+'         ' wParam = HDC; lParam = Handle of the dialog
+'         IF pDlg THEN
+'            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
+'               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+'               IF nItem >= 0 THEN
+''                  OutputDebugStringW("WM_CTLCOLORDLG")
+'                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+'                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+'               END IF
+'            END IF
+'         END IF
+
+'      CASE WM_CTLCOLOREDIT, WM_CTLCOLORLISTBOX, WM_CTLCOLORSTATIC
+'         ' WM_CTLCOLORBTN does not color a button - use XPBUTTON
+'         ' wParam = HDC; lParam = Handle of the control.
+'         IF pDlg THEN
+'            IF pDlg->IsDialogRepaintDisabled = FALSE THEN
+'               DIM nItem AS LONG = pDlg->GetColorItem(CAST(HWND, lParam))
+'               IF nItem >= 0 THEN
+''                  OutputDebugStringW("WM_CTLCOLOR - " & WSTR(HEX(uMsg)) & " - " & WSTR(lParam))
+'                  SetTextColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).foreColor)
+'                  SetBkColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+'                  SetDCBrushColor(CAST(HDC, wParam), pDlg->m_rgColors(nItem).backColor)
+'                  RETURN CAST(LRESULT, GetStockObject(DC_BRUSH))
+'               END IF
+'            END IF
+'         END IF
+
+'      CASE WM_SIZE
+''          CDIALOG_DP("WM_SIZE pDlg: " & WSTR(pDlg) & " - wParam: " & WSTR(wParam) & " - width: " & WSTR(LOWORD(lParam)) & " - height: " & (HIWORD(lParam)))
+'         ' // Adjust anchored controls and redraw the dialog
+'         IF pDlg THEN
+'            IF wParam = SIZE_RESTORED OR wParam = SIZE_MAXIMIZED THEN
+'               IF pDlg->AdjustControls THEN pDlg->DialogRedraw
+'            END IF
+'            ' // Scrollable dialogs - Setup scrollbars
+'            IF pDlg->IsDialogScrollable THEN
+'               pDlg->DialogResetScrollbars
+'               pDlg->DialogSetupScrollbars
+'            END IF
+'         END IF
+
+'      CASE WM_HSCROLL
+'         ' // Horizontal scrollbar
+'         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnHScroll(wParam, lParam)
+'      CASE WM_VSCROLL
+'         ' // Vertical scrollbar
+'         IF pDlg->IsDialogScrollable THEN pDlg->DialogOnVScroll(wParam, lParam)
+
+'   END SELECT
+
+'   ' // Forward the messages to the user-defined callback procedure
+'   IF pDlg THEN
+'      DIM res AS LRESULT
+'      res = CallWindowProcW(CAST(WNDPROC, pDlg->m_pCallback), hDlg, uMsg, wParam, lParam)
+'      IF res <> FALSE THEN RETURN res
+'   END IF
+'   ' // Deault processing for unprocessed messages
+'   RETURN DefDlgProcW(hDlg, uMsg, wParam, lParam)
+
+'END FUNCTION
+'' ========================================================================================
+
+PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
 
    ' // Can't use a static variable or we will get a mess if we create another instance of the dialog
 '   STATIC pDlg AS CDIALOG PTR   ' // Pointer to the CDialog class
@@ -1282,6 +1402,11 @@ PRIVATE FUNCTION CDialog.CCustomDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UI
    END SELECT
 
    ' // Forward the messages to the user-defined callback procedure
+   IF pDlg THEN
+      DIM res AS LRESULT = CallWindowProcW(CAST(WNDPROC, pDlg->m_pCallback), hDlg, uMsg, wParam, lParam)
+      IF pDlg->IsCustom = FALSE THEN RETURN res
+   END IF
+   ' // Custom dialog - Deault processing for unprocessed messages
    RETURN DefDlgProcW(hDlg, uMsg, wParam, lParam)
 
 END FUNCTION
@@ -1366,9 +1491,9 @@ PRIVATE FUNCTION CDialog.DialogEnd (BYVAL nResult AS LONG = 0) AS INT_PTR
    CDIALOG_DP("")
    ' // Store the passed exit code
    m_DlgRetVal = nResult
-   '// Destro the dialog
+   '// Destroy the dialog
    DestroyWindow(m_hDlg)
-   '// Exitthe message loop
+   '// Exit the message loop
    PostQuitMessage(0)
    ' // Return the exit code
    RETURN m_DlgRetVal
@@ -3187,7 +3312,6 @@ PRIVATE FUNCTION CDialog.ControlGetUser (BYVAL cID AS LONG, BYVAL index AS LONG)
    IF index < 0 OR index > 9 THEN RETURN FALSE
    DIM hCtl AS HWND = GetDlgItem(m_hDlg, cID)
    DIM nItem AS LONG = this.GetUserDataItem(cID)
-print niTem, index
    IF nItem > -1 THEN RETURN m_rgCtrlUserData(nItem).Values(index)
 END FUNCTION
 ' ========================================================================================
@@ -3417,19 +3541,16 @@ END FUNCTION
 '     asterisk (*) as they are typed into the edit control.
 '   Note: The maximum length is 2048 characters.
 ' ========================================================================================
-' Forward declaration of the callback function
-DECLARE FUNCTION AfxInputBoxWindowProc (BYVAL hwnd AS HWND, BYVAL uMsg AS UINT, BYVAL wParam AS WPARAM, BYVAL lParam AS LPARAM) AS LRESULT
-' ========================================================================================
 PRIVATE FUNCTION AfxInputBox (BYVAL hParent AS HWND = NULL, BYVAL x AS LONG = 0, BYVAL y AS LONG = 0, _
 BYREF wszCaption AS WSTRING = "", BYREF wszPrompt AS WSTRING = "", BYREF wszText AS WSTRING = "", _
 BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
 
    ' // Create the dialog
    DIM dwStyle AS DWORD = WS_VISIBLE OR WS_CAPTION OR WS_POPUPWINDOW
-   DIM dwExStyle AS DWORD = WS_EX_DLGMODALFRAME OR WS_EX_CONTROLPARENT
+   DIM dwExStyle AS DWORD = WS_EX_DLGMODALFRAME ' OR WS_EX_CONTROLPARENT
    DIM pDlg AS CDialog = CDialog("Segoe UI", 9)
    ' // We can't use hParent with DialogNewPixels
-   DIM hInputBox AS HWND = pDlg.DialogNewPixels(0, wszCaption, x, y, 346, 115, dwStyle, dwExStyle)
+   DIM hInputBox AS HWND = pDlg.DialogNewPixels("AfxInputBox", hParent, wszCaption, x, y, 346, 115, dwStyle, dwExStyle)
    ' // Center the dialog
    IF x = 0 AND y = 0 THEN pDlg.DialogCenter(hParent)
    ' // Add a label control
@@ -3440,7 +3561,6 @@ BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
    DIM hEdit AS HWND = pDlg.ControlAdd("Edit", 101, "", 21, 33, 300, 19, dwStyle)
    ' // Add the buttons
    DIM hOkButton AS HWND = pDlg.ControlAdd("Button", IDOK, "&Ok", 21, 72, 75, 25, BS_DEFPUSHBUTTON)
-'   SetDefId hInputBox, IDOK
    DIM hCancelButton AS HWND = pDlg.ControlAdd("Button", IDCANCEL, "&Cancel", 246, 72, 75, 25)
 
    ' // Localized strings. In the resource file of user32.dll, the OK button has
@@ -3462,28 +3582,13 @@ BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
    SendMessageW(hEdit, WM_SETTEXT, 0, cast(LPARAM, *dwsText))
    SendMessageW(hEdit, EM_SETSEL, 0, -1)
 
-   ' // Store the parent handle in the dialog user data
-   pDlg.DialogSetUser(0, cast(LONG_PTR, hParent))
-   ' // Display the dialog as modeless
-   pDlg.DialogShowModeless(@AfxInputBoxWindowProc)
    ' // Pointer to the allocated string to return the result
    DIM wszOut AS WSTRING * 2049
    ' // Store it in the dialog user data
-   pDlg.DialogSetUser(1, cast(LONG_PTR, @wszOut))
+   pDlg.DialogSetUser(0, cast(LONG_PTR, @wszOut))
 
-   ' // Message handler loop
-   DIM uMsg AS tagMsg
-   WHILE GetMessage(@uMsg, NULL, 0, 0)
-      IF uMsg.message = WM_KEYDOWN And uMsg.wParam = VK_RETURN Then
-         ' // Trigger the OK button manually
-         SendMessageW(hInputBox, WM_COMMAND, IDOK, Cast(LPARAM, hOkButton))
-      ELSE
-         IF IsDialogMessage(hInputBox, @uMsg) = 0 THEN
-            TranslateMessage @uMsg
-            DispatchMessage @uMsg
-         END IF
-      END IF
-   WEND
+   ' // Display the dialog as modal
+   pDlg.DialogShowModal(@AfxInputBoxWindowProc)
    ' // Return the output string
    RETURN wszOut
 
@@ -3497,12 +3602,7 @@ PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, 
 
    SELECT CASE uMsg
       CASE WM_INITDIALOG
-         DIM pDlg AS CDialog PTR = AfxCDialogPtr(hDlg)
-         IF pDlg THEN
-            DIM hParent AS HWND = cast(HWND, pDlg->DialogGetUser(0))
-            IF hParent THEN EnableWindow(hParent, FALSE)
-         END IF
-         FUNCTION = TRUE
+         RETURN TRUE
 
       CASE WM_COMMAND
          SELECT CASE CBCTL(wParam, lParam)
@@ -3515,9 +3615,9 @@ PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, 
                IF CBCTLMSG(wParam, lParam) = BN_CLICKED THEN
                   DIM nLen AS LONG = SendMessageW(GetDlgItem(hDlg, 101), WM_GETTEXTLENGTH, 0, 0)
                   IF nLen > 2048 THEN nLen = 2048
-                  DIM pDlg AS CDialog PTR = AfxCDialogPtr(hDlg)
+                  DIM pDlg AS CDialog PTR = cast(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
                   IF pDlg THEN
-                     DIM pText AS LONG_PTR = pDlg->DialogGetUser(1)
+                     DIM pText AS LONG_PTR = pDlg->DialogGetUser(0)
                      IF pText THEN nLen = SendMessageW(GetDlgItem(hDlg, 101), WM_GETTEXT, nLen + 1, cast(..LPARAM, pText))
                   END IF
                   SendMessageW(hDlg, WM_CLOSE, 0, 0)
@@ -3526,15 +3626,11 @@ PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, 
 
       CASE WM_CLOSE
          ' // End the application
-         DIM pDlg AS CDialog PTR = AfxCDialogPtr(hDlg)
-         IF pDlg THEN
-            ' // Enable the parent before destroying the dialog
-            DIM hParent AS HWND = cast(HWND, pDlg->DialogGetUser(0))
-            IF hParent THEN EnableWindow(hParent, CTRUE)
-            ' // Destroy the dialog
-            pDlg->DialogEnd(1)
-         END IF
+         DIM pDlg AS CDialog PTR = cast(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
+         IF pDlg THEN pDlg->DialogEnd(1)
    END SELECT
+
+   RETURN FALSE
 
 END FUNCTION
 ' ========================================================================================

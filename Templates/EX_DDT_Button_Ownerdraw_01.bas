@@ -1,4 +1,4 @@
-﻿'#TEMPLATE DDT Dialog with an ownerdraw button
+'#TEMPLATE DDT Dialog with an ownerdraw button
 #include once "Afx2/DDT.inc"
 USING DDT
 

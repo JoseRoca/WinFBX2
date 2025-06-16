@@ -1,4 +1,4 @@
-﻿'#TEMPLATE DDT Dialog with a 3 state checkbox
+'#TEMPLATE DDT Dialog with a 3 state checkbox
 #include once "Afx2/DDT.inc"
 USING DDT
 

@@ -40,11 +40,6 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    DialogSetColor(hDlg, -1, RGB_GOLD)
    ' DialogDisableRepaintOnResize(hDlg, TRUE)    ' // optional: disable repaint on resizing
 
-   ' // Set icons
-   DIM AS HICON hIconBig, hIconSmall
-   ExtractIconExW("Shell32.dll", 165, @hIconBig, @hIconSmall, 1)
-   DialogSetIconEx(hDlg, hIconBig, hIconSmall)
-
    ' // Add an Edit control
    ControlAddTextBox, hDlg, IDC_EDIT1, "", 15, 15, 305, 23
    ' // Add a multiline Edit control

@@ -577,6 +577,14 @@ END FUNCTION
 ' ========================================================================================
 
 ' ========================================================================================
+' Subclasses the specified control.
+' ========================================================================================
+PRIVATE FUNCTION ControlSetSubclass (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL pCallback AS ANY PTR, BYVAL uIdSubclass AS UINT_PTR, BYVAL dwRefData AS DWORD_PTR) AS BOOLEAN
+   RETURN SetWindowSubclass(GetDlgItem(hDlg, cID), cast(SUBCLASSPROC, pCallback), uIdSubclass, dwRefData)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
 ' Creates a logical font.
 ' Parameters:
 ' - wszFaceName = The typeface name.

@@ -29,8 +29,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    DIM hDlg AS HWND = DialogNewPixels(0, "DDT - Scrollable window",,, 320, 335, WS_OVERLAPPEDWINDOW)
 
    ' // Add a listbox
-   ControlAddListBox, hDlg, IDC_LISTBOX
-   SetWindowPosForDpi hDlg, IDC_LISTBOX, 8, 8, 300, 280
+   ControlAddListBox, hDlg, IDC_LISTBOX, "", 8, 8, 300, 280
 
    ' // Fill the list box
    DIM dwsText AS DWSTRING

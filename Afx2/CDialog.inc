@@ -50,7 +50,7 @@ USING Afx2
 ' CBNMTYPESET(dt, wParam, lParam)
 ' print dt.nmhdr.idfrom
 ' print dt.dwFlags
-#define CBNMTYPESET(tp, wp, lp) memcpy @dt, CAST(ANY PTR, lp), SIZEOF(dt)
+#define CBNMTYPESET(tp, wp, lp) memcpy @tp, CAST(ANY PTR, lp), SIZEOF(tp)
 
 ' ========================================================================================
 ' Macro for debug
@@ -799,7 +799,7 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
       CASE "LISTBOX"
          ' // Adjust the height of the control so that the integral height
          ' // is based on the new font rather than the default SYSTEM_FONT
-         SetWindowPos hCtl, NULL, x, y, nWidth, nHeight, SWP_NOZORDER
+         SetWindowPosForDpi hCtl, NULL, x, y, nWidth, nHeight, SWP_NOZORDER
       CASE "DATETIMEPICKER", "SYSDATETIMEPICK32"
          ' // Sets the font to be used by the date and time picker control's child month calendar control.
          SendMessageW(hCtl, DTM_SETMCFONT, SendMessageW(m_hDlg, WM_GETFONT, 0, 0), CTRUE)
@@ -3332,7 +3332,7 @@ BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
    DIM hCancelButton AS HWND = pDlg.ControlAdd("Button", IDCANCEL, "&Cancel", 246, 72, 75, 25)
 
    ' // Localized strings. In the resource file of user32.dll, the OK button has
-   ' // IDS_OK (801) as the identifier and the Cancel button IDS_CANCEL (801).
+   ' // IDS_OK (800) as the identifier and the Cancel button IDS_CANCEL (801).
    DIM hUser32Instance AS HINSTANCE = GetModuleHandleW("user32.dll")
    DIM wszOk AS WSTRING * 260
    DIM cbLen AS LONG = LoadStringW(hUser32Instance, 800, @wszOk, SIZEOF(wszOk))

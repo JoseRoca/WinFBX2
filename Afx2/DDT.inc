@@ -407,7 +407,7 @@ END FUNCTION
 ' ========================================================================================
 ' // For compatibility with DDT
 #define ControlAddButton ControlAdd("Button")
-#define ControlAddCheckState ControlAdd("CheckState")
+#define ControlAddCheck3State ControlAdd("CheckState")
 #define ControlAddCheckBox ControlAdd("CheckBox")
 #define ControlAddComboBox ControlAdd("ComboBox")
 #define ControlAddFrame ControlAdd("GroupBox")
@@ -1640,6 +1640,7 @@ PRIVATE FUNCTION ListBoxGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL ite
    DIM nLen AS LONG, buffer AS DWSTRING
    IF item = 0 THEN item = ListBoxGetSelect(hDlg, id, 0)
    nLen = SendDlgItemMessageW(hDlg, id, LB_GETTEXTLEN, item - 1, 0)
+   buffer = WSPACE(nLen + 1)
    SendDlgItemMessageW hDlg, id, LB_GETTEXT, item - 1, CAST(LPARAM, STRPTR(buffer))
    RETURN LEFT(buffer, nLen)
 END FUNCTION

@@ -908,7 +908,7 @@ END SUB
 ' Sets the check state for an Option (radio) control, and unsets the check state for other Option buttons in a group.
 ' ========================================================================================
 PRIVATE FUNCTION ControlSetOption (BYVAL hDlg AS HWND, BYVAL cID AS LONG, BYVAL minId AS LONG, BYVAL maxId AS LONG) AS BOOLEAN
-   RETURN ..CheckRadioButton(GetDlgItem(hDlg, cId), minId, maxId, cId)
+   RETURN ..CheckRadioButton(hDlg, minId, maxId, cId)
 END FUNCTION
 ' ========================================================================================
 

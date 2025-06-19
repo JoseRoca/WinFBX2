@@ -434,6 +434,7 @@ END FUNCTION
 #define ControlAddComboBoxEx ControlAdd("ComboBoxEx")
 #define ControlAddHeader ControlAdd("Header")
 #define ControlAddRebar ControlAdd("Rebar")
+#define ControlAddUpDown ControlAdd("UpDown")
 #define ControlAddDateTimePicker ControlAdd("DateTimePicker")
 #define ControlAddMonthCalendar ControlAdd("MonthCalendar")
 #define ControlAddIPAddress ControlAdd("IPAddress")

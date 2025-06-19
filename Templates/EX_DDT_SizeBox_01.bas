@@ -26,7 +26,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dalog with a Size Box", , , 200, 90, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with a Size Box", , , 200, 90, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add a size box to the dialog
    ControlAddSizeBox, hDlg, IDC_SIZEBOX

@@ -26,7 +26,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dalog with a Trackbar", 50, 50, 190, 85, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with a Trackbar", 50, 50, 190, 85, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add a date time picker control to the dialog
    DIM hTrackBar AS HWND = ControlAdd("Trackbar", hDlg, IDC_TRACKBAR, "", 25, 30, 145, 12)

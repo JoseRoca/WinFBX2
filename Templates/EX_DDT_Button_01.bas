@@ -26,7 +26,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dalog with a button",50, 50, 175, 65, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with a button", 50, 50, 175, 65, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add a button to the dialog
    ControlAddButton, hDlg, IDC_OK, "&Ok", 105, 40, 50, 12, BS_DEFPUSHBUTTON

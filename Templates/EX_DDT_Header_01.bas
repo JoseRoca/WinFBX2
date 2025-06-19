@@ -27,7 +27,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with an Header control", , , 210, 100, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with an Header control", , , 210, 100, WS_OVERLAPPEDWINDOW OR DS_CENTER, , "Segoe UI", 9)
 
    ' // Add the header control
    ControlAddHeader, hDlg, IDC_HEADER
@@ -39,7 +39,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    wszItem   = "Item 1"
    thdi.Mask = HDI_WIDTH OR HDI_FORMAT OR HDI_TEXT
    thdi.fmt  = HDF_LEFT OR HDF_STRING
-   thdi.cxy  = AfxScaleX(80)
+   thdi.cxy  = ScaleForDpiX(hDlg, 50)
    thdi.pszText  = @wszItem
    Header_InsertItem(hHeader, 1, @thdi)
    wszItem   = "Item 2"
@@ -51,6 +51,8 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
 
    ' // Add a button
    ControlAddButton, hDlg, IDCANCEL, "&Close", 135, 75, 50, 12
+   ' // Anchor the button
+   ControlAnchor(hDlg, IDCANCEL, AFX_ANCHOR_BOTTOM_RIGHT)
 
    ' // Display and activate the dialog as modal
    DialogShowModal(hDlg, @DlgProc)

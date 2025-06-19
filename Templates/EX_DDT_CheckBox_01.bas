@@ -26,7 +26,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dalog with a checkbox", 50, 50, 175, 65, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with a checkbox", 50, 50, 175, 65, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add a check button to the dialog
    ControlAddCheckBox, hDlg, IDC_CHECKBOX, "Click me", 105, 40, 60, 12

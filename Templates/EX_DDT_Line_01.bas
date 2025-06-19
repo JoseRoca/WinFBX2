@@ -28,7 +28,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dalog with a Line controls", , , 195, 100, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with Line controls", , , 195, 100, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add the Line controls
    ControlAddLine, hDlg, IDC_LINE1, "", 10, 10, 175, 1, WS_VISIBLE OR SS_ETCHEDFRAME OR SS_NOTIFY

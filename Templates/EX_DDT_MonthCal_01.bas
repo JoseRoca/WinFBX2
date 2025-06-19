@@ -26,7 +26,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dalog - Month Calendar", , , , , WS_OVERLAPPEDWINDOW)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog - Month Calendar", , , , , WS_OVERLAPPEDWINDOW)
    DialogSetClient(hDlg, 230, 120)
    DialogCenter(hDlg)
 

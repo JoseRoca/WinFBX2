@@ -29,7 +29,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNewPixels(0, "DDT Dalog with option buttons", 0, 0, 275, 180, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNewPixels(0, "DDT Dialog with option buttons", 0, 0, 275, 180, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add a frame control
    ControlAddFrame, hDlg, IDC_GROUPBOX, "Options", 10, 10, 255, 110

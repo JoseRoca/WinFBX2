@@ -27,7 +27,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dalog with Textboxes", , , 191, 100, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with Textboxes", , , 191, 100, WS_OVERLAPPEDWINDOW OR DS_CENTER)
    ' // Set the dialog's backgroung color
    DialogSetColor(hDlg, -1, RGB_GOLD)
 

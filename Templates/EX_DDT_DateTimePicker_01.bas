@@ -32,7 +32,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    ' // Add a label
    ControlAddLabel, hDlg, IDC_LABEL, "", 25, 15, 150, 12
    ' // Add a date time picker control to the dialog
-   DIM hDTP AS HWND = ControlAdd("DateTimePicker", hDlg, IDC_DTPICKER, "", 25, 30, 115, 12)
+   DIM hDTP AS HWND = ControlAdd("DateTimePicker", hDlg, IDC_DTPICKER, "", 35, 30, 115, 12)
    ' // Set the date
    DIM st AS SYSTEMTIME
    st.wDay = 1

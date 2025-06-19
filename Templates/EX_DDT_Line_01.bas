@@ -1,4 +1,4 @@
-'#TEMPLATE DDT Dialog with a Line control
+'#TEMPLATE DDT Dialog with Line controls
 #include once "Afx2/DDT.inc"
 USING DDT
 

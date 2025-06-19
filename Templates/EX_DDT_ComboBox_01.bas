@@ -26,7 +26,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dalog with a ComboBox", 50, 50, 190, 80, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with a ComboBox", 50, 50, 190, 80, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add a check button to the dialog
    ControlAddComboBox, hDlg, IDC_COMBOBOX, "", 50, 20, 85, 12

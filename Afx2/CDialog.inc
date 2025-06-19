@@ -728,14 +728,6 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          wsClassName = "Scrollbar"
          IF dwStyle = -1 THEN dwStyle = WS_VISIBLE OR SBS_SIZEGRIP OR SBS_SIZEBOXBOTTOMRIGHTALIGN
          bSetFont = FALSE
-         nWidth = GetSystemMetrics(SM_CXVSCROLL)
-         nHeight = GetSystemMetrics(SM_CYHSCROLL)
-         DIM rcClient AS RECT
-         GetClientRect(m_hDlg, @rcClient)
-         x = rcClient.Right - nWidth
-         y = rcClient.Bottom - nHeight
-         x /= m_rx   ' // Adjust for DPI
-         y /= m_ry   ' // Adjust for DPI
       CASE "HSCROLLBAR"
          ' Adds an horizontal scroll bar to the window.
          wsClassName = "Scrollbar"
@@ -870,6 +862,14 @@ PRIVATE FUNCTION CDialog.ControlAdd ( _
          END IF
          ' // Sets the image and deletes the old one
          IF hImage THEN DeleteObject(CAST(HGDIOBJ, SendMessageW(hCtl, BM_SETIMAGE, nType, CAST(LPARAM, hImage))))
+      CASE "SIZEBAR", "SIZEBOX", "SIZEGRIP"
+         nWidth = GetSystemMetrics(SM_CXVSCROLL)
+         nHeight = GetSystemMetrics(SM_CYHSCROLL)
+         DIM rcClient AS RECT
+         GetClientRect(m_hDlg, @rcClient)
+         x = rcClient.Right - nWidth
+         y = rcClient.Bottom - nHeight
+         SetWindowPos hCtl, NULL, x, y, nWidth, nHeight, SWP_NOZORDER OR SWP_SHOWWINDOW
    END SELECT
    ' // --- Optional sunclassing ---
    ' // Subclass the control if pWndProc is not null

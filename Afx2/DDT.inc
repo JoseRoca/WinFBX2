@@ -441,6 +441,8 @@ END FUNCTION
 #define ControlAssSysLink ControlAdd("SysLink")
 #define ControlAddPager ControlAdd("Pager")
 #define ControlAddSizeBar ControlAdd("SizeBar")
+#define ControlAddSizeBox ControlAdd("SizeBox")
+#define ControlAddSizeGrip ControlAdd("SizeGrip")
 #define ControlAddTrackBar ControlAdd("TrackBar")
 #define ControlAddRichEdit ControlAdd("RichEdit")
 #define ControlAddHScrollBar ControlAdd("HScrollBar")
@@ -452,6 +454,7 @@ END FUNCTION
 #define ControlAddLabelOwnerdraw ControlAdd("CustomLabel")
 #define ControlAddFrameWindow ControlAdd("Frame")
 #define ControlAddEditMultiline ControlAdd("EditMultiline")
+#define ControlAddMultilineTextbox ControlAdd("EditMultiline")
 #define ControlAddListBoxMultiSelect ControlAdd("ListBoxMultiSelect")
 ' ========================================================================================
 

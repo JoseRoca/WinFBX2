@@ -39,8 +39,10 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    ControlAddButton, hDlg, IDCANCEL, "&Close", 132, 50, 50, 12
 
    ' // Set the margins
-   SendDlgItemMessageW hDlg, IDC_EDIT1, EM_SETMARGINS, EC_LEFTMARGIN OR EC_RIGHTMARGIN, MAKELONG(AfxScaleX(10), AfxScaleX(10))
-   SendDlgItemMessageW hDlg, IDC_EDIT2, EM_SETMARGINS, EC_LEFTMARGIN OR EC_RIGHTMARGIN, MAKELONG(AfxScaleX(15), AfxScaleX(15))
+   SendDlgItemMessageW hDlg, IDC_EDIT1, EM_SETMARGINS, EC_LEFTMARGIN OR EC_RIGHTMARGIN, _
+      MAKELONG(ScaleForDpiX(hDlg, 10), ScaleForDpiX(hDlg, 10))
+   SendDlgItemMessageW hDlg, IDC_EDIT2, EM_SETMARGINS, EC_LEFTMARGIN OR EC_RIGHTMARGIN, _
+      MAKELONG(ScaleForDpiX(hDlg, 15), ScaleForDpiX(hDlg, 15))
 
    ' // Anchor the controls
    ControlAnchor(hDlg, IDC_EDIT1, AFX_ANCHOR_WIDTH)

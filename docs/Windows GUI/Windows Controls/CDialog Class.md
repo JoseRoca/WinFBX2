@@ -4,19 +4,17 @@ Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a
 
 **Introducing CDialog: A Streamlined Dialog Engine for FreeBasic**
 
-CDialog is a lightweight yet powerful dialog engine designed for FreeBasic developers who want the convenience of high-level UI construction without sacrificing control or clarity. Inspired by the simplicity of PowerBasic’s DDT model but built with modern design principles in mind, CDialog offers a structured, readable, and maintainable approach to dialog-based interfaces.
+CDialog is a lightweight yet powerful dialog engine tailored for FreeBasic developers seeking a clean, high-level approach to building Windows dialogs — without sacrificing control or clarity. Inspired by the straightforwardness of PowerBasic’s DDT model, yet engineered with modern design in mind, CDialog offers structured, maintainable UI development rooted in the familiar logic of the Windows API.
 
-At its core, CDialog replicates and improves upon the DDT engine, offering a cleaner syntax, stronger internal logic, and seamless integration with the Windows API. It provides essential dialog functions, simplified control creation, and event-driven message handling — all without the burden of bloated frameworks or opaque abstractions.
+At its core, CDialog replicates and refines the DDT engine, delivering cleaner syntax, robust internal architecture, and simplified message handling. Whether you're building modal or modeless dialogs, adding controls, or managing layout behavior, CDialog keeps things intuitive and transparent — no bloat, no black boxes.
 
-One of CDialog’s most indispensable features is its automatic anchoring system, which removes the burden of manually repositioning or resizing controls. Based on simple rules rather than complex calculations, the anchoring system adapts UI layouts to different window sizes effortlessly — allowing developers to create flexible, responsive dialogs without micromanaging layout code. It’s a modern solution to a long-standing developer chore, and once you've used it, it’s hard to go back.
+Among its standout features is the automatic anchoring system, which minimizes the tedium of UI resizing logic. By applying simple declarative rules, it handles control repositioning and scaling automatically — sparing developers the hassle of manual calculations. Crucially, this system works identically for dialogs defined in pixels or dialog units, providing consistency and flexibility across design styles.
 
-While it doesn’t expose every window style or capability available through low-level SDK programming, CDialog makes a deliberate tradeoff: ease of use, portability, and compatibility with modern screen resolutions.
+To further streamline DPI-awareness — a growing challenge with modern high-resolution displays — CDialog includes SetWindowPosForDpi and MoveWindowForDpi, utility functions that compensate for DPI scaling issues at runtime with precision and ease. When paired with dialogs (a UI class Microsoft itself has made central to its DPI strategy), these tools offer a resilient, forward-compatible path for building responsive interfaces.
 
-With the widespread adoption of high-DPI monitors, traditional SDK-created windows often face scaling issues unless developers implement extensive DPI-awareness logic themselves. Microsoft, recognizing this challenge, has focused its DPI improvements around its dialog template engine — making dialogs the path of least resistance for building DPI-aware applications that scale gracefully across display types.
+And for those who prefer procedural syntax, DDT.inc bridges the gap by exposing DDT-style wrappers atop the CDialog class — allowing developers to adopt CDialog incrementally or stick with the idioms they already know.
 
-By embracing CDialog, developers can write code that’s both concise and DPI-friendly, without micromanaging layout computations or dealing with runtime DPI compensation tricks.
-
-Whether you're prototyping a quick utility or building a robust tool, *CDialog empowers FreeBasic developers with a practical, modern foundation for native Windows UIs* — grounded in proven dialog logic and adapted for today’s visual demands.
+Whether you're modernizing legacy utilities, crafting new tools, or just writing code for fun, CDialog delivers a flexible, DPI-aware foundation that respects both your time and your muscle memory.
 
 **Include file**: CDialog.inc.
 

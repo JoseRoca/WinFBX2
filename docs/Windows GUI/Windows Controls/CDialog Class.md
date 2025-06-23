@@ -2,6 +2,20 @@
 
 Wrapper class on top of the `CreateDialogIndirectParamW` API function. Creates a dialog using a memory template.
 
+**Introducing CDialog: A Streamlined Dialog Engine for FreeBasic**
+
+CDialog is a lightweight yet powerful dialog engine designed for FreeBasic developers who want the convenience of high-level UI construction without sacrificing control or clarity. Inspired by the simplicity of PowerBasic’s DDT model but built with modern design principles in mind, CDialog offers a structured, readable, and maintainable approach to dialog-based interfaces.
+
+At its core, CDialog replicates and improves upon the DDT engine, offering a cleaner syntax, stronger internal logic, and seamless integration with the Windows API. It provides essential dialog functions, simplified control creation, and event-driven message handling — all without the burden of bloated frameworks or opaque abstractions.
+
+While it doesn’t expose every window style or capability available through low-level SDK programming, CDialog makes a deliberate tradeoff: ease of use, portability, and compatibility with modern screen resolutions.
+
+With the widespread adoption of high-DPI monitors, traditional SDK-created windows often face scaling issues unless developers implement extensive DPI-awareness logic themselves. Microsoft, recognizing this challenge, has focused its DPI improvements around its dialog template engine — making dialogs the path of least resistance for building DPI-aware applications that scale gracefully across display types.
+
+By embracing CDialog, developers can write code that’s both concise and DPI-friendly, without micromanaging layout computations or dealing with runtime DPI compensation tricks.
+
+Whether you're prototyping a quick utility or building a robust tool, *CDialog empowers FreeBasic developers with a practical, modern foundation for native Windows UIs* — grounded in proven dialog logic and adapted for today’s visual demands.
+
 **Include file**: CDialog.inc.
 
 | Name       | Description |

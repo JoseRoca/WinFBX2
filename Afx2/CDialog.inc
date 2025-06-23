@@ -1173,6 +1173,7 @@ PRIVATE FUNCTION CDialog.CDialogProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, BY
    IF pDlg THEN
       DIM res AS LRESULT = CallWindowProcW(CAST(WNDPROC, pDlg->m_pCallback), hDlg, uMsg, wParam, lParam)
       IF pDlg->IsCustom = FALSE THEN RETURN res
+      IF res = TRUE THEN RETURN res
    END IF
    ' // Custom dialog - Deault processing for unprocessed messages
    RETURN DefDlgProcW(hDlg, uMsg, wParam, lParam)
@@ -3304,7 +3305,7 @@ END FUNCTION
 ' - cwsCaption = Caption of the window
 ' - cwsPrompt = Prompt string
 ' - cwsText = Text to edit
-' - nLen = [opt] Maximum length of the string to edit (default = 260 characters)
+' - nLen = [opt] Maximum length of the string to edit (default = 260 characters; maximum = 2048 characters)
 ' - bPassword = [opt] TRUE or FALSE. Default FALSE. Displays all characters as an
 '     asterisk (*) as they are typed into the edit control.
 '   Note: The maximum length is 2048 characters.
@@ -3314,8 +3315,8 @@ BYREF wszCaption AS WSTRING = "", BYREF wszPrompt AS WSTRING = "", BYREF wszText
 BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
 
    ' // Create the dialog
-   DIM dwStyle AS DWORD = WS_VISIBLE OR WS_CAPTION OR WS_POPUPWINDOW
-   DIM dwExStyle AS DWORD = WS_EX_DLGMODALFRAME ' OR WS_EX_CONTROLPARENT
+   DIM dwStyle AS DWORD = WS_VISIBLE OR WS_CAPTION OR WS_POPUPWINDOW OR WS_THICKFRAME
+   DIM dwExStyle AS DWORD = WS_EX_WINDOWEDGE
    DIM pDlg AS CDialog = CDialog("Segoe UI", 9)
    ' // We can't use hParent with DialogNewPixels
    DIM hInputBox AS HWND = pDlg.DialogNewPixels("AfxInputBox", hParent, wszCaption, x, y, 346, 115, dwStyle, dwExStyle)
@@ -3355,6 +3356,11 @@ BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
    ' // Store it in the dialog user data
    pDlg.DialogSetUser(0, cast(LONG_PTR, @wszOut))
 
+   ' // Anchor the controls
+   pDlg.ControlAnchor(101, AFX_ANCHOR_WIDTH)
+   pDlg.ControlAnchor(IDOK, AFX_ANCHOR_BOTTOM)
+   pDlg.ControlAnchor(IDCANCEL, AFX_ANCHOR_BOTTOM_RIGHT)
+
    ' // Display the dialog as modal
    pDlg.DialogShowModal(@AfxInputBoxWindowProc)
    ' // Return the output string
@@ -3391,6 +3397,17 @@ PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, 
                   SendMessageW(hDlg, WM_CLOSE, 0, 0)
                END IF
          END SELECT
+
+      CASE WM_GETMINMAXINFO
+         ' Set the pointer to the address of the MINMAXINFO structure
+         DIM ptmmi AS MINMAXINFO PTR = cast(MINMAXINFO PTR, lParam)
+         ' Set the minimum and maximum sizes that can be produced by dragging the borders of the window
+         DIM pDlg AS CDialog PTR = cast(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
+         IF pDlg THEN
+            ptmmi->ptMinTrackSize.x = 220 * pDlg->rxRatio
+            ptmmi->ptMinTrackSize.y = 150 * pDlg->ryRatio
+         END IF
+         RETURN TRUE
 
       CASE WM_CLOSE
          ' // End the application

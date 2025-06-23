@@ -8,6 +8,8 @@ CDialog is a lightweight yet powerful dialog engine designed for FreeBasic devel
 
 At its core, CDialog replicates and improves upon the DDT engine, offering a cleaner syntax, stronger internal logic, and seamless integration with the Windows API. It provides essential dialog functions, simplified control creation, and event-driven message handling — all without the burden of bloated frameworks or opaque abstractions.
 
+One of CDialog’s most indispensable features is its automatic anchoring system, which removes the burden of manually repositioning or resizing controls. Based on simple rules rather than complex calculations, the anchoring system adapts UI layouts to different window sizes effortlessly — allowing developers to create flexible, responsive dialogs without micromanaging layout code. It’s a modern solution to a long-standing developer chore, and once you've used it, it’s hard to go back.
+
 While it doesn’t expose every window style or capability available through low-level SDK programming, CDialog makes a deliberate tradeoff: ease of use, portability, and compatibility with modern screen resolutions.
 
 With the widespread adoption of high-DPI monitors, traditional SDK-created windows often face scaling issues unless developers implement extensive DPI-awareness logic themselves. Microsoft, recognizing this challenge, has focused its DPI improvements around its dialog template engine — making dialogs the path of least resistance for building DPI-aware applications that scale gracefully across display types.

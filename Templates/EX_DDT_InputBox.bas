@@ -27,7 +27,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "Input Box dialog", 50, 50, 220, 80, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew("MyClassName", 0, "Input Box dialog", 50, 50, 220, 80, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add a label
    ControlAddLabel, hDlg, IDC_LABEL, "", 20, 15, 180, 12, WS_BORDER
@@ -63,11 +63,13 @@ FUNCTION DlgProc (BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD
                ' // If ESC key pressed, close the application by sending an WM_CLOSE message
                IF CBCTLMSG(wParam, lParam) = BN_CLICKED THEN
                   SendMessageW hDlg, WM_CLOSE, 0, 0
+                  RETURN TRUE
                END IF
             CASE IDC_OK
                DIM dwsDate AS DWSTRING = AfxInputBox(hDlg, 0, 0, "Input Box", "Which is your name?", "My name is Nobody")
                ' Don't use MsgBox here
                ControlSetText(hDlg, IDC_LABEL, dwsDate)
+               RETURN TRUE
          END SELECT
 
       CASE WM_CLOSE
@@ -79,3 +81,4 @@ FUNCTION DlgProc (BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD
    RETURN FALSE
 
 END FUNCTION
+' ========================================================================================

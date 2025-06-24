@@ -412,22 +412,18 @@ END DESTRUCTOR
 ' ========================================================================================
 ' Registers a window class.
 ' Parameter:
-' - lpfnWndProc = Pointer to the window procedure.
+' - wszClassName = The class name
 ' Return Value:
-'   An atom that uniquely identifies the class.
-' Remarks:
-'   The values of several of the members of this structure can be retrieved with
-'   GetClassLongPtrW and set with SetClassLongPtrW.
+'   An atom that uniquely identifies the class or 0 on failure.
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.RegisterClass (BYREF wszClassName AS CONST WSTRING) AS ATOM
-
-   DIM wAtom AS ATOM                     ' // Atom
-   DIM wcexw AS WNDCLASSEXW              ' // WNDCLASSEXW structure
-
+   CDIALOG_DP(" - " & wszClassName)
+   ' // Flags it as a custom dialog
+   m_IsCustom = TRUE
    ' // Class name
    IF LEN(wszClassName) THEN m_wszClassName = wszClassName ELSE RETURN 0
-
    ' // Fill the WNDCLASSEXW structure (same data than the #32770 class)
+   DIM wcexw AS WNDCLASSEXW              ' // WNDCLASSEXW structure
    WITH wcexw
       .cbSize        = SIZEOF(wcexw)
       .style         = 0
@@ -442,14 +438,10 @@ PRIVATE FUNCTION CDialog.RegisterClass (BYREF wszClassName AS CONST WSTRING) AS 
       .hIcon         = 0
       .hIconSm       = 0
    END WITH
-
    ' // Register the class
-   wAtom = RegisterClassExW(@wcexw)
-   ' // Flags it as a custom dialog
-   IF wAtom THEN m_IsCustom = TRUE
+   DIM wAtom AS ATOM = RegisterClassExW(@wcexw)
    ' // Return the atom
    FUNCTION = wAtom
-
 END FUNCTION
 ' ========================================================================================
 
@@ -961,7 +953,7 @@ PRIVATE FUNCTION CDialog.DialogNew (BYVAL hParent AS HWND = HWND_DESKTOP, BYREF 
             hParent, NULL, cast(LPARAM, @this))
    ' // Set the default procedure callback
    SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LONG_PTR, PROCPTR(CDialog.CDialogProc)))
-   ' // Store a pointer to the class
+   ' // Store a pointer to the CDialog class
    IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
    ' // Return the dialog handle
    RETURN m_hDlg
@@ -976,6 +968,9 @@ PRIVATE FUNCTION CDialog.DialogNew (BYREF wszClassName AS WSTRING, BYVAL hParent
    BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
    CDIALOG_DP(wszClassName)
    m_UsePixels = FALSE
+   ' // Check if the class is already registered
+   DIM wcw AS WNDCLASSW
+   IF GetClassInfoW(m_hInstance, wszClassName, @wcw) THEN RETURN NULL
    ' // Default styles
    IF dwStyle THEN dwStyle = dwStyle OR DS_3DLOOK OR DS_NOFAILCREATE OR DS_SETFONT
    IF dwStyle = 0 THEN dwStyle = DS_3DLOOK OR DS_SETFONT OR DS_MODALFRAME OR DS_NOFAILCREATE OR WS_BORDER OR _
@@ -987,7 +982,7 @@ PRIVATE FUNCTION CDialog.DialogNew (BYREF wszClassName AS WSTRING, BYVAL hParent
    DIM sTemplate AS STRING = this.DialogTemplate(wszClassName, wszTitle, x, y, cx, cy, dwStyle, dwExStyle)
    m_hDlg = CreateDialogIndirectParamW(m_hInstance, cast(LPCDLGTEMPLATEW, STRPTR(sTemplate)), _
             hParent, NULL, cast(LPARAM, @this))
-   ' // Store a pointer to the class
+   ' // Store a pointer to the CDialog class
    IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
    ' // Return the dialog handle
    RETURN m_hDlg
@@ -1024,7 +1019,7 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYVAL hParent AS HWND = HWND_DESKTOP, 
    END IF
    ' // Set the default procedure callback
    SetWindowLongPtrW(m_hDlg, DWLP_DLGPROC, CAST(LONG_PTR, PROCPTR(CDialog.CDialogProc)))
-   ' // Store a pointer to the class
+   ' // Store a pointer to the CDialog class
    IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
    ' // Return the dialog handle
    RETURN m_hDlg
@@ -1039,6 +1034,9 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL h
    BYVAL dwStyle AS LONG = 0, BYVAL dwExStyle AS LONG = 0) AS HWND
    CDIALOG_DP(wszClassName & " - PIXELS")
    m_UsePixels = TRUE
+   ' // Check if the class is already registered
+   DIM wcw AS WNDCLASSW
+   IF GetClassInfoW(m_hInstance, wszClassName, @wcw) THEN RETURN NULL
    ' // Default styles
    IF dwStyle THEN dwStyle = dwStyle OR DS_3DLOOK OR DS_NOFAILCREATE OR DS_SETFONT
    IF dwStyle = 0 THEN dwStyle = DS_3DLOOK OR DS_SETFONT OR DS_MODALFRAME OR DS_NOFAILCREATE OR WS_BORDER OR _
@@ -1059,7 +1057,7 @@ PRIVATE FUNCTION CDialog.DialogNewPixels (BYREF wszClassName AS WSTRING, BYVAL h
    ELSEIF x = -1 AND y = -1 THEN
       this.DialogCenter   ' // Center the dialog
    END IF
-   ' // Store a pointer to the class
+   ' // Store a pointer to the CDalog class
    IF m_hDlg THEN SetWindowLongPtrW(m_hDlg, DWLP_USER, CAST(LONG_PTR, @this))
    ' // Return the dialog handle
    RETURN m_hDlg
@@ -3302,9 +3300,9 @@ END FUNCTION
 ' - hParent = Handle of the parent window
 ' - x, y = The location on the screen to display the dialog. If both are 0, the dialog
 '   is centered on the screen.
-' - cwsCaption = Caption of the window
-' - cwsPrompt = Prompt string
-' - cwsText = Text to edit
+' - wszCaption = Caption of the window
+' - wszPrompt = Prompt string
+' - wszText = Text to edit
 ' - nLen = [opt] Maximum length of the string to edit (default = 260 characters; maximum = 2048 characters)
 ' - bPassword = [opt] TRUE or FALSE. Default FALSE. Displays all characters as an
 '     asterisk (*) as they are typed into the edit control.
@@ -3318,8 +3316,8 @@ BYVAL nLen AS LONG = 260, BYVAL bPassword AS BOOLEAN = FALSE) AS DWSTRING
    DIM dwStyle AS DWORD = WS_VISIBLE OR WS_CAPTION OR WS_POPUPWINDOW OR WS_THICKFRAME
    DIM dwExStyle AS DWORD = WS_EX_WINDOWEDGE
    DIM pDlg AS CDialog = CDialog("Segoe UI", 9)
-   ' // We can't use hParent with DialogNewPixels
    DIM hInputBox AS HWND = pDlg.DialogNewPixels("AfxInputBox", hParent, wszCaption, x, y, 346, 115, dwStyle, dwExStyle)
+   IF hInputBox = NULL THEN RETURN ""
    ' // Center the dialog
    IF x = 0 AND y = 0 THEN pDlg.DialogCenter(hParent)
    ' // Add a label control
@@ -3407,12 +3405,12 @@ PRIVATE FUNCTION AfxInputBoxWindowProc (BYVAL hDlg AS HWND, BYVAL uMsg AS UINT, 
             ptmmi->ptMinTrackSize.x = 220 * pDlg->rxRatio
             ptmmi->ptMinTrackSize.y = 150 * pDlg->ryRatio
          END IF
-         RETURN TRUE
 
       CASE WM_CLOSE
          ' // End the application
          DIM pDlg AS CDialog PTR = cast(CDialog PTR, GetWindowLongPtrW(hDlg, DWLP_USER))
          IF pDlg THEN pDlg->DialogEnd(1)
+
    END SELECT
 
    RETURN FALSE

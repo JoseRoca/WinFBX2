@@ -8,7 +8,7 @@ At its core, `CDialog` replicates and refines the DDT engine, delivering cleaner
 
 Among its standout features is the automatic anchoring system, which minimizes the tedium of UI resizing logic. By applying simple declarative rules, it handles control repositioning and scaling automatically — sparing developers the hassle of manual calculations. Crucially, this system works identically for dialogs defined in pixels or dialog units, providing consistency and flexibility across design styles.
 
-To address the increasing complexity of handling High DPI scenarios with traditional SDK windows, CDialog embraces the dialog-based approach that Microsoft has progressively enhanced to support DPI-awareness more effectively. By aligning with this well-supported infrastructure, CDialog offers developers a simpler and more resilient path to creating responsive, DPI-aware interfaces — reducing the need for intricate scaling logic and manual compensation.
+With High DPI becoming increasingly dynamic — users can now switch settings or move applications between monitors with differing DPI values — maintaining responsiveness through traditional SDK windows has grown substantially more complex. Dialogs, however, have received focused support from Microsoft to mitigate these challenges, offering a more resilient foundation for DPI-aware interfaces. `CDialog` builds on that strategy, embracing a dialog-centric model that reduces the burden of runtime scaling logic while preserving clarity and control.
 
 And for those who prefer procedural syntax, `DDT.inc` bridges the gap by exposing DDT-style wrappers atop the `CDialog` class — allowing developers to adopt `CDialog` incrementally or stick with the idioms they already know.
 

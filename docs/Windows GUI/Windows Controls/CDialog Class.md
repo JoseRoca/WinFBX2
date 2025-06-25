@@ -12,7 +12,7 @@ As High DPI support has evolved — with dynamic DPI changes and multi-monitor s
 
 And for those who prefer procedural syntax, `DDT.inc` bridges the gap by exposing DDT-style wrappers atop the `CDialog` class — allowing developers to adopt `CDialog` incrementally or stick with the idioms they already know.
 
-Whether you're modernizing legacy utilities, crafting new tools, or just writing code for fun, CDialog delivers a flexible, DPI-aware foundation that respects both your time and your muscle memory.
+Whether you're modernizing legacy utilities, crafting new tools, or just writing code for fun, `CDialog` delivers a flexible, DPI-aware foundation that respects both your time and your muscle memory.
 
 **Include file**: CDialog.inc.
 

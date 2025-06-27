@@ -29,7 +29,7 @@
 #inclib "gdiplus"
 #include once "win/gdiplus-c.bi"
 #include once "win/winspool.bi"
-#include once "Afx/AfxWin.inc"
+#include once "Afx2/AfxWin2.inc"
 
 NAMESPACE Afx2
 
@@ -201,7 +201,7 @@ END FUNCTION
 ' =====================================================================================
 ' Returns the description of a GdiPlus status code.
 ' =====================================================================================
-PRIVATE FUNCTION AfxGdipStatusStr (BYVAL status AS GpStatus) AS CWSTR
+PRIVATE FUNCTION AfxGdipStatusStr (BYVAL status AS GpStatus) AS DWSTRING
 
    DIM wszMsg AS WSTRING * 260 = "Unknown"
 

@@ -41,8 +41,8 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    ' // --> Remember to change the path and name of the icon if needed.
    IF hImageList THEN ImageListAddIcon(hImageList, AfxGdipImageFromFile(ExePath & "\Shutdown_48.png"))
    ' // Fill a BUTTON_IMAGELIST structure and set the image list
-   DIM rc AS RECT = (2, 2, 2, 2)
-   rc = ScaleRectForDpi(hDlg, rc)
+   DIM rc AS RECT = (2, 2, 2, 2)    ' // set the magins for the icon
+   rc = ScaleRectForDpi(hDlg, rc)   ' // scale them for DPI
    DIM bi AS BUTTON_IMAGELIST = (hImageList, rc, BUTTON_IMAGELIST_ALIGN_LEFT)
    Button_SetImageList(hSplitButton, @bi)
 

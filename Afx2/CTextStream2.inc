@@ -163,7 +163,16 @@ PRIVATE FUNCTION CTextStream.GetErrorInfo () AS DWSTRING
       CASE &h800A004B : dws += ": Path/file access error"
       CASE &h800A004C : dws += ": Path not found"
       CASE ELSE
-         dws = "Error &h" & HEX(m_Result)
+         DIM cbLen AS DWORD, pBuffer AS WSTRING PTR
+         cbLen = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER OR _
+                 FORMAT_MESSAGE_FROM_SYSTEM OR FORMAT_MESSAGE_IGNORE_INSERTS, _
+                 NULL, m_Result, BYVAL MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), _
+                 cast(LPWSTR, @pBuffer), 0, NULL)
+         IF cbLen THEN
+            dws = *pBuffer
+            LocalFree pBuffer
+         END IF
+         dws = "Error &h" & HEX(m_Result) & CHR(13, 10) & dws
    END SELECT
    RETURN dws
 END FUNCTION
@@ -405,8 +414,9 @@ END FUNCTION
 ' After a file is initially opened and before anything is written, Line is equal to 1.
 ' ========================================================================================
 PRIVATE FUNCTION CTextStream.Read (BYVAL numChars AS LONG) AS DWSTRING
+   IF m_pTxtStm = NULL THEN m_Result = E_POINTER : RETURN ""
    DIM bstrText AS AFX_BSTR
-   IF m_pTxtStm THEN SetResult(m_pTxtStm->Read(numChars, @bstrText))
+   SetResult(m_pTxtStm->Read(numChars, @bstrText))
    DIM dwsText AS DWSTRING = bstrText
    SysFreeString(bstrText)
    RETURN dwsText
@@ -418,8 +428,9 @@ END FUNCTION
 ' file and returns the resulting string.
 ' ========================================================================================
 PRIVATE FUNCTION CTextStream.ReadLine () AS DWSTRING
+   IF m_pTxtStm = NULL THEN m_Result = E_POINTER : RETURN ""
    DIM bstrText AS AFX_BSTR
-   IF m_pTxtStm THEN SetResult(m_pTxtStm->ReadLine(@bstrText))
+   SetResult(m_pTxtStm->ReadLine(@bstrText))
    DIM dwsText AS DWSTRING = bstrText
    SysFreeString(bstrText)
    RETURN dwsText
@@ -430,8 +441,9 @@ END FUNCTION
 ' Reads an entire TextStream file and returns the resulting string.
 ' ========================================================================================
 PRIVATE FUNCTION CTextStream.ReadAll () AS DWSTRING
+   IF m_pTxtStm = NULL THEN m_Result = E_POINTER : RETURN ""
    DIM bstrText AS AFX_BSTR
-   IF m_pTxtStm THEN SetResult(m_pTxtStm->ReadAll(@bstrText))
+   SetResult(m_pTxtStm->ReadAll(@bstrText))
    DIM dwsText AS DWSTRING = bstrText
    SysFreeString(bstrText)
    RETURN dwsText
@@ -442,7 +454,7 @@ END FUNCTION
 ' Writes a specified string to a TextStream file.
 ' ========================================================================================
 PRIVATE FUNCTION CTextStream.Write (BYREF wszText AS CONST WSTRING) AS HRESULT
-   IF m_pTxtStm = NULL THEN RETURN E_POINTER
+   IF m_pTxtStm = NULL THEN m_Result = E_POINTER : RETURN E_POINTER
    DIM bstrText AS AFX_BSTR = SysAllocString(@wszText)
    SetResult(m_pTxtStm->Write(bstrText))
    SysFreeString(bstrText)
@@ -454,7 +466,7 @@ END FUNCTION
 ' Writes a specified string and newline character to a TextStream file.
 ' ========================================================================================
 PRIVATE FUNCTION CTextStream.WriteLine (BYREF wszText AS CONST WSTRING) AS HRESULT
-   IF m_pTxtStm = NULL THEN RETURN E_POINTER
+   IF m_pTxtStm = NULL THEN m_Result = E_POINTER : RETURN E_POINTER
    DIM bstrText AS AFX_BSTR = SysAllocString(@wszText)
    SetResult(m_pTxtStm->WriteLine(bstrText))
    SysFreeString(bstrText)
@@ -466,7 +478,7 @@ END FUNCTION
 ' Writes a specified number of newline characters to a TextStream file.
 ' ========================================================================================
 PRIVATE FUNCTION CTextStream.WriteBlankLines (BYVAL numLines AS LONG) AS HRESULT
-   IF m_pTxtStm = NULL THEN RETURN E_POINTER
+   IF m_pTxtStm = NULL THEN m_Result = E_POINTER : RETURN E_POINTER
    RETURN SetResult(m_pTxtStm->WriteBlankLines(numLines))
 END FUNCTION
 ' ========================================================================================
@@ -475,7 +487,7 @@ END FUNCTION
 ' Skips a specified number of characters when reading a TextStream file.
 ' ========================================================================================
 PRIVATE FUNCTION CTextStream.Skip (BYVAL numChars AS LONG) AS HRESULT
-   IF m_pTxtStm = NULL THEN RETURN E_POINTER
+   IF m_pTxtStm = NULL THEN m_Result = E_POINTER : RETURN E_POINTER
    RETURN SetResult(m_pTxtStm->Skip(numChars))
 END FUNCTION
 ' ========================================================================================
@@ -484,7 +496,7 @@ END FUNCTION
 ' Skips the next line when reading a TextStream file.
 ' ========================================================================================
 PRIVATE FUNCTION CTextStream.SkipLine () AS HRESULT
-   IF m_pTxtStm = NULL THEN RETURN E_POINTER
+   IF m_pTxtStm = NULL THEN m_Result = E_POINTER : RETURN E_POINTER
    RETURN SetResult(m_pTxtStm->SkipLine)
 END FUNCTION
 ' ========================================================================================

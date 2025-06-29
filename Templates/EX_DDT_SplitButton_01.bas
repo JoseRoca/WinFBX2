@@ -74,23 +74,37 @@ FUNCTION DlgProc (BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD
                IF CBCTLMSG(wParam, lParam) = BN_CLICKED THEN
                   SendMessageW hDlg, WM_CLOSE, 0, 0
                END IF
+            CASE IDC_SPLITBUTTON
+               IF CBCTLMSG(wParam, lParam) = BN_CLICKED THEN
+                  MsgBox(hDlg, "Button clicked", MB_OK, "Message")
+               END IF
          END SELECT
 
       CASE WM_NOTIFY
          ' // Processs notify messages sent by the split button
          DIM tDropDown AS NMBCDROPDOWN
          CBNMTYPESET(tDropDown, wParam, lParam)
-         IF tDropDown.hdr.idFrom = IDC_SPLITBUTTON AND tDropDown.hdr.code = BCN_DROPDOWN THEN
-            ' // Get the screen coordinates of the button
-            DIM pt AS POINT = (tDropdown.rcButton.left, tDropDown.rcButton.bottom)
-            ClientToScreen(tDropDown.hdr.hwndFrom, @pt)
-            ' // Create a menu and add items
-            DIM hSplitMenu AS HMENU = MenuNewPopup
-            MenuAddString(hSplitMenu, "Menu item 1", 1, MF_ENABLED)
-            MenuAddString(hSplitMenu, "Menu item 2", 2, MF_ENABLED)
-            MenuAddString(hSplitMenu, "Menu item 3", 3, MF_ENABLED)
-            DIM id AS LONG = MenuContext(hDlg, hSplitMenu, pt.x, pt.y, TPM_LEFTBUTTON)
-            IF id THEN MsgBox(hDlg, "You clicked item " & WSTR(id), MB_OK, "Message")
+         IF tDropDown.hdr.idFrom = IDC_SPLITBUTTON THEN
+            IF tDropDown.hdr.code = BCN_DROPDOWN THEN
+               ' // Get the screen coordinates of the button
+               DIM pt AS POINT = (tDropdown.rcButton.left, tDropDown.rcButton.bottom)
+               ClientToScreen(tDropDown.hdr.hwndFrom, @pt)
+               ' // Create a menu and add items
+               DIM hSplitMenu AS HMENU = MenuNewPopup
+               MenuAddString(hSplitMenu, "Menu item 1", 1, MF_ENABLED)
+               MenuAddString(hSplitMenu, "Menu item 2", 2, MF_ENABLED)
+               MenuAddString(hSplitMenu, "Menu item 3", 3, MF_ENABLED)
+               DIM id AS LONG = MenuContext(hDlg, hSplitMenu, pt.x, pt.y, TPM_LEFTBUTTON)
+               IF id THEN MsgBox(hDlg, "You clicked item " & WSTR(id), MB_OK, "Message")
+            ELSEIF tDropDown.hdr.code = BCN_HOTITEMCHANGE THEN
+               DIM tHotItem AS NMBCHOTITEM
+               CBNMTYPESET(tHotItem, wParam, lParam)
+               IF (tHotItem.dwFlags AND HICF_ENTERING) THEN
+                  DialogSetText hDlg, "Mouse entering the button"
+               ELSEIF (tHotItem.dwFlags AND HICF_LEAVING) THEN
+                  DialogSetText hDlg, "Mouse leaving the button"
+               END IF
+            END IF
          END IF
          RETURN TRUE
 

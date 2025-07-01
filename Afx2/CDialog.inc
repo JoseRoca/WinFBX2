@@ -2,7 +2,7 @@
 ' Platform: Microsoft Windows
 ' Filename: CDialog.inc
 ' Purpose:  Dialog box class
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.
@@ -280,6 +280,7 @@ Public:
    DECLARE FUNCTION GetUserDataItem (BYVAL cid AS LONG) AS LONG
    DECLARE FUNCTION ControlSetUser (BYVAL cid AS LONG, BYVAL index AS LONG, BYVAL userValue AS LONG_PTR) AS BOOLEAN
    DECLARE FUNCTION ControlGetUser (BYVAL cid AS LONG, BYVAL index AS LONG) AS LONG_PTR
+   DECLARE FUNCTION MenuContext (BYVAL hPopUpMenu AS HMENU, BYVAL x AS LONG, BYVAL y AS LONG, BYVAL flags AS UINT) AS LONG
 
    ' // Colors
    DECLARE FUNCTION DialogSetColor (BYVAL foreColor AS COLORREF, BYVAL backColor AS COLORREF) AS BOOLEAN
@@ -499,7 +500,7 @@ END FUNCTION
 ' ========================================================================================
 ' Adds a control to the dialog.
 ' Note: Although the control identifier is a LONG, we must declare it here as a LONG_PTR
-' because we have to cast it in CreateWindowEx to the member HMENU, which is an handle
+' because we have to cast it in CreateWindowExW to the member HMENU, which is an handle
 ' (4 bytes in 32-bit, 8 bytes in 64-bit).
 ' ========================================================================================
 PRIVATE FUNCTION CDialog.ControlAdd ( _
@@ -3080,6 +3081,15 @@ PRIVATE FUNCTION CDialog.ControlGetUser (BYVAL cID AS LONG, BYVAL index AS LONG)
    DIM hCtl AS HWND = GetDlgItem(m_hDlg, cID)
    DIM nItem AS LONG = this.GetUserDataItem(cID)
    IF nItem > -1 THEN RETURN m_rgCtrlUserData(nItem).Values(index)
+END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Creates a floating context menu.
+' ========================================================================================
+PRIVATE FUNCTION CDialog.MenuContext (BYVAL hPopUpMenu AS HMENU, BYVAL x AS LONG, BYVAL y AS LONG, BYVAL flags AS UINT) AS LONG
+   flags = flags OR TPM_NONOTIFY OR TPM_RETURNCMD OR TPM_NOANIMATION
+   RETURN TrackPopUpMenu(hPopUpMenu, flags, x, y, 0, m_hDlg, NULL)
 END FUNCTION
 ' ========================================================================================
 

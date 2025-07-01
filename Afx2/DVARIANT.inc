@@ -2,7 +2,7 @@
 ' Platform: Microsoft Windows
 ' Filename: DVARIANT.inc
 ' Purpose:  Implements a VARIANT data type.
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.
@@ -2497,7 +2497,7 @@ END FUNCTION
 ' Returns a description of the last result code.
 ' ========================================================================================
 PRIVATE FUNCTION DVARIANT.GetErrorInfo (BYVAL nError AS LONG = -1) AS DWSTRING
-   IF nError = -1 THEN nError = GetLastError
+   IF nError = -1 THEN nError = m_Result
    DIM cbLen AS DWORD, pBuffer AS WSTRING PTR, dwsMsg AS DWSTRING
    cbLen = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER OR _
            FORMAT_MESSAGE_FROM_SYSTEM OR FORMAT_MESSAGE_IGNORE_INSERTS, _

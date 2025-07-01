@@ -2,7 +2,7 @@
 ' Platform: Microsoft Windows
 ' Filename: AfxFontProcs2.inc
 ' Purpose:  Windows font procedures
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.
@@ -23,13 +23,6 @@
 ' OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
-
-#if not defined(UNICODE)
-   #define UNICODE
-#endif
-#if not defined(_WIN32_WINNT)
-   #define _WIN32_WINNT &h0602
-#endif
 
 #pragma once
 #include once "Afx2/AfxWin2.inc"

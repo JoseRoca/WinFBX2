@@ -2,7 +2,7 @@
 ' Platform: Microsoft Windows
 ' Filename: AfxFileProcs2.inc
 ' Purpose:  Windows file controls
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.

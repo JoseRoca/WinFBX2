@@ -2,7 +2,7 @@
 ' Platform: Microsoft Windows
 ' Filename: AfxVarProcs2.inc
 ' Purpose:  VARIANT wrapper procedures.
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.

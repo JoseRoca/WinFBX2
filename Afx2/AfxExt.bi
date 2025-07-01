@@ -1,8 +1,8 @@
 ' ########################################################################################
 ' Platform: Microsoft Windows
-' Filename: AfxExt.inc
-' Purpose:  Extensions to te FreeBasic headers for Windows
-' Compiler: Free Basic 32 & 64 bit
+' Filename: AfxExt.bi
+' Purpose:  Extensions to the FreeBasic headers for Windows
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.
@@ -26,6 +26,7 @@
 
 #pragma once
 #include once "windows.bi"
+#include once "win/shtypes.bi"
 
 ' ########################################################################################
 '                                  *** WINUSER32 ***

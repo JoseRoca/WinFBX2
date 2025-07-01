@@ -2,7 +2,7 @@
 ' Platform: Microsoft Windows
 ' Filename: AfxSort2.inc
 ' Purpose:  Sorting procedures
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.
@@ -578,8 +578,8 @@ END SUB
    Afx2_ArraySortString(rg(), ascending)
 '   Afx2_ArraySortString(@rg(0), UBOUND(rg) - LBOUND(rg) + 1, ascending)
 #elseif TypeOf(rg) = TypeOf(STRING * SIZEOF(TypeOf((rg(0)))) -1)
-' The length stored in the descritor of a fixed-length string includes the terminating null.
-' We can sort them as if they were ZStringss by substratic one from the value returned by SIZEOF,
+' The length stored in the descriptor of a fixed-length string includes the terminating null.
+' We can sort them as if they were ZStrings by substratic one from the value returned by SIZEOF,
    Afx2_ArraySortZString(@rg(0), UBOUND(rg) - LBOUND(rg) + 1, SIZEOF(rg(LBOUND(rg))), ascending)
 #elseif TypeOf(rg) = TypeOf(ZSTRING * SIZEOF(TypeOf((rg(0)))))
    Afx2_ArraySortZString(@rg(0), UBOUND(rg) - LBOUND(rg) + 1, SIZEOF(rg(LBOUND(rg))), ascending)

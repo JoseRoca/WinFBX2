@@ -2,7 +2,7 @@
 ' Platform: Microsoft Windows
 ' Filename: DWSTRING.bi
 ' Purpose:  Implements a dynamic unicode ring data type
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.
@@ -24,6 +24,7 @@
 ' DEALINGS IN THE SOFTWARE.'
 ' ########################################################################################
 
+#pragma once
 #if not defined(UNICODE)
    #define UNICODE
 #endif
@@ -31,7 +32,6 @@
    #define _WIN32_WINNT &h0602
 #endif
 ' // Include files
-#pragma once
 #INCLUDE ONCE "windows.bi"
 #INCLUDE ONCE "/crt/string.bi"
 #INCLUDE ONCE "/crt/wchar.bi"

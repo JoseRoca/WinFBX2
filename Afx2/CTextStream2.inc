@@ -2,7 +2,7 @@
 ' Platform: Microsoft Windows
 ' Filename: CTextStream2.inc
 ' Purpose:  Wrapper class for reading and writing text files.
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.

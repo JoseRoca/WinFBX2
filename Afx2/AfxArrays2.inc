@@ -1,8 +1,8 @@
 ' ########################################################################################
 ' Platform: Microsoft Windows
 ' Filename: AfxArrays2.inc
-' Purpose:  Sorting algorithms
-' Compiler: Free Basic 32 & 64 bit
+' Purpose:  Macros to manipulate one-dimensional dynamic arrays.
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.
@@ -25,7 +25,7 @@
 ' ########################################################################################
 
 #pragma once
-#INCLUDE ONCE "/fbc-int/array.bi"
+#include once "/fbc-int/array.bi"
 USING FBC
 
 NAMESPACE Afx2

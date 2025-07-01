@@ -2,7 +2,7 @@
 ' Platform: Microsoft Windows
 ' Filename: AfxMenuProcs2.inc
 ' Purpose:  Windows Menus.
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.
@@ -937,6 +937,15 @@ PRIVATE FUNCTION MenuGetContextHelpId (BYVAL hMenu AS HMENU) AS BOOLEAN
    RETURN GetMenuContextHelpId(hMenu)
 END FUNCTION
 ' =====================================================================================
+
+' ========================================================================================
+' Creates a floating context menu.
+' ========================================================================================
+PRIVATE FUNCTION MenuContext (BYVAL hDlg AS HWND, BYVAL hPopUpMenu AS HMENU, BYVAL x AS LONG, BYVAL y AS LONG, BYVAL flags AS UINT) AS LONG
+   flags = flags OR TPM_NONOTIFY OR TPM_RETURNCMD OR TPM_NOANIMATION
+   RETURN TrackPopUpMenu(hPopUpMenu, flags, x, y, 0, hDlg, NULL)
+END FUNCTION
+' ========================================================================================
 
 
 ' ########################################################################################

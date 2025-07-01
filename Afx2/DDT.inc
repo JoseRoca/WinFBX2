@@ -1,8 +1,8 @@
 ' ########################################################################################
 ' Platform: Microsoft Windows
-' Filename: DDT.bas
+' Filename: DDT.inc
 ' Purpose:  Wrapper module to use DDT-like syntax with CDialog.
-' Compiler: Free Basic 32 & 64 bit
+' Compiler: FreeBASIC 32 & 64 bit
 ' Copyright (c) 2025 José Roca
 '
 ' License: Distributed under the MIT license.
@@ -28,7 +28,8 @@
 #include once "Afx2/CDialog.inc"
 #include once "Afx2/AfxWin2.inc"
 #include once "Afx2/AfxCtl2.inc"
-#include once "AfxMenuProcs2.inc"
+#include once "Afx2/AfxMenuProcs2.inc"
+#include once "Afx2/AfxStrProcs2.inc"
 using Afx2
 
 ' ========================================================================================
@@ -61,8 +62,7 @@ PRIVATE FUNCTION GetCDialogPtr (BYVAL hDlg AS HWND) AS CDialog PTR
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' Returns a pointer to the CDialog class given the handle of the window created with it
-' or the handle of any of it's children.
+' Determines whether the specified window handle identifies an existing window.
 ' ========================================================================================
 PRIVATE FUNCTION IsWin OVERLOAD (BYVAL hDlg AS HWND) AS BOOLEAN
    IF hDlg = NULL THEN RETURN FALSE
@@ -2416,7 +2416,7 @@ END FUNCTION
 ' Returns TRUE if successful, or FALSE otherwise.
 ' ========================================================================================
 PRIVATE FUNCTION ToolBarAddButton (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL image AS LONG, BYVAL cmd AS LONG, _
-BYVAL style AS UBYTE, BYVAL pwszText AS WSTRING PTR, BYVAL item AS LONG = 0) AS BOOLEAN
+BYVAL style AS UBYTE = 0, BYVAL pwszText AS WSTRING PTR = NULL, BYVAL item AS LONG = 0) AS BOOLEAN
    DIM fsState AS UBYTE = TBSTATE_ENABLED
    DIM idxString AS INT_PTR
    IF pwszText <> NULL THEN idxString = IIF(LEN(*pwszText) = 0, -1, CAST(INT_PTR, pwszText))
@@ -2425,11 +2425,14 @@ BYVAL style AS UBYTE, BYVAL pwszText AS WSTRING PTR, BYVAL item AS LONG = 0) AS 
 #else
    DIM tbb AS TBBUTTON = (image - 1, cmd, fsState, style, {0, 0}, 0, idxString)
 #endif
+   DIM bRes AS BOOLEAN
    IF item = 0 THEN
-      RETURN SendDlgItemMessageW(hDlg, id, TB_ADDBUTTONSW, 1, CAST(LPARAM, @tbb))
+      bRes = SendDlgItemMessageW(hDlg, id, TB_ADDBUTTONSW, 1, CAST(LPARAM, @tbb))
    ELSE
-      RETURN SendDlgItemMessageW(hDlg, id, TB_INSERTBUTTONW, item - 1, CAST(LPARAM, @tbb))
+      bRes = SendDlgItemMessageW(hDlg, id, TB_INSERTBUTTONW, item - 1, CAST(LPARAM, @tbb))
    END IF
+   SendDlgItemMessage hDlg, id, TB_AUTOSIZE, 0, 0
+   RETURN bRes
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -2437,20 +2440,26 @@ END FUNCTION
 ' Returns TRUE if successful, or FALSE otherwise.
 ' ========================================================================================
 PRIVATE FUNCTION ToolBarAddSeparator (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL size AS LONG, _
-   BYVAL cmd AS LONG = 0, BYVAL item AS LONG) AS BOOLEAN
+   BYVAL cmd AS LONG = 0, BYVAL item AS LONG = 0) AS BOOLEAN
+   IF DialogUsesPixels(hDlg) = FALSE THEN
+      size *= DluToPixRX(hDlg)
+   ELSE
+      ScaleForDpiX(hDlg, size)
+   END IF
 #ifdef __FB_64BIT__
    DIM tbb AS TBBUTTON = (size, cmd, TBSTATE_ENABLED, BTNS_SEP, {0, 0, 0, 0, 0, 0}, 0, -1)
 #else
    DIM tbb AS TBBUTTON = (size, cmd, TBSTATE_ENABLED, BTNS_SEP, {0, 0}, 0, -1)
 #endif
-   DIM message as LONG
+   DIM message AS DWORD
    IF item = 0 THEN
       message = TB_ADDBUTTONSW   ' Append separator at the end
+      RETURN SendDlgItemMessageW(hDlg, id, message, 1, cast(LPARAM, @tbb))
    ELSE
       message = TB_INSERTBUTTONW   ' Insert separator at a specified position
       item -= 1
+      RETURN SendDlgItemMessageW(hDlg, id, message, item, cast(LPARAM, @tbb))
    END IF
-   RETURN SendDlgItemMessageW(hDlg, id, message, 1, cast(LPARAM, @tbb))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -2511,15 +2520,6 @@ PRIVATE FUNCTION ToolBarGetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL it
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' Sets the image list that the toolbar will use to display buttons that are in their
-' default state. Returns the handle to the image list previously used to display buttons
-' in their default state, or NULL if no image list was previously set.
-' ========================================================================================
-PRIVATE FUNCTION ToolBarSetImageList (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL himlNew AS HIMAGELIST) AS HIMAGELIST
-   FUNCTION = cast(HIMAGELIST, SendDlgItemMessageW(hDlg, id, TB_SETIMAGELIST, 0, cast(LPARAM, himlNew)))
-END FUNCTION
-' ========================================================================================
-' ========================================================================================
 ' Sets the state for the specified button in a toolbar.
 ' Returns TRUE if successful, or FALSE otherwise.
 ' ========================================================================================
@@ -2544,6 +2544,36 @@ PRIVATE FUNCTION ToolBarSetState (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL it
    RETURN res
 END FUNCTION
 ' ========================================================================================
+' ========================================================================================
+' Sets the image list that the toolbar will use to display buttons that are in their
+' default state. Returns the handle to the image list previously used to display buttons
+' in their default state, or NULL if no image list was previously set.
+' nType: 0 = Default images; 1 = Disabled images; 2 = Hot images
+' ========================================================================================
+PRIVATE FUNCTION ToolBarSetImageList (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL himlNew AS HIMAGELIST, BYVAL nType AS LONG = 0) AS HIMAGELIST
+   DIM message AS DWORD = TB_SETIMAGELIST
+   IF nType = 1 THEN message = TB_SETDISABLEDIMAGELIST
+   IF nType = 2 THEN message = TB_SETHOTIMAGELIST
+   RETURN cast(HIMAGELIST, SendDlgItemMessageW(hDlg, id, message, 0, cast(LPARAM, himlNew)))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+' Causes a toolbar to be resized.
+' ========================================================================================
+PRIVATE SUB ToolBarAutosize (BYVAL hDlg AS HWND, BYVAL id AS LONG)
+   SendDlgItemMessage hDlg, id, TB_AUTOSIZE, 0, 0
+END SUB
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ToolbarEnableButton (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL idButton AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, TB_ENABLEBUTTON, cast(WPARAM, idButton), cast(LPARAM, MAKELONG(CTRUE, 0)))
+END FUNCTION
+' ========================================================================================
+' ========================================================================================
+PRIVATE FUNCTION ToolbarDisableButton (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL idButton AS LONG) AS BOOLEAN
+   RETURN SendDlgItemMessageW(hDlg, id, TB_ENABLEBUTTON, cast(WPARAM, idButton), cast(LPARAM, MAKELONG(FALSE, 0)))
+END FUNCTION
+' ========================================================================================
 
 
 ' ########################################################################################
@@ -2558,26 +2588,57 @@ END FUNCTION
 '   the right edge of the corresponding part extends to the border of the window.
 ' Returns TRUE if successful, or FALSE otherwise.
 ' ========================================================================================
-PRIVATE FUNCTION StatusBarSetParts CDECL (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL numParts AS DWORD, ...) AS BOOLEAN
-   DIM Parts(numParts - 1) AS LONG
-   DIM args AS cva_list
-   cva_start(args, numParts)
-   ' Convert sizes into absolute positions
-   FOR i AS LONG = 0 TO numParts - 1
-      DIM size AS LONG = cva_arg(args, LONG)
-      IF size > 0 THEN ScaleForDpiX(hDlg, size)
-      IF i = 0 Then
-         Parts(i) = size
+'PRIVATE FUNCTION StatusBarSetParts CDECL (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL numParts AS DWORD, ...) AS BOOLEAN
+'   DIM Parts(numParts - 1) AS LONG
+'   DIM args AS cva_list
+'   cva_start(args, numParts)
+'   ' Convert sizes into absolute positions
+'   FOR i AS LONG = 0 TO numParts - 1
+'      DIM size AS LONG = cva_arg(args, LONG)
+'      IF size > 0 THEN ScaleForDpiX(size)
+'      IF i = 0 Then
+'         Parts(i) = size
+'      ELSE
+'         IF size < 1 THEN
+'            Parts(i) = -1 ' Extend to right border
+'         ELSE
+'            Parts(i) = Parts(i - 1) + size
+'         END IF
+'      END IF
+'   NEXT
+'   cva_end(args)
+'   RETURN SendDlgItemMessageW(hDlg, id, SB_SETPARTS, numParts, cast(LPARAM, @Parts(0)))
+'END FUNCTION
+' ========================================================================================
+
+' ========================================================================================
+' Sets the number of parts of a status bar.
+' strSizes = Comma delited string of desired sizes. e.g.:  strSizes = "90,34,42,184"
+' creates 4 parts of 90, 34, 42 and 184 pixels, and strSizes = "90,34,42,184,-1" creates
+' 5 parts, the last one extending until the right border of the window.
+' ========================================================================================
+FUNCTION StatusBarSetParts (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYREF strSizes AS STRING) AS BOOLEAN
+   DIM AS LONG nParts, X, y
+   nParts = MAX(wstrParseCount(strSizes),1)
+   IF nParts < 2 THEN RETURN SendDlgItemMessageW(hDlg, id, SB_SIMPLE, (nParts = 1), 0)
+   DIM Parts(1 TO nParts) AS LONG
+   FOR X = 1 TO nParts
+      Y = VAL(wstrParse(strSizes, X))
+      Y = ScaleForDpiX(hDlg, Y)   ' // Scale according the DPI
+      IF X = 1 THEN
+         Parts(X) = Y
       ELSE
-         IF size < 1 THEN
-            Parts(i) = -1 ' Extend to right border
+         IF Y < 1 THEN
+            Parts(X) = -1
          ELSE
-            Parts(i) = Parts(i - 1) + size
+            Parts(X) = Parts(X - 1) + Y
          END IF
       END IF
    NEXT
-   cva_end(args)
-   RETURN SendDlgItemMessageW(hDlg, id, SB_SETPARTS, numParts, cast(LPARAM, @Parts(0)))
+   IF SendDlgItemMessageW(hDlg, id, SB_SETPARTS, nParts, cast(LPARAM, @Parts(1))) <> 0 THEN
+      SendDlgItemMessageW(hDlg, id, SB_SIMPLE, (nParts = 1), 0)
+   END IF
+   RETURN TRUE
 END FUNCTION
 ' ========================================================================================
 
@@ -2665,11 +2726,13 @@ PRIVATE FUNCTION ImageListNewBitmap (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG
    DIM flags AS LONG = ILC_COLOR
    ' Set color depth
    SELECT CASE depth
-     CASE  4: flags = ILC_COLOR4
-     CASE  8: flags = ILC_COLOR8
-     CASE 16: flags = ILC_COLOR16
-     CASE 24: flags = ILC_COLOR24
-     CASE 32: flags = ILC_COLOR32
+      CASE  4: flags = ILC_COLOR4
+      CASE  8: flags = ILC_COLOR8
+      CASE 16: flags = ILC_COLOR16
+      CASE 24: flags = ILC_COLOR24
+      CASE 32: flags = ILC_COLOR32
+      CASE ELSE
+         flags = ILC_COLOR32
    END SELECT
    ' Create the ImageList
    RETURN ImageList_Create(nWidth, nHeight, flags, initial, 0)
@@ -2680,11 +2743,13 @@ PRIVATE FUNCTION ImageListNewIcon (BYVAL nWidth AS LONG, BYVAL nHeight AS LONG, 
    DIM flags AS LONG = ILC_COLOR
    ' Set color depth
    SELECT CASE depth
-     CASE  4: flags = ILC_COLOR4
-     CASE  8: flags = ILC_COLOR8
-     CASE 16: flags = ILC_COLOR16
-     CASE 24: flags = ILC_COLOR24
-     CASE 32: flags = ILC_COLOR32
+      CASE  4: flags = ILC_COLOR4
+      CASE  8: flags = ILC_COLOR8
+      CASE 16: flags = ILC_COLOR16
+      CASE 24: flags = ILC_COLOR24
+      CASE 32: flags = ILC_COLOR32
+      CASE ELSE
+         flags = ILC_COLOR32
    END SELECT
    ' Enable transparency support
    flags = flags OR ILC_MASK

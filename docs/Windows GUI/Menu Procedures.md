@@ -399,7 +399,7 @@ FUNCTION MenuCheckRadioButton (BYVAL hMenu AS HMENU, BYVAL first AS LONG, BYVAL 
 | *first* | The identifier or position of the first menu item in the group. |
 | *last* | The identifier or position of the last menu item in the group. |
 | *check* | The identifier or position of the menu item to check. |
-| *fByPosition* | Controls the meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, *item* is the position of the menu item, where position = 1 for the first position, position = 2 for the second, and so on.  |
+| *fByPosition* | Controls the meaning of *check*. If this parameter is FALSE, *check* is a menu item identifier. Otherwise, *check* is the position of the menu item, where position = 1 for the first position, position = 2 for the second, and so on.  |
 
 #### Usage example:
 ```
@@ -414,7 +414,7 @@ If the function succeeds, the return value is TRUE. If the function fails, the r
 
 ### <a name="menucontext"></a>MenuContext
 
-Creates a floating context menu. A context menu is a floating popup menu which is shown until the user makes a selection or dismisses it.  It can appear anywhere on the screen.
+Creates a floating context menu. A context menu is a floating popup menu thet remain visible until the user makes a selection or dismisses it. It can appear anywhere on the screen.
 
 ```
 FUNCTION MenuContext (BYVAL hDlg AS HWND, BYVAL hPopUpMenu AS HMENU, _
@@ -426,7 +426,7 @@ FUNCTION MenuContext (BYVAL hDlg AS HWND, BYVAL hPopUpMenu AS HMENU, _
 | *hPopUpMenu* | Handle of a menu created with **MenuNewPopup**. |
 | *fByPosition* | Controls the meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, *item* is the position of the menu item, where position = 1 for the first position, position = 2 for the second, and so on.  |
 | *x, y* | Location of the context menu, in pixels, relative to the upper left corner of the desktop. |
-| *flags* | Use zero of more of these flags to specify function options. |
+| *flags* | Use zero of more of these flags to specify function options.  May be combined using **OR**. |
 
 Use one of the following flags to specify how the function positions the shortcut menu horizontally.
 
@@ -453,9 +453,12 @@ Use one of the following flags to specify which mouse button the shortcut menu t
 
 #### Return value:
 
-The menu-item identifier of the item that the user selected. If the user cancels the menu without making a selection, or if an error occurs, the return value is zero.
+The menu-item identifier of the item that the user selected. If the user cancels the menu without making a selection, or if an error occurs, the return value is zero (0).
 
 #### Usage example:
+
+Displaying a menu when a split button is clicked.
+
 ```
 ' // Processs notify messages sent by the split button
 CASE WM_NOTIFY

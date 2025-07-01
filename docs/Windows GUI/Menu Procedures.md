@@ -450,7 +450,33 @@ Use one of the following flags to specify which mouse button the shortcut menu t
 | ------| ------- |
 | **TPM_LEFTBUTTON** | The user can select menu items with only the left mouse button. |
 | **TPM_RIGHTBUTTON** | The user can select menu items with both the left and right mouse buttons. |
- 
+
+#### Return value:
+
+The menu-item identifier of the item that the user selected. If the user cancels the menu without making a selection, or if an error occurs, the return value is zero.
+
+#### Usage example:
+```
+' // Processs notify messages sent by the split button
+CASE WM_NOTIFY
+   DIM tDropDown AS NMBCDROPDOWN
+   CBNMTYPESET(tDropDown, wParam, lParam)
+   IF tDropDown.hdr.idFrom = IDC_SPLITBUTTON THEN
+      IF tDropDown.hdr.code = BCN_DROPDOWN THEN
+         ' // Get the screen coordinates of the button
+         DIM pt AS POINT = (tDropdown.rcButton.left, tDropDown.rcButton.bottom)
+         ClientToScreen(tDropDown.hdr.hwndFrom, @pt)
+         ' // Create a menu and add items
+         DIM hSplitMenu AS HMENU = MenuNewPopup
+         MenuAddString(hSplitMenu, "Menu item 1", 1, MF_ENABLED)
+         MenuAddString(hSplitMenu, "Menu item 2", 2, MF_ENABLED)
+         MenuAddString(hSplitMenu, "Menu item 3", 3, MF_ENABLED)
+         DIM id AS LONG = MenuContext(hDlg, hSplitMenu, pt.x, pt.y, TPM_LEFTBUTTON)
+         IF id THEN MsgBox(hDlg, "You clicked item " & WSTR(id), MB_OK, "Message")
+      END IF
+   END IF
+```
+
 ---
 
 ### <a name="menudelete"></a>MenuDelete

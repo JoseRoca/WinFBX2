@@ -35,6 +35,7 @@ See more information at [About Menus](https://learn.microsoft.com/en-us/windows/
 | [MenuBoldItem](#menubolditem) | Changes the text of a menu item to bold. |
 | [MenuCheckItem](#menucheckitem) | Checks a menu item. |
 | [MenuCheckRadioButton](#menucheckradiobutton) | Checks a specified menu item and makes it a radio item. |
+| [MenuContext](#menucontext) | Creates a floating context menu. |
 | [MenuDelete](#menudelete) | Deletes a menu item from an existing menu. |
 | [MenuDestroy](#menudestroy) | Destroys the main menu from the window or dialog. |
 | [MenuDisableItem](#menudisableitem) | Disables the specified menu item. |
@@ -409,6 +410,47 @@ MenuCheckRadioButton(GetSubMenu(hMenu, 0), 1, 2, 2, TRUE)   ' By position
 
 If the function succeeds, the return value is TRUE. If the function fails, the return value is FALSE. To get extended error information, call **GetLastError**.
 
+---
+
+### <a name="menucontext"></a>MenuContext
+
+Creates a floating context menu. A context menu is a floating popup menu which is shown until the user makes a selection or dismisses it.  It can appear anywhere on the screen.
+
+```
+FUNCTION MenuContext (BYVAL hDlg AS HWND, BYVAL hPopUpMenu AS HMENU, _
+   BYVAL x AS LONG, BYVAL y AS LONG, BYVAL flags AS UINT) AS LONG
+```
+| Parameter | Description |
+| --------- | ----------- |
+| *hDLg* | A handle to the dialog. |
+| *hPopUpMenu* | Handle of a menu created with **MenuNewPopup**. |
+| *fByPosition* | Controls the meaning of *item*. If this parameter is FALSE, *item* is a menu item identifier. Otherwise, *item* is the position of the menu item, where position = 1 for the first position, position = 2 for the second, and so on.  |
+| *x, y* | Location of the context menu, in pixels, relative to the upper left corner of the desktop. |
+| *flags* | Use zero of more of these flags to specify function options. |
+
+Use one of the following flags to specify how the function positions the shortcut menu horizontally.
+
+| Value | Meaning |
+| ------| ------- |
+| **TPM_CENTERALIGN** | Centers the shortcut menu horizontally relative to the coordinate specified by the x parameter. |
+| **TPM_LEFTALIGN** | Positions the shortcut menu so that its left side is aligned with the coordinate specified by the x parameter. |
+| **TPM_RIGHTALIGN** | Positions the shortcut menu so that its right side is aligned with the coordinate specified by the x parameter. |
+
+Use one of the following flags to specify how the function positions the shortcut menu vertically.
+
+| Value | Meaning |
+| ------| ------- |
+| **TPM_BOTTOMALIGN** | Positions the shortcut menu so that its bottom side is aligned with the coordinate specified by the y parameter. |
+| **TPM_TOPALIGN** | Positions the shortcut menu so that its top side is aligned with the coordinate specified by the y parameter. |
+| **TPM_VCENTERALIGN** | Centers the shortcut menu vertically relative to the coordinate specified by the y parameter. |
+
+Use one of the following flags to specify which mouse button the shortcut menu tracks.
+
+| Value | Meaning |
+| ------| ------- |
+| **TPM_LEFTBUTTON** | The user can select menu items with only the left mouse button. |
+| **TPM_RIGHTBUTTON** | The user can select menu items with both the left and right mouse buttons. |
+ 
 ---
 
 ### <a name="menudelete"></a>MenuDelete

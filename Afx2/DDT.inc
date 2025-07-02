@@ -427,7 +427,7 @@ END FUNCTION
 #define ControlAddTab ControlAdd("Tab")
 #define ControlAddTextBox ControlAdd("TextBox")
 #define ControlAddToolBar ControlAdd("ToolBar")
-#define ControlAddTreeView ControlAdd("TreView")
+#define ControlAddTreeView ControlAdd("TreeView")
 ' // Additional controls
 #define ControlAddAnimate ControlAdd("Animate")
 #define ControlAddGroupBox ControlAdd("GroupBox")
@@ -1897,18 +1897,16 @@ PRIVATE FUNCTION ListViewReset (BYVAL hDlg AS HWND, BYVAL id AS LONG) AS BOOLEAN
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
-' The string data item specified by item&/col& is chosen as selected text for the LISTVIEW
+' The string data item specified by item/col is chosen as selected text for the LISTVIEW
 ' control and the item is highlighted. 
 ' ========================================================================================
 PRIVATE FUNCTION ListViewSelect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL Item AS LONG, BYVAL col AS LONG = 1) AS BOOLEAN
-   DIM lvi AS LVITEM
-   lvi.stateMask = LVIF_STATE
-   lvi.state = LVIS_SELECTED
+   DIM lvi AS LVITEMW
    lvi.stateMask = LVIS_SELECTED
    lvi.state = LVIS_SELECTED
    lvi.iItem = Item - 1 ' Convert to zero-based index
    lvi.iSubItem = col - 1 ' Convert to zero-based index
-   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETITEMSTATE, item -1, cast(LPARAM, @lvi))
+   RETURN SendDlgItemMessageW(hDlg, id, LVM_SETITEMSTATE, lvi.iItem, cast(LPARAM, cast(LVITEMW PTR, @lvi)))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
@@ -2008,7 +2006,7 @@ END SUB
 ' To unselect all items pass item = 0.
 ' ========================================================================================
 PRIVATE FUNCTION ListViewUnselect (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL item AS LONG, BYVAL col AS LONG = 1) AS BOOLEAN
-   DIM lvi AS LVITEM
+   DIM lvi AS LVITEMW
    lvi.mask = LVIF_STATE
    lvi.stateMask = LVIS_SELECTED
    lvi.state = 0   ' Unselect the item
@@ -2213,7 +2211,7 @@ END FUNCTION
 ' Gets the text of the specified item.
 ' ========================================================================================
 PRIVATE FUNCTION TreeViewGetText (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM) AS DWSTRING
-   DIM tvi As TVITEMW
+   DIM tvi AS TVITEMW
    DIM textBuffer AS WSTRING * MAX_PATH
    tvi.mask = TVIF_TEXT
    tvi.pszText = @textBuffer
@@ -2241,20 +2239,21 @@ PRIVATE FUNCTION TreeViewSetUser (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hI
    DIM tvi As TVITEMW
    tvi.mask = TVIF_PARAM   ' Retrieve only the user-defined value
    tvi.hItem = hItem
+   tvi.lParam = value
    RETURN SendDlgItemMessageW(hDlg, id, TVM_SETITEMW, 0, cast(LPARAM, @tvi))
 END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' Inserts a new item in a treeview control.
 ' ========================================================================================
-PRIVATE FUNCTION TreeViewInsert (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hParent AS HTREEITEM, BYVAL hInsertAfter AS HTREEITEM, _
+PRIVATE FUNCTION TreeViewInsertItem (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hParent AS HTREEITEM, BYVAL hInsertAfter AS HTREEITEM, _
 BYVAL iImage AS LONG = 0, BYVAL iSelectedImage AS LONG = 0, BYVAL pwszText AS WSTRING PTR) AS HTREEITEM
    DIM tvinsert AS TVINSERTSTRUCTW
    tvinsert.hParent             = hParent
    tvinsert.hInsertAfter        = hInsertAfter
    tvinsert.Item.mask           = TVIF_TEXT OR TVIF_IMAGE OR TVIF_SELECTEDIMAGE
-   tvinsert.Item.iImage         = iImage
-   tvinsert.Item.iSelectedImage = iSelectedImage
+   tvinsert.Item.iImage         = iImage - 1
+   tvinsert.Item.iSelectedImage = iSelectedImage - 1
    tvinsert.Item.lParam         = 0
    tvinsert.Item.pszText        = pwszText
    IF pwszText <> LPSTR_TEXTCALLBACK THEN
@@ -2311,10 +2310,10 @@ END FUNCTION
 ' ========================================================================================
 ' ========================================================================================
 ' The expanded attribute for the data item specified by hItem is set based upon the value
-' of the flag& parameter.  If flag& is true (non-zero), it is displayed in expanded format,
-' with its child items visible.  If flag& is false (zero), it is displayed in collapsed format.
+' of the flag parameter. If flag is true (non-zero), it is displayed in expanded format,
+' with its child items visible. If flag is false (zero), it is displayed in collapsed format.
 ' ========================================================================================
-PRIVATE FUNCTION TreeViewSetExpanded (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM, BYVAL flag AS BOOLEAN) AS BOOLEAN
+PRIVATE FUNCTION TreeViewSetExpanded (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL hItem AS HTREEITEM, BYVAL flag AS BOOLEAN = FALSE) AS BOOLEAN
    DIM expandFlag AS LONG
    IF flag THEN expandFlag = TVE_EXPAND ELSE expandFlag = TVE_COLLAPSE
    RETURN SendDlgItemMessageW(hDlg, id, TVM_EXPAND, expandFlag, cast(LPARAM, hItem))
@@ -2325,7 +2324,7 @@ END FUNCTION
 ' using the new images. The tree-view control will not destroy the image list specified
 ' with this message. Your application must destroy the image list when it is no longer needed.
 ' ========================================================================================
-PRIVATE FUNCTION TreeViewSetImageList (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL himl AS HIMAGELIST, BYVAL iImage AS LONG) AS HIMAGELIST
+PRIVATE FUNCTION TreeViewSetImageList (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYVAL himl AS HIMAGELIST, BYVAL iImage AS LONG = TVSIL_NORMAL) AS HIMAGELIST
    RETURN cast(HIMAGELIST, SendDlgItemMessageW(hDlg, id, TVM_SETIMAGELIST, iImage, cast(LPARAM, himl)))
 END FUNCTION
 ' ========================================================================================

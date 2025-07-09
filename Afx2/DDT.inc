@@ -29,7 +29,7 @@
 #include once "Afx2/AfxWin2.inc"
 #include once "Afx2/AfxCtl2.inc"
 #include once "Afx2/AfxMenuProcs2.inc"
-#include once "Afx2/AfxStrProcs2.inc"
+#include once "Afx2/DWSTRProcs2.inc"
 using Afx2
 
 ' ========================================================================================
@@ -2618,11 +2618,11 @@ END FUNCTION
 ' ========================================================================================
 FUNCTION StatusBarSetParts (BYVAL hDlg AS HWND, BYVAL id AS LONG, BYREF strSizes AS STRING) AS BOOLEAN
    DIM AS LONG nParts, X, y
-   nParts = MAX(wstrParseCount(strSizes),1)
+   nParts = MAX(DWStrParseCount(strSizes),1)
    IF nParts < 2 THEN RETURN SendDlgItemMessageW(hDlg, id, SB_SIMPLE, (nParts = 1), 0)
    DIM Parts(1 TO nParts) AS LONG
    FOR X = 1 TO nParts
-      Y = VAL(wstrParse(strSizes, X))
+      Y = VAL(DWStrParse(strSizes, X))
       Y = ScaleForDpiX(hDlg, Y)   ' // Scale according the DPI
       IF X = 1 THEN
          Parts(X) = Y

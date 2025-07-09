@@ -1,5 +1,6 @@
 '#TEMPLATE DDT Dialog - Animation demo
 #define UNICODE 1
+#define _WIN32_WINNT &h0602
 #include once "Afx2/DDT.inc"
 USING DDT
 

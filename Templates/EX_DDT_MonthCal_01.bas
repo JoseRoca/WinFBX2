@@ -1,4 +1,5 @@
 '#TEMPLATE DDT Dialog with a Month Calendar control
+#define _WIN32_WINNT &h0602
 #include once "Afx2/DDT.inc"
 USING DDT
 
@@ -9,6 +10,7 @@ DECLARE FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
 END WinMain(GetModuleHandleW(NULL), NULL, COMMAND(), SW_NORMAL)
 
 DECLARE FUNCTION DlgProc (BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD, BYVAL lParam AS LPARAM) AS INT_PTR
+
 
 CONST IDC_MONTHCAL = 1001
 

@@ -1,5 +1,4 @@
-'#TEMPLATE DDT Dialog - Pick Icon Dialog
-#define _WIN32_WINNT &h0602
+'#TEMPLATE DDT Dialog with textboxes
 #include once "Afx2/DDT.inc"
 USING DDT
 
@@ -11,7 +10,8 @@ END WinMain(GetModuleHandleW(NULL), NULL, COMMAND(), SW_NORMAL)
 
 DECLARE FUNCTION DlgProc (BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD, BYVAL lParam AS LPARAM) AS INT_PTR
 
-CONST IDC_PICKDLG = 1001
+CONST IDC_EDIT1 = 1001
+CONST IDC_EDIT2 = 1002
 
 ' ========================================================================================
 ' Main
@@ -27,14 +27,20 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT - Pick Icon Dialog", , , 285, 120, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dalog with Textboxes", , , 191, 70, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   ' // Set the dialog's backgroung color
+   DialogSetColor(hDlg, -1, RGB_GOLD)
 
-   ' // Add buttons
-   ControlAddButton, hDlg, IDC_PICKDLG, "&Pick", 140, 90, 50, 14
-   ControlAddButton, hDlg, IDCANCEL, "&Close", 210, 90, 50, 14
+   ' // Add a Textbox control
+   ControlAddTextbox, hDlg, IDC_EDIT1, "First Textbox", 8, 8, 174, 12
+   ' // Add a Multiline Textbox control
+   ControlAddTextbox, hDlg, IDC_EDIT2, "Second Textbox", 8, 24, 174, 12
+   ' // Add a button
+   ControlAddButton, hDlg, IDCANCEL, "&Close", 132, 50, 50, 12
 
    ' // Anchor the controls
-   ControlAnchor(hDlg, IDC_PICKDLG, AFX_ANCHOR_BOTTOM_RIGHT)
+   ControlAnchor(hDlg, IDC_EDIT1, AFX_ANCHOR_WIDTH)
+   ControlAnchor(hDlg, IDC_EDIT2, AFX_ANCHOR_WIDTH)
    ControlAnchor(hDlg, IDCANCEL, AFX_ANCHOR_BOTTOM_RIGHT)
 
    ' // Display and activate the dialog as modal
@@ -49,10 +55,6 @@ END FUNCTION
 ' Dialog callback procedure
 ' ========================================================================================
 FUNCTION DlgProc (BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD, BYVAL lParam AS LPARAM) AS INT_PTR
-
-   STATIC wszIconPath AS WSTRING * MAX_PATH   ' // Path of the resource file containing the icons
-   STATIC nIconIndex AS LONG                  ' // Icon index
-   STATIC hIcon AS HICON                      ' // Icon handle
    
    SELECT CASE uMsg
 
@@ -66,29 +68,9 @@ FUNCTION DlgProc (BYVAL hDlg AS HWND, BYVAL uMsg AS DWORD, BYVAL wParam AS DWORD
                IF CBCTLMSG(wParam, lParam) = BN_CLICKED THEN
                   SendMessageW hDlg, WM_CLOSE, 0, 0
                END IF
-            ' // Launch the Pick icon dialog
-            CASE IDC_PICKDLG
-               IF CBCTLMSG(wParam, lParam) = BN_CLICKED THEN
-                  IF LEN(wszIconPath) = 0 THEN wszIconPath = AfxGetSystemDllPath("Shell32.dll")
-                  IF LEN(wszIconPath) = 0 THEN RETURN FALSE
-                  ' // Activate the Pick Icon Common Dialog Box
-                  DIM hr AS LONG = PickIconDlg(hDlg, wszIconPath, SIZEOF(wszIconPath), @nIconIndex)
-                  ' // If an icon has been selected...
-                  IF hr = 1 THEN
-                     ' // Destroy previously loaded icon, if any
-                     IF hIcon THEN DestroyIcon(hIcon)
-                     ' // Get the handle of the new selected icon
-                     hIcon = ExtractIconW(GetModuleHandle(NULL), wszIconPath, nIconIndex)
-                     ' // Replace the application icons
-                     IF hIcon THEN DialogSetIconEx(hDlg, hIcon, hIcon)
-                  END IF
-                  EXIT FUNCTION
-               END IF
          END SELECT
 
       CASE WM_CLOSE
-         ' // Destroy the icon
-         IF hIcon THEN DestroyIcon(hIcon)
          ' // End the application
          DialogEnd(hDlg)
 

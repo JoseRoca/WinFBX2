@@ -1,5 +1,6 @@
 '#TEMPLATE DDT Dialog with a Toolbar
 '#RESOURCE "Toolbar_64.rc"
+#define _WIN32_WINNT &h0602
 #include once "Afx2/AfxGdiplus2.inc"
 USING Afx2
 #include once "Afx2/DDT.inc"
@@ -35,7 +36,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with a Toolbar", 50, 50, 200, 85, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT Dialog with a Toolbar", , , 200, 85, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add a toolbar
    ControlAddToolbar, hDlg, IDC_TOOLBAR

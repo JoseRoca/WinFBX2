@@ -1,4 +1,5 @@
 '#TEMPLATE DDT Dialog with a size box
+#define _WIN32_WINNT &h0602
 #include once "Afx2/DDT.inc"
 USING DDT
 
@@ -30,6 +31,9 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
 
    ' // Add a size box to the dialog
    ControlAddSizeBox, hDlg, IDC_SIZEBOX
+
+   ' // Size boxes need to be hidden if the dialog is maximized
+   ' ControlAnchor(hDlg, IDC_SIZEBOX, AFX_ANCHOR_BOTTOM_RIGHT)
 
    ' // Display and activate the dialog as modal
    DialogShowModal(hDlg, @DlgProc)

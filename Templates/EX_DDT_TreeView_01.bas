@@ -1,6 +1,7 @@
 '#TEMPLATE DDT Dialog with a TReeView
 '#RESOURCE "TreeView.rc"
 #define UNICODE
+#define _WIN32_WINNT &h0602
 #include once "Afx2/AfxGdiplus2.inc"
 #include once "Afx2/AfxExt.bi"
 USING Afx2

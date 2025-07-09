@@ -1,4 +1,5 @@
 '#TEMPLATE DDT Dialog with a 3 state checkbox
+#define _WIN32_WINNT &h0602
 #include once "Afx2/DDT.inc"
 USING DDT
 

@@ -2,6 +2,7 @@
 #define _WIN32_WINNT &h0602
 #include once "Afx2/AfxExt.bi"
 #include once "Afx2/AfxGdiPlus2.inc"
+USING Afx2
 #include once "Afx2/DDT.inc"
 USING DDT
 

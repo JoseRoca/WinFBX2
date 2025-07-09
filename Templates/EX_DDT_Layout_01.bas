@@ -1,4 +1,5 @@
 '#TEMPLATE DDT Dialog with colors and layout
+#define _WIN32_WINNT &h0602
 #include once "Afx2/DDT.inc"
 USING DDT
 
@@ -45,7 +46,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    ' // Add a multiline Edit control
    ControlAddTextbox, hDlg, IDC_EDIT2, "", 15, 45, 305, 80, WS_TABSTOP OR WS_VSCROLL OR ES_LEFT OR ES_AUTOHSCROLL OR ES_MULTILINE OR ES_NOHIDESEL OR ES_WANTRETURN
    ' // Add more controls
-   ControlAddFrame, hDlg, IDC_GROUPBOX, "Geoupbox", 335, 8, 100, 155
+   ControlAddFrame, hDlg, IDC_GROUPBOX, "Groupbox", 335, 8, 100, 155
    ' // Disable themes for the GroupBox control; otherwise, the caption colors can't be changed
    SetWindowTheme(ControlHandle(hDlg, IDC_GROUPBOX), "", "")
 

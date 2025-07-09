@@ -1,4 +1,5 @@
-'#TEMPLATE DDT Dialog with Line controls
+'#TEMPLATE DDT Dialog with a Line control
+#define _WIN32_WINNT &h0602
 #include once "Afx2/DDT.inc"
 USING DDT
 

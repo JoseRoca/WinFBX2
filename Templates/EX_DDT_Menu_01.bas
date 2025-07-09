@@ -1,4 +1,5 @@
 '#TEMPLATE DDT Dialog with a menu
+#define _WIN32_WINNT &h0602
 #include once "Afx2/DDT.inc"
 USING DDT
 
@@ -80,7 +81,7 @@ FUNCTION WinMain (BYVAL hInstance AS HINSTANCE, _
    AfxEnableVisualStyles
 
    ' // Create a new dialog using dialog units
-   DIM hDlg AS HWND = DialogNew(0, "DDT with FreeBasic - Colors and Layout Demo",50, 50, 175, 75, WS_OVERLAPPEDWINDOW OR DS_CENTER)
+   DIM hDlg AS HWND = DialogNew(0, "DDT with FreeBasic - Menu Demo",50, 50, 175, 75, WS_OVERLAPPEDWINDOW OR DS_CENTER)
 
    ' // Add controls to the dialog
    ControlAdd "GroupBox", hDlg, 101, "Just a simple question", 5, 5, 160, 55

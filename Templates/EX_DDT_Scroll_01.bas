@@ -1,4 +1,5 @@
 '#TEMPLATE DDT Scrollable Dialog with a ListBox
+#define _WIN32_WINNT &h0602
 #include once "Afx2/DDT.inc"
 USING DDT
 

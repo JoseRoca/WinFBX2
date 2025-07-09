@@ -177,13 +177,13 @@ END FUNCTION
 ' * Adds a string or separator to an existing menu.
 ' Usage examples:
 ' MenuAddString hPopup1, "&Open", ID_OPEN, MF_ENABLED
-' Insert the item befoe the ID_OPEN item
+' Insert the item before the ID_OPEN item
 ' MenuAddString hPopup1, "&Exit", ID_EXIT, MF_ENABLED, 1, TRUE          ' insert by position
 ' MenuAddString hPopup1, "&Exit", ID_EXIT, MF_ENABLED, ID_OPEN, FALSE   ' insert by identifier
 ' ========================================================================================
 PRIVATE FUNCTION MenuAddString OVERLOAD (BYVAL hMenu AS HMENU, BYREF wszText AS WSTRING, BYVAL id AS LONG, _
 BYVAL fState AS UINT, BYVAL item AS LONG = 0, BYVAL fByPosition AS BOOLEAN = FALSE) AS BOOLEAN
-   IF wszText = "-" THEN RETURN AppendMenuW(hMenu, MF_SEPARATOR, 0, "")
+   IF wszText = "-" THEN RETURN AppendMenuW(hMenu, MF_SEPARATOR, 1, "")
    ' // If fByPosition = FALSE and item > 0, it is a menu identifier
    IF fByPosition = FALSE AND item > 0 THEN
       ' // Find the item position
